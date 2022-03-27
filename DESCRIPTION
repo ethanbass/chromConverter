@@ -1,0 +1,12 @@
+Package: chromConverter
+Title: Chromatogram file converter
+Version: 0.0.0.9000
+Authors@R: 
+    person("Ethan", "Bass", , "ethanbass@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Converts chromatograms from binary formats.
+Imports: reticulate
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
