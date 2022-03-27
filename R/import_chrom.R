@@ -1,7 +1,6 @@
 
-#' @name import_UV
-#' @title import_UV
-#' @aliases import_UV
+#' @name import_chrom
+#' @title import_chrom
 #' @param paths paths to folders containing files
 #' @param pattern pattern (e.g. a file extension)
 #' @param dat existing list of chromatographs to append results.
@@ -11,9 +10,9 @@
 #' @import reticulate
 #' @examples \dontrun{
 #' data <- import_UV(paths)}
-#' @export import_UV
+#' @export import_chrom
 
-import_UV <- function(paths, pattern=".uv", dat=NULL,
+import_chrom <- function(paths, pattern=".uv", dat=NULL,
                       format=c("matrix","data.frame"), export=FALSE){
   format <- match.arg(format, c("matrix", "data.frame"))
   trace_file <- reticulate::import("aston.tracefile")
@@ -26,7 +25,6 @@ import_UV <- function(paths, pattern=".uv", dat=NULL,
   for (path in paths){
     files <- list.files(path=path, pattern = pattern,full.names = TRUE,recursive = T)
     file_names <- gsub("\\.D","",list.files(path=path, pattern = "\\.D",full.names = F))
-    files <- list.files(path=path, pattern = ".uv", full.names = TRUE,recursive = T)
     data <- lapply(X=files, function(f){
       df <- trace_file$TraceFile(f)
       df = pd$DataFrame(df$data$values, columns=df$data$columns, index=df$data$index)
