@@ -1,6 +1,9 @@
 # chromConverter
 chromConverter is an R package to facilitate the conversion of chromatographic data from binary formats. 
-It currently consists of a wrapper around the UV converters in the [Aston](https://github.com/bovee/aston) package for python. This includes: Agilent .uv, .ms, etc.
+
+It currently consists of a wrapper around the converters in the [Aston](https://github.com/bovee/aston) package for python.
+
+This includes Agilent `.uv`, `.ms`, etc.
 
 ## Installation
 You can install `chromatographR` from GitHub using the devtools package:
