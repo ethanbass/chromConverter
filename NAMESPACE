@@ -3,3 +3,4 @@
 export(import_chrom)
 export(install_python_dependencies)
 import(reticulate)
+importFrom(utils,write.csv)

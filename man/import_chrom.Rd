@@ -8,8 +8,10 @@ import_chrom(
   paths,
   pattern = ".uv",
   dat = NULL,
-  format = c("matrix", "data.frame"),
-  export = FALSE
+  R.format = c("matrix", "data.frame"),
+  export = FALSE,
+  path.out = NULL,
+  format.out = "csv"
 )
 }
 \arguments{
@@ -20,14 +22,18 @@ import_chrom(
 \item{dat}{existing list of chromatographs to append results.
 (Defaults to NULL).}
 
-\item{format}{data.frame or matrix}
+\item{R.format}{data.frame or matrix}
 
 \item{export}{Logical. If true, will export files as csvs.}
+
+\item{path.out}{Path for export.}
+
+\item{format.out}{Output format. Currently only csv.}
 }
 \description{
 import_chrom
 }
 \examples{
 \dontrun{
-data <- import_UV(paths)}
+data <- import_chrom(paths)}
 }
