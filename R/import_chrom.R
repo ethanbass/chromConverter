@@ -15,6 +15,10 @@
 import_chrom <- function(paths, pattern=".uv", dat=NULL,
                       format=c("matrix","data.frame"), export=FALSE){
   format <- match.arg(format, c("matrix", "data.frame"))
+  exists <- dir.exists(paths)
+  if (mean(exists) == 0){
+    stop("None of the provided paths exist.")
+  }
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
   # import python modules
@@ -23,7 +27,14 @@ import_chrom <- function(paths, pattern=".uv", dat=NULL,
   if (is.null(dat)){
     dat<-list()}
   for (path in paths){
-    files <- list.files(path=path, pattern = pattern,full.names = TRUE,recursive = T)
+    files <- list.files(path = path, pattern = pattern,full.names = TRUE,recursive = T)
+    if (length(files)==0){
+      if (!dir.exists(path)){
+        warning(paste0("The directory '", basename(path), "' does not exist."))
+      } else{
+        warning(paste0("No files matching the pattern '", pattern, "' were found in '", basename(path), "'"))
+      }
+    }
     file_names <- gsub("\\.D","",list.files(path=path, pattern = "\\.D",full.names = F))
     data <- lapply(X=files, function(f){
       df <- trace_file$TraceFile(f)
