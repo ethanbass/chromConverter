@@ -3,7 +3,7 @@ chromConverter is an R package to facilitate the conversion of chromatographic d
 
 It currently consists of a wrapper around the converters in the [Aston](https://github.com/bovee/aston) package for python.
 
-This includes Agilent `.uv`, `.ms`, etc.
+This includes Agilent Chemstation `.uv`, `.ms`, Masshunter `.sp`, etc.
 
 ## Installation
 You can install `chromatographR` from GitHub using the devtools package:
