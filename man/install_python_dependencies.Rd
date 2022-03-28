@@ -4,7 +4,10 @@
 \alias{install_python_dependencies}
 \title{Basic function to install python dependencies.}
 \usage{
-install_python_dependencies()
+install_python_dependencies(...)
+}
+\arguments{
+\item{...}{Additional commands to \code{\link[reticulate]{py_install}}}
 }
 \description{
 Basic function to install python dependencies.
