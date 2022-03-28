@@ -19,7 +19,9 @@ library(chromConverter)
 install_python_dependencies()
 ```
 
-Then convert files by specifying the path and the format.
+If you're having trouble loading python you may want to consider installing a local installation. This can be accomplished from within reticulate, using the `install_miniconda` command. For more information about reticulate, please consult the [vignette](https://cran.r-project.org/web/packages/reticulate/vignettes/calling_python.html)
+
+Then convert files by specifying the path to a directory (or a vector of paths) and the file format.
 
 ```
 dat <- import_chrom(path, format.in=c("chemstation.uv", "masshunter.DAD")
