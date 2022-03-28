@@ -2,26 +2,32 @@
 #' @name import_chrom
 #' @title import_chrom
 #' @param paths paths to folders containing files
-#' @param pattern pattern (e.g. a file extension)
-#' @param dat existing list of chromatographs to append results.
-#' (Defaults to NULL).
-#' @param R.format data.frame or matrix
+#' @param format.in Format of files to be imported/converted.
+#' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
+#' case file extension will be deduced from \code{format.in}.
+#' @param R.format R object format (i.e. data.frame or matrix).
 #' @param export Logical. If true, will export files as csvs.
 #' @param path.out Path for export.
-#' @param format.out Output format. Currently only csv.
+#' @param format.out Output format. Currently only .csv.
+#' @param dat Existing list of chromatographs to append results.
+#' (Defaults to NULL).
+
 #' @import reticulate
 #' @importFrom utils write.csv
 #' @examples \dontrun{
-#' data <- import_chrom(paths)}
+#' data <- import_chrom(paths)
+#' }
 #' @export import_chrom
 
-import_chrom <- function(paths, pattern=".uv", dat=NULL,
+import_chrom <- function(paths, pattern=NULL,
+                         format.in=c("chemstation.uv", "masshunter.DAD"),
                       R.format=c("matrix","data.frame"), export=FALSE,
-                      path.out=NULL, format.out="csv"){
+                      path.out=NULL, format.out="csv", dat=NULL){
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
+  format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.DAD"))
   exists <- dir.exists(paths)
   if (mean(exists) == 0){
-    stop("Cannot locate files. None of the provided paths exist.")
+    stop("Cannot locate files. None of the supplied paths exist.")
   }
   if (export){
     if (is.null(path.out)){
@@ -32,14 +38,22 @@ import_chrom <- function(paths, pattern=".uv", dat=NULL,
     path.out <- gsub("/$","", path.out)
     if (!dir.exists(path.out)){
       stop(paste0("The export directory '", path.out, "' does not exist."))
-  }}
+    }
+    csv <- reticulate::import("csv")
+  }
+  # import python modules
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
-  # import python modules
-  if (export){
-    csv <- import("csv")}
   if (is.null(dat)){
     dat<-list()}
+  # choose converter
+  if (format.in == "chemstation.uv"){
+    pattern <- ifelse(is.null(pattern),".uv", pattern)
+    converter <- trace_file$TraceFile
+  } else if (format.in=="masshunter.DAD"){
+    pattern <- ifelse(is.null(pattern),".sp", pattern)
+    converter <- trace_file$agilent_uv$AgilentDAD
+  }
   for (path in paths){
     files <- list.files(path = path, pattern = pattern,
                         full.names = TRUE,recursive = TRUE)
@@ -51,10 +65,10 @@ import_chrom <- function(paths, pattern=".uv", dat=NULL,
                        "' were found in '", basename(path), "'"))
       }
     }
-    file_names <- gsub("\\.D","", list.files(path=path, pattern = "\\.D",
+    file_names <- gsub("\\.[Dd]","", list.files(path=path, pattern = "\\.[Dd]$",
                                              full.names = FALSE))
     data <- lapply(X=files, function(f){
-      df <- trace_file$TraceFile(f)
+      df <- converter(f)
       df = pd$DataFrame(df$data$values, columns=df$data$columns,
                         index=df$data$index)
     })

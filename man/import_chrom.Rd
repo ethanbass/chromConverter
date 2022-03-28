@@ -6,34 +6,39 @@
 \usage{
 import_chrom(
   paths,
-  pattern = ".uv",
-  dat = NULL,
+  pattern = NULL,
+  format.in = c("chemstation.uv", "masshunter.DAD"),
   R.format = c("matrix", "data.frame"),
   export = FALSE,
   path.out = NULL,
-  format.out = "csv"
+  format.out = "csv",
+  dat = NULL
 )
 }
 \arguments{
 \item{paths}{paths to folders containing files}
 
-\item{pattern}{pattern (e.g. a file extension)}
+\item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
+case file extension will be deduced from \code{format.in}.}
 
-\item{dat}{existing list of chromatographs to append results.
-(Defaults to NULL).}
+\item{format.in}{Format of files to be imported/converted.}
 
-\item{R.format}{data.frame or matrix}
+\item{R.format}{R object format (i.e. data.frame or matrix).}
 
 \item{export}{Logical. If true, will export files as csvs.}
 
 \item{path.out}{Path for export.}
 
-\item{format.out}{Output format. Currently only csv.}
+\item{format.out}{Output format. Currently only .csv.}
+
+\item{dat}{Existing list of chromatographs to append results.
+(Defaults to NULL).}
 }
 \description{
 import_chrom
 }
 \examples{
 \dontrun{
-data <- import_chrom(paths)}
+data <- import_chrom(paths)
+}
 }
