@@ -18,3 +18,9 @@ After installing, you can (hopefully) install the python dependencies using a bu
 library(chromConverter)
 install_python_dependencies()
 ```
+
+Then convert files by specifying the path and the format.
+
+```
+dat <- import_chrom(path, format.in=c("chemstation.uv", "masshunter.DAD")
+```
