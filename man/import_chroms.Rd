@@ -27,9 +27,10 @@ case file extension will be deduced from \code{format.in}.}
 
 \item{export}{Logical. If true, will export files as csvs.}
 
-\item{path.out}{Path for export.}
+\item{path.out}{Path for exporting files. If path not specified, files will
+export to current working directory.}
 
-\item{format.out}{Output format. Currently only .csv.}
+\item{format.out}{Output format. Currently only \code{.csv}.}
 
 \item{dat}{Existing list of chromatographs to append results.
 (Defaults to NULL).}
@@ -42,7 +43,7 @@ import_chroms
 }
 \examples{
 \dontrun{
-data <- import_chrom(paths)
+data <- import_chrom(paths, format.in = "chemstation.uv")
 }
 }
 \author{

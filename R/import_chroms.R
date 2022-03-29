@@ -1,4 +1,3 @@
-
 #' @name import_chroms
 #' @title import_chroms
 #' @param paths paths to folders containing files
@@ -7,15 +6,16 @@
 #' case file extension will be deduced from \code{format.in}.
 #' @param R.format R object format (i.e. data.frame or matrix).
 #' @param export Logical. If true, will export files as csvs.
-#' @param path.out Path for export.
-#' @param format.out Output format. Currently only .csv.
+#' @param path.out Path for exporting files. If path not specified, files will
+#' export to current working directory.
+#' @param format.out Output format. Currently only \code{.csv}.
 #' @param dat Existing list of chromatographs to append results.
 #' (Defaults to NULL).
 #' @return A list of chromatograms in matrix or data.frame format.
 #' @import reticulate
 #' @importFrom utils write.csv
 #' @examples \dontrun{
-#' data <- import_chrom(paths)
+#' data <- import_chrom(paths, format.in = "chemstation.uv")
 #' }
 #' @author Ethan Bass
 #' @export import_chroms
@@ -86,7 +86,7 @@ import_chroms <- function(paths, pattern=NULL,
   dat
 }
 
-# # Export to csv file
+# # Export to csv file from within python
 # pd$DataFrame$to_csv(df_Data, "Data.csv")
 # csv$writer(df_Data,"Data.csv")
 # df_Data.to_csv("Data.csv")

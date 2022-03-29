@@ -1,11 +1,19 @@
 Package: chromConverter
-Title: Chromatogram file converter
+Title: Chromatographic file converter
 Version: 0.0.0.9000
-Authors@R: 
-    person("Ethan", "Bass", , "ethanbass@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: Converts chromatograms from binary formats.
+Author: Ethan Bass
+Maintainer: Ethan Bass <ethanbass@gmail.com>
+Description: R package for conversion of chromatograms from binary formats.
+URL: https://github.com/ethanbass/chromConverter
+BugReports: https://github.com/ethanbass/chromConverter/issues
 Imports: reticulate
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "scipy", "numpy", "pandas"),
+      list(package="aston", pip = TRUE)
+    )
+  )
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
