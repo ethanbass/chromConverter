@@ -6,10 +6,10 @@ It currently consists of a wrapper around the converters in the [Aston](https://
 This includes Agilent `.uv`, `.ms`, etc.
 
 ## Installation
-You can install `chromatographR` from GitHub using the devtools package:
+You can install `chromConverter` from GitHub using the devtools package:
 ```
 install.packages("devtools")
-devtools::install_github("https://github.com/ethanbass/chromatographR/")
+devtools::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
 After installing, you can (hopefully) install the python dependencies using a built in function, as follows:
