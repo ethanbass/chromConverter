@@ -40,11 +40,7 @@ import_chroms <- function(paths, pattern=NULL,
     if (!dir.exists(path.out)){
       stop(paste0("The export directory '", path.out, "' does not exist."))
     }
-    csv <- reticulate::import("csv")
   }
-  # import python modules
-  trace_file <- reticulate::import("aston.tracefile")
-  pd <- reticulate::import("pandas")
   if (is.null(dat)){
     dat<-list()}
   # choose converter
@@ -98,8 +94,6 @@ import_chroms <- function(paths, pattern=NULL,
 #' @import reticulate
 #' @noRd
 sp_converter <- function(file){
-  trace_file <- reticulate::import("aston.tracefile")
-  pd <- reticulate::import("pandas")
   df <- trace_file$agilent_uv$AgilentDAD(file)
   pd$DataFrame(df$data$values, columns=df$data$columns,
                     index=df$data$index)
@@ -112,8 +106,6 @@ sp_converter <- function(file){
 #' @import reticulate
 #' @noRd
 trace_converter <- function(file){
-  trace_file <- reticulate::import("aston.tracefile")
-  pd <- reticulate::import("pandas")
   df <- trace_file$TraceFile(file)
   pd$DataFrame(df$data$values, columns=df$data$columns,
                index=df$data$index)
