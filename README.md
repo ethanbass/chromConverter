@@ -12,7 +12,7 @@ install.packages("devtools")
 devtools::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
-After installing, you can (hopefully) install the python dependencies using a built in function, as follows:
+After installing, you can install the python dependencies using a built in function, as follows:
 
 ```
 library(chromConverter)
