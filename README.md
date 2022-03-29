@@ -1,5 +1,5 @@
 # chromConverter
-chromConverter is an R package to facilitate the conversion of chromatographic data from binary formats. 
+chromConverter is an R package to facilitate the conversion of chromatographic data from proprietary binary formats. 
 
 It currently consists of a wrapper around the converters in the [Aston](https://github.com/bovee/aston) package for python.
 
@@ -24,5 +24,5 @@ If you're having trouble loading python you may want to consider installing a lo
 Then convert files by specifying the path to a directory (or a vector of paths) and the file format.
 
 ```
-dat <- import_chrom(path, format.in=c("chemstation.uv", "masshunter.DAD")
+dat <- import_chroms(path, format.in=c("chemstation.uv", "masshunter.dad")
 ```
