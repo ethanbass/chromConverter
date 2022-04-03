@@ -1,9 +1,10 @@
-#' @name import_chroms
-#' @title import_chroms
+#' @name read_chroms
+#' @title read_chroms
 #' @param paths paths to folders containing files
 #' @param format.in Format of files to be imported/converted.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
+#' @param parser = What parser to use. Currently, the only option is \code{Aston}.
 #' @param R.format R object format (i.e. data.frame or matrix).
 #' @param export Logical. If true, will export files as csvs.
 #' @param path.out Path for exporting files. If path not specified, files will
@@ -15,15 +16,15 @@
 #' @import reticulate
 #' @importFrom utils write.csv
 #' @examples \dontrun{
-#' data <- import_chrom(paths, format.in = "chemstation.uv")
+#' data <- read_chroms(paths, format.in = "chemstation.uv")
 #' }
 #' @author Ethan Bass
-#' @export import_chroms
+#' @export read_chroms
 
-import_chroms <- function(paths, pattern=NULL,
-                         format.in=c("chemstation.uv", "masshunter.dad"),
-                      R.format=c("matrix","data.frame"), export=FALSE,
-                      path.out=NULL, format.out="csv", dat=NULL){
+read_chroms <- function(paths, format.in=c("chemstation.uv", "masshunter.dad"),
+                        pattern=NULL, parser=c("Aston"),
+                        R.format=c("matrix","data.frame"), export=FALSE,
+                        path.out=NULL, format.out="csv", dat=NULL){
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
   format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.dad"))
   exists <- dir.exists(paths)
@@ -32,9 +33,13 @@ import_chroms <- function(paths, pattern=NULL,
   }
   if (export){
     if (is.null(path.out)){
-      path.out <- getwd()
-      warning("Export directory not specified. Files will be exported to
-              current working directory.", immediate. = TRUE)
+      ans <- readline(".........Export directory not specified.
+.........Export files to current working directory (y/n)? ")
+      if (ans %in% c("y","Y")){
+        path.out <- getwd()
+      } else{
+        stop("Must specify directory to export files.")
+      }
     }
     path.out <- gsub("/$","", path.out)
     if (!dir.exists(path.out)){

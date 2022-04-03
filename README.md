@@ -18,5 +18,5 @@ Convert files by specifying the path to a directory (or a vector of directories)
 
 ```
 library(chromConverter)
-dat <- import_chroms(path, format.in=c("chemstation.uv", "masshunter.dad")
+dat <- read_chroms(path, format.in=c("chemstation.uv", "masshunter.dad")
 ```
