@@ -19,19 +19,29 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        r-version: ['3.6.3', '4.1.1']
+        config:
+          - {os: macOS-latest, r: 'release', python: '3.9'}
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up R ${{ matrix.r-version }}
+      - name: Set up R ${{ matrix.config.r }}
         uses: r-lib/actions/setup-r@f57f1301a053485946083d7a45022b278929a78a
         with:
           r-version: ${{ matrix.r-version }}
+      - name: Set up python ${{ matrix.config.python }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.config.python }}
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
           remotes::install_deps(dependencies = TRUE)
+          reticulate::install_miniconda()
+          reticulate::conda_create('r-reticulate', packages = c('python==3.9', 'numpy', 'scipy', 'pandas'))
+          reticulate::conda_install('r-reticulate', packages = c('aston'), pip=TRUE)
         shell: Rscript {0}
+      - if: runner.os == 'macOS'
+        run: echo "options(reticulate.conda_binary = reticulate:::miniconda_conda())" >> .Rprofile
       - name: Check
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}

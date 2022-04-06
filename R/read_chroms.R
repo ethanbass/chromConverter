@@ -12,7 +12,8 @@
 #' @param format.out Output format. Currently only \code{.csv}.
 #' @param dat Existing list of chromatographs to append results.
 #' (Defaults to NULL).
-#' @return A list of chromatograms in matrix or data.frame format.
+#' @return A list of chromatograms in matrix or data.frame format, according to
+#' the value of 'R.format'.
 #' @import reticulate
 #' @importFrom utils write.csv
 #' @examples \dontrun{
@@ -110,7 +111,6 @@ sp_converter <- function(file){
 #' @return A data.frame object (retention time x trace).
 #' @import reticulate
 #' @noRd
-#' @export uv_converter
 uv_converter <- function(file){
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
@@ -127,7 +127,6 @@ uv_converter <- function(file){
 #' @return A data.frame object (retention time x trace).
 #' @import reticulate
 #' @noRd
-#' @export trace_converter
 trace_converter <- function(file){
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")

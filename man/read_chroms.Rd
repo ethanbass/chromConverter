@@ -39,7 +39,8 @@ export to current working directory.}
 (Defaults to NULL).}
 }
 \value{
-A list of chromatograms in matrix or data.frame format.
+A list of chromatograms in matrix or data.frame format, according to
+the value of 'R.format'.
 }
 \description{
 read_chroms
