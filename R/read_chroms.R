@@ -54,7 +54,7 @@ read_chroms <- function(paths, format.in=c("chemstation.uv", "masshunter.dad"),
     converter <- sp_converter
   } else if (format.in=="chemstation.uv"){
     pattern <- ifelse(is.null(pattern),".uv", pattern)
-    converter <- trace_converter
+    converter <- uv_converter
   } else{
     converter <- trace_converter
   }
@@ -104,13 +104,33 @@ sp_converter <- function(file){
                     index=df$data$index)
 }
 
-#' @name trace_converter
-#' @title converter for Agilent UV file and others
+#' @name uv_converter
+#' @title converter for Agilent UV files
 #' @param file path to file
 #' @return A data.frame object (retention time x trace).
 #' @import reticulate
 #' @noRd
+#' @export uv_converter
+uv_converter <- function(file){
+  trace_file <- reticulate::import("aston.tracefile")
+  pd <- reticulate::import("pandas")
+  df <- trace_file$TraceFile(file)
+  pd$DataFrame(df$data$values, columns=df$data$columns,
+               index=df$data$index)
+  # multiply by empirical correction value
+  apply(x,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
+}
+
+#' @name trace_converter
+#' @title converter for other files
+#' @param file path to file
+#' @return A data.frame object (retention time x trace).
+#' @import reticulate
+#' @noRd
+#' @export trace_converter
 trace_converter <- function(file){
+  trace_file <- reticulate::import("aston.tracefile")
+  pd <- reticulate::import("pandas")
   df <- trace_file$TraceFile(file)
   pd$DataFrame(df$data$values, columns=df$data$columns,
                index=df$data$index)
