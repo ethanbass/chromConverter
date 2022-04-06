@@ -1,20 +1,21 @@
 Package: chromConverter
-Title: Chromatographic file converter
-Version: 0.0.0.9000
-Author: Ethan Bass
+Title: Chromatographic File Converter
+Version: 0.1
+Authors@R: person("Ethan", "Bass", , "ethanbass@gmail.com", role = c("aut",
+    "cre"), comment = c(ORCID = "0000-0002-6175-6739"))
 Maintainer: Ethan Bass <ethanbass@gmail.com>
-Description: R package for conversion of chromatograms from binary formats.
+Description: Reads chromatograms from binary formats into R objects. Currently supports conversion of Agilent Chemstation '.uv' and Masshunter '.sp', files using file parsers from the 'Aston' package <https://github.com/bovee/aston>.
+License: GPL (>= 3)
 URL: https://github.com/ethanbass/chromConverter
 BugReports: https://github.com/ethanbass/chromConverter/issues
-Imports: reticulate
-Config/reticulate:
-  list(
-    packages = list(
-      list(package = "scipy", "numpy", "pandas"),
-      list(package="aston", pip = TRUE)
-    )
-  )
-License: GPL (>= 3)
+Imports:
+    reticulate,
+    utils
+Config/reticulate: list( packages = list( list(package = "scipy", "numpy",
+    "pandas"), list(package="aston", pip = TRUE) ) )
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+Suggests: 
+    spelling
+Language: en-US
