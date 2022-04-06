@@ -115,10 +115,10 @@ uv_converter <- function(file){
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
   df <- trace_file$TraceFile(file)
-  pd$DataFrame(df$data$values, columns=df$data$columns,
+  df <- pd$DataFrame(df$data$values, columns=df$data$columns,
                index=df$data$index)
   # multiply by empirical correction value
-  apply(x,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
+  apply(df,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
 }
 
 #' @name trace_converter
