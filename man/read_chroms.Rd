@@ -6,6 +6,7 @@
 \usage{
 read_chroms(
   paths,
+  find_files = TRUE,
   format.in = c("chemstation.uv", "masshunter.dad"),
   pattern = NULL,
   parser = c("Aston"),
@@ -17,7 +18,9 @@ read_chroms(
 )
 }
 \arguments{
-\item{paths}{paths to folders containing files}
+\item{paths}{paths to files or folders containing files}
+
+\item{find_files}{TRUE}
 
 \item{format.in}{Format of files to be imported/converted.}
 

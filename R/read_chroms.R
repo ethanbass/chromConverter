@@ -1,6 +1,7 @@
 #' @name read_chroms
 #' @title read_chroms
-#' @param paths paths to folders containing files
+#' @param paths paths to files or folders containing files
+#' @param find_files TRUE
 #' @param format.in Format of files to be imported/converted.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
@@ -22,13 +23,14 @@
 #' @author Ethan Bass
 #' @export read_chroms
 
-read_chroms <- function(paths, format.in=c("chemstation.uv", "masshunter.dad"),
+read_chroms <- function(paths, find_files = TRUE,
+                        format.in=c("chemstation.uv", "masshunter.dad"),
                         pattern=NULL, parser=c("Aston"),
                         R.format=c("matrix","data.frame"), export=FALSE,
                         path.out=NULL, format.out="csv", dat=NULL){
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
   format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.dad"))
-  exists <- dir.exists(paths)
+  exists <- dir.exists(paths) | file.exists(paths)
   if (mean(exists) == 0){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
@@ -59,32 +61,47 @@ read_chroms <- function(paths, format.in=c("chemstation.uv", "masshunter.dad"),
   } else{
     converter <- trace_converter
   }
-  for (path in paths){
-    files <- list.files(path = path, pattern = pattern,
-                        full.names = TRUE,recursive = TRUE)
-    if (length(files)==0){
-      if (!dir.exists(path)){
-        warning(paste0("The directory '", basename(path), "' does not exist."))
-      } else{
-        warning(paste0("No files matching the pattern '", pattern,
-                       "' were found in '", basename(path), "'"))
+  if (find_files){
+    files <- unlist(lapply(paths, function(path){
+      files <- list.files(path = path, pattern = pattern,
+                          full.names = TRUE,recursive = TRUE)
+      if (length(files)==0){
+        if (!dir.exists(path)){
+          warning(paste0("The directory '", basename(path), "' does not exist."))
+        } else{
+          warning(paste0("No files matching the pattern '", pattern,
+                         "' were found in '", basename(path), "'"))
+        }
       }
+      files
+    }))
+  } else{
+    files <- paths
+    match <- grep(pattern, files)
+    if (length(match)==0){
+      warning("The provided files do not match the expected file extension.
+      Please confirm that the specified format ('format.in') is correct.",
+              immediate. = TRUE)
+    } else if (length(match)<length(files)){
+      warning(paste("Some of the files do not have the expected file extension:",
+                    files[match]), immediate. = TRUE)
     }
-    file_names <- gsub("\\.[Dd]","", list.files(path=path, pattern = "\\.[Dd]$",
-                                             full.names = FALSE))
-    data <- lapply(X=files, function(f){
-      df <- converter(f)
-    })
-    if (R.format == "matrix"){
-      data <- lapply(data, FUN=as.matrix)}
-    names(data) <- file_names
-    if (export){
-      sapply(seq_along(data), function(i){
-        write.csv(data[[i]], file = paste0(paste(path.out,names(data)[i], sep="/"),".CSV"))
-      })
-    }
-    dat <- append(dat,data)
   }
+  file_names <- strsplit(files, "/")
+  file_names <- gsub("\\.[Dd]", "",
+                     sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
+  data <- lapply(X=files, function(f){
+    df <- converter(f)
+  })
+  if (R.format == "matrix"){
+    data <- lapply(data, FUN=as.matrix)}
+  names(data) <- file_names
+  if (export){
+    sapply(seq_along(data), function(i){
+      write.csv(data[[i]], file = paste0(paste(path.out,names(data)[i], sep="/"),".CSV"))
+    })
+  }
+  dat <- append(dat,data)
   dat
 }
 
