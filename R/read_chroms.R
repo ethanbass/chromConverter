@@ -1,3 +1,10 @@
+#' Read chromatograms
+#'
+#' Reads chromatograms from specified folders or vector of paths. Uses the Aston
+#' file parser.
+#'
+#' Currently recognizes Agilent Chemstation '.uv' and MassHunter '.dad' files.
+#'
 #' @name read_chroms
 #' @title read_chroms
 #' @param paths paths to files or folders containing files
@@ -17,8 +24,9 @@
 #' the value of 'R.format'.
 #' @import reticulate
 #' @importFrom utils write.csv
-#' @examples \dontrun{
-#' data <- read_chroms(paths, format.in = "chemstation.uv")
+#' @examples
+#' path <- "tests/testthat/testdata/dad1.uv"
+#' chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation.uv")
 #' }
 #' @author Ethan Bass
 #' @export read_chroms
@@ -110,24 +118,30 @@ read_chroms <- function(paths, find_files = TRUE,
 # csv$writer(df_Data,"Data.csv")
 # df_Data.to_csv("Data.csv")
 
+#' MassHunter converter
+#'
+#' Converts a single chromatogram from MassHunter \code{.sp} format to R \code{data.frame}.
 #' @name sp_converter
-#' @title converter for Agilent MassHunter UV file
+#' @title converter for Agilent MassHunter UV files
 #' @param file path to file
 #' @return A data.frame object (retention time x wavelength).
 #' @import reticulate
-#' @noRd
+#' @export sp_converter
 sp_converter <- function(file){
   df <- trace_file$agilent_uv$AgilentDAD(file)
   pd$DataFrame(df$data$values, columns=df$data$columns,
                     index=df$data$index)
 }
 
+#' ChemStation converter
+#'
+#' Converts a single chromatogram from Chemstation \code{.uv} format to R \code{data.frame}.
 #' @name uv_converter
-#' @title converter for Agilent UV files
+#' @title converter for Agilent Chemstation UV files
 #' @param file path to file
 #' @return A data.frame object (retention time x trace).
 #' @import reticulate
-#' @noRd
+#' @export uv_converter
 uv_converter <- function(file){
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
@@ -138,8 +152,11 @@ uv_converter <- function(file){
   apply(df,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
 }
 
+#' Aston TraceFile Converter
+#'
+#' Uses Aston parser to figure out file-type and convert to R \code{data.frame}.
 #' @name trace_converter
-#' @title converter for other files
+#' @title generic converter for other types of files
 #' @param file path to file
 #' @return A data.frame object (retention time x trace).
 #' @import reticulate

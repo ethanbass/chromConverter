@@ -46,12 +46,13 @@ A list of chromatograms in matrix or data.frame format, according to
 the value of 'R.format'.
 }
 \description{
-read_chroms
+Read chromatograms
 }
-\examples{
-\dontrun{
-data <- read_chroms(paths, format.in = "chemstation.uv")
-}
+\details{
+Reads chromatograms from specified folders or vector of paths. Uses the Aston
+file parser.
+
+Currently recognizes Agilent Chemstation '.uv' and MassHunter '.dad' files.
 }
 \author{
 Ethan Bass
