@@ -1,12 +1,11 @@
-#' Read chromatograms
+#' Read Chromatograms
 #'
-#' Reads chromatograms from specified folders or vector of paths. Uses the Aston
-#' file parser.
+#' Reads chromatograms from specified folders or vector of paths using the
+#' [Aston](https://github.com/bovee/aston) file parser.
 #'
-#' Currently recognizes Agilent Chemstation '.uv' and MassHunter '.dad' files.
+#' Currently recognizes Agilent ChemStation '.uv' and MassHunter '.dad' files.
 #'
 #' @name read_chroms
-#' @title read_chroms
 #' @param paths paths to files or folders containing files
 #' @param find_files TRUE
 #' @param format.in Format of files to be imported/converted.
@@ -24,10 +23,9 @@
 #' the value of 'R.format'.
 #' @import reticulate
 #' @importFrom utils write.csv
-#' @examples
+#' @examplesIf interactive()
 #' path <- "tests/testthat/testdata/dad1.uv"
 #' chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation.uv")
-#' }
 #' @author Ethan Bass
 #' @export read_chroms
 
@@ -113,16 +111,13 @@ read_chroms <- function(paths, find_files = TRUE,
   dat
 }
 
-# # Export to csv file from within python
-# pd$DataFrame$to_csv(df_Data, "Data.csv")
-# csv$writer(df_Data,"Data.csv")
-# df_Data.to_csv("Data.csv")
-
-#' MassHunter converter
+#' Converter for Agilent MassHunter UV files
 #'
 #' Converts a single chromatogram from MassHunter \code{.sp} format to R \code{data.frame}.
+#'
+#' Uses the [Aston](https://github.com/bovee/aston) file parser.
+#'
 #' @name sp_converter
-#' @title converter for Agilent MassHunter UV files
 #' @param file path to file
 #' @return A data.frame object (retention time x wavelength).
 #' @import reticulate
@@ -133,11 +128,13 @@ sp_converter <- function(file){
                     index=df$data$index)
 }
 
-#' ChemStation converter
+#' Converter for Agilent ChemStation UV files
 #'
-#' Converts a single chromatogram from Chemstation \code{.uv} format to R \code{data.frame}.
+#' Converts a single chromatogram from ChemStation \code{.uv} format to R \code{data.frame}.
+#'
+#' Uses the [Aston](https://github.com/bovee/aston) file parser.
+#'
 #' @name uv_converter
-#' @title converter for Agilent Chemstation UV files
 #' @param file path to file
 #' @return A data.frame object (retention time x trace).
 #' @import reticulate

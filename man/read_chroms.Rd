@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chroms.R
 \name{read_chroms}
 \alias{read_chroms}
-\title{read_chroms}
+\title{Read Chromatograms}
 \usage{
 read_chroms(
   paths,
@@ -46,13 +46,17 @@ A list of chromatograms in matrix or data.frame format, according to
 the value of 'R.format'.
 }
 \description{
-Read chromatograms
+Reads chromatograms from specified folders or vector of paths using the
+\href{https://github.com/bovee/aston}{Aston} file parser.
 }
 \details{
-Reads chromatograms from specified folders or vector of paths. Uses the Aston
-file parser.
-
-Currently recognizes Agilent Chemstation '.uv' and MassHunter '.dad' files.
+Currently recognizes Agilent ChemStation '.uv' and MassHunter '.dad' files.
+}
+\examples{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+path <- "tests/testthat/testdata/dad1.uv"
+chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation.uv")
+\dontshow{\}) # examplesIf}
 }
 \author{
 Ethan Bass

@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chroms.R
 \name{uv_converter}
 \alias{uv_converter}
-\title{converter for Agilent Chemstation UV files}
+\title{Converter for Agilent ChemStation UV files}
 \usage{
 uv_converter(file)
 }
@@ -13,8 +13,8 @@ uv_converter(file)
 A data.frame object (retention time x trace).
 }
 \description{
-ChemStation converter
+Converts a single chromatogram from ChemStation \code{.uv} format to R \code{data.frame}.
 }
 \details{
-Converts a single chromatogram from Chemstation \code{.uv} format to R \code{data.frame}.
+Uses the \href{https://github.com/bovee/aston}{Aston} file parser.
 }

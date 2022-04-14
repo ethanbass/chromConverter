@@ -1,4 +1,9 @@
 ^chromConverter\.Rproj$
 ^\.Rproj\.user$
 ^\.github$
+^\.git$
+^\.gitignore$
 ^LICENSE\.md$
+^\.Rhistory$
+^.Rproj*$
+[.]DS_Store$

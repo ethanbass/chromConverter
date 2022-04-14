@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chroms.R
 \name{sp_converter}
 \alias{sp_converter}
-\title{converter for Agilent MassHunter UV files}
+\title{Converter for Agilent MassHunter UV files}
 \usage{
 sp_converter(file)
 }
@@ -13,8 +13,8 @@ sp_converter(file)
 A data.frame object (retention time x wavelength).
 }
 \description{
-MassHunter converter
+Converts a single chromatogram from MassHunter \code{.sp} format to R \code{data.frame}.
 }
 \details{
-Converts a single chromatogram from MassHunter \code{.sp} format to R \code{data.frame}.
+Uses the \href{https://github.com/bovee/aston}{Aston} file parser.
 }
