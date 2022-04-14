@@ -17,7 +17,7 @@
 #' @param path.out Path for exporting files. If path not specified, files will
 #' export to current working directory.
 #' @param format.out Output format. Currently only \code{.csv}.
-#' @param dat Existing list of chromatographs to append results.
+#' @param dat Existing list of chromatograms to append results.
 #' (Defaults to NULL).
 #' @return A list of chromatograms in matrix or data.frame format, according to
 #' the value of 'R.format'.

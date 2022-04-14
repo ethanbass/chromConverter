@@ -38,7 +38,7 @@ export to current working directory.}
 
 \item{format.out}{Output format. Currently only \code{.csv}.}
 
-\item{dat}{Existing list of chromatographs to append results.
+\item{dat}{Existing list of chromatograms to append results.
 (Defaults to NULL).}
 }
 \value{
