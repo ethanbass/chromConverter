@@ -7,3 +7,4 @@
 ^\.Rhistory$
 ^.Rproj*$
 [.]DS_Store$
+^CRAN-SUBMISSION$
