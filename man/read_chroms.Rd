@@ -20,7 +20,9 @@ read_chroms(
 \arguments{
 \item{paths}{paths to files or folders containing files}
 
-\item{find_files}{TRUE}
+\item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
+the function with a folder or vector of folders containing the files.
+Otherwise, set to\code{FALSE}.}
 
 \item{format.in}{Format of files to be imported/converted.}
 

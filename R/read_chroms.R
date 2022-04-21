@@ -7,7 +7,9 @@
 #'
 #' @name read_chroms
 #' @param paths paths to files or folders containing files
-#' @param find_files TRUE
+#' @param find_files Logical. Set to \code{TRUE} (default) if you are providing
+#' the function with a folder or vector of folders containing the files.
+#' Otherwise, set to\code{FALSE}.
 #' @param format.in Format of files to be imported/converted.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
@@ -70,7 +72,7 @@ read_chroms <- function(paths, find_files = TRUE,
   if (find_files){
     files <- unlist(lapply(paths, function(path){
       files <- list.files(path = path, pattern = pattern,
-                          full.names = TRUE,recursive = TRUE)
+                          full.names = TRUE, recursive = TRUE)
       if (length(files)==0){
         if (!dir.exists(path)){
           warning(paste0("The directory '", basename(path), "' does not exist."))
@@ -88,7 +90,7 @@ read_chroms <- function(paths, find_files = TRUE,
       warning("The provided files do not match the expected file extension.
       Please confirm that the specified format ('format.in') is correct.",
               immediate. = TRUE)
-    } else if (length(match)<length(files)){
+    } else if (length(match) < length(files)){
       warning(paste("Some of the files do not have the expected file extension:",
                     files[match]), immediate. = TRUE)
     }
