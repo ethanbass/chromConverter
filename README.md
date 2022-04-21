@@ -7,7 +7,14 @@ It currently consists of a wrapper around the file parsers included in the [Asto
 This includes Agilent ChemStation `.uv`, `.ms`, MassHunter `.sp`, etc.
 
 ## Installation
-The development version of `chromConverter` is hosted on GitHub. You can install
+
+chromConverter can now be installed directly from CRAN:
+
+```
+install.packages("chromConverter")
+```
+
+Alternatively, the development version of `chromConverter` is hosted on GitHub. You can install
 it using `devtools` as follows:
 
 ```
@@ -23,3 +30,5 @@ Convert files by specifying the path to a directory (or a vector of directories)
 library(chromConverter)
 dat <- read_chroms(path, format.in=c("chemstation.uv", "masshunter.dad")
 ```
+
+For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://github.com/ethanbass/chromatographR).
