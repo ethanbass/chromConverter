@@ -1,5 +1,7 @@
 # chromConverter
 
+[![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/last-week/chromConverter?color=blue)](https://r-pkg.org/pkg/chromConverter)
+
 chromConverter is an R package to facilitate the conversion of chromatographic data from proprietary binary formats. 
 
 It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) package for python.
