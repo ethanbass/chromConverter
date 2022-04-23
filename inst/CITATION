@@ -1,0 +1,14 @@
+citHeader("To cite chromConverter in publications, please use:")
+
+citEntry(
+  entry    = "manual",
+  title    = "chromConverter",
+  author   = "Ethan Bass",
+  year     = "2022",
+  version  = "version 0.1.0",
+  url      = "https://cran.r-project.org/web/packages/chromConverter/chromConverter.pdf",
+  textVersion = paste("Bass, E. (2022).",
+        "chromConverter.",
+        "version 0.1.0",
+        "https://cran.r-project.org/web/packages/chromConverter/chromConverter.pdf")
+)
