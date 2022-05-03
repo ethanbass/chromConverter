@@ -8,7 +8,6 @@ citEntry(
   version  = "version 0.1.0",
   url      = "https://cran.r-project.org/web/packages/chromConverter/chromConverter.pdf",
   textVersion = paste("Bass, E. (2022).",
-        "chromConverter.",
-        "version 0.1.0",
+        "chromConverter (version 0.1.0).",
         "https://cran.r-project.org/web/packages/chromConverter/chromConverter.pdf")
 )

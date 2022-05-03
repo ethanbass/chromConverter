@@ -20,3 +20,11 @@ test_that("read_chroms works", {
   expect_equal(length(x1), length(paths))
   })
 
+test_that("read_fid works", {
+  path<-"testdata"
+  x <- read_fid(path)
+  expect_equal(dim(x[[1]])[1],66255)
+  expect_equal(class(x[[1]]), "data.frame")
+})
+
+
