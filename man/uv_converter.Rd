@@ -4,10 +4,13 @@
 \alias{uv_converter}
 \title{Converter for Agilent ChemStation UV files}
 \usage{
-uv_converter(file)
+uv_converter(file, correction = TRUE)
 }
 \arguments{
 \item{file}{path to file}
+
+\item{correction}{Logical. Whether to apply empirical correction. Defaults is
+TRUE.}
 }
 \value{
 A data.frame object (retention time x trace).

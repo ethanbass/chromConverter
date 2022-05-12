@@ -11,13 +11,17 @@ BugReports: https://github.com/ethanbass/chromConverter/issues
 Imports:
     readr,
     reticulate,
+    tidyr,
     utils
+Suggests: 
+    entab,
+    testthat (>= 3.0.0)
 Config/reticulate: list( packages = list( list(package = "scipy", "numpy",
     "pandas"), list(package="aston", pip = TRUE) ) )
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
-Suggests: 
-    testthat (>= 3.0.0)
+Additional_repositories: https://ethanbass.github.io/drat/
 Config/testthat/edition: 3
+
