@@ -38,4 +38,4 @@ library(chromConverter)
 dat <- read_chroms(path, format.in=c("chemstation.uv", "masshunter.dad")
 ```
 
-For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://github.com/ethanbass/chromatographR).
+For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR).
