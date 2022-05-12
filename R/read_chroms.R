@@ -13,9 +13,9 @@
 #' @param format.in Format of files to be imported/converted.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
-#' @param parser = What parser to use. Currently, the only option is \code{Aston}.
+#' @param parser What parser to use. Currently, the only option is \code{Aston}.
 #' @param R.format R object format (i.e. data.frame or matrix).
-#' @param export Logical. If true, will export files as csvs.
+#' @param export Logical. If TRUE, will export files as csvs.
 #' @param path.out Path for exporting files. If path not specified, files will
 #' export to current working directory.
 #' @param format.out Output format. Currently only \code{.csv}.

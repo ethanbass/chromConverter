@@ -29,11 +29,11 @@ Otherwise, set to\code{FALSE}.}
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format.in}.}
 
-\item{parser}{= What parser to use. Currently, the only option is \code{Aston}.}
+\item{parser}{What parser to use. Currently, the only option is \code{Aston}.}
 
 \item{R.format}{R object format (i.e. data.frame or matrix).}
 
-\item{export}{Logical. If true, will export files as csvs.}
+\item{export}{Logical. If TRUE, will export files as csvs.}
 
 \item{path.out}{Path for exporting files. If path not specified, files will
 export to current working directory.}

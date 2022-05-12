@@ -8,7 +8,7 @@ read_fid(
   paths,
   suffix = "txt",
   dat = NULL,
-  R.format = c("data.frame", "tibble")
+  R.format = c("matrix", "data.frame", "tibble")
 )
 }
 \arguments{
@@ -16,10 +16,10 @@ read_fid(
 
 \item{suffix}{string specifying file suffix (e.g. 'txt')}
 
-\item{dat}{files Optional list of chromatograms. If provided, newly imported
+\item{dat}{files optional list of chromatograms. If provided, newly imported
 chromatograms will be appended to the existing list.}
 
-\item{R.format}{R object format (i.e. data.frame or tibble).}
+\item{R.format}{R object format (i.e. matrix, data.frame, or tibble).}
 }
 \value{
 A list of chromatograms in data.frame or tibble format, according to

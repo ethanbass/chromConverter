@@ -2,9 +2,9 @@
 #' @name read_fid
 #' @param paths path to files (or vector of paths)
 #' @param suffix string specifying file suffix (e.g. 'txt')
-#' @param dat files Optional list of chromatograms. If provided, newly imported
+#' @param dat files optional list of chromatograms. If provided, newly imported
 #' chromatograms will be appended to the existing list.
-#' @param R.format R object format (i.e. data.frame or tibble).
+#' @param R.format R object format (i.e. matrix, data.frame, or tibble).
 #' @return A list of chromatograms in data.frame or tibble format, according to
 #' the value of 'R.format'.
 #' @importFrom readr read_lines read_tsv
@@ -15,9 +15,9 @@
 #' read_fid(path)
 #' @export read_fid
 
-read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("data.frame","tibble")){
+read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("matrix","data.frame","tibble")){
 
-  R.format <- match.arg(R.format, c("data.frame","tibble"))
+  R.format <- match.arg(R.format, c("matrix","data.frame","tibble"))
 
   dne <- which(!sapply(paths, dir.exists))
   if (length(dne)>0){
@@ -42,13 +42,19 @@ read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("data.frame","t
   rm <- which(sapply(dat,dim)[1,]==0)
   if (length(rm) > 0){
     dat <- dat[-rm]
-    warning(paste("The following chromatograms were found to be empty and removed:", toString(rm,sep=",")))
+    warning(paste("The following chromatograms were found to be empty and automatically removed:", toString(rm,sep=",")))
   }
-  if (R.format=="tibble"){
+  if (R.format == "tibble"){
     dat
-  } else{
+  } else if (R.format == "data.frame"){
     lapply(dat, function(x){
       x <- as.data.frame(x)
+      rownames(x) <- x[,1]
+      x[,2, drop=F]
+    })
+  } else if (R.format == "matrix"){
+    lapply(dat, function(x){
+      x <- as.matrix(x)
       rownames(x) <- x[,1]
       x[,2, drop=F]
     })
