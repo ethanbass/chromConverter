@@ -1,4 +1,4 @@
-# chromConverter <a href='https://cran.r-project.org/web/packages/chromConverter/index.html/'><img src='man/figures/logo.png' align="right" height="160" /></a>
+# chromConverter <a href='https://cran.r-project.org/web/packages/chromConverter/'><img src='man/figures/logo.png' align="right" height="160" /></a>
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/chromConverter)](https://cran.r-project.org/package=chromConverter)
