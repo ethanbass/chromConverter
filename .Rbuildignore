@@ -8,3 +8,6 @@
 ^.Rproj*$
 [.]DS_Store$
 ^CRAN-SUBMISSION$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
