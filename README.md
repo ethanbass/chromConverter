@@ -1,6 +1,8 @@
-# chromConverter
+# chromConverter <a href='https://cran.r-project.org/web/packages/chromConverter/index.html/'><img src='man/figures/logo.png' align="right" height="160" /></a>
 
 [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/last-week/chromConverter?color=blue)](https://r-pkg.org/pkg/chromConverter)
+
+## Overview
 
 chromConverter is an R package to facilitate HPLC-DAD/UV file conversion from proprietary binary formats. 
 
