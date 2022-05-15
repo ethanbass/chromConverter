@@ -1,5 +1,5 @@
-#' Read Shimadzu txt files from GC-FID into R
-#' @name read_fid
+#' Read Chromeleon txt files into R
+#' @name read_chromeleon
 #' @param paths path to files (or vector of paths)
 #' @param suffix string specifying file suffix (e.g. 'txt')
 #' @param dat files optional list of chromatograms. If provided, newly imported
@@ -10,12 +10,13 @@
 #' @importFrom readr read_lines read_tsv
 #' @importFrom utils tail
 #' @author Ethan Bass
-#' @examples
+#' @examples \dontrun{
 #' path <- system.file("extdata", ".", package = "chromConverter")
-#' read_fid(path)
-#' @export read_fid
+#' read_chromeleon(path)
+#' }
+#' @export read_chromeleon
 
-read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("matrix","data.frame","tibble")){
+read_chromeleon <- function(paths, suffix="txt", dat=NULL, R.format = c("matrix","data.frame","tibble")){
 
   R.format <- match.arg(R.format, c("matrix","data.frame","tibble"))
 
@@ -32,8 +33,10 @@ read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("matrix","data.
     file_names <- gsub(pattern = paste0(".",suffix), x = basename(files), replacement = "")
     mydata <- lapply(X=files, function(f){
       x<-read_lines(f)
-      start<-tail(grep("\\[(.*?)\\]",x),1)
-      x <- read_tsv(f, skip = start+4, show_col_types = F)
+      start <- tail(grep("Chromatogram Data:",x),1)
+      # start<-tail(grep("\\[(.*?)\\]",x),1)
+      x <- read_tsv(f, skip = start, show_col_types = F)
+      x<-sapply(x, function(x) as.numeric(gsub(",",".",x)))
     })
     mydata <- lapply(mydata, FUN=as.matrix)
     names(mydata) <- file_names
@@ -50,13 +53,13 @@ read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("matrix","data.
     lapply(dat, function(x){
       x <- as.data.frame(x)
       rownames(x) <- x[,1]
-      x[,2, drop=F]
+      x[,3, drop=F]
     })
   } else if (R.format == "matrix"){
     lapply(dat, function(x){
       x <- as.matrix(x)
       rownames(x) <- x[,1]
-      x[,2, drop=F]
+      x[,3, drop=F]
     })
   }
 }
