@@ -9,7 +9,7 @@ read_chroms(
   find_files = TRUE,
   format.in = c("chemstation.uv", "masshunter.dad"),
   pattern = NULL,
-  parser = c("Aston"),
+  parser = c("aston", "entab"),
   R.format = c("matrix", "data.frame"),
   export = FALSE,
   path.out = NULL,
@@ -29,7 +29,8 @@ Otherwise, set to\code{FALSE}.}
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format.in}.}
 
-\item{parser}{What parser to use. Currently, the only option is \code{Aston}.}
+\item{parser}{What parser to use. Current option are \code{aston} or \code{
+entab}. Entab must be manually installed from github.}
 
 \item{R.format}{R object format (i.e. data.frame or matrix).}
 
@@ -49,7 +50,8 @@ the value of 'R.format'.
 }
 \description{
 Reads chromatograms from specified folders or vector of paths using the
-\href{https://github.com/bovee/aston}{Aston} file parser.
+\href{https://github.com/bovee/aston}{Aston} or \href{https://github.com/bovee/entab}{Entab}
+file parsers.
 }
 \details{
 Currently recognizes Agilent ChemStation '.uv' and MassHunter '.dad' files.

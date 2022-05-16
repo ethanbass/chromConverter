@@ -1,7 +1,8 @@
 #' Read Chromatograms
 #'
 #' Reads chromatograms from specified folders or vector of paths using the
-#' [Aston](https://github.com/bovee/aston) file parser.
+#' [Aston](https://github.com/bovee/aston) or [Entab](https://github.com/bovee/entab)
+#' file parsers.
 #'
 #' Currently recognizes Agilent ChemStation '.uv' and MassHunter '.dad' files.
 #'
@@ -13,7 +14,8 @@
 #' @param format.in Format of files to be imported/converted.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
-#' @param parser What parser to use. Currently, the only option is \code{Aston}.
+#' @param parser What parser to use. Current option are \code{aston} or \code{
+#' entab}. Entab must be manually installed from github.
 #' @param R.format R object format (i.e. data.frame or matrix).
 #' @param export Logical. If TRUE, will export files as csvs.
 #' @param path.out Path for exporting files. If path not specified, files will
@@ -33,9 +35,17 @@
 
 read_chroms <- function(paths, find_files = TRUE,
                         format.in=c("chemstation.uv", "masshunter.dad"),
-                        pattern=NULL, parser=c("Aston"),
+                        pattern=NULL, parser=c("aston","entab"),
                         R.format=c("matrix","data.frame"), export=FALSE,
                         path.out=NULL, format.out="csv", dat=NULL){
+  parser <- match.arg (parser, c("aston","entab"))
+  if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
+    stop(
+      "The entab R package must be installed to use entab parsers:
+      install.packages('entab', repos='https://ethanbass.github.io/drat/')",
+      call. = FALSE
+    )
+  }
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
   format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.dad"))
   exists <- dir.exists(paths) | file.exists(paths)
@@ -62,12 +72,12 @@ read_chroms <- function(paths, find_files = TRUE,
   # choose converter
   if (format.in == "masshunter.dad"){
     pattern <- ifelse(is.null(pattern),".sp", pattern)
-    converter <- sp_converter
+    converter <- ifelse(parser=="aston", sp_converter, entab_reader)
   } else if (format.in=="chemstation.uv"){
     pattern <- ifelse(is.null(pattern),".uv", pattern)
-    converter <- uv_converter
+    converter <- ifelse(parser=="aston", uv_converter, entab_reader)
   } else{
-    converter <- trace_converter
+    converter <- ifelse(parser=="aston", trace_converter, entab_reader)
   }
   if (find_files){
     files <- unlist(lapply(paths, function(path){
@@ -138,17 +148,21 @@ sp_converter <- function(file){
 #'
 #' @name uv_converter
 #' @param file path to file
+#' @param correction Logical. Whether to apply empirical correction. Defaults is
+#' TRUE.
 #' @return A data.frame object (retention time x trace).
 #' @import reticulate
 #' @export uv_converter
-uv_converter <- function(file){
+uv_converter <- function(file, correction=TRUE){
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
   df <- trace_file$TraceFile(file)
   df <- pd$DataFrame(df$data$values, columns=df$data$columns,
                index=df$data$index)
   # multiply by empirical correction value
-  apply(df,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
+  if (correction){
+    apply(df,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
+  } else df
 }
 
 #' Aston TraceFile Converter
@@ -166,4 +180,32 @@ trace_converter <- function(file){
   df <- trace_file$TraceFile(file)
   pd$DataFrame(df$data$values, columns=df$data$columns,
                index=df$data$index)
+}
+
+#' @name entab_reader
+#' @title Entab parsers
+#' @param file path to file
+#' @return a \code{chrom} object
+#' @importFrom tidyr pivot_wider
+#' @noRd
+entab_reader <- function(file, format.out="wide"){
+  if (!requireNamespace("entab", quietly = TRUE)) {
+    stop(
+      "The entab R package must be installed to use entab parsers:
+      install.packages('entab', repos='https://ethanbass.github.io/drat/')",
+      call. = FALSE
+    )
+  }
+  r <- entab::Reader(file)
+  df <- entab::as.data.frame(r)
+  if (format.out=="wide"){
+    df <- data.frame(pivot_wider(df, id_cols = "time",
+                                 names_from = "wavelength", values_from = "intensity"))}
+  meta <- r$metadata()
+  # structure(as.matrix(df),
+  #           instrument = meta$instrument,
+  #           method = meta$method,
+  #           operator = meta$operator,
+  #           class = "chrom")
+  df
 }
