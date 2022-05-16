@@ -6,7 +6,8 @@ Authors@R: person("Ethan", "Bass", , "ethanbass@gmail.com", role = c("aut",
 Maintainer: Ethan Bass <ethanbass@gmail.com>
 Description: Reads chromatograms from binary formats into R objects. Currently supports conversion of Agilent ChemStation '.uv' and MassHunter '.sp', files using file parsers from the 'Aston' package <https://github.com/bovee/aston>.
 License: GPL (>= 3)
-URL: https://github.com/ethanbass/chromConverter
+URL: https://github.com/ethanbass/chromConverter,
+    https://ethanbass.github.io/chromConverter/
 BugReports: https://github.com/ethanbass/chromConverter/issues
 Imports:
     readr,
@@ -21,7 +22,7 @@ Config/reticulate: list( packages = list( list(package = "scipy", "numpy",
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Additional_repositories: https://ethanbass.github.io/drat/
 Config/testthat/edition: 3
 

@@ -1,6 +1,11 @@
-# chromConverter
+# chromConverter <a href='https://cran.r-project.org/web/packages/chromConverter/'><img src='man/figures/logo.png' align="right" height="160" /></a>
 
+<!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/chromConverter)](https://cran.r-project.org/package=chromConverter)
 [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/last-week/chromConverter?color=blue)](https://r-pkg.org/pkg/chromConverter)
+<!-- badges: end -->
+
+## Overview
 
 chromConverter is an R package to facilitate HPLC-DAD/UV file conversion from proprietary binary formats. 
 
@@ -33,4 +38,4 @@ library(chromConverter)
 dat <- read_chroms(path, format.in=c("chemstation.uv", "masshunter.dad")
 ```
 
-For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://github.com/ethanbass/chromatographR).
+For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR).
