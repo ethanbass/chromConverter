@@ -13,7 +13,7 @@ It currently consists of a wrapper around the file parsers included in the [Asto
 
 This includes Agilent ChemStation `.uv`, `.ms`, MassHunter `.sp`, etc.
 
-The development version here on GitHub now includes a parser for Shimadzu LabSolutions ascii files through the read_fid function.
+The development version here on GitHub now includes a parser for Shimadzu LabSolutions `ascii` files through the `read_fid` function.
 
 ## Installation
 
