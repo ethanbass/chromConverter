@@ -9,11 +9,14 @@
 
 chromConverter is an R package to facilitate HPLC-DAD/UV file conversion from proprietary binary formats. 
 
-It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) package for python.
+It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats.
 
-This includes Agilent ChemStation `.uv`, `.ms`, MassHunter `.sp`, etc.
+## Formats
 
-The development version here on GitHub now includes a parser for Shimadzu LabSolutions `ascii` files through the `read_fid` function.
+- Agilent ChemStation CH, FID, MS, MWD, and UV
+- Agilent MassHunter DAD (`.sp`)
+- Shimadzu LabSolutions GC-FID ascii (`.txt`) format
+- Chromeleon UV ascii (`.txt`) format
 
 ## Installation
 
