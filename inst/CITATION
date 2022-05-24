@@ -6,8 +6,8 @@ citEntry(
   author   = "Ethan Bass",
   year     = "2022",
   version  = "version 0.1.0",
-  url      = "https://cran.r-project.org/web/packages/chromConverter/chromConverter.pdf",
+  url      = "https://CRAN.R-project.org/package=chromConverter",
   textVersion = paste("Bass, E. (2022).",
         "chromConverter (version 0.1.0).",
-        "https://cran.r-project.org/web/packages/chromConverter/chromConverter.pdf")
+        "https://CRAN.R-project.org/package=chromConverter")
 )

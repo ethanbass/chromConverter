@@ -1,4 +1,7 @@
 #' Read Chromeleon txt files into R
+#'
+#' Parser for chromeleon .txt files
+#'
 #' @name read_chromeleon
 #' @param paths path to files (or vector of paths)
 #' @param suffix string specifying file suffix (e.g. 'txt')

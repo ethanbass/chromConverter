@@ -1,4 +1,7 @@
 #' Read Shimadzu txt files from GC-FID into R
+#'
+#' Parser for Shimadzu .txt files from GC-FID
+#'
 #' @name read_fid
 #' @param paths path to files (or vector of paths)
 #' @param suffix string specifying file suffix (e.g. 'txt')
