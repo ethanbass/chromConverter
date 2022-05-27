@@ -21,25 +21,17 @@ read_thermoraw <- function(path_in, path_out){
       dir.create("temp")
     path_out <- paste0(path_out,'/temp/')
   }
-  shell_script <- readLines(system.file('shell/thermofileparser.sh', package='chromConverter'))
-  path_parser <- strsplit(shell_script[2]," ")[[1]][2]
-  if(!file.exists(path_parser)){
-    warning("ThermoRawFileParser not found!", immediate. = TRUE)
-    path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`:")
-    shell_script[2] <- paste('mono', path_parser, '"$@"')
-    writeLines(shell_script, con=system.file('shell/thermofileparser.sh', package='chromConverter'))
-  }
   if(!file.exists(path_in)){
     stop("File not found. Check path.")
   }
   if(!file.exists(path_out)){
     stop("'path_out' not found. Make sure directory exists.")
   }
-  if (length(Sys.which("mono"))==0){
-    stop("Mono not found. Make sure 'mono' is present on system path.")
-  }
-  system(paste0("sh ", system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
-                " -o=", path_out, " -a"))
+  configure_shell_script()
+  # system(paste0("sh ", system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
+  #               " -o=", path_out, " -a"))
+  system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
+                            " -o=", path_out, " -a"))
   base <- basename(path_in)
   path <- paste0(path_out, strsplit(base,"\\.")[[1]][1],".mzML")
   mzML_UV_parser(path)
@@ -71,3 +63,33 @@ mzML_UV_parser <- function(path){
   colnames(data) <- lambdas
   data
 }
+
+#' Configure shell script to call ThermoRawFileParser
+#'
+#' @name configure_shell_script
+#' @param reconfigure Whether to re-write the shell script. (Defaults to FALSE,
+#' unless the program finds that reconfiguration is needed).
+#' @return No return value.
+#' @author Ethan Bass
+#' @noRd
+configure_shell_script <- function(reconfigure = FALSE){
+  shell_script <- readLines(system.file('shell/thermofileparser.sh', package='chromConverter'))
+  path_parser <- strsplit(shell_script[2]," ")[[1]][2]
+  if(!file.exists(path_parser)){
+    warning("ThermoRawFileParser not found!", immediate. = TRUE)
+    path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
+    reconfigure <- TRUE
+  }
+  if (.Platform$OS.type == "windows"){
+    if (length(grep("mono", shell_script)) != 0){
+      arg1 <- ""
+      reconfigure <- TRUE
+      }
+  } else{
+    arg1 <- "mono "
+  }
+    if (reconfigure){
+      shell_script[2] <- paste0(arg1, path_parser, ' "$@"')
+      writeLines(shell_script, con=system.file('shell/thermofileparser.sh', package='chromConverter'))
+    }
+  }
