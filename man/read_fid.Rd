@@ -26,7 +26,7 @@ A list of chromatograms in \code{matrix}, \code{data.frame}, or
 \code{tibble} format, according to the value of 'R.format'.
 }
 \description{
-Read Shimadzu txt files from GC-FID into R
+Parser for Shimadzu .txt files from GC-FID
 }
 \examples{
 path <- system.file("extdata", ".", package = "chromConverter")

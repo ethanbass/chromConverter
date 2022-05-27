@@ -26,7 +26,7 @@ A list of chromatograms in \code{matrix}, \code{data.frame}, or
 \code{tibble} format, according to the value of 'R.format'.
 }
 \description{
-Read Chromeleon txt files into R
+Parser for chromeleon .txt files
 }
 \examples{
 \dontrun{

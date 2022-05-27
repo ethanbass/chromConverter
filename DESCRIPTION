@@ -10,12 +10,14 @@ URL: https://github.com/ethanbass/chromConverter,
     https://ethanbass.github.io/chromConverter/
 BugReports: https://github.com/ethanbass/chromConverter/issues
 Imports:
+    purrr,
     readr,
     reticulate,
     tidyr,
     utils
 Suggests: 
     entab,
+    mzR,
     testthat (>= 3.0.0)
 Config/reticulate: list( packages = list( list(package = "scipy", "numpy",
     "pandas"), list(package="aston", pip = TRUE) ) )

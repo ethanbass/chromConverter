@@ -7,7 +7,7 @@
 read_chroms(
   paths,
   find_files = TRUE,
-  format.in = c("chemstation.uv", "masshunter.dad"),
+  format.in = c("chemstation.uv", "masshunter.dad", "thermoraw"),
   pattern = NULL,
   parser = c("aston", "entab"),
   R.format = c("matrix", "data.frame"),

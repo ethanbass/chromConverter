@@ -27,6 +27,7 @@
 #' the value of 'R.format'.
 #' @import reticulate
 #' @importFrom utils write.csv
+#' @importFrom purrr partial
 #' @examplesIf interactive()
 #' path <- "tests/testthat/testdata/dad1.uv"
 #' chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation.uv")
@@ -34,7 +35,7 @@
 #' @export read_chroms
 
 read_chroms <- function(paths, find_files = TRUE,
-                        format.in=c("chemstation.uv", "masshunter.dad"),
+                        format.in=c("chemstation.uv", "masshunter.dad", "thermoraw"),
                         pattern=NULL, parser=c("aston","entab"),
                         R.format=c("matrix","data.frame"), export=FALSE,
                         path.out=NULL, format.out="csv", dat=NULL){
@@ -43,26 +44,32 @@ read_chroms <- function(paths, find_files = TRUE,
     stop(
       "The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
-      call. = FALSE
-    )
+      call. = FALSE)
   }
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
-  format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.dad"))
+  format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.dad", "thermoraw"))
   exists <- dir.exists(paths) | file.exists(paths)
   if (mean(exists) == 0){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
-  if (export){
+  if (!is.null(path.out)){
+    if (substr(path.out,1,1) != "/")
+      path.out <- paste0("/", path.out)
+    if (substr(path.out, nchar(path.out)-1, nchar(nchar(path.out))) != "/")
+      path.out <- paste0(path.out, "/")
+  }
+  if (export | format.in == "thermoraw"){
     if (is.null(path.out)){
-      ans <- readline(".........Export directory not specified.
-.........Export files to current working directory (y/n)? ")
+      ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
       if (ans %in% c("y","Y")){
-        path.out <- getwd()
+        if (!dir.exists("temp"))
+          dir.create("temp")
+        path.out <- paste0(getwd(),'/temp/')
       } else{
         stop("Must specify directory to export files.")
       }
     }
-    path.out <- gsub("/$","", path.out)
+    # path.out <- gsub("/$","", path.out)
     if (!dir.exists(path.out)){
       stop(paste0("The export directory '", path.out, "' does not exist."))
     }
@@ -73,10 +80,13 @@ read_chroms <- function(paths, find_files = TRUE,
   if (format.in == "masshunter.dad"){
     pattern <- ifelse(is.null(pattern),".sp", pattern)
     converter <- ifelse(parser=="aston", sp_converter, entab_reader)
-  } else if (format.in=="chemstation.uv"){
+  } else if (format.in == "chemstation.uv"){
     pattern <- ifelse(is.null(pattern),".uv", pattern)
     converter <- ifelse(parser=="aston", uv_converter, entab_reader)
-  } else{
+  } else if (format.in == "thermoraw"){
+    pattern <- ".raw"
+    converter <- partial(read_thermoraw, path_out = path.out)
+    } else{
     converter <- ifelse(parser=="aston", trace_converter, entab_reader)
   }
   if (find_files){
@@ -105,9 +115,11 @@ read_chroms <- function(paths, find_files = TRUE,
                     files[match]), immediate. = TRUE)
     }
   }
-  file_names <- strsplit(files, "/")
-  file_names <- gsub("\\.[Dd]", "",
-                     sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
+  if (format.in %in% c("chemstation.uv", "masshunter.dad")){
+    file_names <- strsplit(files, "/")
+    file_names <- gsub("\\.[Dd]", "",
+                       sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
+  } else file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
   data <- lapply(X=files, function(f){
     df <- converter(f)
   })

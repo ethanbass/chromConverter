@@ -1,0 +1,73 @@
+#' Read Thermoraw files into R using ThermoRawFileParser
+#'
+#' Parser for thermoraw files
+#'
+#' @name read_thermoraw
+#' @param path_in path to file
+#' @param path_out directory to export \code{mzML} files.
+#' @return A chromatograms in \code{matrix} format.
+#' @author Ethan Bass
+#' @examples \dontrun{
+#' read_thermoraw(path)
+#' }
+#' @export read_thermoraw
+
+read_thermoraw <- function(path_in, path_out){
+  if (missing(path_out)){
+    warning("setting path for exported files to `temp` folder in current working directory. To choose a different directory,
+            set the `path_out` argument", immediate. = TRUE)
+    path_out  <- getwd()
+    if (!dir.exists("temp"))
+      dir.create("temp")
+    path_out <- paste0(path_out,'/temp/')
+  }
+  shell_script <- readLines(system.file('shell/thermofileparser.sh', package='chromConverter'))
+  path_parser <- strsplit(shell_script[2]," ")[[1]][2]
+  if(!file.exists(path_parser)){
+    warning("ThermoRawFileParser not found!", immediate. = TRUE)
+    path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`:")
+    shell_script[2] <- paste('mono', path_parser, '"$@"')
+    writeLines(shell_script, con=system.file('shell/thermofileparser.sh', package='chromConverter'))
+  }
+  if(!file.exists(path_in)){
+    stop("File not found. Check path.")
+  }
+  if(!file.exists(path_out)){
+    stop("'path_out' not found. Make sure directory exists.")
+  }
+  if (length(Sys.which("mono"))==0){
+    stop("Mono not found. Make sure 'mono' is present on system path.")
+  }
+  system(paste0("sh ", system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
+                " -o=", path_out, " -a"))
+  base <- basename(path_in)
+  path <- paste0(path_out, strsplit(base,"\\.")[[1]][1],".mzML")
+  mzML_UV_parser(path)
+}
+
+#' Extract UV data from mzML files
+#'
+#' Extracts UV data from mzML files
+#'
+#' @name mzML_UV_parser
+#' @param path path to file
+#' @return A chromatograms in \code{matrix} format.
+#' @author Ethan Bass
+mzML_UV_parser <- function(path){
+  if (!requireNamespace("mzR", quietly = TRUE)) {
+    stop(
+      "The `mzR` package must be installed to read `mzML` files:
+      BiocManager::install('mzR')",
+      call. = FALSE)
+  }
+  x<-mzR::openMSfile(path)
+  info<-mzR::header(x)
+  UV_scans <- which(info$msLevel==0)
+  rts <- info[UV_scans,"retentionTime"]
+  lambdas <- seq(info$scanWindowLowerLimit[UV_scans[1]], info$scanWindowUpperLimit[UV_scans[1]])
+  pks <- mzR::peaks(x)
+  data <- t(sapply(UV_scans, function(j) pks[[j]][,2]))
+  rownames(data) <- rts
+  colnames(data) <- lambdas
+  data
+}
