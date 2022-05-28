@@ -1,10 +1,11 @@
 #' Read Chromatograms
 #'
-#' Reads chromatograms from specified folders or vector of paths using the
-#' [Aston](https://github.com/bovee/aston) or [Entab](https://github.com/bovee/entab)
-#' file parsers.
+#' Reads chromatograms from specified folders or vector of paths using file parsers
+#' from [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab),
+#' and [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser).
 #'
-#' Currently recognizes Agilent ChemStation '.uv' and MassHunter '.dad' files.
+#' Currently recognizes Agilent ChemStation '.uv', MassHunter '.dad' files, and
+#' ThermoRaw files.
 #'
 #' @name read_chroms
 #' @param paths paths to files or folders containing files
@@ -35,7 +36,7 @@
 #' @export read_chroms
 
 read_chroms <- function(paths, find_files = TRUE,
-                        format.in=c("chemstation.uv", "masshunter.dad", "thermoraw"),
+                        format.in=c("chemstation.uv", "masshunter.dad", "thermoraw", "mzml"),
                         pattern=NULL, parser=c("aston","entab"),
                         R.format=c("matrix","data.frame"), export=FALSE,
                         path.out=NULL, format.out="csv", dat=NULL){
@@ -47,7 +48,7 @@ read_chroms <- function(paths, find_files = TRUE,
       call. = FALSE)
   }
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
-  format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.dad", "thermoraw"))
+  format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.dad", "thermoraw", "mzml"))
   exists <- dir.exists(paths) | file.exists(paths)
   if (mean(exists) == 0){
     stop("Cannot locate files. None of the supplied paths exist.")
@@ -86,7 +87,10 @@ read_chroms <- function(paths, find_files = TRUE,
   } else if (format.in == "thermoraw"){
     pattern <- ".raw"
     converter <- partial(read_thermoraw, path_out = path.out)
-    } else{
+  } else if (format.in == "mzml"){
+    pattern <- ".mzML"
+    converter <- read_mzml
+  } else{
     converter <- ifelse(parser=="aston", trace_converter, entab_reader)
   }
   if (find_files){

@@ -7,7 +7,7 @@
 read_chroms(
   paths,
   find_files = TRUE,
-  format.in = c("chemstation.uv", "masshunter.dad", "thermoraw"),
+  format.in = c("chemstation.uv", "masshunter.dad", "thermoraw", "mzml"),
   pattern = NULL,
   parser = c("aston", "entab"),
   R.format = c("matrix", "data.frame"),
@@ -49,12 +49,13 @@ A list of chromatograms in matrix or data.frame format, according to
 the value of 'R.format'.
 }
 \description{
-Reads chromatograms from specified folders or vector of paths using the
-\href{https://github.com/bovee/aston}{Aston} or \href{https://github.com/bovee/entab}{Entab}
-file parsers.
+Reads chromatograms from specified folders or vector of paths using file parsers
+from \href{https://github.com/bovee/aston}{Aston}, \href{https://github.com/bovee/entab}{Entab},
+and \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser}.
 }
 \details{
-Currently recognizes Agilent ChemStation '.uv' and MassHunter '.dad' files.
+Currently recognizes Agilent ChemStation '.uv', MassHunter '.dad' files, and
+ThermoRaw files.
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

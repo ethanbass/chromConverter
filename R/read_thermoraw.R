@@ -1,6 +1,10 @@
-#' Read Thermoraw files into R using ThermoRawFileParser
+#' Read ThermoRaw files into R using ThermoRawFileParser
 #'
-#' Parser for thermoraw files
+#' Converters ThermoRawFiles to mzmL by calling the ThermoRawFileParser from the
+#' command-line.
+#'
+#' To use this function, the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)
+#' must be manually installed.
 #'
 #' @name read_thermoraw
 #' @param path_in path to file
@@ -10,6 +14,12 @@
 #' @examples \dontrun{
 #' read_thermoraw(path)
 #' }
+#' @references
+#' Hulstaert Niels, Jim Shofstahl, Timo Sachsenberg, Mathias Walzer,
+#' Harald Barsnes, Lennart Martens, and Yasset Perez-Riverol.
+#' “ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.”
+#' \emph{Journal of Proteome Research} \bold{19}, no. 1 (January 3, 2020): 537–42.
+#' \doi{10.1021/acs.jproteome.9b00328}.
 #' @export read_thermoraw
 
 read_thermoraw <- function(path_in, path_out){
@@ -34,21 +44,22 @@ read_thermoraw <- function(path_in, path_out){
                             " -o=", path_out, " -a"))
   base <- basename(path_in)
   path <- paste0(path_out, strsplit(base,"\\.")[[1]][1],".mzML")
-  mzML_UV_parser(path)
+  read_mzml(path)
 }
 
 #' Extract UV data from mzML files
 #'
 #' Extracts UV data from mzML files
 #'
-#' @name mzML_UV_parser
+#' @name read_mzml
 #' @param path path to file
 #' @return A chromatograms in \code{matrix} format.
 #' @author Ethan Bass
-mzML_UV_parser <- function(path){
+#' @export read_mzml
+read_mzml <- function(path){
   if (!requireNamespace("mzR", quietly = TRUE)) {
     stop(
-      "The `mzR` package must be installed to read `mzML` files:
+      "The `mzR` package must be installed from Bioconductor to read `mzML` files:
       BiocManager::install('mzR')",
       call. = FALSE)
   }

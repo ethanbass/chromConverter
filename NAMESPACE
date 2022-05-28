@@ -3,6 +3,7 @@
 export(read_chromeleon)
 export(read_chroms)
 export(read_fid)
+export(read_mzml)
 export(read_thermoraw)
 export(sp_converter)
 export(uv_converter)
