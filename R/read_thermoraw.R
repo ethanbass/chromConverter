@@ -17,12 +17,16 @@
 #' @references
 #' Hulstaert Niels, Jim Shofstahl, Timo Sachsenberg, Mathias Walzer,
 #' Harald Barsnes, Lennart Martens, and Yasset Perez-Riverol.
-#' “ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.”
+#' “=ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.”
 #' \emph{Journal of Proteome Research} \bold{19}, no. 1 (January 3, 2020): 537–42.
 #' \doi{10.1021/acs.jproteome.9b00328}.
 #' @export read_thermoraw
 
 read_thermoraw <- function(path_in, path_out){
+  if(!file.exists(path_in)){
+    stop("File not found. Check path.")
+  }
+  base <- basename(path_in)
   if (missing(path_out)){
     warning("setting path for exported files to `temp` folder in current working directory. To choose a different directory,
             set the `path_out` argument", immediate. = TRUE)
@@ -31,20 +35,22 @@ read_thermoraw <- function(path_in, path_out){
       dir.create("temp")
     path_out <- paste0(path_out,'/temp/')
   }
-  if(!file.exists(path_in)){
-    stop("File not found. Check path.")
-  }
+
   if(!file.exists(path_out)){
     stop("'path_out' not found. Make sure directory exists.")
   }
   configure_shell_script()
-  # system(paste0("sh ", system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
-  #               " -o=", path_out, " -a"))
-  system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
-                            " -o=", path_out, " -a"))
-  base <- basename(path_in)
-  path <- paste0(path_out, strsplit(base,"\\.")[[1]][1],".mzML")
-  read_mzml(path)
+  if (.Platform$OS.type != "windows"){
+    system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
+                              " -o=", path_out, " -a"))
+    new_path <- paste0(path_out, strsplit(base,"\\.")[[1]][1],".mzML")
+  } else {
+    parser_path <- readLines(system.file('shell/path_parser.txt', package='chromConverter'))
+    shell(paste0(parser_path, " -i=", path_in,
+                              " -o=", path_out, " -a"))
+    new_path <- paste(path_out, paste0(strsplit(base,"\\.")[[1]][1],".mzML"), sep="\\")
+  }
+  read_mzml(new_path)
 }
 
 #' Extract UV data from mzML files
@@ -84,23 +90,24 @@ read_mzml <- function(path){
 #' @author Ethan Bass
 #' @noRd
 configure_shell_script <- function(reconfigure = FALSE){
-  shell_script <- readLines(system.file('shell/thermofileparser.sh', package='chromConverter'))
-  path_parser <- strsplit(shell_script[2]," ")[[1]][2]
-  if(!file.exists(path_parser)){
-    warning("ThermoRawFileParser not found!", immediate. = TRUE)
-    path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
-    reconfigure <- TRUE
-  }
   if (.Platform$OS.type == "windows"){
-    if (length(grep("mono", shell_script)) != 0){
-      arg1 <- ""
-      reconfigure <- TRUE
-      }
+    path_parser <- readLines(system.file("shell/path_parser.txt", package = 'chromConverter'))
+    if (!file.exists(path_parser)){
+      warning("ThermoRawFileParser not found!", immediate. = TRUE)
+      path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
+      # reconfigure <- TRUE
+      writeLines(path_parser, con=system.file('shell/path_parser.txt', package='chromConverter'))
+    }
   } else{
-    arg1 <- "mono "
-  }
-    if (reconfigure){
-      shell_script[2] <- paste0(arg1, path_parser, ' "$@"')
+    shell_script <- readLines(system.file('shell/thermofileparser.sh', package='chromConverter'))
+    path_parser <- strsplit(shell_script[2]," ")[[1]]
+    path_parser <- path_parser[grep(".exe",path_parser)]
+    if (!file.exists(path_parser)){
+      warning("ThermoRawFileParser not found!", immediate. = TRUE)
+      path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
+      # arg1 <- "mono "
+      shell_script[2] <- paste0("mono ", path_parser, ' "$@"')
       writeLines(shell_script, con=system.file('shell/thermofileparser.sh', package='chromConverter'))
     }
   }
+}
