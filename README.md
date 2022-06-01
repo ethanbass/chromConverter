@@ -9,7 +9,7 @@
 
 chromConverter is an R package to facilitate HPLC-DAD/UV file conversion from proprietary binary formats. 
 
-It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats.
+It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. The Aston parsers are deprecated since the package is no longer actively supported. It is recommended to use the newer `entab` parsers.
 
 ## Formats
 
@@ -34,13 +34,23 @@ install.packages("devtools")
 devtools::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
+Some of the parsers rely on software that must be manually installed.
+
+#### Entab
+
+To use parsers from `entab`, a local installation of [Rust](https://www.rust-lang.org/tools/install) is necessary. After installing Rust, you can install `entab` from github:
+
+```
+devtools::install_github("https://github.com/bovee/entab/")
+```
+
 ## Usage
 
 Convert files by specifying the path to a directory (or a vector of directories) and the appropriate file format.
 
 ```
 library(chromConverter)
-dat <- read_chroms(path, format.in=c("chemstation.uv", "masshunter.dad")
+dat <- read_chroms(path, format.in=c("chemstation.uv")
 ```
 
-For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR).
+For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release).
