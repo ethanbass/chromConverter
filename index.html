@@ -78,7 +78,7 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>chromConverter is an R package to facilitate HPLC-DAD/UV file conversion from proprietary binary formats.</p>
-<p>It currently consists of a wrapper around the file parsers included in the <a href="https://github.com/bovee/aston" class="external-link">Aston</a> and <a href="https://github.com/bovee/entab" class="external-link">Entab</a> packages as well as some parsers written natively in R for text-based formats.</p>
+<p>It currently consists of a wrapper around the file parsers included in the <a href="https://github.com/bovee/aston" class="external-link">Aston</a> and <a href="https://github.com/bovee/entab" class="external-link">Entab</a> packages as well as some parsers written natively in R for text-based formats. The Aston parsers are deprecated since the package is no longer actively supported. It is recommended to use the newer <code>entab</code> parsers.</p>
 </div>
 <div class="section level2">
 <h2 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
@@ -98,14 +98,21 @@
 <p>Alternatively, the development version of <code>chromConverter</code> is hosted on GitHub. You can install it using <code>devtools</code> as follows:</p>
 <pre><code><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></code></pre>
+<p>Some of the parsers rely on software that must be manually installed.</p>
+<div class="section level4">
+<h4 id="entab">Entab<a class="anchor" aria-label="anchor" href="#entab"></a>
+</h4>
+<p>To use parsers from <code>entab</code>, a local installation of <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> is necessary. After installing Rust, you can install <code>entab</code> from github:</p>
+<pre><code><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span><span class="op">)</span></code></pre>
+</div>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <p>Convert files by specifying the path to a directory (or a vector of directories) and the appropriate file format.</p>
 <pre><code>library(chromConverter)
-dat &lt;- read_chroms(path, format.in=c("chemstation.uv", "masshunter.dad")</code></pre>
-<p>For downstream analyses of chromatographic data, you can also check out my package <a href="https://ethanbass.github.io/chromatographR" class="external-link">chromatographR</a>.</p>
+dat &lt;- read_chroms(path, format.in=c("chemstation.uv")</code></pre>
+<p>For downstream analyses of chromatographic data, you can also check out my package <a href="https://ethanbass.github.io/chromatographR" class="external-link">chromatographR</a>. For interactive visualization of chromatograms, you can check out my new package <a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release).</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
