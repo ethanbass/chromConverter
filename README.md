@@ -26,7 +26,7 @@ chromConverter can now be installed directly from CRAN:
 install.packages("chromConverter")
 ```
 
-Alternatively, the development version of `chromConverter` is hosted on GitHub. You can install
+Alternatively, the development version of chromConverter is hosted on GitHub. You can install
 it using `devtools` as follows:
 
 ```
@@ -38,7 +38,7 @@ Some of the parsers rely on software that must be manually installed.
 
 #### Entab
 
-To use parsers from `entab`, you must manually install [Rust](https://www.rust-lang.org/tools/install) and entab. After follow the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install `entab` from github as follows:
+To use parsers from Entab, you must manually install [Rust](https://www.rust-lang.org/tools/install) and entab. After follow the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
 
 ```
 devtools::install_github("https://github.com/bovee/entab/")
