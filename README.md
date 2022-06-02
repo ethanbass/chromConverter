@@ -7,9 +7,9 @@
 
 ## Overview
 
-chromConverter is an R package to facilitate HPLC-DAD/UV file conversion from proprietary binary formats. 
+chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis.
 
-It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. The Aston parsers are deprecated since the package is no longer actively supported. It is recommended to use the newer `entab` parsers.
+It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they require a little more work to install (see [Installation](README.md#Installation) section below).
 
 ## Formats
 
@@ -38,7 +38,7 @@ Some of the parsers rely on software that must be manually installed.
 
 #### Entab
 
-To use parsers from `entab`, a local installation of [Rust](https://www.rust-lang.org/tools/install) is necessary. After installing Rust, you can install `entab` from github:
+To use parsers from `entab`, you must manually install [Rust](https://www.rust-lang.org/tools/install) and entab. After follow the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install `entab` from github as follows:
 
 ```
 devtools::install_github("https://github.com/bovee/entab/")
@@ -52,5 +52,7 @@ Convert files by specifying the path to a directory (or a vector of directories)
 library(chromConverter)
 dat <- read_chroms(path, format.in=c("chemstation.uv")
 ```
+
+## Further analysis
 
 For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release).
