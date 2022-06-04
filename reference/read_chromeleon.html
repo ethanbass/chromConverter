@@ -55,7 +55,7 @@
   <span class="va">paths</span>,
   suffix <span class="op">=</span> <span class="st">"txt"</span>,
   dat <span class="op">=</span> <span class="cn">NULL</span>,
-  R.format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span>, <span class="st">"tibble"</span><span class="op">)</span>
+  format.out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span>, <span class="st">"tibble"</span><span class="op">)</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -68,13 +68,13 @@
 <dt>dat</dt>
 <dd><p>files optional list of chromatograms. If provided, newly imported
 chromatograms will be appended to the existing list.</p></dd>
-<dt>R.format</dt>
+<dt>format.out</dt>
 <dd><p>R object format (i.e. matrix, data.frame, or tibble).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list of chromatograms in <code>matrix</code>, <code>data.frame</code>, or
-<code>tibble</code> format, according to the value of 'R.format'.</p>
+<code>tibble</code> format, according to the value of 'format.out'.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
