@@ -7,7 +7,7 @@
 read_chroms(
   paths,
   find_files = TRUE,
-  format.in = c("chemstation.uv", "masshunter.dad"),
+  format.in = c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"),
   pattern = NULL,
   parser = c("aston", "entab"),
   R.format = c("matrix", "data.frame"),
@@ -24,7 +24,9 @@ read_chroms(
 the function with a folder or vector of folders containing the files.
 Otherwise, set to\code{FALSE}.}
 
-\item{format.in}{Format of files to be imported/converted.}
+\item{format.in}{Format of files to be imported/converted. The current options
+are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid}, or
+\code{chromeleon_uv}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format.in}.}
@@ -59,7 +61,7 @@ Currently recognizes Agilent ChemStation '.uv' and MassHunter '.dad' files.
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 path <- "tests/testthat/testdata/dad1.uv"
-chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation.uv")
+chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation_uv")
 \dontshow{\}) # examplesIf}
 }
 \author{

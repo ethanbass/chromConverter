@@ -11,7 +11,9 @@
 #' @param find_files Logical. Set to \code{TRUE} (default) if you are providing
 #' the function with a folder or vector of folders containing the files.
 #' Otherwise, set to\code{FALSE}.
-#' @param format.in Format of files to be imported/converted.
+#' @param format.in Format of files to be imported/converted. The current options
+#' are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid}, or
+#' \code{chromeleon_uv}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
 #' @param parser What parser to use. Current option are \code{aston} or \code{
@@ -29,12 +31,11 @@
 #' @importFrom utils write.csv
 #' @examplesIf interactive()
 #' path <- "tests/testthat/testdata/dad1.uv"
-#' chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation.uv")
+#' chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation_uv")
 #' @author Ethan Bass
 #' @export read_chroms
-
 read_chroms <- function(paths, find_files = TRUE,
-                        format.in=c("chemstation.uv", "masshunter.dad"),
+                        format.in=c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"),
                         pattern=NULL, parser=c("aston","entab"),
                         R.format=c("matrix","data.frame"), export=FALSE,
                         path.out=NULL, format.out="csv", dat=NULL){
@@ -47,7 +48,7 @@ read_chroms <- function(paths, find_files = TRUE,
     )
   }
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
-  format.in <- match.arg(format.in, c("chemstation.uv", "masshunter.dad"))
+  format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"))
   exists <- dir.exists(paths) | file.exists(paths)
   if (mean(exists) == 0){
     stop("Cannot locate files. None of the supplied paths exist.")
@@ -70,14 +71,20 @@ read_chroms <- function(paths, find_files = TRUE,
   if (is.null(dat)){
     dat<-list()}
   # choose converter
-  if (format.in == "masshunter.dad"){
-    pattern <- ifelse(is.null(pattern),".sp", pattern)
+  if (format.in == "masshunter_dad"){
+    pattern <- ifelse(is.null(pattern), ".sp", pattern)
     converter <- ifelse(parser=="aston", sp_converter, entab_reader)
-  } else if (format.in=="chemstation.uv"){
+  } else if (format.in == "chemstation_uv"){
     pattern <- ifelse(is.null(pattern),".uv", pattern)
-    converter <- ifelse(parser=="aston", uv_converter, entab_reader)
+    converter <- ifelse(parser == "aston", uv_converter, entab_reader)
+  } else if(format.in == "chromeleon_uv"){
+    pattern <- ".txt"
+    converter <- chromeleon_converter
+  } else if (format.in == "shimadzu_fid"){
+    pattern <- ".txt"
+    converter <- shimadzu_fid_converter
   } else{
-    converter <- ifelse(parser=="aston", trace_converter, entab_reader)
+    converter <- ifelse(parser == "aston", trace_converter, entab_reader)
   }
   if (find_files){
     files <- unlist(lapply(paths, function(path){
@@ -105,12 +112,20 @@ read_chroms <- function(paths, find_files = TRUE,
                     files[match]), immediate. = TRUE)
     }
   }
-  file_names <- strsplit(files, "/")
-  file_names <- gsub("\\.[Dd]", "",
-                     sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
-  data <- lapply(X=files, function(f){
-    df <- converter(f)
+  if (format.in %in% c("chemstation_uv", "masshunter_dad")){
+    file_names <- strsplit(files, "/")
+    file_names <- gsub("\\.[Dd]", "",
+                       sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
+  } else file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
+  data <- lapply(X=files, function(file){
+    df <- try(converter(file),silent = TRUE)
   })
+  errors <- which(sapply(data, function(x) inherits(x,"try-error")))
+  if (length(errors) > 0){
+    warning(paste("The following chromatograms could not be interpreted:", errors))
+    data <- data[-errors]
+    file_names <- file_names[-errors]
+  }
   if (R.format == "matrix"){
     data <- lapply(data, FUN=as.matrix)}
   names(data) <- file_names
@@ -122,6 +137,7 @@ read_chroms <- function(paths, find_files = TRUE,
   dat <- append(dat,data)
   dat
 }
+
 
 #' Converter for Agilent MassHunter UV files
 #'
@@ -208,4 +224,49 @@ entab_reader <- function(file, format.out="wide"){
   #           operator = meta$operator,
   #           class = "chrom")
   df
+}
+
+#' Chromeleon converter
+#'
+#'
+#' @name chromeleon_converter
+#' @importFrom utils tail
+#' @importFrom readr read_tsv read_lines
+#' @param file path to file
+#' @return A matrix object (retention time x trace).
+#' @import reticulate
+#' @noRd
+chromeleon_converter <- function(file){
+  x <- read_lines(file)
+  start <- tail(grep("Data:", x), 1)
+  x <- read_tsv(file, skip = start, show_col_types = FALSE)
+  x <- x[,-2]
+  if (any(grepl(",",as.data.frame(x)[-1,2]))){
+    x <- apply(x, 2, function(x) gsub("\\.", "", x))
+    x <- apply(x, 2, function(x) gsub(",", ".", x))
+  }
+  x <- apply(x, 2, as.numeric)
+  x <- as.matrix(x)
+  rownames(x) <- x[,1]
+  x[,2, drop=F]
+}
+
+#' Shimadzu FID converter
+#'
+#'
+#' @name shimadzu_converter
+#' @importFrom utils tail
+#' @importFrom readr read_tsv read_lines
+#' @param file path to file
+#' @return A matrix object (retention time x trace).
+#' @import reticulate
+#' @noRd
+shimadzu_fid_converter <- function(file){
+  x <- read_lines(file)
+  start <- tail(grep("R.Time", x), 1)
+  x <- read_tsv(file, skip = start - 1, show_col_types = FALSE, col_types = c("n","n"))
+  x[!is.na(x[,1]),]
+  x <- as.matrix(x)
+  rownames(x) <- x[,1]
+  x[,2, drop = FALSE]
 }

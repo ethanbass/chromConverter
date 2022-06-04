@@ -54,13 +54,13 @@ read_fid <- function(paths, suffix="txt", dat=NULL, format.out = c("matrix","dat
     lapply(dat, function(x){
       x <- as.data.frame(x)
       rownames(x) <- x[,1]
-      x[,2, drop=F]
+      x[,2, drop = FALSE]
     })
   } else if (format.out == "matrix"){
     lapply(dat, function(x){
       x <- as.matrix(x)
       rownames(x) <- x[,1]
-      x[,2, drop=F]
+      x[,2, drop = FALSE]
     })
   }
 }

@@ -14,7 +14,7 @@ test_that("read_chroms works", {
   path<-"testdata/DAD1.CSV"
   x <- read.csv(path, fileEncoding = "utf-16")
   paths <- rep("testdata/DAD1.uv",2)
-  x1 <- read_chroms(paths, format.in = "chemstation.uv",find_files = FALSE)
+  x1 <- read_chroms(paths, format.in = "chemstation_uv",find_files = FALSE)
   l <- length(which(!elementwise.all.equal(x[,2], x1[[1]][,"220.0"])))
   expect_equal(l,0)
   expect_equal(length(x1), length(paths))
