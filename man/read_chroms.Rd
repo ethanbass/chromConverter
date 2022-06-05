@@ -14,6 +14,7 @@ read_chroms(
   export = FALSE,
   path.out = NULL,
   format.out = "csv",
+  read_metadata = TRUE,
   dat = NULL
 )
 }
@@ -42,6 +43,9 @@ entab}. Entab must be manually installed from github.}
 export to current working directory.}
 
 \item{format.out}{Output format. Currently only \code{.csv}.}
+
+\item{read_metadata}{Logical, whether to attach metadata (if it's available).
+Defaults to TRUE.}
 
 \item{dat}{Existing list of chromatograms to append results.
 (Defaults to NULL).}

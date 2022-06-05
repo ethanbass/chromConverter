@@ -23,6 +23,8 @@
 #' @param path.out Path for exporting files. If path not specified, files will
 #' export to current working directory.
 #' @param format.out Output format. Currently only \code{.csv}.
+#' @param read_metadata Logical, whether to attach metadata (if it's available).
+#' Defaults to TRUE.
 #' @param dat Existing list of chromatograms to append results.
 #' (Defaults to NULL).
 #' @return A list of chromatograms in matrix or data.frame format, according to
@@ -38,25 +40,24 @@ read_chroms <- function(paths, find_files = TRUE,
                         format.in=c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"),
                         pattern=NULL, parser=c("aston","entab"),
                         R.format=c("matrix","data.frame"), export=FALSE,
-                        path.out=NULL, format.out="csv", dat=NULL){
+                        path.out=NULL, format.out="csv", read_metadata = TRUE,
+                        dat=NULL){
+  format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"))
+  R.format <- match.arg(R.format, c("matrix", "data.frame"))
   parser <- match.arg (parser, c("aston","entab"))
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
-    stop(
-      "The entab R package must be installed to use entab parsers:
+    stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
-      call. = FALSE
-    )
+      call. = FALSE)
   }
-  R.format <- match.arg(R.format, c("matrix", "data.frame"))
-  format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"))
   exists <- dir.exists(paths) | file.exists(paths)
   if (mean(exists) == 0){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
   if (export){
     if (is.null(path.out)){
-      ans <- readline(".........Export directory not specified.
-.........Export files to current working directory (y/n)? ")
+      ans <- readline(".........Export directory not specified. Export files to
+                      current working directory (y/n)? ")
       if (ans %in% c("y","Y")){
         path.out <- getwd()
       } else{
@@ -204,30 +205,47 @@ trace_converter <- function(file){
 #' @return a \code{chrom} object
 #' @importFrom tidyr pivot_wider
 #' @noRd
-entab_reader <- function(file, format.out="wide"){
-  if (!requireNamespace("entab", quietly = TRUE)) {
-    stop(
-      "The entab R package must be installed to use entab parsers:
+entab_reader <- function(file, format.out = c("wide","long"),
+                         read_metadata = TRUE){
+  if (!requireNamespace("entab", quietly = TRUE)){
+    stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
-      call. = FALSE
-    )
+      call. = FALSE)
   }
+  format.out <- match.arg(format.out, c("wide","long"))
   r <- entab::Reader(file)
   df <- entab::as.data.frame(r)
   if (format.out=="wide"){
-    df <- data.frame(pivot_wider(df, id_cols = "time",
-                                 names_from = "wavelength", values_from = "intensity"))}
-  meta <- r$metadata()
-  # structure(as.matrix(df),
-  #           instrument = meta$instrument,
-  #           method = meta$method,
-  #           operator = meta$operator,
-  #           class = "chrom")
-  df
+    times <- df[df$wavelength == df$wavelength[1], "time"]
+    df <- as.data.frame(pivot_wider(df, id_cols = "time",
+                                 names_from = "wavelength",
+                                 values_from = "intensity"),
+                                  row.names = "time")
+    rownames(df) <- times
+    }
+  if (read_metadata){
+    meta <- r$metadata()
+    # attach_metadata(df, meta)
+    df <- structure(df, instrument = meta$instrument,
+              detector = NA,
+              software = NA,
+              method = meta$method,
+              batch = NA,
+              operator = meta$operator,
+              run_date = meta$run_date,
+              sample_name = meta$sample,
+              sample_id = NA,
+              injection_volume = NA,
+              time_range = NA,
+              time_interval = NA,
+              format = format.out,
+              parser = "entab",
+              class = "data.frame")
+  }
+   df
 }
 
 #' Chromeleon converter
-#'
 #'
 #' @name chromeleon_converter
 #' @importFrom utils tail read.csv
@@ -235,9 +253,9 @@ entab_reader <- function(file, format.out="wide"){
 #' @return A matrix object (retention time x trace).
 #' @import reticulate
 #' @noRd
-chromeleon_converter <- function(file){
-  x <- readLines(file)
-  start <- tail(grep("Data:", x), 1)
+chromeleon_converter <- function(file, read_metadata = TRUE){
+  xx <- readLines(file)
+  start <- tail(grep("Data:", xx), 1)
   x <- read.csv(file, skip = start, sep="\t")
   x <- x[,-2]
   if (any(grepl(",",as.data.frame(x)[-1,2]))){
@@ -247,7 +265,28 @@ chromeleon_converter <- function(file){
   x <- apply(x, 2, as.numeric)
   x <- as.matrix(x)
   rownames(x) <- x[,1]
-  x[,2, drop=F]
+  x <- x[,2, drop=F]
+  if (read_metadata){
+    meta_fields <- grep("Information:", xx)
+    meta <- do.call(rbind,strsplit(xx[(meta_fields[1]+1):(meta_fields[3]-1)],"\t"))
+    rownames(meta) <- meta[,1]
+    meta <- as.list(meta[,-1])
+    x <- structure(x, instrument = NA,
+                    detector = meta$Detector,
+                    software = meta$`Generating Data System`,
+                    method = meta$`Instrument Method`,
+                    batch = NA,
+                    operator = meta$`Operator`,
+                    run_date = c(date=meta$`Injection Date`, time=meta$`Injection Time`),
+                    sample_name = meta$Injection,
+                    sample_id = NA,
+                    injection_volume = meta[[grep("Injection Volume", names(meta))]],
+                    time_range = c(meta$`Time Min. (min)`, meta$`Time Max. (min)`),
+                    time_interval = meta$`Average Step (s)`,
+                    format = "long",
+                    parser = "chromConverter",
+                    class = "matrix")
+  }
 }
 
 #' Shimadzu FID converter
@@ -259,13 +298,40 @@ chromeleon_converter <- function(file){
 #' @return A matrix object (retention time x trace).
 #' @import reticulate
 #' @noRd
-shimadzu_fid_converter <- function(file){
+shimadzu_fid_converter <- function(file, read_metadata = TRUE){
   x <- readLines(file)
-  start <- tail(grep("R.Time", x), 1)
-  x <- read.csv(file, skip=start-1, sep="\t", colClasses="numeric",
-                na.strings=c("[FractionCollectionReport]","#ofFractions"))
-  x <- x[!is.na(x[,1]),]
-  x <- as.matrix(x)
-  rownames(x) <- x[,1]
-  x[,2, drop = FALSE]
+  headings <- grep("\\[*\\]", x)
+  chrom.idx <- grep("\\[Chromatogram .*]", x)
+  xx <- read.csv(file, skip = chrom.idx + 4, sep="\t", colClasses="numeric",
+                 na.strings=c("[FractionCollectionReport]","#ofFractions"))
+  xx <- xx[!is.na(xx[,1]),]
+  xx <- as.matrix(xx)
+  rownames(xx) <- xx[,1]
+  xx <- xx[, 2, drop = FALSE]
+  if (read_metadata){
+    meta_start <- headings[1]
+    meta_end <- headings[7]
+    meta <- do.call(rbind, strsplit(x[meta_start+1:(meta_end-1)],"\t"))
+    meta2 <- do.call(rbind, strsplit(x[(chrom.idx+1):(chrom.idx+4)],"\t"))
+    meta <- rbind(meta ,meta2)
+    rownames(meta) <- meta[,1]
+    meta <- as.list(meta[,-1])
+    xx <- structure(xx, instrument = meta$`Instrument Name`,
+                        detector = meta$`Detector Name`,
+                        software = c(software = meta$`Application Name`, version = meta$Version),
+                        method = meta$`Method File`,
+                        batch = meta$`Batch File`,
+                        operator = meta$`Operator Name`,
+                        run_date = meta$Acquired,
+                        sample_name = meta$`Sample Name`,
+                        sample_id = meta$`Sample ID`,
+                        injection_volume = meta$`Injection Volume`,
+                        time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
+                        time_interval = meta$`Interval(msec)`,
+                        format = "long",
+                        parser = "chromConverter",
+                        class = "matrix")
+  }
+  xx
 }
+
