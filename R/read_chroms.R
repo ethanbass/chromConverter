@@ -1,10 +1,11 @@
 #' Read Chromatograms
 #'
-#' Reads chromatograms from specified folders or vector of paths using the
-#' [Aston](https://github.com/bovee/aston) or [Entab](https://github.com/bovee/entab)
-#' file parsers.
+#' Reads chromatograms from specified folders or vector of paths using file parsers
+#' from [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab),
+#' and [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser).
 #'
-#' Currently recognizes Agilent ChemStation '.uv' and MassHunter '.dad' files.
+#' Currently recognizes Agilent ChemStation '.uv', MassHunter '.dad' files, and
+#' ThermoRaw files.
 #'
 #' @name read_chroms
 #' @param paths paths to files or folders containing files
@@ -31,13 +32,15 @@
 #' the value of 'R.format'.
 #' @import reticulate
 #' @importFrom utils write.csv
+#' @importFrom purrr partial
 #' @examplesIf interactive()
 #' path <- "tests/testthat/testdata/dad1.uv"
 #' chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation_uv")
 #' @author Ethan Bass
 #' @export read_chroms
 read_chroms <- function(paths, find_files = TRUE,
-                        format.in=c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"),
+                        format.in=c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
+                                   "thermoraw", "mzml"),
                         pattern=NULL, parser=c("aston","entab"),
                         R.format=c("matrix","data.frame"), export=FALSE,
                         path.out=NULL, format.out="csv", read_metadata = TRUE,
@@ -50,21 +53,31 @@ read_chroms <- function(paths, find_files = TRUE,
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
       call. = FALSE)
   }
+  R.format <- match.arg(R.format, c("matrix", "data.frame"))
+  format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
+                                   "thermoraw", "mzml"))
   exists <- dir.exists(paths) | file.exists(paths)
   if (mean(exists) == 0){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
-  if (export){
+  if (!is.null(path.out)){
+    if (substr(path.out,1,1) != "/")
+      path.out <- paste0("/", path.out)
+    if (substr(path.out, nchar(path.out)-1, nchar(nchar(path.out))) != "/")
+      path.out <- paste0(path.out, "/")
+  }
+  if (export | format.in == "thermoraw"){
     if (is.null(path.out)){
-      ans <- readline(".........Export directory not specified. Export files to
-                      current working directory (y/n)? ")
+      ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
       if (ans %in% c("y","Y")){
-        path.out <- getwd()
+        if (!dir.exists("temp"))
+          dir.create("temp")
+        path.out <- paste0(getwd(),'/temp/')
       } else{
         stop("Must specify directory to export files.")
       }
     }
-    path.out <- gsub("/$","", path.out)
+    # path.out <- gsub("/$","", path.out)
     if (!dir.exists(path.out)){
       stop(paste0("The export directory '", path.out, "' does not exist."))
     }
@@ -76,7 +89,7 @@ read_chroms <- function(paths, find_files = TRUE,
     pattern <- ifelse(is.null(pattern), ".sp", pattern)
     converter <- ifelse(parser=="aston", sp_converter, entab_reader)
   } else if (format.in == "chemstation_uv"){
-    pattern <- ifelse(is.null(pattern),".uv", pattern)
+    pattern <- ifelse(is.null(pattern), ".uv", pattern)
     converter <- ifelse(parser == "aston", uv_converter, entab_reader)
   } else if(format.in == "chromeleon_uv"){
     pattern <- ".txt"
@@ -84,6 +97,12 @@ read_chroms <- function(paths, find_files = TRUE,
   } else if (format.in == "shimadzu_fid"){
     pattern <- ".txt"
     converter <- shimadzu_fid_converter
+  } else if (format.in == "thermoraw"){
+    pattern <- ".raw"
+    converter <- partial(read_thermoraw, path_out = path.out)
+  } else if (format.in == "mzml"){
+    pattern <- ".mzML"
+    converter <- read_mzml
   } else{
     converter <- ifelse(parser == "aston", trace_converter, entab_reader)
   }
@@ -335,3 +354,40 @@ shimadzu_fid_converter <- function(file, read_metadata = TRUE){
   xx
 }
 
+attach_metadata <- function(x, meta){
+  if (any(grepl("Chromeleon", meta))){
+    structure(xx, instrument = meta$`Instrument Name`,
+            detector = meta$`Detector Name`,
+            software = c(software = meta$`Application Name`, version = meta$Version),
+            method = meta$`Method File`,
+            batch = meta$`Batch File`,
+            operator = meta$`Operator Name`,
+            run_date = meta$Acquired,
+            sample_name = meta$`Sample Name`,
+            sample_id = meta$`Sample ID`,
+            injection_volume = meta$`Injection Volume`,
+            time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
+            time_interval = meta$`Interval(msec)`,
+            format = "long",
+            parser = "chromConverter",
+            class = "matrix")
+  }
+  if (any(grepl("LabSolutions", meta))){
+    structure(xx, instrument = meta$`Instrument Name`,
+              detector = meta$`Detector Name`,
+              software = c(software = meta$`Application Name`, version = meta$Version),
+              method = meta$`Method File`,
+              batch = meta$`Batch File`,
+              operator = meta$`Operator Name`,
+              run_date = meta$Acquired,
+              sample_name = meta$`Sample Name`,
+              sample_id = meta$`Sample ID`,
+              injection_volume = meta$`Injection Volume`,
+              time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
+              time_interval = meta$`Interval(msec)`,
+              format = "long",
+              parser = "chromConverter",
+              class = "matrix")
+  }
+  if (any(grepl("LabSolutions", meta))){
+}
