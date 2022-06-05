@@ -8,7 +8,7 @@ read_fid(
   paths,
   suffix = "txt",
   dat = NULL,
-  R.format = c("matrix", "data.frame", "tibble")
+  format.out = c("matrix", "data.frame", "tibble")
 )
 }
 \arguments{
@@ -19,11 +19,11 @@ read_fid(
 \item{dat}{files optional list of chromatograms. If provided, newly imported
 chromatograms will be appended to the existing list.}
 
-\item{R.format}{R object format (i.e. matrix, data.frame, or tibble).}
+\item{format.out}{R object format (i.e. matrix, data.frame, or tibble).}
 }
 \value{
 A list of chromatograms in \code{matrix}, \code{data.frame}, or
-\code{tibble} format, according to the value of 'R.format'.
+\code{tibble} format, according to the value of 'format.out'.
 }
 \description{
 Parser for Shimadzu .txt files from GC-FID

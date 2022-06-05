@@ -7,9 +7,9 @@
 #' @param suffix string specifying file suffix (e.g. 'txt')
 #' @param dat files optional list of chromatograms. If provided, newly imported
 #' chromatograms will be appended to the existing list.
-#' @param R.format R object format (i.e. matrix, data.frame, or tibble).
+#' @param format.out R object format (i.e. matrix, data.frame, or tibble).
 #' @return A list of chromatograms in \code{matrix}, \code{data.frame}, or
-#' \code{tibble} format, according to the value of 'R.format'.
+#' \code{tibble} format, according to the value of 'format.out'.
 #' @importFrom readr read_lines read_tsv
 #' @importFrom utils tail
 #' @author Ethan Bass
@@ -18,9 +18,9 @@
 #' read_fid(path)
 #' @export read_fid
 
-read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("matrix","data.frame","tibble")){
+read_fid <- function(paths, suffix="txt", dat=NULL, format.out = c("matrix","data.frame","tibble")){
 
-  R.format <- match.arg(R.format, c("matrix","data.frame","tibble"))
+  format.out <- match.arg(format.out, c("matrix","data.frame","tibble"))
 
   dne <- which(!sapply(paths, dir.exists))
   if (length(dne)>0){
@@ -35,8 +35,9 @@ read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("matrix","data.
     file_names <- gsub(pattern = paste0(".",suffix), x = basename(files), replacement = "")
     mydata <- lapply(X=files, function(f){
       x<-read_lines(f)
-      start<-tail(grep("\\[(.*?)\\]",x),1)
-      x <- read_tsv(f, skip = start+4, show_col_types = F)
+      start<-tail(grep("R.Time",x),1)
+      x <- read_tsv(f, skip = start-1, show_col_types = F, col_types = c("n","n"))
+      x[!is.na(x[,1]),]
     })
     mydata <- lapply(mydata, FUN=as.matrix)
     names(mydata) <- file_names
@@ -47,19 +48,19 @@ read_fid <- function(paths, suffix="txt", dat=NULL, R.format = c("matrix","data.
     dat <- dat[-rm]
     warning(paste("The following chromatograms were found to be empty and automatically removed:", toString(rm,sep=",")))
   }
-  if (R.format == "tibble"){
+  if (format.out == "tibble"){
     dat
-  } else if (R.format == "data.frame"){
+  } else if (format.out == "data.frame"){
     lapply(dat, function(x){
       x <- as.data.frame(x)
       rownames(x) <- x[,1]
-      x[,2, drop=F]
+      x[,2, drop = FALSE]
     })
-  } else if (R.format == "matrix"){
+  } else if (format.out == "matrix"){
     lapply(dat, function(x){
       x <- as.matrix(x)
       rownames(x) <- x[,1]
-      x[,2, drop=F]
+      x[,2, drop = FALSE]
     })
   }
 }
