@@ -78,7 +78,7 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis.</p>
-<p>It currently consists of a wrapper around the file parsers included in the <a href="https://github.com/bovee/aston" class="external-link">Aston</a> and <a href="https://github.com/bovee/entab" class="external-link">Entab</a> packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they require a little more work to install (see <a href="README.md#Installation">Installation</a> section below).</p>
+<p>It currently consists of a wrapper around the file parsers included in the <a href="https://github.com/bovee/aston" class="external-link">Aston</a> and <a href="https://github.com/bovee/entab" class="external-link">Entab</a> packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they’re slightly more complicated to install (see <a href="README.md#Installation">Installation</a> section below).</p>
 </div>
 <div class="section level2">
 <h2 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
@@ -102,13 +102,8 @@
 <div class="section level4">
 <h4 id="entab">Entab<a class="anchor" aria-label="anchor" href="#entab"></a>
 </h4>
-<p>To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and Entab. After follow the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
+<p>To use parsers from Entab, you must manually install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and entab. After follow the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
 <pre><code><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></code></pre>
-</div>
-<div class="section level4">
-<h4 id="thermorawfileparser">ThermoRawFileParser<a class="anchor" aria-label="anchor" href="#thermorawfileparser"></a>
-</h4>
-<p>To convert Thermo RAW files, you must first install the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>.</p>
 </div>
 </div>
 <div class="section level2">
