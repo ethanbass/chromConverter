@@ -41,7 +41,7 @@ Some of the parsers rely on software that must be manually installed.
 To use parsers from Entab, you must manually install [Rust](https://www.rust-lang.org/tools/install) and entab. After follow the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
 
 ```
-devtools::install_github("https://github.com/bovee/entab/")
+devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 ```
 
 ## Usage
