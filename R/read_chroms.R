@@ -43,7 +43,7 @@ read_chroms <- function(paths, find_files = TRUE,
                                    "thermoraw", "mzml"),
                         pattern=NULL, parser=c("aston","entab"),
                         R.format=c("matrix","data.frame"), export=FALSE,
-                        path.out=NULL, format.out="csv", read_metadata = TRUE,
+                        path.out=NULL, format.out = "csv", read_metadata = TRUE,
                         dat=NULL){
   format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"))
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
@@ -87,16 +87,24 @@ read_chroms <- function(paths, find_files = TRUE,
   # choose converter
   if (format.in == "masshunter_dad"){
     pattern <- ifelse(is.null(pattern), ".sp", pattern)
-    converter <- ifelse(parser=="aston", sp_converter, entab_reader)
+    converter <- if (parser == "aston"){
+      sp_converter
+    } else{
+      partial(entab_reader, read_metadata = read_metadata, format_out = R.format)
+    }
   } else if (format.in == "chemstation_uv"){
     pattern <- ifelse(is.null(pattern), ".uv", pattern)
-    converter <- ifelse(parser == "aston", uv_converter, entab_reader)
+    converter <- if (parser == "aston"){
+      uv_converter
+    } else{
+      partial(entab_reader, read_metadata = read_metadata, format_out = R.format)
+    }
   } else if(format.in == "chromeleon_uv"){
     pattern <- ".txt"
-    converter <- chromeleon_converter
+    converter <- partial(chromeleon_converter, read_metadata = read_metadata, format_out = R.format)
   } else if (format.in == "shimadzu_fid"){
     pattern <- ".txt"
-    converter <- shimadzu_fid_converter
+    converter <- partial(shimadzu_fid_converter, read_metadata = read_metadata, format_out = R.format)
   } else if (format.in == "thermoraw"){
     pattern <- ".raw"
     converter <- partial(read_thermoraw, path_out = path.out)
@@ -146,8 +154,6 @@ read_chroms <- function(paths, find_files = TRUE,
     data <- data[-errors]
     file_names <- file_names[-errors]
   }
-  if (R.format == "matrix"){
-    data <- lapply(data, FUN=as.matrix)}
   names(data) <- file_names
   if (export){
     sapply(seq_along(data), function(i){
@@ -224,27 +230,31 @@ trace_converter <- function(file){
 #' @return a \code{chrom} object
 #' @importFrom tidyr pivot_wider
 #' @noRd
-entab_reader <- function(file, format.out = c("wide","long"),
+entab_reader <- function(file, format_data = c("wide","long"),
+                         format_out = c("matrix", "data.frame"),
                          read_metadata = TRUE){
   if (!requireNamespace("entab", quietly = TRUE)){
     stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
       call. = FALSE)
   }
-  format.out <- match.arg(format.out, c("wide","long"))
+  format_out <- match.arg(format_out, c("matrix","data.frame"))
+  format_data <- match.arg(format_data, c("wide","long"))
   r <- entab::Reader(file)
   df <- entab::as.data.frame(r)
-  if (format.out=="wide"){
+  if (format_data == "wide"){
     times <- df[df$wavelength == df$wavelength[1], "time"]
     df <- as.data.frame(pivot_wider(df, id_cols = "time",
                                  names_from = "wavelength",
                                  values_from = "intensity"),
                                   row.names = "time")
     rownames(df) <- times
-    }
+  }
+  if (format_out == "matrix"){
+    df <- as.matrix(df)
+  }
   if (read_metadata){
     meta <- r$metadata()
-    # attach_metadata(df, meta)
     df <- structure(df, instrument = meta$instrument,
               detector = NA,
               software = NA,
@@ -257,9 +267,9 @@ entab_reader <- function(file, format.out = c("wide","long"),
               injection_volume = NA,
               time_range = NA,
               time_interval = NA,
-              format = format.out,
+              format = format_data,
               parser = "entab",
-              class = "data.frame")
+              class = format_out)
   }
    df
 }
@@ -272,7 +282,9 @@ entab_reader <- function(file, format.out = c("wide","long"),
 #' @return A matrix object (retention time x trace).
 #' @import reticulate
 #' @noRd
-chromeleon_converter <- function(file, read_metadata = TRUE){
+chromeleon_converter <- function(file, read_metadata = TRUE,
+                                 format_out = c("matrix","data.frame")){
+  format_out <- match.arg(format_out, c("matrix","data.frame"))
   xx <- readLines(file)
   start <- tail(grep("Data:", xx), 1)
   x <- read.csv(file, skip = start, sep="\t")
@@ -304,8 +316,9 @@ chromeleon_converter <- function(file, read_metadata = TRUE){
                     time_interval = meta$`Average Step (s)`,
                     format = "long",
                     parser = "chromConverter",
-                    class = "matrix")
+                    class = format_out)
   }
+  x
 }
 
 #' Shimadzu FID converter
@@ -317,7 +330,9 @@ chromeleon_converter <- function(file, read_metadata = TRUE){
 #' @return A matrix object (retention time x trace).
 #' @import reticulate
 #' @noRd
-shimadzu_fid_converter <- function(file, read_metadata = TRUE){
+shimadzu_fid_converter <- function(file, read_metadata = TRUE,
+                                   format_out = c("matrix","data.frame")){
+  format_out <- match.arg(format_out, c("matrix","data.frame"))
   x <- readLines(file)
   headings <- grep("\\[*\\]", x)
   chrom.idx <- grep("\\[Chromatogram .*]", x)
@@ -327,6 +342,8 @@ shimadzu_fid_converter <- function(file, read_metadata = TRUE){
   xx <- as.matrix(xx)
   rownames(xx) <- xx[,1]
   xx <- xx[, 2, drop = FALSE]
+  if (format_out == "data.frame")
+    xx <- as.data.frame(xx)
   if (read_metadata){
     meta_start <- headings[1]
     meta_end <- headings[7]
@@ -349,45 +366,7 @@ shimadzu_fid_converter <- function(file, read_metadata = TRUE){
                         time_interval = meta$`Interval(msec)`,
                         format = "long",
                         parser = "chromConverter",
-                        class = "matrix")
+                        class = format_out)
   }
   xx
-}
-
-attach_metadata <- function(x, meta){
-  if (any(grepl("Chromeleon", meta))){
-    structure(xx, instrument = meta$`Instrument Name`,
-            detector = meta$`Detector Name`,
-            software = c(software = meta$`Application Name`, version = meta$Version),
-            method = meta$`Method File`,
-            batch = meta$`Batch File`,
-            operator = meta$`Operator Name`,
-            run_date = meta$Acquired,
-            sample_name = meta$`Sample Name`,
-            sample_id = meta$`Sample ID`,
-            injection_volume = meta$`Injection Volume`,
-            time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
-            time_interval = meta$`Interval(msec)`,
-            format = "long",
-            parser = "chromConverter",
-            class = "matrix")
-  }
-  if (any(grepl("LabSolutions", meta))){
-    structure(xx, instrument = meta$`Instrument Name`,
-              detector = meta$`Detector Name`,
-              software = c(software = meta$`Application Name`, version = meta$Version),
-              method = meta$`Method File`,
-              batch = meta$`Batch File`,
-              operator = meta$`Operator Name`,
-              run_date = meta$Acquired,
-              sample_name = meta$`Sample Name`,
-              sample_id = meta$`Sample ID`,
-              injection_volume = meta$`Injection Volume`,
-              time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
-              time_interval = meta$`Interval(msec)`,
-              format = "long",
-              parser = "chromConverter",
-              class = "matrix")
-  }
-  if (any(grepl("LabSolutions", meta))){
 }
