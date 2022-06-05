@@ -28,12 +28,6 @@ A list of chromatograms in \code{matrix}, \code{data.frame}, or
 \description{
 Parser for chromeleon .txt files
 }
-\examples{
-\dontrun{
-path <- system.file("extdata", ".", package = "chromConverter")
-read_chromeleon(path)
-}
-}
 \author{
 Ethan Bass
 }

@@ -2,7 +2,7 @@
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/chromConverter)](https://cran.r-project.org/package=chromConverter)
-[![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/last-week/chromConverter?color=blue)](https://r-pkg.org/pkg/chromConverter)
+[![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/grand-total/chromConverter?color=blue)](https://r-pkg.org/pkg/chromConverter)
 <!-- badges: end -->
 
 ## Overview

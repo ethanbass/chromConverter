@@ -230,16 +230,15 @@ entab_reader <- function(file, format.out="wide"){
 #'
 #'
 #' @name chromeleon_converter
-#' @importFrom utils tail
-#' @importFrom readr read_tsv read_lines
+#' @importFrom utils tail read.csv
 #' @param file path to file
 #' @return A matrix object (retention time x trace).
 #' @import reticulate
 #' @noRd
 chromeleon_converter <- function(file){
-  x <- read_lines(file)
+  x <- readLines(file)
   start <- tail(grep("Data:", x), 1)
-  x <- read_tsv(file, skip = start, show_col_types = FALSE)
+  x <- read.csv(file, skip = start, sep="\t")
   x <- x[,-2]
   if (any(grepl(",",as.data.frame(x)[-1,2]))){
     x <- apply(x, 2, function(x) gsub("\\.", "", x))
@@ -255,17 +254,17 @@ chromeleon_converter <- function(file){
 #'
 #'
 #' @name shimadzu_converter
-#' @importFrom utils tail
-#' @importFrom readr read_tsv read_lines
+#' @importFrom utils tail read.csv
 #' @param file path to file
 #' @return A matrix object (retention time x trace).
 #' @import reticulate
 #' @noRd
 shimadzu_fid_converter <- function(file){
-  x <- read_lines(file)
+  x <- readLines(file)
   start <- tail(grep("R.Time", x), 1)
-  x <- read_tsv(file, skip = start - 1, show_col_types = FALSE, col_types = c("n","n"))
-  x[!is.na(x[,1]),]
+  x <- read.csv(file, skip=start-1, sep="\t", colClasses="numeric",
+                na.strings=c("[FractionCollectionReport]","#ofFractions"))
+  x <- x[!is.na(x[,1]),]
   x <- as.matrix(x)
   rownames(x) <- x[,1]
   x[,2, drop = FALSE]
