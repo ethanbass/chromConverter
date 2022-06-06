@@ -91,6 +91,7 @@
 <li>Agilent MassHunter DAD (<code>.sp</code>)</li>
 <li>Thermo RAW (see <a href="README.md#Installation">installation instructions</a> for the ThermoRawFileParser) ##### Text formats</li>
 <li>Chromeleon UV ascii (<code>.txt</code>) format</li>
+<li>mzML</li>
 <li>Shimadzu LabSolutions GC-FID ascii (<code>.txt</code>) format</li>
 <li>Waters ascii (<code>.arw</code>) format (<em>provisional support</em>)</li>
 </ul>
@@ -104,27 +105,27 @@
 <p>Alternatively, the development version of chromConverter is hosted on GitHub. You can install it using <code>devtools</code> as follows:</p>
 <pre><code><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></code></pre>
-<div class="section level3">
-<h3 id="optional-additional-dependencies">Optional additional dependencies<a class="anchor" aria-label="anchor" href="#optional-additional-dependencies"></a>
-</h3>
-<p>Some of the parsers rely on software that must be manually installed.</p>
 <div class="section level4">
-<h4 id="entab">Entab<a class="anchor" aria-label="anchor" href="#entab"></a>
+<h4 id="optional-additional-dependencies">Optional additional dependencies<a class="anchor" aria-label="anchor" href="#optional-additional-dependencies"></a>
 </h4>
-<p>To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and entab. After follow the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
+<p>Some of the parsers rely on software that must be manually installed.</p>
+<div class="section level5">
+<h5 id="entab">Entab<a class="anchor" aria-label="anchor" href="#entab"></a>
+</h5>
+<p>To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and Entab-R. After following the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
 <pre><code><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></code></pre>
 </div>
-<div class="section level4">
-<h4 id="thermorawfileparser">ThermoRawFileParser<a class="anchor" aria-label="anchor" href="#thermorawfileparser"></a>
-</h4>
-<p>To read Thermo RAW files you must first install the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>. If you are running Linux or Mac OS X, you will first need to install mono, following the instructions provided at the link. When you use the chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.</p>
+<div class="section level5">
+<h5 id="thermorawfileparser">ThermoRawFileParser<a class="anchor" aria-label="anchor" href="#thermorawfileparser"></a>
+</h5>
+<p>The Thermo RAW parser works by calling the ThermoRawFileParser on the command line. Thus, to parse Thermo RAW files you must first install the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>. If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. When you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.</p>
 </div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Use the <code>read_chroms</code> function to convert files by specifying the path to a directory (or a vector of directories) containing your files and the appropriate file format. The current options are <code>chemstation_uv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, or <code>mzml</code>. For formats where there are multiple parsers available, you can choose between them using the <code>parser</code> argument. For example, Chemstation and Masshunter files can be parsed using either the <code>aston</code> or <code>entab</code> parsers.</p>
+<p>The workhorse of chromConverter is the <code>read_chroms</code> function, which functions as a wrapper around all of the supported parsers. To convert files, call <code>read_chroms</code>, specifying the path to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format. The supported formats include <code>chemstation_uv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, or <code>waters_arw</code>. For formats where there are multiple parsers available, you can choose between them using the <code>parser</code> argument. For example, Chemstation and Masshunter files can be parsed using either the Aston or Entab parsers.</p>
 <pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
 <span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">TRUE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></code></pre>
 <p>If you want to provide direct paths to files, include the argument <code>find_files = FALSE</code>.</p>
