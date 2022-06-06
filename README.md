@@ -12,12 +12,13 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they're slightly more complicated to install (see [installation instructions](README.md#Installation) below).
 
 ## Formats
-
+##### Binary formats
 - Agilent ChemStation CH, FID, MS, MWD, and UV
 - Agilent MassHunter DAD (`.sp`)
-- Shimadzu LabSolutions GC-FID ascii (`.txt`) format
-- Chromeleon UV ascii (`.txt`) format
 - Thermo RAW (see [installation instructions](README.md#Installation) for the ThermoRawFileParser)
+##### Text formats
+- Chromeleon UV ascii (`.txt`) format
+- Shimadzu LabSolutions GC-FID ascii (`.txt`) format
 - Waters ascii (`.arw`) format (*provisional support*)
 
 ## Installation
