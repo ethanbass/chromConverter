@@ -99,6 +99,9 @@
 <p>Alternatively, the development version of chromConverter is hosted on GitHub. You can install it using <code>devtools</code> as follows:</p>
 <pre><code><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></code></pre>
+<div class="section level3">
+<h3 id="optional-additional-dependencies">Optional additional dependencies<a class="anchor" aria-label="anchor" href="#optional-additional-dependencies"></a>
+</h3>
 <p>Some of the parsers rely on software that must be manually installed.</p>
 <div class="section level4">
 <h4 id="entab">Entab<a class="anchor" aria-label="anchor" href="#entab"></a>
@@ -107,20 +110,21 @@
 <pre><code><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></code></pre>
 </div>
 <div class="section level4">
-<h4 id="thermo-raw">Thermo RAW<a class="anchor" aria-label="anchor" href="#thermo-raw"></a>
+<h4 id="thermorawfileparser">ThermoRawFileParser<a class="anchor" aria-label="anchor" href="#thermorawfileparser"></a>
 </h4>
-<p>To read Thermo RAW files you must first install the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>.</p>
+<p>To read Thermo RAW files you must first install the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>. If you are running Linux or Mac OS X, you will first need to install mono, following the instructions provided at the link. When you use the chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.</p>
+</div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Use the <code>read_chroms</code> function to convert files by specifying the path to a directory (or a vector of directories) and the appropriate file format.</p>
-<pre><code>library(chromConverter)
-dat &lt;- read_chroms(path, find_files = TRUE, format.in=c("chemstation.uv")</code></pre>
+<p>Use the <code>read_chroms</code> function to convert files by specifying the path to a directory (or a vector of directories) containing your files and the appropriate file format. The current options are <code>chemstation_uv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, or <code>mzml</code>. For formats where there are multiple parsers available, you can choose between them using the <code>parser</code> argument. For example, Chemstation and Masshunter files can be parsed using either the <code>aston</code> or <code>entab</code> parsers.</p>
+<pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
+<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">TRUE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></code></pre>
 <p>If you want to provide direct paths to files, include the argument <code>find_files = FALSE</code>.</p>
-<pre><code>library(chromConverter)
-dat &lt;- read_chroms(path, find_files = FALSE, format.in=c("chemstation.uv")</code></pre>
+<pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
+<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="further-analysis">Further analysis<a class="anchor" aria-label="anchor" href="#further-analysis"></a>
