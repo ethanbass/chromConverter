@@ -1,2 +1,2 @@
 #!/bin/sh
-mono /Users/ethanbass/software/ThermoRawFileParser/ThermoRawFileParser.exe "$@"
+mono ~/software/ThermoRawFileParser/ThermoRawFileParser.exe "$@"
