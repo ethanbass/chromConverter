@@ -9,6 +9,8 @@
 #' @name read_thermoraw
 #' @param path_in path to file
 #' @param path_out directory to export \code{mzML} files.
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param read_metadata Whether to read metadata from file.
 #' @return A chromatograms in \code{matrix} format.
 #' @author Ethan Bass
 #' @examples \dontrun{
@@ -22,7 +24,9 @@
 #' \doi{10.1021/acs.jproteome.9b00328}.
 #' @export read_thermoraw
 
-read_thermoraw <- function(path_in, path_out){
+read_thermoraw <- function(path_in, path_out, format_out = c("matrix", "data.frame"),
+                           read_metadata=TRUE){
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
   if(!file.exists(path_in)){
     stop("File not found. Check path.")
   }
@@ -35,7 +39,6 @@ read_thermoraw <- function(path_in, path_out){
       dir.create("temp")
     path_out <- paste0(path_out,'/temp/')
   }
-
   if(!file.exists(path_out)){
     stop("'path_out' not found. Make sure directory exists.")
   }
@@ -44,13 +47,51 @@ read_thermoraw <- function(path_in, path_out){
     system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
                               " -o=", path_out, " -a"))
     new_path <- paste0(path_out, strsplit(base,"\\.")[[1]][1],".mzML")
+    if (read_metadata){
+      system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
+                                " -o=", path_out, " -m=1"))
+      meta_path <- paste0(path_out, strsplit(base, "\\.")[[1]][1], "-metadata.txt")
+    }
   } else {
     parser_path <- readLines(system.file('shell/path_parser.txt', package='chromConverter'))
     shell(paste0(parser_path, " -i=", path_in,
                               " -o=", path_out, " -a"))
-    new_path <- paste(path_out, paste0(strsplit(base,"\\.")[[1]][1],".mzML"), sep="\\")
+    new_path <- paste(path_out,
+                      paste0(strsplit(base,"\\.")[[1]][1],".mzML"),
+                      sep="\\")
+    if (read_metadata){
+      shell(paste0(parser_path, " -i=", path_in,
+                                " -o=", path_out, " -m=1"))
+      meta_path <- paste(path_out,
+                         paste0(strsplit(base, "\\.")[[1]][1], "-metadata.txt"),
+                         sep = "\\")
+    }
   }
-  read_mzml(new_path)
+  x <- read_mzml(new_path, format_out)
+  if (read_metadata){
+    meta <- strsplit(readLines(meta_path), "=",fixed = TRUE)
+    meta <- do.call(rbind,meta)
+    rownames(meta) <- meta[,1]
+    meta <- as.list(meta[,-1])
+    x <- structure(x, instrument = c(meta$`Instrument model`, meta$`Instrument name`, meta$`Instrument serial number`),
+                    detector = NA,
+                    software = meta$`Software version`,
+                    method = NA,
+                    batch = NA,
+                    operator = NA,
+                    run_date = meta$`Creation date`,
+                    sample_name = basename(meta$`RAW file path`),
+                    sample_id = meta$`Sample id`,
+                    vial = meta$`Sample vial`,
+                    injection_volume = meta$`Sample injection volume`,
+                    sample_dilution = meta$`Sample dilution factor`,
+                    time_range = meta$`Time range`,
+                    time_interval = meta$`Interval(msec)`,
+                    format = "long",
+                    parser = "chromConverter",
+                    class = format_out)
+  }
+  x
 }
 
 #' Extract UV data from mzML files
@@ -59,18 +100,20 @@ read_thermoraw <- function(path_in, path_out){
 #'
 #' @name read_mzml
 #' @param path path to file
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @return A chromatograms in \code{matrix} format.
 #' @author Ethan Bass
 #' @export read_mzml
-read_mzml <- function(path){
+read_mzml <- function(path, format_out = c("matrix", "data.frame")){
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
   if (!requireNamespace("mzR", quietly = TRUE)) {
     stop(
       "The `mzR` package must be installed from Bioconductor to read `mzML` files:
       BiocManager::install('mzR')",
       call. = FALSE)
   }
-  x<-mzR::openMSfile(path)
-  info<-mzR::header(x)
+  x <- mzR::openMSfile(path)
+  info <- mzR::header(x)
   UV_scans <- which(info$msLevel==0)
   rts <- info[UV_scans,"retentionTime"]
   lambdas <- seq(info$scanWindowLowerLimit[UV_scans[1]], info$scanWindowUpperLimit[UV_scans[1]])
@@ -78,6 +121,9 @@ read_mzml <- function(path){
   data <- t(sapply(UV_scans, function(j) pks[[j]][,2]))
   rownames(data) <- rts
   colnames(data) <- lambdas
+  if (format_out == "data.frame"){
+    as.data.frame(data)
+  }
   data
 }
 
@@ -107,7 +153,7 @@ configure_shell_script <- function(reconfigure = FALSE){
       path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
       # arg1 <- "mono "
       shell_script[2] <- paste0("mono ", path_parser, ' "$@"')
-      writeLines(shell_script, con=system.file('shell/thermofileparser.sh', package='chromConverter'))
+      writeLines(shell_script, con = system.file('shell/thermofileparser.sh', package='chromConverter'))
     }
   }
 }

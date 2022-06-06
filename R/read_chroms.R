@@ -13,8 +13,8 @@
 #' the function with a folder or vector of folders containing the files.
 #' Otherwise, set to\code{FALSE}.
 #' @param format.in Format of files to be imported/converted. The current options
-#' are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid}, or
-#' \code{chromeleon_uv}.
+#' are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
+#' \code{chromeleon_uv}, \code{thermoraw}, or \code{mzml}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
 #' @param parser What parser to use. Current option are \code{aston} or \code{
@@ -108,7 +108,8 @@ read_chroms <- function(paths, find_files = TRUE,
     converter <- partial(shimadzu_fid_converter, read_metadata = read_metadata, format_out = R.format)
   } else if (format.in == "thermoraw"){
     pattern <- ".raw"
-    converter <- partial(read_thermoraw, path_out = path.out)
+    converter <- partial(read_thermoraw, path_out = path.out, read_metadata = read_metadata,
+                         format_out = R.format)
   } else if (format.in == "mzml"){
     pattern <- ".mzML"
     converter <- read_mzml
@@ -132,7 +133,7 @@ read_chroms <- function(paths, find_files = TRUE,
   } else{
     files <- paths
     match <- grep(pattern, files)
-    if (length(match)==0){
+    if (length(match) == 0){
       warning("The provided files do not match the expected file extension.
       Please confirm that the specified format ('format.in') is correct.",
               immediate. = TRUE)
@@ -162,7 +163,7 @@ read_chroms <- function(paths, find_files = TRUE,
       write.csv(data[[i]], file = paste0(paste(path.out,names(data)[i], sep="/"),".CSV"))
     })
   }
-  dat <- append(dat,data)
+  dat <- append(dat, data)
   dat
 }
 

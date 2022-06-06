@@ -4,10 +4,12 @@
 \alias{read_mzml}
 \title{Extract UV data from mzML files}
 \usage{
-read_mzml(path)
+read_mzml(path, format_out = c("matrix", "data.frame"))
 }
 \arguments{
 \item{path}{path to file}
+
+\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 }
 \value{
 A chromatograms in \code{matrix} format.

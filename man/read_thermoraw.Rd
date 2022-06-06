@@ -4,12 +4,21 @@
 \alias{read_thermoraw}
 \title{Read ThermoRaw files into R using ThermoRawFileParser}
 \usage{
-read_thermoraw(path_in, path_out)
+read_thermoraw(
+  path_in,
+  path_out,
+  format_out = c("matrix", "data.frame"),
+  read_metadata = TRUE
+)
 }
 \arguments{
 \item{path_in}{path to file}
 
 \item{path_out}{directory to export \code{mzML} files.}
+
+\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+
+\item{read_metadata}{Whether to read metadata from file.}
 }
 \value{
 A chromatograms in \code{matrix} format.

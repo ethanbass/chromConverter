@@ -27,8 +27,8 @@ the function with a folder or vector of folders containing the files.
 Otherwise, set to\code{FALSE}.}
 
 \item{format.in}{Format of files to be imported/converted. The current options
-are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid}, or
-\code{chromeleon_uv}.}
+are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
+\code{chromeleon_uv}, \code{thermoraw}, or \code{mzml}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format.in}.}
