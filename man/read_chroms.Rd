@@ -8,7 +8,7 @@ read_chroms(
   paths,
   find_files = TRUE,
   format.in = c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-    "thermoraw", "mzml"),
+    "thermoraw", "mzml", "waters_arw"),
   pattern = NULL,
   parser = c("aston", "entab"),
   R.format = c("matrix", "data.frame"),
@@ -28,7 +28,7 @@ Otherwise, set to\code{FALSE}.}
 
 \item{format.in}{Format of files to be imported/converted. The current options
 are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
-\code{chromeleon_uv}, \code{thermoraw}, or \code{mzml}.}
+\code{chromeleon_uv}, \code{thermoraw}, \code{mzml}, or \code{waters_arw}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format.in}.}

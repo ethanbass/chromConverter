@@ -14,7 +14,7 @@
 #' Otherwise, set to\code{FALSE}.
 #' @param format.in Format of files to be imported/converted. The current options
 #' are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
-#' \code{chromeleon_uv}, \code{thermoraw}, or \code{mzml}.
+#' \code{chromeleon_uv}, \code{thermoraw}, \code{mzml}, or \code{waters_arw}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
 #' @param parser What parser to use. Current option are \code{aston} or \code{
@@ -40,13 +40,13 @@
 #' @export read_chroms
 read_chroms <- function(paths, find_files = TRUE,
                         format.in=c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-                                   "thermoraw", "mzml"),
+                                   "thermoraw", "mzml", "waters_arw"),
                         pattern=NULL, parser=c("aston","entab"),
                         R.format=c("matrix","data.frame"), export=FALSE,
                         path.out=NULL, format.out = "csv", read_metadata = TRUE,
                         dat=NULL){
   format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-                                      "thermoraw", "mzml"))
+                                      "thermoraw", "mzml", "waters_arw"))
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
   parser <- match.arg (parser, c("aston","entab"))
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
@@ -54,9 +54,6 @@ read_chroms <- function(paths, find_files = TRUE,
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
       call. = FALSE)
   }
-  R.format <- match.arg(R.format, c("matrix", "data.frame"))
-  format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-                                   "thermoraw", "mzml"))
   exists <- dir.exists(paths) | file.exists(paths)
   if (mean(exists) == 0){
     stop("Cannot locate files. None of the supplied paths exist.")
@@ -102,18 +99,21 @@ read_chroms <- function(paths, find_files = TRUE,
     }
   } else if(format.in == "chromeleon_uv"){
     pattern <- ".txt"
-    converter <- partial(chromeleon_converter, read_metadata = read_metadata, format_out = R.format)
+    converter <- partial(read_chromeleon, read_metadata = read_metadata, format_out = R.format)
   } else if (format.in == "shimadzu_fid"){
     pattern <- ".txt"
-    converter <- partial(shimadzu_fid_converter, read_metadata = read_metadata, format_out = R.format)
+    converter <- partial(read_shimadzu_fid, read_metadata = read_metadata, format_out = R.format)
   } else if (format.in == "thermoraw"){
     pattern <- ".raw"
     converter <- partial(read_thermoraw, path_out = path.out, read_metadata = read_metadata,
                          format_out = R.format)
   } else if (format.in == "mzml"){
     pattern <- ".mzML"
-    converter <- read_mzml
-  } else{
+    converter <- partial(read_mzml, format_out = R.format)
+  } else if (format.in == "waters_arw"){
+    pattern <- ".arw"
+    converter <- partial(read_waters_arw, format_out = R.format)
+    } else{
     converter <- ifelse(parser == "aston", trace_converter, entab_reader)
   }
   if (find_files){
@@ -230,9 +230,12 @@ trace_converter <- function(file){
 #' @name entab_reader
 #' @title Entab parsers
 #' @param file path to file
+#' @param format_data Whether to output data in wide or long format.
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param read_metadata Whether to read metadata from file.
 #' @return a \code{chrom} object
 #' @importFrom tidyr pivot_wider
-#' @noRd
+#' @export
 entab_reader <- function(file, format_data = c("wide","long"),
                          format_out = c("matrix", "data.frame"),
                          read_metadata = TRUE){
@@ -277,21 +280,22 @@ entab_reader <- function(file, format_data = c("wide","long"),
    df
 }
 
-#' Chromeleon converter
+#' Chromeleon ascii reader
 #'
-#' @name chromeleon_converter
 #' @importFrom utils tail read.csv
 #' @param file path to file
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param read_metadata Whether to read metadata from file.
 #' @return A matrix object (retention time x trace).
-#' @import reticulate
-#' @noRd
-chromeleon_converter <- function(file, read_metadata = TRUE,
-                                 format_out = c("matrix","data.frame")){
+#' @author Ethan Bass
+#' @export
+read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
+                            read_metadata = TRUE){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   xx <- readLines(file)
   start <- tail(grep("Data:", xx), 1)
   x <- read.csv(file, skip = start, sep="\t")
-  x <- x[,-2]
+  x <- x[,-2, drop = FALSE]
   if (any(grepl(",",as.data.frame(x)[-1,2]))){
     x <- apply(x, 2, function(x) gsub("\\.", "", x))
     x <- apply(x, 2, function(x) gsub(",", ".", x))
@@ -299,7 +303,7 @@ chromeleon_converter <- function(file, read_metadata = TRUE,
   x <- apply(x, 2, as.numeric)
   x <- as.matrix(x)
   rownames(x) <- x[,1]
-  x <- x[,2, drop=F]
+  x <- x[,2, drop = FALSE]
   if (read_metadata){
     meta_fields <- grep("Information:", xx)
     meta <- do.call(rbind,strsplit(xx[(meta_fields[1]+1):(meta_fields[3]-1)],"\t"))
@@ -324,16 +328,17 @@ chromeleon_converter <- function(file, read_metadata = TRUE,
   x
 }
 
-#' Shimadzu FID converter
+#' Shimadzu ascii FID reader
 #'
-#'
-#' @name shimadzu_converter
+#' @name read_shimadzu_fid
 #' @importFrom utils tail read.csv
 #' @param file path to file
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param read_metadata Whether to read metadata from file.
 #' @return A matrix object (retention time x trace).
-#' @import reticulate
-#' @noRd
-shimadzu_fid_converter <- function(file, read_metadata = TRUE,
+#' @author Ethan Bass
+#' @export
+read_shimadzu_fid <- function(file, read_metadata = TRUE,
                                    format_out = c("matrix","data.frame")){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   x <- readLines(file)
@@ -341,8 +346,7 @@ shimadzu_fid_converter <- function(file, read_metadata = TRUE,
   chrom.idx <- grep("\\[Chromatogram .*]", x)
   xx <- read.csv(file, skip = chrom.idx + 4, sep="\t", colClasses="numeric",
                  na.strings=c("[FractionCollectionReport]","#ofFractions"))
-  xx <- xx[!is.na(xx[,1]),]
-  xx <- as.matrix(xx)
+  xx <- as.matrix(xx[!is.na(xx[,1]),])
   rownames(xx) <- xx[,1]
   xx <- xx[, 2, drop = FALSE]
   if (format_out == "data.frame")
@@ -367,9 +371,50 @@ shimadzu_fid_converter <- function(file, read_metadata = TRUE,
                         injection_volume = meta$`Injection Volume`,
                         time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
                         time_interval = meta$`Interval(msec)`,
+                        channel = NA,
                         format = "long",
                         parser = "chromConverter",
                         class = format_out)
   }
   xx
+}
+
+#' Waters ascii (.arw) reader
+#'
+#' @name read_waters_arw
+#' @importFrom utils tail read.csv
+#' @param file path to file
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param read_metadata Whether to read metadata from file.
+#' @return A matrix object (retention time x trace).
+#' @author Ethan Bass
+#' @export
+read_waters_arw <- function(file, read_metadata = TRUE,
+                              format_out = c("matrix","data.frame")){
+  format_out <- match.arg(format_out, c("matrix","data.frame"))
+  x <- read.csv(file, sep="\t", skip = 2, header=FALSE, row.names=1)
+  if (format_out == "matrix")
+    x <- as.matrix(x)
+  if (read_metadata){
+    meta <- gsub("\\\"", "", do.call(cbind,strsplit(readLines(file, n = 2),"\t")))
+    rownames(meta) <- meta[,1]
+    meta <- as.list(meta[,-1])
+    x <- structure(x, instrument = NA,
+                    detector = NA,
+                    software = NA,
+                    method = meta$`Instrument Method Name`,
+                    batch = meta$`Sample Set Name`,
+                    operator = NA,
+                    run_date = NA,
+                    sample_name = meta$SampleName,
+                    sample_id = NA,
+                    injection_volume = NA,
+                    time_range = NA,
+                    time_interval = NA,
+                    channel = meta$Channel,
+                    format = "long",
+                    parser = "chromConverter",
+                    class = format_out)
+  }
+  x
 }
