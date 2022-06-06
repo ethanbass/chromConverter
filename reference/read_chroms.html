@@ -61,7 +61,7 @@ and <a href="https://github.com/compomics/ThermoRawFileParser" class="external-l
   <span class="va">paths</span>,
   find_files <span class="op">=</span> <span class="cn">TRUE</span>,
   format.in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chemstation_uv"</span>, <span class="st">"masshunter_dad"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"chromeleon_uv"</span>,
-    <span class="st">"thermoraw"</span>, <span class="st">"mzml"</span><span class="op">)</span>,
+    <span class="st">"thermoraw"</span>, <span class="st">"mzml"</span>, <span class="st">"waters_arw"</span><span class="op">)</span>,
   pattern <span class="op">=</span> <span class="cn">NULL</span>,
   parser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aston"</span>, <span class="st">"entab"</span><span class="op">)</span>,
   R.format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span><span class="op">)</span>,
@@ -84,7 +84,7 @@ Otherwise, set to<code>FALSE</code>.</p></dd>
 <dt>format.in</dt>
 <dd><p>Format of files to be imported/converted. The current options
 are: <code>chemstation_uv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>,
-<code>chromeleon_uv</code>, <code>thermoraw</code>, or <code>mzml</code>.</p></dd>
+<code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, or <code>waters_arw</code>.</p></dd>
 <dt>pattern</dt>
 <dd><p>pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from <code>format.in</code>.</p></dd>

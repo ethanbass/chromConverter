@@ -16,6 +16,9 @@
     <loc>https://ethanbass.github.io/chromConverter/news/index.html</loc>
   </url>
   <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/entab_reader.html</loc>
+  </url>
+  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/index.html</loc>
   </url>
   <url>
@@ -31,7 +34,13 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/read_mzml.html</loc>
   </url>
   <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu_fid.html</loc>
+  </url>
+  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_thermoraw.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/read_waters_arw.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/sp_converter.html</loc>
