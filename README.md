@@ -38,11 +38,11 @@ install.packages("devtools")
 devtools::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
-### Optional additional dependencies
+#### Optional additional dependencies
 
 Some of the parsers rely on software that must be manually installed.
 
-#### Entab
+##### Entab
 
 To use parsers from Entab, you must first install [Rust](https://www.rust-lang.org/tools/install) and Entab-R. After following the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
 
@@ -50,7 +50,7 @@ To use parsers from Entab, you must first install [Rust](https://www.rust-lang.o
 devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 ```
 
-#### ThermoRawFileParser
+##### ThermoRawFileParser
 
 The Thermo RAW parser works by calling the ThermoRawFileParser on the command line. Thus, to parse Thermo RAW files you must first install the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. When you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
 
