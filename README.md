@@ -9,7 +9,7 @@
 
 chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis.
 
-It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they're slightly more complicated to install (see [Installation](README.md#Installation) section below).
+It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they're slightly more complicated to install (see [installation instructions](README.md#Installation) below).
 
 ## Formats
 
@@ -17,6 +17,7 @@ It currently consists of a wrapper around the file parsers included in the [Asto
 - Agilent MassHunter DAD (`.sp`)
 - Shimadzu LabSolutions GC-FID ascii (`.txt`) format
 - Chromeleon UV ascii (`.txt`) format
+- Thermo RAW (see [installation instructions](README.md#Installation) for the ThermoRawFileParser)
 
 ## Installation
 
@@ -38,19 +39,31 @@ Some of the parsers rely on software that must be manually installed.
 
 #### Entab
 
-To use parsers from Entab, you must manually install [Rust](https://www.rust-lang.org/tools/install) and entab. After follow the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
+To use parsers from Entab, you must first install [Rust](https://www.rust-lang.org/tools/install) and entab. After follow the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
 
 ```
 devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 ```
 
+#### Thermo RAW
+
+To read Thermo RAW files you must first install the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser).
+
+
 ## Usage
 
-Convert files by specifying the path to a directory (or a vector of directories) and the appropriate file format.
+Use the `read_chroms` function to convert files by specifying the path to a directory (or a vector of directories) and the appropriate file format.
 
 ```
 library(chromConverter)
-dat <- read_chroms(path, format.in=c("chemstation.uv")
+dat <- read_chroms(path, find_files = TRUE, format.in=c("chemstation.uv")
+```
+
+If you want to provide direct paths to files, include the argument `find_files = FALSE`.
+
+```
+library(chromConverter)
+dat <- read_chroms(path, find_files = FALSE, format.in=c("chemstation.uv")
 ```
 
 ## Further analysis
