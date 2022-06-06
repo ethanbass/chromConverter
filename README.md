@@ -35,6 +35,8 @@ install.packages("devtools")
 devtools::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
+### Optional additional dependencies
+
 Some of the parsers rely on software that must be manually installed.
 
 #### Entab
@@ -45,25 +47,24 @@ To use parsers from Entab, you must first install [Rust](https://www.rust-lang.o
 devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 ```
 
-#### Thermo RAW
+#### ThermoRawFileParser
 
-To read Thermo RAW files you must first install the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser).
-
+To read Thermo RAW files you must first install the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will first need to install mono, following the instructions provided at the link. When you use the chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
 
 ## Usage
 
-Use the `read_chroms` function to convert files by specifying the path to a directory (or a vector of directories) and the appropriate file format.
+Use the `read_chroms` function to convert files by specifying the path to a directory (or a vector of directories) containing your files and the appropriate file format. The current options are `chemstation_uv`, `masshunter_dad`, `shimadzu_fid`, `chromeleon_uv`, `thermoraw`, or `mzml`. For formats where there are multiple parsers available, you can choose between them using the `parser` argument. For example, Chemstation and Masshunter files can be parsed using either the `aston` or `entab` parsers.
 
 ```
 library(chromConverter)
-dat <- read_chroms(path, find_files = TRUE, format.in=c("chemstation.uv")
+dat <- read_chroms(path, find_files = TRUE, format.in = "chemstation_uv")
 ```
 
 If you want to provide direct paths to files, include the argument `find_files = FALSE`.
 
 ```
 library(chromConverter)
-dat <- read_chroms(path, find_files = FALSE, format.in=c("chemstation.uv")
+dat <- read_chroms(path, find_files = FALSE, format.in = "chemstation_uv")
 ```
 
 ## Further analysis
