@@ -78,7 +78,7 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis.</p>
-<p>It currently consists of a wrapper around the file parsers included in the <a href="https://github.com/bovee/aston" class="external-link">Aston</a> and <a href="https://github.com/bovee/entab" class="external-link">Entab</a> packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they’re slightly more complicated to install (see <a href="README.md#Installation">Installation</a> section below).</p>
+<p>It currently consists of a wrapper around the file parsers included in the <a href="https://github.com/bovee/aston" class="external-link">Aston</a> and <a href="https://github.com/bovee/entab" class="external-link">Entab</a> packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they’re slightly more complicated to install (see <a href="README.md#Installation">installation instructions</a> below).</p>
 </div>
 <div class="section level2">
 <h2 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
@@ -88,6 +88,7 @@
 <li>Agilent MassHunter DAD (<code>.sp</code>)</li>
 <li>Shimadzu LabSolutions GC-FID ascii (<code>.txt</code>) format</li>
 <li>Chromeleon UV ascii (<code>.txt</code>) format</li>
+<li>Thermo RAW (see <a href="README.md#Installation">installation instructions</a> for the ThermoRawFileParser)</li>
 </ul>
 </div>
 <div class="section level2">
@@ -102,16 +103,24 @@
 <div class="section level4">
 <h4 id="entab">Entab<a class="anchor" aria-label="anchor" href="#entab"></a>
 </h4>
-<p>To use parsers from Entab, you must manually install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and entab. After follow the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
+<p>To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and entab. After follow the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
 <pre><code><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></code></pre>
+</div>
+<div class="section level4">
+<h4 id="thermo-raw">Thermo RAW<a class="anchor" aria-label="anchor" href="#thermo-raw"></a>
+</h4>
+<p>To read Thermo RAW files you must first install the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Convert files by specifying the path to a directory (or a vector of directories) and the appropriate file format.</p>
+<p>Use the <code>read_chroms</code> function to convert files by specifying the path to a directory (or a vector of directories) and the appropriate file format.</p>
 <pre><code>library(chromConverter)
-dat &lt;- read_chroms(path, format.in=c("chemstation.uv")</code></pre>
+dat &lt;- read_chroms(path, find_files = TRUE, format.in=c("chemstation.uv")</code></pre>
+<p>If you want to provide direct paths to files, include the argument <code>find_files = FALSE</code>.</p>
+<pre><code>library(chromConverter)
+dat &lt;- read_chroms(path, find_files = FALSE, format.in=c("chemstation.uv")</code></pre>
 </div>
 <div class="section level2">
 <h2 id="further-analysis">Further analysis<a class="anchor" aria-label="anchor" href="#further-analysis"></a>
