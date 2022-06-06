@@ -45,7 +45,8 @@ read_chroms <- function(paths, find_files = TRUE,
                         R.format=c("matrix","data.frame"), export=FALSE,
                         path.out=NULL, format.out = "csv", read_metadata = TRUE,
                         dat=NULL){
-  format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv"))
+  format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
+                                      "thermoraw", "mzml"))
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
   parser <- match.arg (parser, c("aston","entab"))
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
@@ -150,7 +151,8 @@ read_chroms <- function(paths, find_files = TRUE,
   })
   errors <- which(sapply(data, function(x) inherits(x,"try-error")))
   if (length(errors) > 0){
-    warning(paste("The following chromatograms could not be interpreted:", errors))
+    warning(data[errors],immediate. = TRUE)
+    message(paste("The following chromatograms could not be interpreted:", errors))
     data <- data[-errors]
     file_names <- file_names[-errors]
   }
