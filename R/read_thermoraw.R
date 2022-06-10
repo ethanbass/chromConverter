@@ -1,6 +1,6 @@
 #' Read ThermoRaw files into R using ThermoRawFileParser
 #'
-#' Converters ThermoRawFiles to mzmL by calling the ThermoRawFileParser from the
+#' Converts ThermoRawFiles to mzmL by calling the ThermoRawFileParser from the
 #' command-line.
 #'
 #' To use this function, the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)
@@ -32,17 +32,12 @@ read_thermoraw <- function(path_in, path_out, format_out = c("matrix", "data.fra
   }
   base <- basename(path_in)
   if (missing(path_out)){
-    warning("setting path for exported files to `temp` folder in current working directory. To choose a different directory,
-            set the `path_out` argument", immediate. = TRUE)
-    path_out  <- getwd()
-    if (!dir.exists("temp"))
-      dir.create("temp")
-    path_out <- paste0(path_out,'/temp/')
+    path_out <- set_temp_directory()
   }
   if(!file.exists(path_out)){
     stop("'path_out' not found. Make sure directory exists.")
   }
-  configure_shell_script()
+  configure_thermo_parser()
   if (.Platform$OS.type != "windows"){
     system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
                               " -o=", path_out, " -a"))
@@ -129,13 +124,13 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame")){
 
 #' Configure shell script to call ThermoRawFileParser
 #'
-#' @name configure_shell_script
+#' @name configure_thermo_parser
 #' @param reconfigure Whether to re-write the shell script. (Defaults to FALSE,
 #' unless the program finds that reconfiguration is needed).
 #' @return No return value.
 #' @author Ethan Bass
 #' @noRd
-configure_shell_script <- function(reconfigure = FALSE){
+configure_thermo_parser <- function(reconfigure = FALSE){
   if (.Platform$OS.type == "windows"){
     path_parser <- readLines(system.file("shell/path_parser.txt", package = 'chromConverter'))
     if (!file.exists(path_parser)){
@@ -157,3 +152,17 @@ configure_shell_script <- function(reconfigure = FALSE){
     }
   }
 }
+
+set_temp_directory <- function(){
+  ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
+  if (ans %in% c("y","Y")){
+    if (!dir.exists("temp"))
+      dir.create("temp")
+    path_out <- paste0(getwd(),'/temp/')
+    path_out
+  } else{
+    stop("Must specify directory to export files.")
+  }
+}
+
+

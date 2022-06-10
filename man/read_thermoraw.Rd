@@ -24,7 +24,7 @@ read_thermoraw(
 A chromatograms in \code{matrix} format.
 }
 \description{
-Converters ThermoRawFiles to mzmL by calling the ThermoRawFileParser from the
+Converts ThermoRawFiles to mzmL by calling the ThermoRawFileParser from the
 command-line.
 }
 \details{
