@@ -12,12 +12,14 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they're slightly more complicated to install (see [installation instructions](README.md#Installation) below).
 
 ## Formats
-
+##### Binary formats
 - Agilent ChemStation CH, FID, MS, MWD, and UV
 - Agilent MassHunter DAD (`.sp`)
-- Shimadzu LabSolutions GC-FID ascii (`.txt`) format
-- Chromeleon UV ascii (`.txt`) format
 - Thermo RAW (see [installation instructions](README.md#Installation) for the ThermoRawFileParser)
+##### Text formats
+- Chromeleon UV ascii (`.txt`) format
+- mzML
+- Shimadzu LabSolutions GC-FID ascii (`.txt`) format
 - Waters ascii (`.arw`) format (*provisional support*)
 
 ## Installation
@@ -36,25 +38,25 @@ install.packages("devtools")
 devtools::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
-### Optional additional dependencies
+#### Optional additional dependencies
 
 Some of the parsers rely on software that must be manually installed.
 
-#### Entab
+##### Entab
 
-To use parsers from Entab, you must first install [Rust](https://www.rust-lang.org/tools/install) and entab. After follow the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
+To use parsers from Entab, you must first install [Rust](https://www.rust-lang.org/tools/install) and Entab-R. After following the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
 
 ```
 devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 ```
 
-#### ThermoRawFileParser
+##### ThermoRawFileParser
 
-To read Thermo RAW files you must first install the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will first need to install mono, following the instructions provided at the link. When you use the chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
+The Thermo RAW parser works by calling the ThermoRawFileParser on the command line. Thus, to parse Thermo RAW files you must first install the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. When you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
 
 ## Usage
 
-Use the `read_chroms` function to convert files by specifying the path to a directory (or a vector of directories) containing your files and the appropriate file format. The current options are `chemstation_uv`, `masshunter_dad`, `shimadzu_fid`, `chromeleon_uv`, `thermoraw`, or `mzml`. For formats where there are multiple parsers available, you can choose between them using the `parser` argument. For example, Chemstation and Masshunter files can be parsed using either the `aston` or `entab` parsers.
+The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the path to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format. The supported formats include `chemstation_uv`, `masshunter_dad`, `shimadzu_fid`, `chromeleon_uv`, `thermoraw`, `mzml`, or `waters_arw`. For formats where there are multiple parsers available, you can choose between them using the `parser` argument. For example, Chemstation and Masshunter files can be parsed using either the Aston or Entab parsers.
 
 ```
 library(chromConverter)
