@@ -8,13 +8,13 @@ read_chroms(
   paths,
   find_files = TRUE,
   format.in = c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-    "thermoraw", "mzml", "waters_arw"),
+    "thermoraw", "mzml", "waters_arw", "other"),
   pattern = NULL,
-  parser = c("aston", "entab"),
+  parser = c("aston", "entab", "openchrom", "thermoraw"),
   R.format = c("matrix", "data.frame"),
   export = FALSE,
   path.out = NULL,
-  format.out = "csv",
+  format.out = c("csv", "cdf", "mzml", "animl"),
   read_metadata = TRUE,
   dat = NULL
 )
@@ -33,8 +33,8 @@ are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format.in}.}
 
-\item{parser}{What parser to use. Current option are \code{aston} or \code{
-entab}. Entab must be manually installed from github.}
+\item{parser}{What parser to use. Current option are \code{aston}, \code{
+entab}, or \code{openchrom}. Entab must be manually installed from github.}
 
 \item{R.format}{R object format (i.e. data.frame or matrix).}
 

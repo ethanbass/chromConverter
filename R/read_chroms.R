@@ -17,8 +17,8 @@
 #' \code{chromeleon_uv}, \code{thermoraw}, \code{mzml}, or \code{waters_arw}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format.in}.
-#' @param parser What parser to use. Current option are \code{aston} or \code{
-#' entab}. Entab must be manually installed from github.
+#' @param parser What parser to use. Current option are \code{aston}, \code{
+#' entab}, or \code{openchrom}. Entab must be manually installed from github.
 #' @param R.format R object format (i.e. data.frame or matrix).
 #' @param export Logical. If TRUE, will export files as csvs.
 #' @param path.out Path for exporting files. If path not specified, files will
@@ -32,23 +32,28 @@
 #' the value of 'R.format'.
 #' @import reticulate
 #' @importFrom utils write.csv
+#' @importFrom readxl read_xls
 #' @importFrom purrr partial
 #' @examplesIf interactive()
 #' path <- "tests/testthat/testdata/dad1.uv"
 #' chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation_uv")
 #' @author Ethan Bass
 #' @export read_chroms
+
 read_chroms <- function(paths, find_files = TRUE,
-                        format.in=c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-                                   "thermoraw", "mzml", "waters_arw"),
-                        pattern=NULL, parser=c("aston","entab"),
-                        R.format=c("matrix","data.frame"), export=FALSE,
-                        path.out=NULL, format.out = "csv", read_metadata = TRUE,
-                        dat=NULL){
+                        format.in = c("chemstation_uv", "masshunter_dad",
+                                      "shimadzu_fid", "chromeleon_uv",
+                                      "thermoraw", "mzml", "waters_arw", "other"),
+                        pattern = NULL, parser = c("aston","entab", "openchrom", "thermoraw"),
+                        R.format = c("matrix","data.frame"), export = FALSE,
+                        path.out=NULL, format.out = c("csv","cdf", "mzml", "animl"), read_metadata = TRUE,
+                        dat = NULL){
   format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-                                      "thermoraw", "mzml", "waters_arw"))
+                                      "thermoraw", "mzml", "waters_arw", "other"))
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
-  parser <- match.arg (parser, c("aston","entab"))
+  parser <- match.arg(parser, c("aston","entab", "openchrom", "thermoraw"))
+  format.out <- match.arg(format.out, c("csv", "cdf", "mzml", "animl"))
+  # check for openchrom if format.out isn't csv
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
     stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
@@ -64,18 +69,10 @@ read_chroms <- function(paths, find_files = TRUE,
     if (substr(path.out, nchar(path.out)-1, nchar(nchar(path.out))) != "/")
       path.out <- paste0(path.out, "/")
   }
-  if (export | format.in == "thermoraw"){
+  if (export | format.in == "thermoraw" | parser == "openchrom"){
     if (is.null(path.out)){
-      ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
-      if (ans %in% c("y","Y")){
-        if (!dir.exists("temp"))
-          dir.create("temp")
-        path.out <- paste0(getwd(),'/temp/')
-      } else{
-        stop("Must specify directory to export files.")
-      }
+      path.out <- set_temp_directory()
     }
-    # path.out <- gsub("/$","", path.out)
     if (!dir.exists(path.out)){
       stop(paste0("The export directory '", path.out, "' does not exist."))
     }
@@ -85,18 +82,14 @@ read_chroms <- function(paths, find_files = TRUE,
   # choose converter
   if (format.in == "masshunter_dad"){
     pattern <- ifelse(is.null(pattern), ".sp", pattern)
-    converter <- if (parser == "aston"){
-      sp_converter
-    } else{
-      partial(entab_reader, read_metadata = read_metadata, format_out = R.format)
-    }
+    converter <- switch(parser,
+                        "aston" = sp_converter,
+                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = R.format))
   } else if (format.in == "chemstation_uv"){
     pattern <- ifelse(is.null(pattern), ".uv", pattern)
-    converter <- if (parser == "aston"){
-      uv_converter
-    } else{
-      partial(entab_reader, read_metadata = read_metadata, format_out = R.format)
-    }
+    converter <- switch(parser,
+                        "aston" = uv_converter,
+                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = R.format))
   } else if(format.in == "chromeleon_uv"){
     pattern <- ".txt"
     converter <- partial(read_chromeleon, read_metadata = read_metadata, format_out = R.format)
@@ -105,6 +98,7 @@ read_chroms <- function(paths, find_files = TRUE,
     converter <- partial(read_shimadzu_fid, read_metadata = read_metadata, format_out = R.format)
   } else if (format.in == "thermoraw"){
     pattern <- ".raw"
+    parser <- "thermoraw"
     converter <- partial(read_thermoraw, path_out = path.out, read_metadata = read_metadata,
                          format_out = R.format)
   } else if (format.in == "mzml"){
@@ -113,23 +107,19 @@ read_chroms <- function(paths, find_files = TRUE,
   } else if (format.in == "waters_arw"){
     pattern <- ".arw"
     converter <- partial(read_waters_arw, format_out = R.format)
-    } else{
-    converter <- ifelse(parser == "aston", trace_converter, entab_reader)
+  } else if (format.in == "chemstation_csv"){
+    pattern <- ".csv|.CSV"
+    converter <- partial(read_waters_arw, format_out = R.format)
+  } else if (format.in == "other"){
+    converter <- switch(parser, "aston" = trace_converter,
+                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = R.format),
+                        "openchrom" = partial(openchrom_parser, format_out = format.out)
+    )
   }
+  writer <- switch(format.out,
+                   "csv" = export_csvs)
   if (find_files){
-    files <- unlist(lapply(paths, function(path){
-      files <- list.files(path = path, pattern = pattern,
-                          full.names = TRUE, recursive = TRUE)
-      if (length(files)==0){
-        if (!dir.exists(path)){
-          warning(paste0("The directory '", basename(path), "' does not exist."))
-        } else{
-          warning(paste0("No files matching the pattern '", pattern,
-                         "' were found in '", basename(path), "'"))
-        }
-      }
-      files
-    }))
+    files <- find_files(paths, pattern)
   } else{
     files <- paths
     match <- grep(pattern, files)
@@ -148,20 +138,18 @@ read_chroms <- function(paths, find_files = TRUE,
                        sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
   } else file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
   data <- lapply(X=files, function(file){
-    df <- try(converter(file),silent = TRUE)
+    df <- try(converter(file), silent = TRUE)
   })
   errors <- which(sapply(data, function(x) inherits(x,"try-error")))
   if (length(errors) > 0){
-    warning(data[errors],immediate. = TRUE)
+    warning(data[errors], immediate. = TRUE)
     message(paste("The following chromatograms could not be interpreted:", errors))
     data <- data[-errors]
     file_names <- file_names[-errors]
   }
   names(data) <- file_names
-  if (export){
-    sapply(seq_along(data), function(i){
-      write.csv(data[[i]], file = paste0(paste(path.out,names(data)[i], sep="/"),".CSV"))
-    })
+  if (export & !(parser %in% c("thermoraw", "openchrom"))){
+    writer(data, path.out)
   }
   dat <- append(dat, data)
   dat
@@ -261,11 +249,19 @@ entab_reader <- function(file, format_data = c("wide","long"),
   }
   if (read_metadata){
     meta <- r$metadata()
+    rep <- list.files(gsub(basename(file), "", file), pattern = '.xls|.csv',
+                      ignore.case = TRUE, full.names = TRUE)
+    if (length(rep) > 0){
+      meta2 <- as.data.frame(readxl::read_xls(rep, sheet=1, skip=1))
+      rownames(meta2) <- meta2$Title
+      meta2 <- as.list(meta2[,-1, drop=FALSE])
+      meta <- rbind(meta,meta2)
+    }
     df <- structure(df, instrument = meta$instrument,
               detector = NA,
-              software = NA,
+              software = meta$AcqVersion,
               method = meta$method,
-              batch = NA,
+              batch = meta$SeqPathAndFile,
               operator = meta$operator,
               run_date = meta$run_date,
               sample_name = meta$sample,
@@ -417,4 +413,26 @@ read_waters_arw <- function(file, read_metadata = TRUE,
                     class = format_out)
   }
   x
+}
+
+find_files <- function(paths, pattern){
+  files <- unlist(lapply(paths, function(path){
+    files <- list.files(path = path, pattern = pattern,
+                        full.names = TRUE, recursive = TRUE)
+    if (length(files)==0){
+      if (!dir.exists(path)){
+        warning(paste0("The directory '", basename(path), "' does not exist."))
+      } else{
+        warning(paste0("No files matching the pattern '", pattern,
+                       "' were found in '", basename(path), "'"))
+      }
+    }
+    files
+  }))
+}
+
+export_csvs <- function(data, path.out){
+  sapply(seq_along(data), function(i){
+    write.csv(data[[i]], file = paste0(paste0(path.out, names(data)[i]),".CSV"))
+  })
 }

@@ -14,7 +14,10 @@ Imports:
     readr,
     reticulate,
     tidyr,
-    utils
+    utils,
+    magrittr,
+    readxl,
+    xml2
 Suggests: 
     entab,
     mzR,

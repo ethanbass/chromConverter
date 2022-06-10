@@ -1,0 +1,112 @@
+#' Parse files with OpenChrom
+#'
+#' To use this function [OpenChrom](https://lablicate.com/platform/openchrom) must be manually installed.
+
+#' @import xml2
+#' @import magrittr
+#' @param files files to parse
+#' @param path_out directory to export converted files.
+#' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
+#' @param format_out Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.
+#' @return No return value.
+#' @author Ethan Bass
+#' @export openchrom_parser
+#' If you want to use the OpenChrom GUI, it is recommended to create a separate
+#' command-line version of OpenChrom to call from R.
+#'
+
+openchrom_parser <- function(files, path_out, format_in,
+                             format_out=c("mzml", "cdf", "animl", "csv")){
+  if (missing(format_in))
+    stop("Format must be specified. The options are `msd` for mass spectrometry, `csd` for flame ionization (FID),
+    or `wsd` for DAD/UV data.")
+  format_out <- match.arg(format_out, c("mzml", "cdf", "animl", "csv"))
+  if (missing(path_out)){
+    path_out <- set_temp_directory()
+  }
+  if(!file.exists(path_out)){
+    stop("'path_out' not found. Make sure directory exists.")
+  }
+  openchrom_path <- configure_openchrom_parser()
+  path_template <- system.file("openchrom_template.xml", package = "chromConverter")
+  x <- xml2::read_xml(x = path_template)
+  # add files to InputEntries
+  for (file in files){
+  x %>% xml_children %>% .[[3]] %>%
+    xml_add_child(.value = "InputEntry")  %>% xml_add_child(xml_cdata(file))
+  }
+  # add parser to ProcessEntries
+  msd_mzml_converter<-'ProcessEntry id="msd.export.org.eclipse.chemclipse.msd.converter.supplier.mzml" name="mzML Chromatogram (*.mzML)" description="Reads mzML Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  msd_netcdf_converter<-'ProcessEntry id="msd.export.net.openchrom.msd.converter.supplier.cdf" name="ANDI/AIA CDF Chromatogram (*.CDF)" description="Reads an writes ANDI/AIA CDF Chromatograms." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  msd_animl_converter <- 'ProcessEntry id="msd.export.net.openchrom.msd.converter.supplier.animl.chromatogram" name="AnIML MSD Chromatogram (*.animl)" description="Reads and writes Analytical Information Markup Language Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  msd_csv_converter <- 'ProcessEntry id="msd.export.org.eclipse.chemclipse.msd.converter.supplier.csv" name="CSV Chromatogram (*.csv)" description="Reads and Writes Chromatograms to CSV." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  csd_csv_converter <- 'ProcessEntry id="csd.export.org.eclipse.chemclipse.csd.converter.supplier.csv" name="CSV Chromatogram (*.csv)" description="Reads and Writes Chromatograms to CSV." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  csd_animl_converter <- 'ProcessEntry id="csd.export.net.openchrom.csd.converter.supplier.animl" name="AnIML FID Chromatogram (*.animl)" description="Writes AnIML Chromatograms." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  wsd_animl_converter <- 'ProcessEntry id="wsd.export.net.openchrom.wsd.converter.supplier.animl.chromatogram" name="AnIML UV-Vis Chromatogram (*.animl)" description="Reads Analytical Information Markup Language Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  wsd_csv_converter <- 'ProcessEntry id="wsd.export.org.eclipse.chemclipse.csd.converter.supplier.csv" name="CSV Chromatogram (*.csv)" description="Reads and Writes Chromatograms to CSV." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  if (format_in == "msd"){
+  parser <- switch(format_out,
+                   "mzml" = msd_mzml_converter,
+                   "cdf" = msd_netcdf_converter,
+                   "animl" = msd_animl_converter,
+                    "csv" = msd_csv_converter)
+  } else if (format_in == "csd"){
+    parser <- switch(format_out,
+                     "csv" = csd_csv_converter,
+                     "animl" = csd_animl_converter)
+  } else if (format_in == "wsd"){
+    parser <- switch(format_out,
+                     "csv" = wsd_csv_converter,
+                     "animl" = wsd_animl_converter)
+  }
+  x %>% xml_children %>% .[[4]] %>% xml_add_child(.value=gsub("path_out", path_out, parser))
+  path_xml <- paste0(path_out, "batchfile_", strftime(Sys.time(),format = "%Y-%m-%d_%H-%M-%S"), ".xml")
+  write_xml(x, file = path_xml)
+  openchrom_path <- "/Applications/OpenChrom_CL.app/Contents/MacOS/openchrom"
+  system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml))
+  if (format_out == "csv"){
+    new_files <- paste0(path_out, sapply(strsplit(basename(files), "\\."), function(x) x[1]), ".csv")
+    lapply(new_files, read.csv)
+  }
+}
+
+#' Configure OpenChrom parser
+#'
+#' @name configure_openchrom_parser
+#' @param cli Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.
+#' If "false", R will disable CLI. If NULL, R will not modify the ini file.
+#' @return No return value.
+#' @author Ethan Bass
+#' @noRd
+configure_openchrom_parser <- function(cli = c(NULL, "true", "false")){
+  cli <- match.arg(cli, c(NULL, "true", "false"))
+  path_parser <- readLines(system.file("shell/path_to_openchrom_commandline.txt", package = 'chromConverter'))
+  if (!file.exists(path_parser)){
+    warning("OpenChrom not found!", immediate. = TRUE)
+    path_parser <- readline(prompt="Please provide path to `OpenChrom` command line):")
+    writeLines(path_parser, con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
+  }
+  path_ini <- switch(.Platform$OS.type,
+                     "unix" = paste0(gsub("MacOS/openchrom", "", path_parser), "Eclipse/openchrom.ini"),
+                     "linux" = paste0(path_parser, ".uni"),
+                     "windows" = paste0(path_parser))
+  ini <- readLines(path_ini)
+  cli_index <- grep("-Denable.cli.support",ini)
+  ini_split <- strsplit(ini[cli_index],"=")[[1]]
+  ans <- ini_split[2]
+  if (cli %in% c("true", "false")){
+    ini_split[2] <- cli
+    ini[cli_index] <- paste(ini_split, collapse="=")
+    writeLines(ini, path_ini)
+    ini <- readLines(path_ini)
+    cli_index <- grep("-Denable.cli.support",ini)
+    ini_split <- strsplit(ini[cli_index],"=")[[1]]
+    ans <- ini_split[2]
+  }
+  if(ans == "false"){
+    stop("-Denable.cli.support must be enabled to use the OpenChrom parsers from R.")
+  }
+  path_parser[1]
+}
+
+utils::globalVariables(names = c('.'))

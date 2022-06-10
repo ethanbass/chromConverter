@@ -1,0 +1,1 @@
+/Applications/OpenChrom_CL.app/Contents/MacOS/openchrom
