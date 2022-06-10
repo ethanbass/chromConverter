@@ -15,12 +15,12 @@ It currently consists of a wrapper around the file parsers included in the [Asto
 ##### Binary formats
 - Agilent ChemStation CH, FID, MS, MWD, and UV
 - Agilent MassHunter DAD (`.sp`)
-- Thermo RAW (see [installation instructions](README.md#Installation) for the ThermoRawFileParser)
+- Thermo RAW (`.raw`) (see [installation instructions](README.md#Installation) for the ThermoRawFileParser)
 ##### Text formats
-- Chromeleon UV ascii (`.txt`) format
-- mzML
-- Shimadzu LabSolutions GC-FID ascii (`.txt`) format
-- Waters ascii (`.arw`) format (*provisional support*)
+- Chromeleon UV ascii (`.txt`)
+- mzML (`.mzml`)
+- Shimadzu LabSolutions GC-FID ascii (`.txt`)
+- Waters ascii (`.arw`) (*provisional support*)
 
 ## Installation
 
