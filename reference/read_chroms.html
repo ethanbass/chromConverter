@@ -77,39 +77,62 @@ and <a href="https://github.com/compomics/ThermoRawFileParser" class="external-l
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>paths</dt>
 <dd><p>paths to files or folders containing files</p></dd>
+
+
 <dt>find_files</dt>
 <dd><p>Logical. Set to <code>TRUE</code> (default) if you are providing
 the function with a folder or vector of folders containing the files.
 Otherwise, set to<code>FALSE</code>.</p></dd>
+
+
 <dt>format.in</dt>
 <dd><p>Format of files to be imported/converted. The current options
 are: <code>chemstation_uv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>,
 <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, or <code>waters_arw</code>.</p></dd>
+
+
 <dt>pattern</dt>
 <dd><p>pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from <code>format.in</code>.</p></dd>
+
+
 <dt>parser</dt>
 <dd><p>What parser to use. Current option are <code>aston</code> or <code>
 entab</code>. Entab must be manually installed from github.</p></dd>
+
+
 <dt>R.format</dt>
 <dd><p>R object format (i.e. data.frame or matrix).</p></dd>
+
+
 <dt>export</dt>
 <dd><p>Logical. If TRUE, will export files as csvs.</p></dd>
+
+
 <dt>path.out</dt>
 <dd><p>Path for exporting files. If path not specified, files will
 export to current working directory.</p></dd>
+
+
 <dt>format.out</dt>
 <dd><p>Output format. Currently only <code>.csv</code>.</p></dd>
+
+
 <dt>read_metadata</dt>
 <dd><p>Logical, whether to attach metadata (if it's available).
 Defaults to TRUE.</p></dd>
+
+
 <dt>dat</dt>
 <dd><p>Existing list of chromatograms to append results.
 (Defaults to NULL).</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of chromatograms in matrix or data.frame format, according to
+    
+
+<p>A list of chromatograms in matrix or data.frame format, according to
 the value of 'R.format'.</p>
     </div>
     <div class="section level2">
@@ -139,7 +162,7 @@ ThermoRaw files.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>
