@@ -56,14 +56,14 @@ The Thermo RAW parser works by calling the ThermoRawFileParser on the command li
 
 ## Usage
 
-The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the path to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format. The supported formats include `chemstation_uv`, `masshunter_dad`, `shimadzu_fid`, `chromeleon_uv`, `thermoraw`, `mzml`, or `waters_arw`. For formats where there are multiple parsers available, you can choose between them using the `parser` argument. For example, Chemstation and Masshunter files can be parsed using either the Aston or Entab parsers.
+The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format (`format.in`). The supported formats include `chemstation_uv`, `masshunter_dad`, `shimadzu_fid`, `chromeleon_uv`, `thermoraw`, `mzml`, and `waters_arw`. For formats where there are multiple parsers available, you can choose between them using the `parser` argument. For example, Chemstation and Masshunter files can be parsed using either the Aston or Entab parsers.
 
 ```
 library(chromConverter)
 dat <- read_chroms(path, find_files = TRUE, format.in = "chemstation_uv")
 ```
 
-If you want to provide direct paths to files, include the argument `find_files = FALSE`.
+If you want to provide direct paths to files, instead of a folder, include the argument `find_files = FALSE`.
 
 ```
 library(chromConverter)
