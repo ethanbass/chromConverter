@@ -18,7 +18,8 @@ read_chromeleon(
 \item{read_metadata}{Whether to read metadata from file.}
 }
 \value{
-A matrix object (retention time x trace).
+A chromatogram in the format specified by \code{format_out}
+(retention time x wavelength).
 }
 \description{
 Chromeleon ascii reader

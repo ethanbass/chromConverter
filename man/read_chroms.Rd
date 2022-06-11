@@ -8,13 +8,13 @@ read_chroms(
   paths,
   find_files = TRUE,
   format_in = c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
-    "chromeleon_uv", "thermoraw", "mzml", "waters_arw"),
+    "chromeleon_uv", "thermoraw", "mzml", "waters_arw", "msd", "csd", "wsd"),
   pattern = NULL,
-  parser = c("aston", "entab", "thermoraw"),
+  parser = c("aston", "entab", "thermoraw", "openchrom"),
   format_out = c("matrix", "data.frame"),
   export = FALSE,
   path_out = NULL,
-  export_format = "csv",
+  export_format = c("csv", "cdf", "mzml", "animl"),
   read_metadata = TRUE,
   dat = NULL
 )
@@ -65,6 +65,13 @@ Currently recognizes Agilent ChemStation '.uv', MassHunter '.dad' files, and
 ThermoRaw files. To use Entab and the ThermoRawFileParser, they
 must be manually installed. Please see the instructions in the Read Me.
 }
+\section{Side effects}{
+ If \code{export} is TRUE, chromatograms will be
+exported in the format specified by \code{export_format} in the folder specified
+by \code{path_out}. Currently, the only option for export is \code{csv} unless
+the \code{parser} is \code{openchrom}.
+}
+
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 path <- "tests/testthat/testdata/dad1.uv"

@@ -6,6 +6,7 @@
 * Added `read_entab` function for calling Entab parsers.
 * Added `read_thermoraw` function to convert ThermoRawFiles by calling the ThermoRawFileParser.
 * Added `read_mzml` function to extract UV data from mzML files using `mzR`.
+* Added `openchrom_parser` to call OpenChrom parsers through the commandline interface.
 
 All of the above functions can also be called from `read_chroms` by setting the `format_in` and `parser` arguments.  
 

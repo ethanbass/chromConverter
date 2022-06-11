@@ -25,7 +25,8 @@ read_shimadzu(
 \code{both}.}
 }
 \value{
-A matrix object (retention time x trace).
+A chromatogram in the format specified by \code{format_out}
+(retention time x wavelength).
 }
 \description{
 Shimadzu ascii reader

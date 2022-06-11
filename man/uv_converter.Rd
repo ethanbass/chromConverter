@@ -23,7 +23,7 @@ TRUE.}
 chromatogram.}
 }
 \value{
-A data.frame object (retention time x trace).
+A chromatogram in \code{data.frame} format (retention time x wavelength).
 }
 \description{
 Converts a single chromatogram from ChemStation \code{.uv} format to R \code{data.frame}.

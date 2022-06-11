@@ -31,6 +31,10 @@
 #' (Defaults to NULL).
 #' @return A list of chromatograms in \code{matrix} or \code{data.frame} format,
 #' according to the value of \code{format_out}.
+#' @section Side effects: If \code{export} is TRUE, chromatograms will be
+#' exported in the format specified by \code{export_format} in the folder specified
+#' by \code{path_out}. Currently, the only option for export is \code{csv} unless
+#' the \code{parser} is \code{openchrom}.
 #' @import reticulate
 #' @importFrom utils write.csv
 #' @importFrom purrr partial
@@ -39,19 +43,25 @@
 #' chr <- read_chroms(path, find_files = FALSE, format_in = "chemstation_uv")
 #' @author Ethan Bass
 #' @export read_chroms
+
 read_chroms <- function(paths, find_files = TRUE,
                         format_in=c("chemstation_uv", "masshunter_dad",
                                     "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
-                                   "thermoraw", "mzml", "waters_arw"),
-                        pattern = NULL, parser = c("aston", "entab", "thermoraw"),
-                        format_out=c("matrix", "data.frame"), export=FALSE,
-                        path_out=NULL, export_format = "csv", read_metadata = TRUE,
+                                   "thermoraw", "mzml", "waters_arw", "msd",
+                                   "csd", "wsd"),
+                        pattern = NULL,
+                        parser = c("aston", "entab", "thermoraw", "openchrom"),
+                        format_out = c("matrix", "data.frame"), export = FALSE,
+                        path_out = NULL,
+                        export_format = c("csv", "cdf", "mzml", "animl"),
+                        read_metadata = TRUE,
                         dat = NULL){
   format_in <- match.arg(format_in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
                                       "chromeleon_uv", "thermoraw", "mzml", "waters_arw",
                                       "msd", "csd", "wsd"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
-  parser <- match.arg(parser, c("aston","entab", "thermoraw"))
+  parser <- match.arg(parser, c("aston","entab", "thermoraw", "openchrom"))
+  export_format <- match.arg(export_format, c("csv", "cdf", "mzml", "animl"))
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
     stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
@@ -67,18 +77,10 @@ read_chroms <- function(paths, find_files = TRUE,
     if (substr(path_out, nchar(path_out)-1, nchar(nchar(path_out))) != "/")
       path_out <- paste0(path_out, "/")
   }
-  if (export | format_in == "thermoraw"){
-    if (is.null(path_out)){
-      ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
-      if (ans %in% c("y","Y")){
-        if (!dir.exists("temp"))
-          dir.create("temp")
-        path_out <- paste0(getwd(),'/temp/')
-      } else{
-        stop("Must specify directory to export files.")
-      }
+  if (export | format_in == "thermoraw" | parser == "openchrom"){
+    if (is.null(path.out)){
+      path.out <- set_temp_directory()
     }
-    # path_out <- gsub("/$","", path_out)
     if (!dir.exists(path_out)){
       stop(paste0("The export directory '", path_out, "' does not exist."))
     }
@@ -88,19 +90,16 @@ read_chroms <- function(paths, find_files = TRUE,
   # choose converter
   if (format_in == "masshunter_dad"){
     pattern <- ifelse(is.null(pattern), ".sp", pattern)
-    converter <- if (parser == "aston"){
-      sp_converter
-    } else{
-      partial(entab_reader, read_metadata = read_metadata, format_out = format_out)
-    }
+    converter <- switch(parser,
+                        "aston" = sp_converter,
+                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out,
+                                          format_in = format_in))
   } else if (format_in == "chemstation_uv"){
     pattern <- ifelse(is.null(pattern), ".uv", pattern)
-    converter <- if (parser == "aston"){
-      partial(uv_converter, read_metadata = read_metadata, format_out = format_out)
-    } else{
-      partial(entab_reader, read_metadata = read_metadata, format_out = format_out,
-              format_in = format_in)
-    }
+    converter <- switch(parser,
+                        "aston" = partial(uv_converter, read_metadata = read_metadata, format_out = format_out),
+                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out,
+                                          format_in = format_in))
   } else if(format_in == "chromeleon_uv"){
     pattern <- ".txt"
     converter <- partial(read_chromeleon, read_metadata = read_metadata, format_out = format_out)
@@ -122,23 +121,20 @@ read_chroms <- function(paths, find_files = TRUE,
   } else if (format_in == "waters_arw"){
     pattern <- ".arw"
     converter <- partial(read_waters_arw, format_out = format_out)
-    } else{
-    converter <- ifelse(parser == "aston", trace_converter, entab_reader)
+  } else if (format_in == "chemstation_csv"){
+    pattern <- ".csv|.CSV"
+    converter <- partial(read_chemstation_csv, format_out = format_out)
+  } else if (format_in %in% c("msd", "csd", "wsd")){
+    converter <- partial(openchrom_parser, path_out = path_out,
+                         format_in = format_in, export_format = export_format)
+  } else{
+    converter <- switch(parser, "aston" = trace_converter,
+                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out)
+    )
   }
+  writer <- switch(export_format, "csv" = export_csvs)
   if (find_files){
-    files <- unlist(lapply(paths, function(path){
-      files <- list.files(path = path, pattern = pattern,
-                          full.names = TRUE, recursive = TRUE)
-      if (length(files)==0){
-        if (!dir.exists(path)){
-          warning(paste0("The directory '", basename(path), "' does not exist."))
-        } else{
-          warning(paste0("No files matching the pattern '", pattern,
-                         "' were found in '", basename(path), "'"))
-        }
-      }
-      files
-    }))
+    files <- find_files(paths, pattern)
   } else{
     files <- paths
     match <- grep(pattern, files)
@@ -157,20 +153,18 @@ read_chroms <- function(paths, find_files = TRUE,
                        sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
   } else file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
   data <- lapply(X=files, function(file){
-    df <- try(converter(file),silent = TRUE)
+    df <- try(converter(file), silent = TRUE)
   })
   errors <- which(sapply(data, function(x) inherits(x,"try-error")))
   if (length(errors) > 0){
-    warning(data[errors],immediate. = TRUE)
+    warning(data[errors], immediate. = TRUE)
     message(paste("The following chromatograms could not be interpreted:", errors))
     data <- data[-errors]
     file_names <- file_names[-errors]
   }
   names(data) <- file_names
-  if (export){
-    sapply(seq_along(data), function(i){
-      write.csv(data[[i]], file = paste0(paste(path_out,names(data)[i], sep="/"),".CSV"))
-    })
+  if (export & !(parser %in% c("thermoraw", "openchrom"))){
+    writer(data, path.out)
   }
   dat <- append(dat, data)
   dat
@@ -185,7 +179,7 @@ read_chroms <- function(paths, find_files = TRUE,
 #'
 #' @name sp_converter
 #' @param file path to file
-#' @return A data.frame object (retention time x wavelength).
+#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @export sp_converter
 sp_converter <- function(file){
@@ -207,7 +201,7 @@ sp_converter <- function(file){
 #' TRUE.
 #' @param read_metadata Logical. Whether to read metadata and attach it to the
 #' chromatogram.
-#' @return A data.frame object (retention time x trace).
+#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @export uv_converter
 uv_converter <- function(file, format_out = c("matrix","data.frame"),
@@ -239,7 +233,7 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
 #' @name trace_converter
 #' @title generic converter for other types of files
 #' @param file path to file
-#' @return A data.frame object (retention time x trace).
+#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @noRd
 trace_converter <- function(file){
@@ -257,7 +251,8 @@ trace_converter <- function(file){
 #' @param format_in Format of input.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return a \code{chrom} object
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @importFrom tidyr pivot_wider
 #' @export
 entab_reader <- function(file, format_data = c("wide","long"),
@@ -301,7 +296,8 @@ entab_reader <- function(file, format_data = c("wide","long"),
 #' @param file path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return A matrix object (retention time x trace).
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
@@ -340,7 +336,8 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
 #' @param read_metadata Whether to read metadata from file.
 #' @param what Whether to extract \code{chromatogram}, \code{peak_table} or
 #' \code{both}.
-#' @return A matrix object (retention time x trace).
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 read_shimadzu <- function(file, format_in, read_metadata = TRUE,
@@ -430,7 +427,8 @@ extract_header <- function(x, chrom.idx){
 #' @param file path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return A matrix object (retention time x trace).
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 read_waters_arw <- function(file, read_metadata = TRUE,
@@ -447,6 +445,49 @@ read_waters_arw <- function(file, read_metadata = TRUE,
                          format_out = format_out)
   }
   x
+}
+
+#' Chemstation CSV reader
+#'
+#' @name read_chemstation_csv
+#' @importFrom utils tail read.csv
+#' @param file path to file
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
+#' @author Ethan Bass
+#' @export
+read_chemstation_csv <- function(file, format_out = c("matrix","data.frame")){
+  format_out <- match.arg(format_out, c("matrix","data.frame"))
+  x <- read.csv(file, row.names = 1, header = TRUE,
+                fileEncoding="utf-16",check.names = FALSE)
+  if (format_out == "matrix"){
+    x <- as.matrix(x)
+  }
+  x
+}
+
+
+find_files <- function(paths, pattern){
+  files <- unlist(lapply(paths, function(path){
+    files <- list.files(path = path, pattern = pattern,
+                        full.names = TRUE, recursive = TRUE)
+    if (length(files)==0){
+      if (!dir.exists(path)){
+        warning(paste0("The directory '", basename(path), "' does not exist."))
+      } else{
+        warning(paste0("No files matching the pattern '", pattern,
+                       "' were found in '", basename(path), "'"))
+      }
+    }
+    files
+  }))
+}
+
+export_csvs <- function(data, path.out){
+  sapply(seq_along(data), function(i){
+    write.csv(data[[i]], file = paste0(paste0(path.out, names(data)[i]),".CSV"))
+  })
 }
 
 #' Attaches metadata to chromatogram
@@ -578,4 +619,3 @@ read_chemstation_metadata <- function(file, what=c("metadata", "peaktable")){
     }
   }
 }
-

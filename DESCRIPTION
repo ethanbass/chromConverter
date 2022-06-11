@@ -16,7 +16,9 @@ Imports:
     reticulate,
     stringr,
     tidyr,
-    utils
+    utils,
+    magrittr,
+    xml2
 Suggests: 
     entab,
     mzR,
