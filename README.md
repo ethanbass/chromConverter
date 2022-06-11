@@ -17,7 +17,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 ##### Text formats
 - Chromeleon UV ascii (`.txt`)
 - mzML (`.mzml`)
-- Shimadzu LabSolutions GC-FID ascii (`.txt`)
+- Shimadzu LabSolutions ascii (`.txt`)
 - Waters ascii (`.arw`) (*provisional support*)
 
 ## Installation
