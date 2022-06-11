@@ -10,3 +10,11 @@ skip_if_missing_dependecies <- function() {
     skip(paste("required packages", reqs[!have_reqs],
                "not available for testing"))
 }
+
+skip_if_missing_thermorawfileparser <- function() {
+  reqs <- c("scipy","numpy", "aston", "pandas")
+  have_reqs <- sapply(reqs, py_module_available)
+  if (mean(have_reqs) < 1)
+    skip(paste("required packages", reqs[!have_reqs],
+               "not available for testing"))
+}

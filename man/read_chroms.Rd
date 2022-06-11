@@ -7,14 +7,14 @@
 read_chroms(
   paths,
   find_files = TRUE,
-  format.in = c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-    "thermoraw", "mzml", "waters_arw", "msd", "csd", "wsd"),
+  format_in = c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
+    "chromeleon_uv", "thermoraw", "mzml", "waters_arw", "msd", "csd", "wsd"),
   pattern = NULL,
-  parser = c("aston", "entab", "openchrom", "thermoraw"),
-  R.format = c("matrix", "data.frame"),
+  parser = c("aston", "entab", "thermoraw", "openchrom"),
+  format_out = c("matrix", "data.frame"),
   export = FALSE,
-  path.out = NULL,
-  format.out = c("csv", "cdf", "mzml", "animl"),
+  path_out = NULL,
+  export_format = c("csv", "cdf", "mzml", "animl"),
   read_metadata = TRUE,
   dat = NULL
 )
@@ -26,24 +26,24 @@ read_chroms(
 the function with a folder or vector of folders containing the files.
 Otherwise, set to\code{FALSE}.}
 
-\item{format.in}{Format of files to be imported/converted. The current options
+\item{format_in}{Format of files to be imported/converted. The current options
 are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
 \code{chromeleon_uv}, \code{thermoraw}, \code{mzml}, or \code{waters_arw}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
-case file extension will be deduced from \code{format.in}.}
+case file extension will be deduced from \code{format_in}.}
 
 \item{parser}{What parser to use. Current option are \code{aston}, \code{
-entab}, or \code{openchrom}. Entab must be manually installed from github.}
+entab}, or \code{thermoraw}.}
 
-\item{R.format}{R object format (i.e. data.frame or matrix).}
+\item{format_out}{R object format (i.e. data.frame or matrix).}
 
 \item{export}{Logical. If TRUE, will export files as csvs.}
 
-\item{path.out}{Path for exporting files. If path not specified, files will
+\item{path_out}{Path for exporting files. If path not specified, files will
 export to current working directory.}
 
-\item{format.out}{Output format. Currently only \code{.csv}.}
+\item{export_format}{Export format. Currently only \code{.csv}.}
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
 Defaults to TRUE.}
@@ -52,8 +52,8 @@ Defaults to TRUE.}
 (Defaults to NULL).}
 }
 \value{
-A list of chromatograms in matrix or data.frame format, according to
-the value of 'R.format'.
+A list of chromatograms in \code{matrix} or \code{data.frame} format,
+according to the value of \code{format_out}.
 }
 \description{
 Reads chromatograms from specified folders or vector of paths using file parsers
@@ -62,7 +62,8 @@ and \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser}
 }
 \details{
 Currently recognizes Agilent ChemStation '.uv', MassHunter '.dad' files, and
-ThermoRaw files.
+ThermoRaw files. To use Entab and the ThermoRawFileParser, they
+must be manually installed. Please see the instructions in the Read Me.
 }
 \section{Side effects}{
  If \code{export} is TRUE, chromatograms will be
@@ -74,7 +75,7 @@ the \code{parser} is \code{openchrom}.
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 path <- "tests/testthat/testdata/dad1.uv"
-chr <- read_chroms(path, find_files = FALSE, format.in = "chemstation_uv")
+chr <- read_chroms(path, find_files = FALSE, format_in = "chemstation_uv")
 \dontshow{\}) # examplesIf}
 }
 \author{

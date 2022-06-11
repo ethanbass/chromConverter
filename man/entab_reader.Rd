@@ -7,6 +7,7 @@
 entab_reader(
   file,
   format_data = c("wide", "long"),
+  format_in = "",
   format_out = c("matrix", "data.frame"),
   read_metadata = TRUE
 )
@@ -15,6 +16,8 @@ entab_reader(
 \item{file}{path to file}
 
 \item{format_data}{Whether to output data in wide or long format.}
+
+\item{format_in}{Format of input.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 

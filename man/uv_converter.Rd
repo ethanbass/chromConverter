@@ -4,13 +4,23 @@
 \alias{uv_converter}
 \title{Converter for Agilent ChemStation UV files}
 \usage{
-uv_converter(file, correction = TRUE)
+uv_converter(
+  file,
+  format_out = c("matrix", "data.frame"),
+  correction = TRUE,
+  read_metadata = TRUE
+)
 }
 \arguments{
 \item{file}{path to file}
 
+\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+
 \item{correction}{Logical. Whether to apply empirical correction. Defaults is
 TRUE.}
+
+\item{read_metadata}{Logical. Whether to read metadata and attach it to the
+chromatogram.}
 }
 \value{
 A chromatogram in \code{data.frame} format (retention time x wavelength).

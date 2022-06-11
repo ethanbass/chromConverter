@@ -132,10 +132,11 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame")){
 #' @return No return value.
 #' @author Ethan Bass
 #' @noRd
-configure_thermo_parser <- function(reconfigure = FALSE){
+configure_thermo_parser <- function(reconfigure = FALSE, check = FALSE){
   if (.Platform$OS.type == "windows"){
     path_parser <- readLines(system.file("shell/path_parser.txt", package = 'chromConverter'))
-    if (!file.exists(path_parser)){
+    exists <- file.exists(path_parser)
+    if (!exists & !check){
       warning("ThermoRawFileParser not found!", immediate. = TRUE)
       path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
       # reconfigure <- TRUE
@@ -145,13 +146,17 @@ configure_thermo_parser <- function(reconfigure = FALSE){
     shell_script <- readLines(system.file('shell/thermofileparser.sh', package='chromConverter'))
     path_parser <- strsplit(shell_script[2]," ")[[1]]
     path_parser <- path_parser[grep(".exe",path_parser)]
-    if (!file.exists(path_parser)){
+    exists <- file.exists(path_parser)
+    if (!exists & !check){
       warning("ThermoRawFileParser not found!", immediate. = TRUE)
       path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
       # arg1 <- "mono "
       shell_script[2] <- paste0("mono ", path_parser, ' "$@"')
       writeLines(shell_script, con = system.file('shell/thermofileparser.sh', package='chromConverter'))
     }
+  }
+  if (check){
+    exists
   }
 }
 
@@ -166,5 +171,3 @@ set_temp_directory <- function(){
     stop("Must specify directory to export files.")
   }
 }
-
-

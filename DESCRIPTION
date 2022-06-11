@@ -12,7 +12,9 @@ BugReports: https://github.com/ethanbass/chromConverter/issues
 Imports:
     purrr,
     readr,
+    readxl,
     reticulate,
+    stringr,
     tidyr,
     utils,
     magrittr,

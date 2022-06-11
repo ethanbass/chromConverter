@@ -7,20 +7,18 @@
 
 ## Overview
 
-chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis.
-
-It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they're slightly more complicated to install (see [installation instructions](README.md#Installation) below).
+chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), and the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser) as well as some parsers written natively in R for text-based formats. For Agilent files, it is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, Entab is slightly more complicated to install (see [installation instructions](README.md#Installation) below).
 
 ## Formats
 ##### Binary formats
 - Agilent ChemStation CH, FID, MS, MWD, and UV
 - Agilent MassHunter DAD (`.sp`)
-- Thermo RAW (see [installation instructions](README.md#Installation) for the ThermoRawFileParser)
+- Thermo RAW (`.raw`) (see [installation instructions](README.md#Installation) for the ThermoRawFileParser)
 ##### Text formats
-- Chromeleon UV ascii (`.txt`) format
-- mzML
-- Shimadzu LabSolutions GC-FID ascii (`.txt`) format
-- Waters ascii (`.arw`) format (*provisional support*)
+- Chromeleon UV ascii (`.txt`)
+- mzML (`.mzml`)
+- Shimadzu LabSolutions ascii (`.txt`)
+- Waters ascii (`.arw`) (*provisional support*)
 
 ## Installation
 
@@ -60,14 +58,14 @@ OpenChrom contains a large number of [file parsers](https://lablicate.com/platfo
 
 ## Usage
 
-The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the path to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format. The supported formats include `chemstation_uv`, `masshunter_dad`, `shimadzu_fid`, `chromeleon_uv`, `thermoraw`, `mzml`, or `waters_arw`. For formats where there are multiple parsers available, you can choose between them using the `parser` argument. For example, Chemstation and Masshunter files can be parsed using either the Aston or Entab parsers.
+The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format (`format.in`). The supported formats include `chemstation_uv`, `masshunter_dad`, `shimadzu_fid`, `chromeleon_uv`, `thermoraw`, `mzml`, and `waters_arw`. For formats where there are multiple parsers available, you can choose between them using the `parser` argument. For example, Chemstation and Masshunter files can be parsed using either the Aston or Entab parsers.
 
 ```
 library(chromConverter)
 dat <- read_chroms(path, find_files = TRUE, format.in = "chemstation_uv")
 ```
 
-If you want to provide direct paths to files, include the argument `find_files = FALSE`.
+If you want to provide direct paths to files, instead of a folder, include the argument `find_files = FALSE`.
 
 ```
 library(chromConverter)
