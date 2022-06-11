@@ -119,6 +119,11 @@
 </h5>
 <p>The Thermo RAW parser works by calling the ThermoRawFileParser on the command line. Thus, to parse Thermo RAW files you must first install the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>. If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. When you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.</p>
 </div>
+<div class="section level5">
+<h5 id="openchrom">OpenChrom<a class="anchor" aria-label="anchor" href="#openchrom"></a>
+</h5>
+<p>OpenChrom contains a large number of <a href="https://lablicate.com/platform/openchrom" class="external-link">file parsers</a> which can now be conveniently accessed directly from R. As for the Thermo parser, you must manually install OpenChrom you will be asked to provide the path to the program when you call the parsers from R for the first time. Strangely, in order to use OpenChrom from the command-line, you must turn off the GUI. Thus, if you wish to use the OpenChrom GUI and also call it from the command-line, it is recommended to make a separate copy of OpenChrom and follow the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> here to activate the command-line interface. If you don’t wish to use the GUI, you can change the settings on your main installation. The command-line option can also be activated from R by calling <code>configure_openchrom_parser(cli="true")</code>.</p>
+</div>
 </div>
 </div>
 <div class="section level2">
