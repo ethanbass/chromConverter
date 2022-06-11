@@ -51,11 +51,10 @@ read_chroms <- function(paths, find_files = TRUE,
                                    "csd", "wsd", "other"),
                         pattern = NULL,
                         parser = c("chromconverter", "aston", "entab", "thermoraw", "openchrom"),
-                        format_out = c("matrix", "data.frame"), export = FALSE,
-                        path_out = NULL,
+                        format_out = c("matrix", "data.frame"),
+                        export = FALSE, path_out = NULL,
                         export_format = c("csv", "cdf", "mzml", "animl"),
-                        read_metadata = TRUE,
-                        dat = NULL){
+                        read_metadata = TRUE, dat = NULL){
   format_in <- match.arg(format_in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
                                       "chromeleon_uv", "thermoraw", "mzml", "waters_arw",
                                       "msd", "csd", "wsd", "other"))
