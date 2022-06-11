@@ -17,11 +17,11 @@
 #' @param files files to parse
 #' @param path_out directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
-#' @param format_out Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.
-#' @return If \code{format_out} is \code{csv}, the function will return a list
+#' @param export_format Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.
+#' @return If \code{export_format} is \code{csv}, the function will return a list
 #' of chromatograms in \code{data.frame} format. Otherwise it will not return anything.
 #' @section Side effects: Chromatograms will be exported in the format specified
-#' by \code{format_out} in the folder specified by \code{path_out}.
+#' by \code{export_format} in the folder specified by \code{path_out}.
 #' @author Ethan Bass
 #' @export openchrom_parser
 #' If you want to use the OpenChrom GUI, it is recommended to create a separate
@@ -29,11 +29,12 @@
 #'
 
 openchrom_parser <- function(files, path_out, format_in,
-                             format_out=c("mzml", "cdf", "animl", "csv")){
+                             export_format=c("mzml", "cdf", "animl", "csv"),
+                             export_paths = FALSE){
   if (missing(format_in))
     stop("Format must be specified. The options are `msd` for mass spectrometry, `csd` for flame ionization (FID),
     or `wsd` for DAD/UV data.")
-  format_out <- match.arg(format_out, c("mzml", "cdf", "animl", "csv"))
+  export_format <- match.arg(export_format, c("mzml", "cdf", "animl", "csv"))
   if (missing(path_out)){
     path_out <- set_temp_directory()
   }
@@ -58,17 +59,17 @@ openchrom_parser <- function(files, path_out, format_in,
   wsd_animl_converter <- 'ProcessEntry id="wsd.export.net.openchrom.wsd.converter.supplier.animl.chromatogram" name="AnIML UV-Vis Chromatogram (*.animl)" description="Reads Analytical Information Markup Language Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
   wsd_csv_converter <- 'ProcessEntry id="wsd.export.org.eclipse.chemclipse.csd.converter.supplier.csv" name="CSV Chromatogram (*.csv)" description="Reads and Writes Chromatograms to CSV." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
   if (format_in == "msd"){
-  parser <- switch(format_out,
+  parser <- switch(export_format,
                    "mzml" = msd_mzml_converter,
                    "cdf" = msd_netcdf_converter,
                    "animl" = msd_animl_converter,
                     "csv" = msd_csv_converter)
   } else if (format_in == "csd"){
-    parser <- switch(format_out,
+    parser <- switch(export_format,
                      "csv" = csd_csv_converter,
                      "animl" = csd_animl_converter)
   } else if (format_in == "wsd"){
-    parser <- switch(format_out,
+    parser <- switch(export_format,
                      "csv" = wsd_csv_converter,
                      "animl" = wsd_animl_converter)
   }
@@ -77,9 +78,13 @@ openchrom_parser <- function(files, path_out, format_in,
   write_xml(x, file = path_xml)
   openchrom_path <- "/Applications/OpenChrom_CL.app/Contents/MacOS/openchrom"
   system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml))
-  if (format_out == "csv"){
-    new_files <- paste0(path_out, sapply(strsplit(basename(files), "\\."), function(x) x[1]), ".csv")
-    lapply(new_files, read.csv)
+  new_files <- paste0(path_out, sapply(strsplit(basename(files), "\\."), function(x) x[1]), ".", export_format)
+  if (export_paths){
+    new_files
+  } else{
+    if (export_format == "csv"){
+      lapply(new_files, read.csv)
+    }
   }
 }
 

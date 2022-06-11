@@ -126,7 +126,7 @@ read_chroms <- function(paths, find_files = TRUE,
     converter <- partial(read_chemstation_csv, format_out = format_out)
   } else if (format_in %in% c("msd", "csd", "wsd")){
     converter <- partial(openchrom_parser, path_out = path_out,
-                         format_in = format_in, format_out = format_out)
+                         format_in = format_in, export_format = export_format)
   } else{
     converter <- switch(parser, "aston" = trace_converter,
                         "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out)
