@@ -60,14 +60,14 @@ and <a href="https://github.com/compomics/ThermoRawFileParser" class="external-l
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">read_chroms</span><span class="op">(</span>
   <span class="va">paths</span>,
   find_files <span class="op">=</span> <span class="cn">TRUE</span>,
-  format.in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chemstation_uv"</span>, <span class="st">"masshunter_dad"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"chromeleon_uv"</span>,
-    <span class="st">"thermoraw"</span>, <span class="st">"mzml"</span>, <span class="st">"waters_arw"</span><span class="op">)</span>,
+  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chemstation_uv"</span>, <span class="st">"masshunter_dad"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_dad"</span>,
+    <span class="st">"chromeleon_uv"</span>, <span class="st">"thermoraw"</span>, <span class="st">"mzml"</span>, <span class="st">"waters_arw"</span><span class="op">)</span>,
   pattern <span class="op">=</span> <span class="cn">NULL</span>,
-  parser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aston"</span>, <span class="st">"entab"</span><span class="op">)</span>,
-  R.format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span><span class="op">)</span>,
+  parser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aston"</span>, <span class="st">"entab"</span>, <span class="st">"thermoraw"</span><span class="op">)</span>,
+  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span><span class="op">)</span>,
   export <span class="op">=</span> <span class="cn">FALSE</span>,
-  path.out <span class="op">=</span> <span class="cn">NULL</span>,
-  format.out <span class="op">=</span> <span class="st">"csv"</span>,
+  path_out <span class="op">=</span> <span class="cn">NULL</span>,
+  export_format <span class="op">=</span> <span class="st">"csv"</span>,
   read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,
   dat <span class="op">=</span> <span class="cn">NULL</span>
 <span class="op">)</span></code></pre></div>
@@ -85,7 +85,7 @@ the function with a folder or vector of folders containing the files.
 Otherwise, set to<code>FALSE</code>.</p></dd>
 
 
-<dt>format.in</dt>
+<dt>format_in</dt>
 <dd><p>Format of files to be imported/converted. The current options
 are: <code>chemstation_uv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>,
 <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, or <code>waters_arw</code>.</p></dd>
@@ -93,15 +93,15 @@ are: <code>chemstation_uv</code>, <code>masshunter_dad</code>, <code>shimadzu_fi
 
 <dt>pattern</dt>
 <dd><p>pattern (e.g. a file extension). Defaults to NULL, in which
-case file extension will be deduced from <code>format.in</code>.</p></dd>
+case file extension will be deduced from <code>format_in</code>.</p></dd>
 
 
 <dt>parser</dt>
-<dd><p>What parser to use. Current option are <code>aston</code> or <code>
-entab</code>. Entab must be manually installed from github.</p></dd>
+<dd><p>What parser to use. Current option are <code>aston</code>, <code>
+entab</code>, or <code>thermoraw</code>.</p></dd>
 
 
-<dt>R.format</dt>
+<dt>format_out</dt>
 <dd><p>R object format (i.e. data.frame or matrix).</p></dd>
 
 
@@ -109,13 +109,13 @@ entab</code>. Entab must be manually installed from github.</p></dd>
 <dd><p>Logical. If TRUE, will export files as csvs.</p></dd>
 
 
-<dt>path.out</dt>
+<dt>path_out</dt>
 <dd><p>Path for exporting files. If path not specified, files will
 export to current working directory.</p></dd>
 
 
-<dt>format.out</dt>
-<dd><p>Output format. Currently only <code>.csv</code>.</p></dd>
+<dt>export_format</dt>
+<dd><p>Export format. Currently only <code>.csv</code>.</p></dd>
 
 
 <dt>read_metadata</dt>
@@ -132,13 +132,14 @@ Defaults to TRUE.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A list of chromatograms in matrix or data.frame format, according to
-the value of 'R.format'.</p>
+<p>A list of chromatograms in <code>matrix</code> or <code>data.frame</code> format,
+according to the value of <code>format_out</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Currently recognizes Agilent ChemStation '.uv', MassHunter '.dad' files, and
-ThermoRaw files.</p>
+ThermoRaw files. To use Entab and the ThermoRawFileParser, they
+must be manually installed. Please see the instructions in the Read Me.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -149,7 +150,7 @@ ThermoRaw files.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span>
 <span class="r-in"><span class="va">path</span> <span class="op">&lt;-</span> <span class="st">"tests/testthat/testdata/dad1.uv"</span></span>
-<span class="r-in"><span class="va">chr</span> <span class="op">&lt;-</span> <span class="fu">read_chroms</span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">chr</span> <span class="op">&lt;-</span> <span class="fu">read_chroms</span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, format_in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></span>
 <span class="r-in"><span class="op">}</span></span>
 </code></pre></div>
     </div>

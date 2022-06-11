@@ -46,12 +46,23 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="chromconverter-011">chromConverter 0.1.1<a class="anchor" aria-label="anchor" href="#chromconverter-011"></a></h2>
-<ul><li>Added <code>read_fid</code> function for parsing Shimadzu GC-FID files.</li>
+<div class="section level4">
+<h4 id="new-features-0-1-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-1"></a></h4>
+<ul><li>Added <code>read_shimadzu</code> function for parsing Shimadzu ascii files.</li>
 <li>Added <code>read_chromeleon</code> function for parsing Chromeleon HPLC-UV files.</li>
-<li>Added support for <code>entab</code> parsers in <code>read_chroms</code>.</li>
-<li>Added support to convert ThermoRawFiles using ThermoRawFileConverter.</li>
-<li>Added support to extract UV data from mzML files using mzR.</li>
+<li>Added <code>read_entab</code> function for calling Entab parsers.</li>
+<li>Added <code>read_thermoraw</code> function to convert ThermoRawFiles by calling the ThermoRawFileParser.</li>
+<li>Added <code>read_mzml</code> function to extract UV data from mzML files using <code>mzR</code>.</li>
+</ul><p>All of the above functions can also be called from <code>read_chroms</code> by setting the <code>format_in</code> and <code>parser</code> arguments.</p>
+</div>
+<div class="section level4">
+<h4 id="changes-to-arguments-in-read_chroms-0-1-1">Changes to arguments in <code>read_chroms</code>:<a class="anchor" aria-label="anchor" href="#changes-to-arguments-in-read_chroms-0-1-1"></a></h4>
+<p>Some arguments in the <code>read_chroms</code> function were reformatted for internal consistency across package:</p>
+<ul><li>Dots were replaced with underscores in all function arguments.</li>
+<li>The argument to specify the format of R objects was changed from <code>R.format</code> to <code>format_out</code>.</li>
+<li>The argument to specify the format for exported files was changed from <code>format.out</code> to <code>export_format</code>.</li>
 </ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="chromconverter-010">chromConverter 0.1.0<a class="anchor" aria-label="anchor" href="#chromconverter-010"></a></h2><p class="text-muted">CRAN release: 2022-04-19</p>
 <ul><li>Added a <code>NEWS.md</code> file to track changes to the package.</li></ul></div>
