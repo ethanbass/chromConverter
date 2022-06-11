@@ -7,9 +7,7 @@
 
 ## Overview
 
-chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis.
-
-It currently consists of a wrapper around the file parsers included in the [Aston](https://github.com/bovee/aston) and [Entab](https://github.com/bovee/entab) packages as well as some parsers written natively in R for text-based formats. It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, they're slightly more complicated to install (see [installation instructions](README.md#Installation) below).
+chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), and the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser) as well as some parsers written natively in R for text-based formats. For Agilent files, it is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However, Entab is slightly more complicated to install (see [installation instructions](README.md#Installation) below).
 
 ## Formats
 ##### Binary formats
