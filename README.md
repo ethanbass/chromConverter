@@ -11,9 +11,20 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 
 ## Formats
 ##### Binary formats
+###### Aston/Entab
 - Agilent ChemStation CH, FID, MS, MWD, and UV
 - Agilent MassHunter DAD (`.sp`)
-- Thermo RAW (`.raw`) (see [installation instructions](README.md#Installation) for the ThermoRawFileParser)
+
+###### ThermoRawFileParser (*requires separate installation, see [instructions](README.md#Installation)*)
+- Thermo RAW (`.raw`)
+
+###### OpenChrom (*requires separate installation, see [instructions](README.md#Installation)*)
+- Shimadzu FID (`.gcd`, `.C0#`)
+- Varian FID (`.run`)
+- DataApex FID (`.PRM`)
+- MassFinder FID/MSD (`*.mfg`)
+- and many more (see full list [here](https://lablicate.com/platform/openchrom)).
+
 ##### Text formats
 - Chromeleon UV ascii (`.txt`)
 - mzML (`.mzml`)
@@ -54,7 +65,12 @@ The Thermo RAW parser works by calling the ThermoRawFileParser on the command li
 
 ##### OpenChrom
 
-OpenChrom contains a large number of [file parsers](https://lablicate.com/platform/openchrom) which can now be conveniently accessed directly from R. As for the Thermo parser, you must manually install OpenChrom you will be asked to provide the path to the program when you call the parsers from R for the first time. Strangely, in order to use OpenChrom from the command-line, you must turn off the GUI. Thus, if you wish to use the OpenChrom GUI and also call it from the command-line, it is recommended to make a separate copy of OpenChrom and follow the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) here to activate the command-line interface. If you don't wish to use the GUI, you can change the settings on your main installation. The command-line option can also be activated from R by calling `configure_openchrom_parser(cli="true")`.
+OpenChrom contains a large number of [file parsers](https://lablicate.com/platform/openchrom) which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom, if you'd still like to have access to the GUI. Steps for configuring OpenChrom:  
+
+1) Download OpenChrom from the [website](https://lablicate.com/platform/openchrom/download) and place it into a folder of your choice.  
+  2) If you wish to use the GUI, make a separate copy of OpenChrom. Otherwise, you can activate the command-line interface on your main OpenChrom installation.  
+  3) Follow the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) here to activate the command-line interface.   Alternatively, the command-line option can be activated from R by calling `configure_openchrom_parser(cli="true")`.
+  4) Call the `openchrom_parser` from R or `read_chroms` with `parser="openchrom"`. The first time you call the parser, it will ask you to provide a path to your installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, it will also give you the option to automatically activate the command-line.  
 
 ## Usage
 
