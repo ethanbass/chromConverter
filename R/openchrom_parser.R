@@ -102,7 +102,7 @@ configure_openchrom_parser <- function(cli = c(NULL, "true", "false")){
   path_ini <- switch(.Platform$OS.type,
                      "unix" = paste0(gsub("MacOS/openchrom", "", path_parser), "Eclipse/openchrom.ini"),
                      "linux" = paste0(path_parser, ".uni"),
-                     "windows" = paste0(path_parser))
+                     "windows" = paste0(gsub(".exe", "", path_parser), ".ini"))
   ini <- readLines(path_ini)
   cli_index <- grep("-Denable.cli.support",ini)
   ini_split <- strsplit(ini[cli_index],"=")[[1]]
@@ -127,3 +127,4 @@ configure_openchrom_parser <- function(cli = c(NULL, "true", "false")){
 }
 
 utils::globalVariables(names = c('.'))
+

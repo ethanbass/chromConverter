@@ -54,6 +54,10 @@ devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 
 The Thermo RAW parser works by calling the ThermoRawFileParser on the command line. Thus, to parse Thermo RAW files you must first install the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. When you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
 
+##### OpenChrom
+
+OpenChrom contains a large number of [file parsers](https://lablicate.com/platform/openchrom) which can now be conveniently accessed directly from R. As for the Thermo parser, you must manually install OpenChrom you will be asked to provide the path to the program when you call the parsers from R for the first time. Strangely, in order to use OpenChrom from the command-line, you must turn off the GUI. Thus, if you wish to use the OpenChrom GUI and also call it from the command-line, it is recommended to make a separate copy of OpenChrom and follow the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) here to activate the command-line interface. If you don't wish to use the GUI, you can change the settings on your main installation. The command-line option can also be activated from R by calling `configure_openchrom_parser(cli="true")`.
+
 ## Usage
 
 The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the path to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format. The supported formats include `chemstation_uv`, `masshunter_dad`, `shimadzu_fid`, `chromeleon_uv`, `thermoraw`, `mzml`, or `waters_arw`. For formats where there are multiple parsers available, you can choose between them using the `parser` argument. For example, Chemstation and Masshunter files can be parsed using either the Aston or Entab parsers.
