@@ -85,10 +85,35 @@
 <div class="section level5">
 <h5 id="binary-formats">Binary formats<a class="anchor" aria-label="anchor" href="#binary-formats"></a>
 </h5>
+<div class="section level6">
+<h6 id="astonentab">Aston/Entab<a class="anchor" aria-label="anchor" href="#astonentab"></a>
+</h6>
 <ul>
 <li>Agilent ChemStation CH, FID, MS, MWD, and UV</li>
 <li>Agilent MassHunter DAD (<code>.sp</code>)</li>
-<li>Thermo RAW (<code>.raw</code>) (see <a href="README.md#Installation">installation instructions</a> for the ThermoRawFileParser) ##### Text formats</li>
+</ul>
+</div>
+<div class="section level6">
+<h6 id="thermorawfileparser-requires-separate-installation-see-instructions">ThermoRawFileParser (<em>requires separate installation, see <a href="README.md#Installation">instructions</a></em>)<a class="anchor" aria-label="anchor" href="#thermorawfileparser-requires-separate-installation-see-instructions"></a>
+</h6>
+<ul><li>Thermo RAW (<code>.raw</code>)</li></ul>
+</div>
+<div class="section level6">
+<h6 id="openchrom-requires-separate-installation-see-instructions">OpenChrom (<em>requires separate installation, see <a href="README.md#Installation">instructions</a></em>)<a class="anchor" aria-label="anchor" href="#openchrom-requires-separate-installation-see-instructions"></a>
+</h6>
+<ul>
+<li>Shimadzu FID (<code>.gcd</code>, <code>.C0#</code>)</li>
+<li>Varian FID (<code>.run</code>)</li>
+<li>DataApex FID (<code>.PRM</code>)</li>
+<li>MassFinder FID/MSD (<code>*.mfg</code>)</li>
+<li>and many more (see full list <a href="https://lablicate.com/platform/openchrom" class="external-link">here</a>).</li>
+</ul>
+</div>
+</div>
+<div class="section level5">
+<h5 id="text-formats">Text formats<a class="anchor" aria-label="anchor" href="#text-formats"></a>
+</h5>
+<ul>
 <li>Chromeleon UV ascii (<code>.txt</code>)</li>
 <li>mzML (<code>.mzml</code>)</li>
 <li>Shimadzu LabSolutions ascii (<code>.txt</code>)</li>
@@ -122,7 +147,15 @@
 <div class="section level5">
 <h5 id="openchrom">OpenChrom<a class="anchor" aria-label="anchor" href="#openchrom"></a>
 </h5>
-<p>OpenChrom contains a large number of <a href="https://lablicate.com/platform/openchrom" class="external-link">file parsers</a> which can now be conveniently accessed directly from R. As for the Thermo parser, you must manually install OpenChrom you will be asked to provide the path to the program when you call the parsers from R for the first time. Strangely, in order to use OpenChrom from the command-line, you must turn off the GUI. Thus, if you wish to use the OpenChrom GUI and also call it from the command-line, it is recommended to make a separate copy of OpenChrom and follow the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> here to activate the command-line interface. If you don’t wish to use the GUI, you can change the settings on your main installation. The command-line option can also be activated from R by calling <code>configure_openchrom_parser(cli="true")</code>.</p>
+<p>OpenChrom contains a large number of <a href="https://lablicate.com/platform/openchrom" class="external-link">file parsers</a> which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom, if you’d still like to have access to the GUI. Steps for configuring OpenChrom:</p>
+<ol style="list-style-type: decimal">
+<li>Download OpenChrom from the <a href="https://lablicate.com/platform/openchrom/download" class="external-link">website</a> and place it into a folder of your choice.<br>
+</li>
+<li>If you wish to use the GUI, make a separate copy of OpenChrom. Otherwise, you can activate the command-line interface on your main OpenChrom installation.<br>
+</li>
+<li>Follow the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> here to activate the command-line interface. Alternatively, the command-line option can be activated from R by calling <code>configure_openchrom_parser(cli="true")</code>.</li>
+<li>Call the <code>openchrom_parser</code> from R or <code>read_chroms</code> with <code>parser="openchrom"</code>. The first time you call the parser, it will ask you to provide a path to your installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, it will also give you the option to automatically activate the command-line.</li>
+</ol>
 </div>
 </div>
 </div>
