@@ -32,7 +32,7 @@
 #' @return A list of chromatograms in \code{matrix} or \code{data.frame} format,
 #' according to the value of \code{format_out}.
 #' @section Side effects: If \code{export} is TRUE, chromatograms will be
-#' exported in the format specified by \code{format.out} in the folder specified
+#' exported in the format specified by \code{export_format} in the folder specified
 #' by \code{path_out}. Currently, the only option for export is \code{csv} unless
 #' the \code{parser} is \code{openchrom}.
 #' @import reticulate
@@ -121,10 +121,10 @@ read_chroms <- function(paths, find_files = TRUE,
   } else if (format_in == "waters_arw"){
     pattern <- ".arw"
     converter <- partial(read_waters_arw, format_out = format_out)
-  } else if (format.in == "chemstation_csv"){
+  } else if (format_in == "chemstation_csv"){
     pattern <- ".csv|.CSV"
     converter <- partial(read_chemstation_csv, format_out = format_out)
-  } else if (format.in %in% c("msd", "csd", "wsd")){
+  } else if (format_in %in% c("msd", "csd", "wsd")){
     converter <- partial(openchrom_parser, path_out = path_out,
                          format_in = format_in, format_out = format_out)
   } else{
@@ -132,7 +132,7 @@ read_chroms <- function(paths, find_files = TRUE,
                         "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out)
     )
   }
-  writer <- switch(format.out, "csv" = export_csvs)
+  writer <- switch(export_format, "csv" = export_csvs)
   if (find_files){
     files <- find_files(paths, pattern)
   } else{

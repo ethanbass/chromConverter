@@ -18,7 +18,6 @@ Imports:
     tidyr,
     utils,
     magrittr,
-    readxl,
     xml2
 Suggests: 
     entab,

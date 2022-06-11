@@ -67,7 +67,7 @@ must be manually installed. Please see the instructions in the Read Me.
 }
 \section{Side effects}{
  If \code{export} is TRUE, chromatograms will be
-exported in the format specified by \code{format.out} in the folder specified
+exported in the format specified by \code{export_format} in the folder specified
 by \code{path_out}. Currently, the only option for export is \code{csv} unless
 the \code{parser} is \code{openchrom}.
 }
