@@ -48,9 +48,9 @@ read_chroms <- function(paths, find_files = TRUE,
                         format_in=c("chemstation_uv", "masshunter_dad",
                                     "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                    "thermoraw", "mzml", "waters_arw", "msd",
-                                   "csd", "wsd"),
+                                   "csd", "wsd", "other"),
                         pattern = NULL,
-                        parser = c("aston", "entab", "thermoraw", "openchrom"),
+                        parser = c("chromconverter", "aston", "entab", "thermoraw", "openchrom"),
                         format_out = c("matrix", "data.frame"), export = FALSE,
                         path_out = NULL,
                         export_format = c("csv", "cdf", "mzml", "animl"),
@@ -58,10 +58,13 @@ read_chroms <- function(paths, find_files = TRUE,
                         dat = NULL){
   format_in <- match.arg(format_in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
                                       "chromeleon_uv", "thermoraw", "mzml", "waters_arw",
-                                      "msd", "csd", "wsd"))
+                                      "msd", "csd", "wsd", "other"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
-  parser <- match.arg(parser, c("aston","entab", "thermoraw", "openchrom"))
+  parser <- match.arg(parser, c("chromconverter", "aston","entab", "thermoraw", "openchrom"))
   export_format <- match.arg(export_format, c("csv", "cdf", "mzml", "animl"))
+  check_parser_match(format_in, parser)
+  if (parser != "openchrom" & export_format != "csv")
+    stop("Only `csv` format is currently supported for exporting files unless the parser is `openchrom`.")
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
     stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
@@ -617,5 +620,20 @@ read_chemstation_metadata <- function(file, what=c("metadata", "peaktable")){
         pktab
       }
     }
+  }
+}
+
+check_parser_match <- function(format_in, parser){
+  allowed_formats <- list(openchrom = c("msd","csd","wsd"),
+                          chromconverter = c("chemstation_uv", "shimadzu_fid", "shimadzu_dad",
+                                             "chromeleon_uv", "waters_arw", "mzml"),
+                          aston = c("chemstation_uv", "masshunter_dad", "other"),
+                          entab = c("chemstation_uv", "masshunter_dad", "other"),
+                          thermoraw = c("thermoraw")
+  )
+  if (!(format_in %in% allowed_formats[[parser]])){
+    stop(paste0(sQuote(parser), " parser must take one of the following formats: ",
+                paste(sQuote(allowed_formats[[parser]]), collapse=", "), ".
+      Please double check your `format_in` argument."))
   }
 }

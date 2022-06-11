@@ -6,7 +6,8 @@ x <- read.csv(path, fileEncoding = "utf-16")
 test_that("read_chroms works", {
   skip_if_missing_dependecies()
   paths <- rep("testdata/DAD1.uv",2)
-  x1 <- read_chroms(paths, format_in = "chemstation_uv", find_files = FALSE,
+  x1 <- read_chroms(paths, format_in = "chemstation_uv", parser = "aston",
+                    find_files = FALSE,
                     read_metadata = FALSE)
   expect_equal(x[,2], as.numeric(x1[[1]][,"220.0"]))
   expect_equal(x[,1], as.numeric(rownames(x1[[1]])))

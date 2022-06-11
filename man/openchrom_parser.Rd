@@ -8,7 +8,8 @@ openchrom_parser(
   files,
   path_out,
   format_in,
-  format_out = c("mzml", "cdf", "animl", "csv")
+  export_format = c("mzml", "cdf", "animl", "csv"),
+  return_paths = FALSE
 )
 }
 \arguments{
@@ -18,11 +19,14 @@ openchrom_parser(
 
 \item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame ionization data, or \code{wsd} for DAD/UV data.}
 
-\item{format_out}{Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.}
+\item{export_format}{Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.}
+
+\item{return_paths}{Logical. If TRUE, the function will return a character vector of paths to the newly created files.}
 }
 \value{
-If \code{format_out} is \code{csv}, the function will return a list
-of chromatograms in \code{data.frame} format. Otherwise it will not return anything.
+If \code{return_paths} is TRUE, the function will return a vector of paths to the newly created files.
+If \code{return_paths} is FALSE and \code{export_format} is \code{csv}, the function will return a list
+of chromatograms in \code{data.frame} format. Otherwise, it will not return anything.
 }
 \description{
 To use this function \href{https://lablicate.com/platform/openchrom}{OpenChrom} must be manually installed.
@@ -40,7 +44,7 @@ you must select one of these three options for the input format (\code{format_in
 }
 \section{Side effects}{
  Chromatograms will be exported in the format specified
-by \code{format_out} in the folder specified by \code{path_out}.
+by \code{export_format} in the folder specified by \code{path_out}.
 }
 
 \author{

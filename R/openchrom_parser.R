@@ -18,8 +18,10 @@
 #' @param path_out directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
 #' @param export_format Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.
-#' @return If \code{export_format} is \code{csv}, the function will return a list
-#' of chromatograms in \code{data.frame} format. Otherwise it will not return anything.
+#' @param return_paths Logical. If TRUE, the function will return a character vector of paths to the newly created files.
+#' @return If \code{return_paths} is TRUE, the function will return a vector of paths to the newly created files.
+#' If \code{return_paths} is FALSE and \code{export_format} is \code{csv}, the function will return a list
+#' of chromatograms in \code{data.frame} format. Otherwise, it will not return anything.
 #' @section Side effects: Chromatograms will be exported in the format specified
 #' by \code{export_format} in the folder specified by \code{path_out}.
 #' @author Ethan Bass
@@ -30,7 +32,7 @@
 
 openchrom_parser <- function(files, path_out, format_in,
                              export_format=c("mzml", "cdf", "animl", "csv"),
-                             export_paths = FALSE){
+                             return_paths = FALSE){
   if (missing(format_in))
     stop("Format must be specified. The options are `msd` for mass spectrometry, `csd` for flame ionization (FID),
     or `wsd` for DAD/UV data.")
@@ -79,7 +81,7 @@ openchrom_parser <- function(files, path_out, format_in,
   openchrom_path <- "/Applications/OpenChrom_CL.app/Contents/MacOS/openchrom"
   system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml))
   new_files <- paste0(path_out, sapply(strsplit(basename(files), "\\."), function(x) x[1]), ".", export_format)
-  if (export_paths){
+  if (return_paths){
     new_files
   } else{
     if (export_format == "csv"){
