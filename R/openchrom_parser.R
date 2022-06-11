@@ -1,6 +1,16 @@
 #' Parse files with OpenChrom
 #'
 #' To use this function [OpenChrom](https://lablicate.com/platform/openchrom) must be manually installed.
+#'
+#' The \code{openchrom_parser} works by creating an \code{xml} batchfile and
+#' feeding it to the OpenChrom commandline interface. OpenChrom batchfiles
+#' consist of \code{InputEntries} (the files you want to convert) and \code{
+#' ProcessEntries} (what you want to do to the files). The parsers are organized
+#' into broad categories by detector-type and output format. The detector-types
+#' are \code{msd} (mass selective detectors), \code{csd} (current selective
+#' detectors, such as FID, ECD, NPD), and \code{wsd} (wavelength selective
+#' detectors, such as  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
+#' you must select one of these three options for the input format (\code{format_in}).
 
 #' @import xml2
 #' @import magrittr
@@ -8,7 +18,10 @@
 #' @param path_out directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
 #' @param format_out Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.
-#' @return No return value.
+#' @return If \code{format_out} is \code{csv}, the function will return a list
+#' of chromatograms in \code{data.frame} format. Otherwise it will not return anything.
+#' @section Side effects: Chromatograms will be exported in the format specified
+#' by \code{format_out} in the folder specified by \code{path_out}.
 #' @author Ethan Bass
 #' @export openchrom_parser
 #' If you want to use the OpenChrom GUI, it is recommended to create a separate
@@ -93,18 +106,22 @@ configure_openchrom_parser <- function(cli = c(NULL, "true", "false")){
   ini <- readLines(path_ini)
   cli_index <- grep("-Denable.cli.support",ini)
   ini_split <- strsplit(ini[cli_index],"=")[[1]]
-  ans <- ini_split[2]
+  cli_tf <- ini_split[2]
+  if(cli_tf == "false"){
+    message("    The OpenChrom command-line interface is turned off!
+    Update `openchrom.ini` to activate the command-line interface (y/n)?
+    (Warning: This will deactivate the GUI on your OpenChrom installation!)")
+    ans <- readline()
+    if (ans %in% c("y","Y", "yes", "Yes", "YES")){
+      cli <- "true"
+    } else{
+      stop("-Denable.cli.support must be enabled to use the OpenChrom parsers from R.")
+    }
+  }
   if (cli %in% c("true", "false")){
     ini_split[2] <- cli
     ini[cli_index] <- paste(ini_split, collapse="=")
     writeLines(ini, path_ini)
-    ini <- readLines(path_ini)
-    cli_index <- grep("-Denable.cli.support",ini)
-    ini_split <- strsplit(ini[cli_index],"=")[[1]]
-    ans <- ini_split[2]
-  }
-  if(ans == "false"){
-    stop("-Denable.cli.support must be enabled to use the OpenChrom parsers from R.")
   }
   path_parser[1]
 }

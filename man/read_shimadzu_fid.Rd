@@ -18,7 +18,8 @@ read_shimadzu_fid(
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 }
 \value{
-A matrix object (retention time x trace).
+A chromatogram in the format specified by \code{format_out}
+(retention time x wavelength).
 }
 \description{
 Shimadzu ascii FID reader

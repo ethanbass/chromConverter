@@ -10,7 +10,7 @@ sp_converter(file)
 \item{file}{path to file}
 }
 \value{
-A data.frame object (retention time x wavelength).
+A chromatogram in \code{data.frame} format (retention time x wavelength).
 }
 \description{
 Converts a single chromatogram from MassHunter \code{.sp} format to R \code{data.frame}.

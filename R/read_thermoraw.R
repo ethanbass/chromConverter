@@ -11,7 +11,9 @@
 #' @param path_out directory to export \code{mzML} files.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return A chromatograms in \code{matrix} format.
+#' @return A chromatogram in the format specified by \code{format_out}.
+#' @section Side effects: Exports chromatograms in \code{mzml format} to the
+#' folder specified by \code{path_out}.
 #' @author Ethan Bass
 #' @examples \dontrun{
 #' read_thermoraw(path)

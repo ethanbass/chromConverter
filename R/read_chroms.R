@@ -30,6 +30,10 @@
 #' (Defaults to NULL).
 #' @return A list of chromatograms in matrix or data.frame format, according to
 #' the value of 'R.format'.
+#' @section Side effects: If \code{export} is TRUE, chromatograms will be
+#' exported in the format specified by \code{format.out} in the folder specified
+#' by \code{path_out}. Currently, the only option for export is \code{csv} unless
+#' the \code{parser} is \code{openchrom}.
 #' @import reticulate
 #' @importFrom utils write.csv
 #' @importFrom readxl read_xls
@@ -43,13 +47,15 @@
 read_chroms <- function(paths, find_files = TRUE,
                         format.in = c("chemstation_uv", "masshunter_dad",
                                       "shimadzu_fid", "chromeleon_uv",
-                                      "thermoraw", "mzml", "waters_arw", "other"),
-                        pattern = NULL, parser = c("aston","entab", "openchrom", "thermoraw"),
+                                      "thermoraw", "mzml", "waters_arw", "msd",
+                                      "csd", "wsd"),
+                        pattern = NULL,
+                        parser = c("aston","entab", "openchrom", "thermoraw"),
                         R.format = c("matrix","data.frame"), export = FALSE,
                         path.out=NULL, format.out = c("csv","cdf", "mzml", "animl"), read_metadata = TRUE,
                         dat = NULL){
   format.in <- match.arg(format.in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "chromeleon_uv",
-                                      "thermoraw", "mzml", "waters_arw", "other"))
+                                      "thermoraw", "mzml", "waters_arw", "msd", "csd", "wsd"))
   R.format <- match.arg(R.format, c("matrix", "data.frame"))
   parser <- match.arg(parser, c("aston","entab", "openchrom", "thermoraw"))
   format.out <- match.arg(format.out, c("csv", "cdf", "mzml", "animl"))
@@ -110,10 +116,12 @@ read_chroms <- function(paths, find_files = TRUE,
   } else if (format.in == "chemstation_csv"){
     pattern <- ".csv|.CSV"
     converter <- partial(read_waters_arw, format_out = R.format)
-  } else if (format.in == "other"){
+  } else if (format.in %in% c("msd", "csd", "wsd")){
+    converter <- partial(openchrom_parser, path_out = path.out,
+                         format_in = format.in, format_out = format.out)
+  } else{
     converter <- switch(parser, "aston" = trace_converter,
-                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = R.format),
-                        "openchrom" = partial(openchrom_parser, format_out = format.out)
+                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = R.format)
     )
   }
   writer <- switch(format.out,
@@ -164,7 +172,7 @@ read_chroms <- function(paths, find_files = TRUE,
 #'
 #' @name sp_converter
 #' @param file path to file
-#' @return A data.frame object (retention time x wavelength).
+#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @export sp_converter
 sp_converter <- function(file){
@@ -183,7 +191,7 @@ sp_converter <- function(file){
 #' @param file path to file
 #' @param correction Logical. Whether to apply empirical correction. Defaults is
 #' TRUE.
-#' @return A data.frame object (retention time x trace).
+#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @export uv_converter
 uv_converter <- function(file, correction=TRUE){
@@ -204,7 +212,7 @@ uv_converter <- function(file, correction=TRUE){
 #' @name trace_converter
 #' @title generic converter for other types of files
 #' @param file path to file
-#' @return A data.frame object (retention time x trace).
+#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @noRd
 trace_converter <- function(file){
@@ -221,7 +229,8 @@ trace_converter <- function(file){
 #' @param format_data Whether to output data in wide or long format.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return a \code{chrom} object
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @importFrom tidyr pivot_wider
 #' @export
 entab_reader <- function(file, format_data = c("wide","long"),
@@ -282,7 +291,8 @@ entab_reader <- function(file, format_data = c("wide","long"),
 #' @param file path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return A matrix object (retention time x trace).
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
@@ -331,7 +341,8 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
 #' @param file path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return A matrix object (retention time x trace).
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 read_shimadzu_fid <- function(file, read_metadata = TRUE,
@@ -382,7 +393,8 @@ read_shimadzu_fid <- function(file, read_metadata = TRUE,
 #' @param file path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return A matrix object (retention time x trace).
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 read_waters_arw <- function(file, read_metadata = TRUE,

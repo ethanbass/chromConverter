@@ -21,11 +21,28 @@ openchrom_parser(
 \item{format_out}{Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.}
 }
 \value{
-No return value.
+If \code{format_out} is \code{csv}, the function will return a list
+of chromatograms in \code{data.frame} format. Otherwise it will not return anything.
 }
 \description{
 To use this function \href{https://lablicate.com/platform/openchrom}{OpenChrom} must be manually installed.
 }
+\details{
+The \code{openchrom_parser} works by creating an \code{xml} batchfile and
+feeding it to the OpenChrom commandline interface. OpenChrom batchfiles
+consist of \code{InputEntries} (the files you want to convert) and \code{
+ProcessEntries} (what you want to do to the files). The parsers are organized
+into broad categories by detector-type and output format. The detector-types
+are \code{msd} (mass selective detectors), \code{csd} (current selective
+detectors, such as FID, ECD, NPD), and \code{wsd} (wavelength selective
+detectors, such as  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
+you must select one of these three options for the input format (\code{format_in}).
+}
+\section{Side effects}{
+ Chromatograms will be exported in the format specified
+by \code{format_out} in the folder specified by \code{path_out}.
+}
+
 \author{
 Ethan Bass
 }
