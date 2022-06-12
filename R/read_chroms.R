@@ -277,6 +277,7 @@ entab_reader <- function(file, format_data = c("wide","long"),
                                  values_from = "intensity"),
                                   row.names = "time")
     rownames(x) <- times
+    x <- x[,-1]
   }
   if (format_out == "matrix"){
     x <- as.matrix(x)
