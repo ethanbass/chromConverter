@@ -41,7 +41,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Attaches metadata to chromatogram</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/HEAD/R/read_chroms.R" class="external-link"><code>R/read_chroms.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/HEAD/R/attach_metadata.R" class="external-link"><code>R/attach_metadata.R</code></a></small>
       <div class="d-none name"><code>attach_metadata.Rd</code></div>
     </div>
 
@@ -51,7 +51,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">attach_metadata</span><span class="op">(</span><span class="va">x</span>, <span class="va">meta</span>, <span class="va">format_in</span>, <span class="va">format_out</span>, <span class="va">format_data</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">attach_metadata</span><span class="op">(</span><span class="va">x</span>, <span class="va">meta</span>, <span class="va">format_in</span>, <span class="va">format_out</span>, <span class="va">format_data</span>, parser <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -74,6 +74,10 @@
 
 <dt>format_data</dt>
 <dd><p>Whether data is in wide or long format.</p></dd>
+
+
+<dt>parser</dt>
+<dd><p>What parser was used to decode the data</p></dd>
 
 </dl></div>
     <div class="section level2">
