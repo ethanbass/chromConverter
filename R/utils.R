@@ -9,10 +9,10 @@ check_parser_match <- function(format_in, parser){
                           thermoraw = c("thermoraw")
   )
   if (!(format_in %in% allowed_formats[[parser]])){
-    # message("The ", paste0(sQuote(parser), " parser must take one of the following formats: \n",
-    #             paste(sQuote(allowed_formats[[parser]]), collapse=", "), ". \n"))
-    stop("Mismatched arguments! \n \n The ", paste0(sQuote(format_in), " format can be converted using the following parsers: ",
+    stop("Mismatched arguments!", "\n\n", "The ", paste0(sQuote(format_in), " format can be converted using the following parsers: ",
       paste(sQuote(names(allowed_formats)[grep("chemstation_uv", allowed_formats)]), collapse = ", "), ". \n \n",
+      "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
+                                  paste(sQuote(allowed_formats[[parser]]), collapse=", "), ". \n \n",
       "Please double check your arguments and try again."))
   }
 }
