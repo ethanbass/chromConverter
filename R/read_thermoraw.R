@@ -159,15 +159,3 @@ configure_thermo_parser <- function(reconfigure = FALSE, check = FALSE){
     exists
   }
 }
-
-set_temp_directory <- function(){
-  ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
-  if (ans %in% c("y","Y")){
-    if (!dir.exists("temp"))
-      dir.create("temp")
-    path_out <- paste0(getwd(),'/temp/')
-    path_out
-  } else{
-    stop("Must specify directory to export files.")
-  }
-}

@@ -28,7 +28,8 @@ Otherwise, set to\code{FALSE}.}
 
 \item{format_in}{Format of files to be imported/converted. The current options
 are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
-\code{chromeleon_uv}, \code{thermoraw}, \code{mzml}, or \code{waters_arw}.}
+\code{shimadzu_dad}, \code{chromeleon_uv}, \code{thermoraw}, \code{mzml},
+\code{waters_arw}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}

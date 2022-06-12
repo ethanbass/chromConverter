@@ -1,4 +1,10 @@
 url: https://ethanbass.github.io/chromConverter/
 template:
   bootstrap: 5
-
+home:
+  sidebar:
+    structure: [links, custom, license, citation, authors, dev]
+    components:
+      custom:
+        title: Funding
+        text: We are *grateful* for funding!

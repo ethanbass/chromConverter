@@ -132,6 +132,3 @@ configure_openchrom_parser <- function(cli = c(NULL, "true", "false")){
   }
   path_parser[1]
 }
-
-utils::globalVariables(names = c('.'))
-
