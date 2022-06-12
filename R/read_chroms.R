@@ -609,7 +609,6 @@ read_chemstation_metadata <- function(file, what=c("metadata", "peaktable")){
     if (length(rep) > 0){
       if (what == "metadata"){
       meta <- as.data.frame(readxl::read_xls(rep, sheet=1, skip=1))
-      rownames(meta2) <- meta2$Title
       meta2<-as.list(meta$Results)
       names(meta2) <- meta$Title
       meta2
