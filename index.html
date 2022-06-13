@@ -77,7 +77,7 @@
 <div class="section level3">
 <h3 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h3>
-<p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including <a href="https://github.com/bovee/aston" class="external-link">Aston</a>, <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, and <a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> as well as some parsers written natively in R for various text-based formats. For Agilent files, it is recommended to use the newer Entab parsers, since Aston is no longer actively supported, however, Entab is slightly more complicated to install (see <a href="README.md#Installation">installation instructions</a> below).</p>
+<p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including <a href="https://github.com/bovee/aston" class="external-link">Aston</a>, <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, and <a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> as well as some parsers written natively in R for various text-based formats.</p>
 </div>
 <div class="section level3">
 <h3 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
@@ -134,28 +134,31 @@
 <div class="section level5">
 <h5 id="optional-additional-dependencies">Optional additional dependencies<a class="anchor" aria-label="anchor" href="#optional-additional-dependencies"></a>
 </h5>
-<p>Some of the parsers rely on software that must be manually installed.</p>
+<p>Some of the parsers rely on external software libraries that must be manually installed.</p>
 <div class="section level6">
-<h6 id="entab">Entab<a class="anchor" aria-label="anchor" href="#entab"></a>
+<h6 id="entab">
+<strong>Entab</strong><a class="anchor" aria-label="anchor" href="#entab"></a>
 </h6>
-<p>To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and Entab-R. After following the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
+<p><a href="https://github.com/bovee/entab" class="external-link">Entab</a> is a Rust-based parsing framework for converting a variety of scientific file formats into tabular data. To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and Entab-R. After following the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
 <pre><code><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></code></pre>
 </div>
 <div class="section level6">
-<h6 id="thermorawfileparser">ThermoRawFileParser<a class="anchor" aria-label="anchor" href="#thermorawfileparser"></a>
+<h6 id="thermorawfileparser">
+<strong>ThermoRawFileParser</strong><a class="anchor" aria-label="anchor" href="#thermorawfileparser"></a>
 </h6>
-<p>The Thermo RAW parser works by calling the ThermoRawFileParser on the command line. Thus, to parse Thermo RAW files you must first install the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>. If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. When you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.</p>
+<p>Thermo RAW files can be converted by calling the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a> on the command-line. To install the ThermoRawFileParser, follow the instructions <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">here</a>. If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.</p>
 </div>
 <div class="section level6">
-<h6 id="openchrom">OpenChrom<a class="anchor" aria-label="anchor" href="#openchrom"></a>
+<h6 id="openchrom">
+<strong>OpenChrom</strong><a class="anchor" aria-label="anchor" href="#openchrom"></a>
 </h6>
-<p>OpenChrom contains a large number of <a href="https://lablicate.com/platform/openchrom" class="external-link">file parsers</a> which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom, if you’d still like to have access to the GUI. To use the OpenChrom parsers, follow the steps detailed below:</p>
+<p><a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> is opensource chromatography software, containing a large number of <a href="https://lablicate.com/platform/openchrom" class="external-link">file parsers</a>, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you’d still like to have access to the GUI. To use the OpenChrom parsers, follow the steps detailed below:</p>
 <ol style="list-style-type: decimal">
 <li>Download OpenChrom from the <a href="https://lablicate.com/platform/openchrom/download" class="external-link">website</a> and place it into a directory of your choice.<br>
 </li>
 <li>If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.</li>
 <li>Follow the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> to activate OpenChrom’s command-line interface. Alternatively, the command-line option can be activated from R by calling <code>configure_openchrom_parser(cli="true")</code> or by calling the openchrom_parser and following the prompts.</li>
-<li>Call the <code>openchrom_parser</code> from R or <code>read_chroms</code> with <code>parser="openchrom"</code>. The first time you call the parser, it will ask you to provide the path to your installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, the function will give you the option to automatically activate the command-line.</li>
+<li>Call <code>read_chroms</code> with <code>parser="openchrom"</code> or call the <code>openchrom_parser</code> directly. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.</li>
 </ol>
 </div>
 </div>
@@ -163,20 +166,21 @@
 <div class="section level3">
 <h3 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h3>
-<p>The workhorse of chromConverter is the <code>read_chroms</code> function, which functions as a wrapper around all of the supported parsers. To convert files, call <code>read_chroms</code>, specifying the <code>paths</code> to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format (<code>format_in</code>). The supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, and <code>waters_arw</code>. For formats where there are multiple parsers available, you can choose between them using the <code>parser</code> argument. For example, Chemstation and Masshunter files can be parsed using either the Aston or Entab parsers.</p>
+<p>The workhorse of chromConverter is the <code>read_chroms</code> function, which functions as a wrapper around all of the supported parsers. To convert files, call <code>read_chroms</code>, specifying the <code>paths</code> to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format (<code>format_in</code>). The supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code>, <code>csd</code>, and <code>wsd</code>.</p>
 <pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
-<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">TRUE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></code></pre>
+<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">TRUE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span>, parser <span class="op">=</span> <span class="st">"aston"</span><span class="op">)</span></code></pre>
 <p>If you want to provide direct paths to files, instead of a folder, include the argument <code>find_files = FALSE</code>.</p>
 <pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
 <span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></code></pre>
 <p>If you’d like to automatically export the files as csvs, include the argument <code>export=TRUE</code> along with the path where you’d like to export the files (<code>path_out</code>).</p>
 <pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
 <span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, path_out<span class="op">=</span><span class="st">"temp"</span>, export<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre>
+<p>For formats where that have multiple parsers available, you can choose between them using the <code>parser</code> argument. For example, Agilent files can be read using either the Aston or Entab parsers (or in some cases OpenChrom). It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However Entab is slightly more complicated to install (see <a href="README.md#Installation">installation instructions</a> above).</p>
 <div class="section level6">
 <h6 id="openchrom-parsers">
 <strong>OpenChrom parsers</strong><a class="anchor" aria-label="anchor" href="#openchrom-parsers"></a>
 </h6>
-<p>Parsers in OpenChrom are organized by detector-type. Thus, for the <code>format_in</code> argument, the user must specify whether the files come from a mass spectrometer (mass selective detector, <code>msd</code>), a current-selective detector like a flame-ionization detector (<code>csd</code>), or a wavelength-selective detector (<code>wsd</code>), rather than providing a specific file format. In addition, the user should specify what format they’d like to export (<code>export_format</code>). Current options include <code>csv</code>, <code>cdf</code>, <code>mzml</code>, or <code>animl</code> (the analytical information markup language). The files will then be converted by calling OpenChrom from the commandline. If the files are exported in <code>csv</code> format, the chromatograms will be automatically read into R.</p>
+<p>Parsers in OpenChrom are organized by detector-type. Thus, for the <code>format_in</code> argument, the user must specify whether the files come from a mass selective detector (<code>msd</code>), a current-selective detector like a flame-ionization detector (<code>csd</code>), or a wavelength-selective detector (<code>wsd</code>), rather than providing a specific file format. In addition, the user should specify what format they’d like to export (<code>export_format</code>). Current options include <code>csv</code>, <code>cdf</code>, <code>mzml</code>, or <code>animl</code> (the analytical information markup language). The files will then be converted by calling OpenChrom through the command-line interface. If the files are exported in <code>csv</code> format, the chromatograms will be automatically read into R.</p>
 </div>
 <div class="section level6">
 <h6 id="metadata">
