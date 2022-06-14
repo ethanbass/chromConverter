@@ -19,8 +19,8 @@
 #' \code{waters_arw}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format_in}.
-#' @param parser What parser to use. Current option are \code{aston}, \code{
-#' entab}, or \code{thermoraw}.
+#' @param parser What parser to use. Current option are \code{chromconverter},
+#' \code{aston}, \code{entab}, \code{thermoraw}, or \code{openchrom}.
 #' @param format_out R object format (i.e. data.frame or matrix).
 #' @param export Logical. If TRUE, will export files as csvs.
 #' @param path_out Path for exporting files. If path not specified, files will
@@ -51,18 +51,21 @@ read_chroms <- function(paths, find_files = TRUE,
                                    "thermoraw", "mzml", "waters_arw", "msd",
                                    "csd", "wsd", "other"),
                         pattern = NULL,
-                        parser = c("chromconverter", "aston", "entab", "thermoraw", "openchrom"),
+                        parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom"),
                         format_out = c("matrix", "data.frame"),
                         export = FALSE, path_out = NULL,
                         export_format = c("csv", "cdf", "mzml", "animl"),
                         read_metadata = TRUE, dat = NULL){
   format_in <- match.arg(format_in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
                                       "chromeleon_uv", "thermoraw", "mzml", "waters_arw",
-                                      "msd", "csd", "wsd", "other"))
+                                        "msd", "csd", "wsd", "other"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
-  parser <- match.arg(parser, c("chromconverter", "aston","entab", "thermoraw", "openchrom"))
+  parser <- match.arg(parser, c("", "chromconverter", "aston","entab", "thermoraw", "openchrom"))
+  if (parser == ""){
+    parser <- check_parser(format_in, find = TRUE)
+  }
   export_format <- match.arg(export_format, c("csv", "cdf", "mzml", "animl"))
-  check_parser_match(format_in, parser)
+  check_parser(format_in, parser)
   if (parser != "openchrom" & export_format != "csv")
     stop("Only `csv` format is currently supported for exporting files unless the parser is `openchrom`.")
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {

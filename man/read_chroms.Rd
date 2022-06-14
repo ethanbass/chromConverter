@@ -10,7 +10,7 @@ read_chroms(
   format_in = c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
     "chromeleon_uv", "thermoraw", "mzml", "waters_arw", "msd", "csd", "wsd", "other"),
   pattern = NULL,
-  parser = c("chromconverter", "aston", "entab", "thermoraw", "openchrom"),
+  parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom"),
   format_out = c("matrix", "data.frame"),
   export = FALSE,
   path_out = NULL,
@@ -34,8 +34,8 @@ are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}
 
-\item{parser}{What parser to use. Current option are \code{aston}, \code{
-entab}, or \code{thermoraw}.}
+\item{parser}{What parser to use. Current option are \code{chromconverter},
+\code{aston}, \code{entab}, \code{thermoraw}, or \code{openchrom}.}
 
 \item{format_out}{R object format (i.e. data.frame or matrix).}
 

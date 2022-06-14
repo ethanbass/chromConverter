@@ -1,6 +1,6 @@
 utils::globalVariables(names = c('.'))
 
-check_parser_match <- function(format_in, parser){
+check_parser <- function(format_in, parser=NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
                           chromconverter = c("chemstation_csv", "shimadzu_fid", "shimadzu_dad",
                                              "chromeleon_uv", "waters_arw", "mzml"),
@@ -8,12 +8,20 @@ check_parser_match <- function(format_in, parser){
                           entab = c("chemstation_uv", "masshunter_dad", "other"),
                           thermoraw = c("thermoraw")
   )
+  if (find){
+    possible_parsers <- names(allowed_formats)[grep(format_in, allowed_formats)]
+    if (all(c("aston","entab") %in% possible_parsers)){
+      possible_parsers <- ifelse(!requireNamespace("entab", quietly = TRUE), "aston", "entab")
+    }
+    possible_parsers[1]
+  } else{
   if (!(format_in %in% allowed_formats[[parser]])){
     stop("Mismatched arguments!", "\n\n", "The ", paste0(sQuote(format_in), " format can be converted using the following parsers: ",
-      paste(sQuote(names(allowed_formats)[grep("chemstation_uv", allowed_formats)]), collapse = ", "), ". \n \n",
+      paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]), collapse = ", "), ". \n \n",
       "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
                                   paste(sQuote(allowed_formats[[parser]]), collapse=", "), ". \n \n",
       "Please double check your arguments and try again."))
+  }
   }
 }
 
