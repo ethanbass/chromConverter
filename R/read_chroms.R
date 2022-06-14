@@ -81,8 +81,8 @@ read_chroms <- function(paths, find_files = TRUE,
       path_out <- paste0(path_out, "/")
   }
   if (export | format_in == "thermoraw" | parser == "openchrom"){
-    if (is.null(path.out)){
-      path.out <- set_temp_directory()
+    if (is.null(path_out)){
+      path_out <- set_temp_directory()
     }
     if (!dir.exists(path_out)){
       stop(paste0("The export directory '", path_out, "' does not exist."))
@@ -104,32 +104,37 @@ read_chroms <- function(paths, find_files = TRUE,
                         "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out,
                                           format_in = format_in))
   } else if(format_in == "chromeleon_uv"){
-    pattern <- ".txt"
+    pattern <- ifelse(is.null(pattern), ".txt", pattern)
     converter <- partial(read_chromeleon, read_metadata = read_metadata, format_out = format_out)
   } else if (format_in == "shimadzu_fid"){
-    pattern <- ".txt"
+    pattern <- ifelse(is.null(pattern), ".txt", pattern)
     converter <- partial(read_shimadzu, format_in = "fid",
                          read_metadata = read_metadata, format_out = format_out)
   } else if (format_in == "shimadzu_dad"){
-    pattern <- ".txt"
+    pattern <- ifelse(is.null(pattern), ".txt", pattern)
     converter <- partial(read_shimadzu, format_in = "dad",
                          read_metadata = read_metadata, format_out = format_out)
     } else if (format_in == "thermoraw"){
-    pattern <- ".raw"
+    pattern <- ifelse(is.null(pattern), ".raw", pattern)
     converter <- partial(read_thermoraw, path_out = path_out, read_metadata = read_metadata,
                          format_out = format_out)
   } else if (format_in == "mzml"){
-    pattern <- ".mzML"
+    pattern <- ifelse(is.null(pattern), ".mzML", pattern)
     converter <- partial(read_mzml, format_out = format_out)
   } else if (format_in == "waters_arw"){
-    pattern <- ".arw"
+    pattern <- ifelse(is.null(pattern), ".arw", pattern)
     converter <- partial(read_waters_arw, format_out = format_out)
   } else if (format_in == "chemstation_csv"){
-    pattern <- ".csv|.CSV"
+    pattern <- ifelse(is.null(pattern), ".csv|.CSV", pattern)
     converter <- partial(read_chemstation_csv, format_out = format_out)
   } else if (format_in %in% c("msd", "csd", "wsd")){
+    if (is.null(pattern) & find_files){
+      stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
+    }
+    return_paths <- ifelse(export_format == "csv", FALSE, TRUE)
     converter <- partial(openchrom_parser, path_out = path_out,
-                         format_in = format_in, export_format = export_format)
+                         format_in = format_in, export_format = export_format,
+                         return_paths = return_paths)
   } else{
     converter <- switch(parser, "aston" = trace_converter,
                         "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out)
@@ -140,6 +145,7 @@ read_chroms <- function(paths, find_files = TRUE,
     files <- find_files(paths, pattern)
   } else{
     files <- paths
+    if (!is.null(pattern)){
     match <- grep(pattern, files)
     if (length(match) == 0){
       warning("The provided files do not match the expected file extension.
@@ -148,6 +154,7 @@ read_chroms <- function(paths, find_files = TRUE,
     } else if (length(match) < length(files)){
       warning(paste("Some of the files do not have the expected file extension:",
                     files[match]), immediate. = TRUE)
+    }
     }
   }
   if (format_in %in% c("chemstation_uv", "masshunter_dad")){
@@ -167,7 +174,7 @@ read_chroms <- function(paths, find_files = TRUE,
   }
   names(data) <- file_names
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
-    writer(data, path.out)
+    writer(data, path_out)
   }
   dat <- append(dat, data)
   dat
