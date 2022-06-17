@@ -1,9 +1,11 @@
 #' Parse files with OpenChrom
 #'
-#' To use this function [OpenChrom](https://lablicate.com/platform/openchrom) must be manually installed.
+#' Writes `xml` batch-files and calls OpenChrom file parsers using a
+#' system call to the command-line interface. To use this function
+#' [OpenChrom](https://lablicate.com/platform/openchrom) must be manually installed.
 #'
-#' The \code{openchrom_parser} works by creating an \code{xml} batchfile and
-#' feeding it to the OpenChrom commandline interface. OpenChrom batchfiles
+#' The \code{call_openchrom} works by creating an \code{xml} batchfile and
+#' feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
 #' consist of \code{InputEntries} (the files you want to convert) and \code{
 #' ProcessEntries} (what you want to do to the files). The parsers are organized
 #' into broad categories by detector-type and output format. The detector-types
@@ -11,13 +13,18 @@
 #' detectors, such as FID, ECD, NPD), and \code{wsd} (wavelength selective
 #' detectors, such as  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
 #' you must select one of these three options for the input format (\code{format_in}).
+#'
+#' **Note:** Turning on the OpenChrom command-line will deactivate the graphical
+#' user interface (GUI). Thus, If you wish to continue using the OpenChrom GUI,
+#' it is recommended to create a separate command-line version of OpenChrom to
+#' call from R.
 
 #' @import xml2
 #' @import magrittr
 #' @param files files to parse
 #' @param path_out directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
-#' @param export_format Either \code{mzml}, \code{cdf}, \code{animl}, or \code{csv}.
+#' @param export_format Either \code{csv}, \code{cdf}, \code{mzml},  \code{animl}.
 #' @param return_paths Logical. If TRUE, the function will return a character vector of paths to the newly created files.
 #' @return If \code{return_paths} is TRUE, the function will return a vector of paths to the newly created files.
 #' If \code{return_paths} is FALSE and \code{export_format} is \code{csv}, the function will return a list
@@ -25,25 +32,22 @@
 #' @section Side effects: Chromatograms will be exported in the format specified
 #' by \code{export_format} in the folder specified by \code{path_out}.
 #' @author Ethan Bass
-#' @export openchrom_parser
-#' If you want to use the OpenChrom GUI, it is recommended to create a separate
-#' command-line version of OpenChrom to call from R.
-#'
+#' @export call_openchrom
 
-openchrom_parser <- function(files, path_out, format_in,
-                             export_format=c("mzml", "cdf", "animl", "csv"),
+call_openchrom <- function(files, path_out, format_in,
+                             export_format=c("csv", "cdf", "mzml", "animl"),
                              return_paths = FALSE){
   if (missing(format_in))
     stop("Format must be specified. The options are `msd` for mass spectrometry, `csd` for flame ionization (FID),
     or `wsd` for DAD/UV data.")
-  export_format <- match.arg(export_format, c("mzml", "cdf", "animl", "csv"))
+  export_format <- match.arg(export_format, c("csv", "cdf", "mzml", "cdf"))
   if (missing(path_out)){
     path_out <- set_temp_directory()
   }
   if(!file.exists(path_out)){
     stop("'path_out' not found. Make sure directory exists.")
   }
-  openchrom_path <- configure_openchrom_parser()
+  openchrom_path <- configure_call_openchrom()
   path_template <- system.file("openchrom_template.xml", package = "chromConverter")
   x <- xml2::read_xml(x = path_template)
   # add files to InputEntries
@@ -92,13 +96,13 @@ openchrom_parser <- function(files, path_out, format_in,
 
 #' Configure OpenChrom parser
 #'
-#' @name configure_openchrom_parser
+#' @name configure_call_openchrom
 #' @param cli Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.
 #' If "false", R will disable CLI. If NULL, R will not modify the ini file.
 #' @return No return value.
 #' @author Ethan Bass
 #' @noRd
-configure_openchrom_parser <- function(cli = c(NULL, "true", "false")){
+configure_call_openchrom <- function(cli = c(NULL, "true", "false")){
   cli <- match.arg(cli, c(NULL, "true", "false"))
   path_parser <- readLines(system.file("shell/path_to_openchrom_commandline.txt", package = 'chromConverter'))
   if (!file.exists(path_parser)){

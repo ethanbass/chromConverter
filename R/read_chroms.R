@@ -98,13 +98,13 @@ read_chroms <- function(paths, find_files = TRUE,
     pattern <- ifelse(is.null(pattern), ".sp", pattern)
     converter <- switch(parser,
                         "aston" = sp_converter,
-                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out,
+                        "entab" = partial(call_entab, read_metadata = read_metadata, format_out = format_out,
                                           format_in = format_in))
   } else if (format_in == "chemstation_uv"){
     pattern <- ifelse(is.null(pattern), ".uv", pattern)
     converter <- switch(parser,
                         "aston" = partial(uv_converter, read_metadata = read_metadata, format_out = format_out),
-                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out,
+                        "entab" = partial(call_entab, read_metadata = read_metadata, format_out = format_out,
                                           format_in = format_in))
   } else if(format_in == "chromeleon_uv"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
@@ -135,12 +135,12 @@ read_chroms <- function(paths, find_files = TRUE,
       stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
     }
     return_paths <- ifelse(export_format == "csv", FALSE, TRUE)
-    converter <- partial(openchrom_parser, path_out = path_out,
+    converter <- partial(call_openchrom, path_out = path_out,
                          format_in = format_in, export_format = export_format,
                          return_paths = return_paths)
   } else{
     converter <- switch(parser, "aston" = trace_converter,
-                        "entab" = partial(entab_reader, read_metadata = read_metadata, format_out = format_out)
+                        "entab" = partial(call_entab, read_metadata = read_metadata, format_out = format_out)
     )
   }
   writer <- switch(export_format, "csv" = export_csvs)

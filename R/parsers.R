@@ -93,7 +93,7 @@ trace_converter <- function(file, format_out = c("matrix", "data.frame")){
   x
 }
 
-#' @name entab_reader
+#' @name call_entab
 #' @title Entab parsers
 #' @param file path to file
 #' @param format_data Whether to output data in wide or long format.
@@ -104,7 +104,7 @@ trace_converter <- function(file, format_out = c("matrix", "data.frame")){
 #' (retention time x wavelength).
 #' @importFrom tidyr pivot_wider
 #' @export
-entab_reader <- function(file, format_data = c("wide","long"),
+call_entab <- function(file, format_data = c("wide","long"),
                          format_in = "",
                          format_out = c("matrix", "data.frame"),
                          read_metadata = TRUE){
