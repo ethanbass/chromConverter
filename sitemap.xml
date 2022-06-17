@@ -19,13 +19,13 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/attach_metadata.html</loc>
   </url>
   <url>
-    <loc>https://ethanbass.github.io/chromConverter/reference/entab_reader.html</loc>
+    <loc>https://ethanbass.github.io/chromConverter/reference/call_entab.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/call_openchrom.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://ethanbass.github.io/chromConverter/reference/openchrom_parser.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.html</loc>
