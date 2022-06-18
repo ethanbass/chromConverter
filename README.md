@@ -77,34 +77,33 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 ##### `read_chromes` function
 
-The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format (`format_in`). The supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
+The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a vector of directories or files and the appropriate file format (`format_in`). The supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
 
 ```
 library(chromConverter)
-dat <- read_chroms(path, find_files = TRUE, format.in = "chemstation_uv", parser = "aston")
+dat <- read_chroms(path, format.in = "chemstation_uv")
 ```
 
-If you want to provide direct paths to files, instead of a folder, include the argument `find_files = FALSE`.
+The `read_chroms` function will attempt to determine an appropriate parser to use and whether you've provided a vector of directories or files. However, if you'd like to be more explicit, you can provide input to the `parsers` and `find_files` arguments. Setting `find_files = FALSE` will instruct the function that you are providing a vector of files, while `find_files = TRUE` implies that you are providing a vector of directories.
 
-```
-library(chromConverter)
-dat <- read_chroms(path, find_files = FALSE, format.in = "chemstation_uv")
-```
+###### Exporting files
 
-If you'd like to automatically export the files as csvs, include the argument `export=TRUE` along with the path where you'd like to export the files (`path_out`).
+If you'd like to automatically export the files, include the argument `export=TRUE` along with the path where you'd like to export the files (`path_out`). Some parsers (e.g. `OpenChrom` and `ThermoRawFileParser`) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to `path_out`.
 
 ```
 library(chromConverter)
 dat <- read_chroms(path, find_files = FALSE, path_out="temp", export=TRUE)
 ```
 
-For formats where that have multiple parsers available, you can choose between them using the `parser` argument. For example, Agilent files can be read using either the Aston or Entab parsers (or in some cases OpenChrom). It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However Entab is slightly more complicated to install (see [installation instructions](README.md#Installation) above).
+###### Choosing between multiple parsers
 
-##### **OpenChrom parsers**
+For formats where multiple parsers are available, you can choose between them using the `parser` argument. For example, Agilent files can be read using either the Aston or Entab parsers (or in some cases OpenChrom). In this case, it is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However Entab is slightly more complicated to install (see [installation instructions](README.md#Installation) above).
+
+###### OpenChrom parsers
 
 Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` argument, the user must specify whether the files come from a mass selective detector (`msd`), a current-selective detector like a flame-ionization detector (`csd`), or a wavelength-selective detector (`wsd`), rather than providing a specific file format. In addition, the user should specify what format they'd like to export (`export_format`). Current options include `csv`, `cdf`, `mzml`, or `animl` (the analytical information markup language). The files will then be converted by calling OpenChrom through the command-line interface. If the files are exported in `csv` format, the chromatograms will be automatically read into R. Otherwise, files will be exported to the specified folder but will not be read into the R workspace.
 
-##### **Metadata**
+###### Extracting metadata
 
 chromConverter includes some options to extract metadata from the provided files. If `read_metadata=TRUE`, metadata will be extracted and stored as `attributes` of the associated object. A list of [`attributes`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) can be extracted from any R object using the `attributes()` function.
 
