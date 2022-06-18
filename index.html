@@ -170,28 +170,32 @@
 <h5 id="read_chromes-function">
 <code>read_chromes</code> function<a class="anchor" aria-label="anchor" href="#read_chromes-function"></a>
 </h5>
-<p>The workhorse of chromConverter is the <code>read_chroms</code> function, which functions as a wrapper around all of the supported parsers. To convert files, call <code>read_chroms</code>, specifying the <code>paths</code> to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format (<code>format_in</code>). The supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code>, <code>csd</code>, and <code>wsd</code>.</p>
+<p>The workhorse of chromConverter is the <code>read_chroms</code> function, which functions as a wrapper around all of the supported parsers. To convert files, call <code>read_chroms</code>, specifying the <code>paths</code> to a vector of directories or files and the appropriate file format (<code>format_in</code>). The supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code>, <code>csd</code>, and <code>wsd</code>.</p>
 <pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
-<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">TRUE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span>, parser <span class="op">=</span> <span class="st">"aston"</span><span class="op">)</span></code></pre>
-<p>If you want to provide direct paths to files, instead of a folder, include the argument <code>find_files = FALSE</code>.</p>
-<pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
-<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></code></pre>
-<p>If you’d like to automatically export the files as csvs, include the argument <code>export=TRUE</code> along with the path where you’d like to export the files (<code>path_out</code>).</p>
+<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></code></pre>
+<p>The <code>read_chroms</code> function will attempt to determine an appropriate parser to use and whether you’ve provided a vector of directories or files. However, if you’d like to be more explicit, you can provide input to the <code>parsers</code> and <code>find_files</code> arguments. Setting <code>find_files = FALSE</code> will instruct the function that you are providing a vector of files, while <code>find_files = TRUE</code> implies that you are providing a vector of directories.</p>
+<div class="section level6">
+<h6 id="exporting-files">Exporting files<a class="anchor" aria-label="anchor" href="#exporting-files"></a>
+</h6>
+<p>If you’d like to automatically export the files, include the argument <code>export=TRUE</code> along with the path where you’d like to export the files (<code>path_out</code>). Some parsers (e.g. <code>OpenChrom</code> and <code>ThermoRawFileParser</code>) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to <code>path_out</code>.</p>
 <pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
 <span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, path_out<span class="op">=</span><span class="st">"temp"</span>, export<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre>
-<p>For formats where that have multiple parsers available, you can choose between them using the <code>parser</code> argument. For example, Agilent files can be read using either the Aston or Entab parsers (or in some cases OpenChrom). It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However Entab is slightly more complicated to install (see <a href="README.md#Installation">installation instructions</a> above).</p>
 </div>
-<div class="section level5">
-<h5 id="openchrom-parsers">
-<strong>OpenChrom parsers</strong><a class="anchor" aria-label="anchor" href="#openchrom-parsers"></a>
-</h5>
+<div class="section level6">
+<h6 id="choosing-between-multiple-parsers">Choosing between multiple parsers<a class="anchor" aria-label="anchor" href="#choosing-between-multiple-parsers"></a>
+</h6>
+<p>For formats where multiple parsers are available, you can choose between them using the <code>parser</code> argument. For example, Agilent files can be read using either the Aston or Entab parsers (or in some cases OpenChrom). In this case, it is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However Entab is slightly more complicated to install (see <a href="README.md#Installation">installation instructions</a> above).</p>
+</div>
+<div class="section level6">
+<h6 id="openchrom-parsers">OpenChrom parsers<a class="anchor" aria-label="anchor" href="#openchrom-parsers"></a>
+</h6>
 <p>Parsers in OpenChrom are organized by detector-type. Thus, for the <code>format_in</code> argument, the user must specify whether the files come from a mass selective detector (<code>msd</code>), a current-selective detector like a flame-ionization detector (<code>csd</code>), or a wavelength-selective detector (<code>wsd</code>), rather than providing a specific file format. In addition, the user should specify what format they’d like to export (<code>export_format</code>). Current options include <code>csv</code>, <code>cdf</code>, <code>mzml</code>, or <code>animl</code> (the analytical information markup language). The files will then be converted by calling OpenChrom through the command-line interface. If the files are exported in <code>csv</code> format, the chromatograms will be automatically read into R. Otherwise, files will be exported to the specified folder but will not be read into the R workspace.</p>
 </div>
-<div class="section level5">
-<h5 id="metadata">
-<strong>Metadata</strong><a class="anchor" aria-label="anchor" href="#metadata"></a>
-</h5>
+<div class="section level6">
+<h6 id="extracting-metadata">Extracting metadata<a class="anchor" aria-label="anchor" href="#extracting-metadata"></a>
+</h6>
 <p>chromConverter includes some options to extract metadata from the provided files. If <code>read_metadata=TRUE</code>, metadata will be extracted and stored as <code>attributes</code> of the associated object. A list of <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html" class="external-link"><code>attributes</code></a> can be extracted from any R object using the <code><a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes()</a></code> function.</p>
+</div>
 </div>
 </div>
 <div class="section level3">
