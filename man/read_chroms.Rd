@@ -6,7 +6,7 @@
 \usage{
 read_chroms(
   paths,
-  find_files = TRUE,
+  find_files,
   format_in = c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
     "chromeleon_uv", "thermoraw", "mzml", "waters_arw", "msd", "csd", "wsd", "other"),
   pattern = NULL,

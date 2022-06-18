@@ -37,7 +37,7 @@
 #' by \code{path_out}. Currently, the only option for export is \code{csv} unless
 #' the \code{parser} is \code{openchrom}.
 #' @import reticulate
-#' @importFrom utils write.csv
+#' @importFrom utils write.csv file_test
 #' @importFrom purrr partial
 #' @examplesIf interactive()
 #' path <- "tests/testthat/testdata/dad1.uv"
@@ -45,7 +45,7 @@
 #' @author Ethan Bass
 #' @export read_chroms
 
-read_chroms <- function(paths, find_files = TRUE,
+read_chroms <- function(paths, find_files,
                         format_in=c("chemstation_uv", "masshunter_dad",
                                     "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                    "thermoraw", "mzml", "waters_arw", "msd",
@@ -61,6 +61,10 @@ read_chroms <- function(paths, find_files = TRUE,
                                         "msd", "csd", "wsd", "other"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   parser <- match.arg(parser, c("", "chromconverter", "aston","entab", "thermoraw", "openchrom"))
+  if (missing(find_files)){
+    ft <- file_test("-f",paths)
+    find_files <- !ft
+  }
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
   }
