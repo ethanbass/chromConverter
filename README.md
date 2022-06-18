@@ -48,11 +48,11 @@ install.packages("devtools")
 devtools::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
-##### Optional additional dependencies
+#### Optional additional dependencies
 
 Some of the parsers rely on external software libraries that must be manually installed.
 
-###### **Entab**
+##### **Entab**
 
 [Entab](https://github.com/bovee/entab) is a Rust-based parsing framework for converting a variety of scientific file formats into tabular data. To use parsers from Entab, you must first install [Rust](https://www.rust-lang.org/tools/install) and Entab-R. After following the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
 
@@ -60,11 +60,11 @@ Some of the parsers rely on external software libraries that must be manually in
 devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 ```
 
-###### **ThermoRawFileParser**
+##### **ThermoRawFileParser**
 
 Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser) on the command-line. To install the ThermoRawFileParser, follow the instructions [here](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
 
-###### **OpenChrom**
+##### **OpenChrom**
 
 [OpenChrom](https://lablicate.com/platform/openchrom) is opensource chromatography software, containing a large number of [file parsers](https://lablicate.com/platform/openchrom), which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to have access to the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
 
@@ -74,6 +74,8 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 4) Call `read_chroms` with `parser="openchrom"` or call the `openchrom_parser` directly. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  
 
 ### Usage
+
+##### `read_chromes` function
 
 The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a directory (or a vector of directories) containing the files you wish to convert and the appropriate file format (`format_in`). The supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
 
@@ -98,11 +100,11 @@ dat <- read_chroms(path, find_files = FALSE, path_out="temp", export=TRUE)
 
 For formats where that have multiple parsers available, you can choose between them using the `parser` argument. For example, Agilent files can be read using either the Aston or Entab parsers (or in some cases OpenChrom). It is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However Entab is slightly more complicated to install (see [installation instructions](README.md#Installation) above).
 
-###### **OpenChrom parsers**
+##### **OpenChrom parsers**
 
-Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` argument, the user must specify whether the files come from a mass selective detector (`msd`), a current-selective detector like a flame-ionization detector (`csd`), or a wavelength-selective detector (`wsd`), rather than providing a specific file format. In addition, the user should specify what format they'd like to export (`export_format`). Current options include `csv`, `cdf`, `mzml`, or `animl` (the analytical information markup language). The files will then be converted by calling OpenChrom through the command-line interface. If the files are exported in `csv` format, the chromatograms will be automatically read into R.
+Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` argument, the user must specify whether the files come from a mass selective detector (`msd`), a current-selective detector like a flame-ionization detector (`csd`), or a wavelength-selective detector (`wsd`), rather than providing a specific file format. In addition, the user should specify what format they'd like to export (`export_format`). Current options include `csv`, `cdf`, `mzml`, or `animl` (the analytical information markup language). The files will then be converted by calling OpenChrom through the command-line interface. If the files are exported in `csv` format, the chromatograms will be automatically read into R. Otherwise, files will be exported to the specified folder but will not be read into the R workspace.
 
-###### **Metadata**
+##### **Metadata**
 
 chromConverter includes some options to extract metadata from the provided files. If `read_metadata=TRUE`, metadata will be extracted and stored as `attributes` of the associated object. A list of [`attributes`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) can be extracted from any R object using the `attributes()` function.
 
