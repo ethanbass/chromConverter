@@ -66,12 +66,12 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 ##### **OpenChrom**
 
-[OpenChrom](https://lablicate.com/platform/openchrom) is opensource chromatography software, containing a large number of [file parsers](https://lablicate.com/platform/openchrom), which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to have access to the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
+[OpenChrom](https://lablicate.com/platform/openchrom) is opensource chromatography software, containing a large number of [file parsers](https://lablicate.com/platform/openchrom), which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
 
 1) Download OpenChrom from the [website](https://lablicate.com/platform/openchrom/download) and place it into a directory of your choice.  
 2) If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.
 3) Follow the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to activate OpenChrom's command-line interface. Alternatively, the command-line option can be activated from R by calling `configure_openchrom_parser(cli="true")` or by calling the openchrom_parser and following the prompts.
-4) Call `read_chroms` with `parser="openchrom"` or call the `openchrom_parser` directly. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  
+4) Call `read_chroms` with `parser="openchrom"`. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  
 
 ### Usage
 
