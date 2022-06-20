@@ -44,7 +44,9 @@ case file extension will be deduced from \code{format_in}.}
 \item{path_out}{Path for exporting files. If path not specified, files will
 export to current working directory.}
 
-\item{export_format}{Export format. Currently only \code{.csv}.}
+\item{export_format}{Export format. Currently the only option is \code{.csv},
+unless you are using OpenChrom parsers, where you could have \code{csv},
+\code{cdf}, \code{mzml}, or \code{animl}.}
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
 Defaults to TRUE.}

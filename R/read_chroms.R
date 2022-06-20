@@ -25,7 +25,9 @@
 #' @param export Logical. If TRUE, will export files as csvs.
 #' @param path_out Path for exporting files. If path not specified, files will
 #' export to current working directory.
-#' @param export_format Export format. Currently only \code{.csv}.
+#' @param export_format Export format. Currently the only option is \code{.csv},
+#' unless you are using OpenChrom parsers, where you could have \code{csv},
+#' \code{cdf}, \code{mzml}, or \code{animl}.
 #' @param read_metadata Logical, whether to attach metadata (if it's available).
 #' Defaults to TRUE.
 #' @param dat Existing list of chromatograms to append results.
