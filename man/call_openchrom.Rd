@@ -45,7 +45,7 @@ detectors, such as  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
 you must select one of these three options for the input format (\code{format_in}).
 
 \strong{Note:} Turning on the OpenChrom command-line will deactivate the graphical
-user interface (GUI). Thus, If you wish to continue using the OpenChrom GUI,
+user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
 it is recommended to create a separate command-line version of OpenChrom to
 call from R.
 }

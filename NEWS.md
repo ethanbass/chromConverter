@@ -1,4 +1,4 @@
-## chromConverter 0.1.1
+## chromConverter 0.2.0
 
 #### New features and formats
 

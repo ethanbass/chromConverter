@@ -62,7 +62,7 @@ read_chroms <- function(paths, find_files,
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   parser <- match.arg(parser, c("", "chromconverter", "aston","entab", "thermoraw", "openchrom"))
   if (missing(find_files)){
-    ft <- file_test("-f",paths)
+    ft <- all(file_test("-f",paths))
     find_files <- !ft
   }
   if (parser == ""){
