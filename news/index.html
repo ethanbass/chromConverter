@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,9 +45,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.1" id="chromconverter-011">chromConverter 0.1.1<a class="anchor" aria-label="anchor" href="#chromconverter-011"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.2.0" id="chromconverter-020">chromConverter 0.2.0<a class="anchor" aria-label="anchor" href="#chromconverter-020"></a></h2>
 <div class="section level4">
-<h4 id="new-features-and-formats-0-1-1">New features and formats<a class="anchor" aria-label="anchor" href="#new-features-and-formats-0-1-1"></a></h4>
+<h4 id="new-features-and-formats-0-2-0">New features and formats<a class="anchor" aria-label="anchor" href="#new-features-and-formats-0-2-0"></a></h4>
 <ul><li>Added <code>read_shimadzu</code> function for parsing Shimadzu ascii files.</li>
 <li>Added <code>read_chromeleon</code> function for parsing Chromeleon ascii files.</li>
 <li>Added <code>read_thermoraw</code> function to convert ThermoRawFiles by calling the ThermoRawFileParser.</li>
@@ -57,7 +57,7 @@
 </ul><p>(All of the new functions described above can be called from the <code>read_chroms</code> function by setting the <code>format_in</code> and <code>parser</code> arguments).</p>
 <ul><li>New option to read and attach instrumental metadata to chromatograms by setting <code>read_metadata = TRUE</code> in <code>read_chroms</code>.</li></ul></div>
 <div class="section level4">
-<h4 id="simplification-of-read_chroms-syntax-0-1-1">Simplification of <code>read_chroms</code> syntax<a class="anchor" aria-label="anchor" href="#simplification-of-read_chroms-syntax-0-1-1"></a></h4>
+<h4 id="simplification-of-read_chroms-syntax-0-2-0">Simplification of <code>read_chroms</code> syntax<a class="anchor" aria-label="anchor" href="#simplification-of-read_chroms-syntax-0-2-0"></a></h4>
 <ul><li>
 <code>read_chroms</code> will now automatically assign a parser if the parser isn’t specified.</li>
 <li>
@@ -66,7 +66,7 @@
 <code>read_chroms</code> will try to automatically determine if files or directories are being provided.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="other-changes-to-read_chroms-syntax-0-1-1">Other changes to <code>read_chroms</code> syntax:<a class="anchor" aria-label="anchor" href="#other-changes-to-read_chroms-syntax-0-1-1"></a></h4>
+<h4 id="other-changes-to-read_chroms-syntax-0-2-0">Other changes to <code>read_chroms</code> syntax:<a class="anchor" aria-label="anchor" href="#other-changes-to-read_chroms-syntax-0-2-0"></a></h4>
 <p>Dots were replaced with underscores in all arguments to <code>read_chroms</code> for internal syntactical consistency across the package. Thus:</p>
 <ul><li>The argument to specify the format of R objects was changed from <code>R.format</code> to <code>format_out</code>.</li>
 <li>The argument to specify the format for exported files was changed from <code>format.out</code> to <code>export_format</code>.</li>
