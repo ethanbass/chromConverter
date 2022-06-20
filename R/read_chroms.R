@@ -170,16 +170,20 @@ read_chroms <- function(paths, find_files,
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
-  } else file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
-  data <- lapply(X=files, function(file){
-    df <- try(converter(file), silent = TRUE)
-  })
-  errors <- which(sapply(data, function(x) inherits(x,"try-error")))
-  if (length(errors) > 0){
-    warning(data[errors], immediate. = TRUE)
-    message(paste("The following chromatograms could not be interpreted:", errors))
-    data <- data[-errors]
-    file_names <- file_names[-errors]
+  } else{ file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])}
+  if (parser != "openchrom"){
+    data <- lapply(X=files, function(file){
+      df <- try(converter(file), silent = TRUE)
+    })
+    errors <- which(sapply(data, function(x) inherits(x,"try-error")))
+    if (length(errors) > 0){
+      warning(data[errors], immediate. = TRUE)
+      message(paste("The following chromatograms could not be interpreted:", errors))
+      data <- data[-errors]
+      file_names <- file_names[-errors]
+    }
+  } else{
+    data <-converter(files)
   }
   names(data) <- file_names
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
