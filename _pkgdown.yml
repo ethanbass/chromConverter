@@ -6,5 +6,6 @@ home:
     structure: [links, custom, license, citation, authors, dev]
     components:
       custom:
-        title: Funding
-        text: We are *grateful* for funding!
+        title: Sister packages
+        text: [chromatographR](https://ethanbass.github.io/chromatographR/)
+        text: [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer)
