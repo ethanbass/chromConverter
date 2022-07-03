@@ -127,10 +127,10 @@
 <h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h3>
 <p>chromConverter can now be installed directly from CRAN:</p>
-<pre><code><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"chromConverter"</span><span class="op">)</span></code></pre>
+<pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"chromConverter"</span><span class="op">)</span></span></code></pre>
 <p>Alternatively, the development version of chromConverter can be installed from GitHub as follows:</p>
-<pre><code><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></code></pre>
+<pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></span></code></pre>
 <div class="section level4">
 <h4 id="optional-additional-dependencies">Optional additional dependencies<a class="anchor" aria-label="anchor" href="#optional-additional-dependencies"></a>
 </h4>
@@ -140,7 +140,7 @@
 <strong>Entab</strong><a class="anchor" aria-label="anchor" href="#entab"></a>
 </h5>
 <p><a href="https://github.com/bovee/entab" class="external-link">Entab</a> is a Rust-based parsing framework for converting a variety of scientific file formats into tabular data. To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and Entab-R. After following the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
-<pre><code><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></code></pre>
+<pre><code><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></span></code></pre>
 </div>
 <div class="section level5">
 <h5 id="thermorawfileparser">
@@ -171,15 +171,15 @@
 <code>read_chromes</code> function<a class="anchor" aria-label="anchor" href="#read_chromes-function"></a>
 </h5>
 <p>The workhorse of chromConverter is the <code>read_chroms</code> function, which functions as a wrapper around all of the supported parsers. To convert files, call <code>read_chroms</code>, specifying the <code>paths</code> to a vector of directories or files and the appropriate file format (<code>format_in</code>). The supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code>, <code>csd</code>, and <code>wsd</code>.</p>
-<pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
-<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></code></pre>
+<pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></span></code></pre>
 <p>The <code>read_chroms</code> function will attempt to determine an appropriate parser to use and whether you’ve provided a vector of directories or files. However, if you’d like to be more explicit, you can provide input to the <code>parsers</code> and <code>find_files</code> arguments. Setting <code>find_files = FALSE</code> will instruct the function that you are providing a vector of files, while <code>find_files = TRUE</code> implies that you are providing a vector of directories.</p>
 <div class="section level6">
 <h6 id="exporting-files">Exporting files<a class="anchor" aria-label="anchor" href="#exporting-files"></a>
 </h6>
 <p>If you’d like to automatically export the files, include the argument <code>export=TRUE</code> along with the path where you’d like to export the files (<code>path_out</code>). Some parsers (e.g. <code>OpenChrom</code> and <code>ThermoRawFileParser</code>) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to <code>path_out</code>.</p>
-<pre><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span>
-<span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, path_out<span class="op">=</span><span class="st">"temp"</span>, export<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre>
+<pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ethanbass/chromConverter" class="external-link">chromConverter</a></span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, path_out<span class="op">=</span><span class="st">"temp"</span>, export<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre>
 </div>
 <div class="section level6">
 <h6 id="choosing-between-multiple-parsers">Choosing between multiple parsers<a class="anchor" aria-label="anchor" href="#choosing-between-multiple-parsers"></a>
@@ -201,7 +201,7 @@
 <div class="section level3">
 <h3 id="further-analysis">Further analysis<a class="anchor" aria-label="anchor" href="#further-analysis"></a>
 </h3>
-<p>For downstream analyses of chromatographic data, you can also check out my package <a href="https://ethanbass.github.io/chromatographR" class="external-link">chromatographR</a>. For interactive visualization of chromatograms, you can check out my new package <a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release).</p>
+<p>For downstream analyses of chromatographic data, you can also check out my package <a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a>. For interactive visualization of chromatograms, you can check out my new package <a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release).</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -261,7 +261,7 @@
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer>
