@@ -8,4 +8,3 @@ home:
       custom:
         title: Sister packages
         html: <a href="https://ethanbass.github.io/chromatographR/">chromatographR</a>
-        html: <a href="https://github.com/ethanbass/ShinyChromViewer/">ShinyChromViewer</a>
