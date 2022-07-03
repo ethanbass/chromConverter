@@ -1,10 +1,4 @@
 url: https://ethanbass.github.io/chromConverter/
 template:
   bootstrap: 5
-home:
-  sidebar:
-    structure: [links, custom, license, citation, authors, dev]
-    components:
-      custom:
-        title: Sister packages
-        html: <a href="https://ethanbass.github.io/chromatographR/">chromatographR</a>
+  
