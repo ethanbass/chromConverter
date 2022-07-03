@@ -7,5 +7,5 @@ home:
     components:
       custom:
         title: Sister packages
-        text: [chromatographR](https://ethanbass.github.io/chromatographR/)
-        text: [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer)
+        html: <a href="https://ethanbass.github.io/chromatographR/">chromatographR</a>
+        html: <a href="https://github.com/ethanbass/ShinyChromViewer/">ShinyChromViewer</a>
