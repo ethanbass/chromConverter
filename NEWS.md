@@ -1,3 +1,7 @@
+## chromConverter 0.2.1
+
+* Fixed bug preventing automatic installation of aston (and necessary python dependencies) on Windows.
+
 ## chromConverter 0.2.0
 
 #### New features and formats
