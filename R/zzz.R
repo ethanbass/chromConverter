@@ -1,8 +1,13 @@
 .onLoad <- function(libname, pkgname){
   env <- reticulate::configure_environment("chromConverter")
   if (!env){
-    use_miniconda("r-reticulate")
-    reticulate::configure_environment("chromConverter")
+    # use_miniconda(conda_list(conda = "auto")[1,1])
+    # reticulate::configure_environment("chromConverter")
+    reqs <- c("pandas","scipy","numpy","aston")
+    reqs_available <- sapply(reqs, py_module_available)
+    if (!all(reqs_available)){
+      py_install(reqs[which(!reqs_available)], pip = TRUE)
+    }
   }
   trace_file <<- reticulate::import("aston.tracefile", delay_load = TRUE)
   pd <<- reticulate::import("pandas", delay_load = TRUE)
