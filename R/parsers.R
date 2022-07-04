@@ -14,6 +14,7 @@
 #' @export sp_converter
 sp_converter <- function(file, format_out = c("matrix", "data.frame"),
                          read_metadata = TRUE){
+  if (!exists("trace_file")) configure_aston()
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   x <- trace_file$agilent_uv$AgilentDAD(file)
   x <- pd$DataFrame(x$data$values, columns=x$data$columns,
@@ -48,6 +49,7 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
 #' @export uv_converter
 uv_converter <- function(file, format_out = c("matrix","data.frame"),
                          correction=TRUE, read_metadata = TRUE){
+  if (!exists("trace_file")) configure_aston()
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
@@ -61,6 +63,8 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
     # multiply by empirical correction value
     x <- apply(x,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
   }
+  # correct column order
+  # x <- lapply(x, function(xx) xx[,order(as.numeric(colnames(xx)))])
   if (read_metadata){
     meta <- read_chemstation_metadata(file)
     x <- attach_metadata(x, meta, format_in = "chemstation_uv",
@@ -81,6 +85,7 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
 #' @import reticulate
 #' @noRd
 trace_converter <- function(file, format_out = c("matrix", "data.frame")){
+  if (!exists("trace_file")) configure_aston()
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
@@ -91,6 +96,48 @@ trace_converter <- function(file, format_out = c("matrix", "data.frame")){
     x <- as.matrix(x)
   }
   x
+}
+
+#' Configure Aston
+#'
+#' Configures reticulate to use Aston file parsers.
+#' @name configure_aston
+#' @title generic converter for other types of files
+#' @param file path to file
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
+#' @import reticulate
+#' @noRd
+configure_aston <- function(){
+  install <- FALSE
+  # path <- miniconda_path()
+  if (!dir.exists(miniconda_path())){
+    install <- readline("It is recommended to install miniconda in your R library to use Aston parsers. Install miniconda now? (y/n)")
+  if (install %in% c('y', "Y", "YES", "yes", "Yes")){
+    install_miniconda()
+  }
+  } # else{
+    # envs <- conda_list()
+    # use_miniconda(envs[grep("r-reticulate", envs$name)[1],2])
+  # }
+  env <- reticulate::configure_environment("chromConverter")
+  if (!env){
+    reqs <- c("pandas","scipy","numpy","aston")
+    reqs_available <- sapply(reqs, py_module_available)
+    if (!all(reqs_available)){
+      py_install(reqs[which(!reqs_available)], pip = TRUE)
+    }
+  }
+  if (!exists("trace_file") | !exists("pd") | !exists("csv")){
+    pos <- 1
+    envir = as.environment(pos)
+    assign("trace_file", reticulate::import("aston.tracefile", delay_load = TRUE), envir = envir)
+    assign("pd", reticulate::import("pandas", delay_load = TRUE), envir = envir)
+    assign("csv", reticulate::import("csv", delay_load = TRUE), envir = envir)
+    # trace_file <<- reticulate::import("aston.tracefile", delay_load = TRUE)
+    # pd <<- reticulate::import("pandas", delay_load = TRUE)
+    # csv <<- reticulate::import("csv", delay_load = TRUE)
+  }
 }
 
 #' @name call_entab

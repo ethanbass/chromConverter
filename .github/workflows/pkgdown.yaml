@@ -22,23 +22,21 @@ jobs:
       - uses: r-lib/actions/setup-r@v1
         with:
           use-public-rspm: true
-          
+
       - name: Add entab repo
         run: |
           writeLines('options(repos = c(entab = "https://ethanbass.github.io/drat/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
         shell: Rscript {0}
-        
+
       - name: Set up python ${{ matrix.config.python }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.config.python }}
-          
+
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
           remotes::install_deps(dependencies = TRUE)
-          install.packages("BiocManager")
-          BiocManager::install("mzR")
           reticulate::install_miniconda()
           reticulate::conda_create('r-reticulate', packages = c('python==3.9', 'numpy', 'scipy', 'pandas'))
           reticulate::conda_install('r-reticulate', packages = c('aston'), pip=TRUE)

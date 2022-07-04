@@ -1,4 +1,5 @@
 utils::globalVariables(names = c('.'))
+# Globals <- list()
 
 check_parser <- function(format_in, parser=NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
@@ -65,7 +66,7 @@ extract_header <- function(x, chrom.idx){
   line <- x[index]
   l <- length(strsplit(line,"\t")[[1]])
   header <- strsplit(line,"\t")[[1]]
-  while (l>1) {
+  while (l > 1) {
     index <- index+1
     line <- strsplit(x[index], "\t")[[1]]
     l <- length(line)
