@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,6 +135,12 @@
 <h4 id="optional-additional-dependencies">Optional additional dependencies<a class="anchor" aria-label="anchor" href="#optional-additional-dependencies"></a>
 </h4>
 <p>Some of the parsers rely on external software libraries that must be manually installed.</p>
+<div class="section level5">
+<h5 id="aston">
+<strong>Aston</strong><a class="anchor" aria-label="anchor" href="#aston"></a>
+</h5>
+<p>Aston should be automatically installed along with chromConverter. If for some reason it isn’t, it can be manually installed along with the necessary python dependencies by running <code>reticulate::py_install(c("pandas", "scipy", "numpy", "aston"), pip = TRUE))</code>.</p>
+</div>
 <div class="section level5">
 <h5 id="entab">
 <strong>Entab</strong><a class="anchor" aria-label="anchor" href="#entab"></a>
