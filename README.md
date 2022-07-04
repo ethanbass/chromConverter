@@ -52,6 +52,10 @@ devtools::install_github("https://github.com/ethanbass/chromConverter/")
 
 Some of the parsers rely on external software libraries that must be manually installed.
 
+##### **Aston**
+
+Aston should be automatically installed along with chromConverter. If for some reason it isn't, it can be manually installed along with the necessary python dependencies by running `reticulate::py_install(c("pandas", "scipy", "numpy", "aston"), pip = TRUE))`.
+
 ##### **Entab**
 
 [Entab](https://github.com/bovee/entab) is a Rust-based parsing framework for converting a variety of scientific file formats into tabular data. To use parsers from Entab, you must first install [Rust](https://www.rust-lang.org/tools/install) and Entab-R. After following the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
