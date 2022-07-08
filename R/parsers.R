@@ -102,12 +102,10 @@ trace_converter <- function(file, format_out = c("matrix", "data.frame")){
 #'
 #' Configures reticulate to use Aston file parsers.
 #' @name configure_aston
-#' @title generic converter for other types of files
-#' @param file path to file
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
-#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
+#' @return No return value.
+#' @author Ethan Bass
 #' @import reticulate
-#' @noRd
+#' @export
 configure_aston <- function(){
   install <- FALSE
   # path <- miniconda_path()

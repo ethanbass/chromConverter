@@ -2,6 +2,7 @@
 
 export(call_entab)
 export(call_openchrom)
+export(configure_aston)
 export(read_chemstation_csv)
 export(read_chromeleon)
 export(read_chroms)
