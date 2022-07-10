@@ -1,6 +1,6 @@
 ## chromConverter 0.2.1
 
-* Added `configure_aston` function for configuration of Aston parsers. 
+* Added `configure_aston` function for configuration of Aston parsers and fixed issues with configuration of Aston.
 
 ## chromConverter 0.2.0
 
