@@ -14,7 +14,7 @@
 #' the function with a folder or vector of folders containing the files.
 #' Otherwise, set to\code{FALSE}.
 #' @param format_in Format of files to be imported/converted. The current options
-#' are: \code{chemstation_uv}, \code{masshunter_dad}, \code{shimadzu_fid},
+#' are: \code{chemstation_uv}, \code{chemstation_csv}, \code{masshunter_dad}, \code{shimadzu_fid},
 #' \code{shimadzu_dad}, \code{chromeleon_uv}, \code{thermoraw}, \code{mzml},
 #' \code{waters_arw}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
@@ -48,7 +48,7 @@
 #' @export read_chroms
 
 read_chroms <- function(paths, find_files,
-                        format_in=c("chemstation_uv", "masshunter_dad",
+                        format_in=c("chemstation_uv", "chemstation_csv", "masshunter_dad",
                                     "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                    "thermoraw", "mzml", "waters_arw", "msd",
                                    "csd", "wsd", "other"),
@@ -58,7 +58,7 @@ read_chroms <- function(paths, find_files,
                         export = FALSE, path_out = NULL,
                         export_format = c("csv", "cdf", "mzml", "animl"),
                         read_metadata = TRUE, dat = NULL){
-  format_in <- match.arg(format_in, c("chemstation_uv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
+  format_in <- match.arg(format_in, c("chemstation_uv", "chemstation_csv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
                                       "chromeleon_uv", "thermoraw", "mzml", "waters_arw",
                                         "msd", "csd", "wsd", "other"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))

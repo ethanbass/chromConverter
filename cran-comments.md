@@ -1,3 +1,7 @@
+## Response to comments
+
+I've added single quotes around proper nouns in the package description, as requested by Uwe Ligges and pushed the version to 0.2.1. Thanks!
+
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
 

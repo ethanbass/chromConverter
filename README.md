@@ -54,7 +54,7 @@ Some of the parsers rely on external software libraries that must be manually in
 
 ##### **Aston**
 
-Aston should be automatically installed along with chromConverter. If for some reason it isn't, it can be manually installed along with the necessary python dependencies by running `reticulate::py_install(c("pandas", "scipy", "numpy", "aston"), pip = TRUE))`.
+To install Aston, call the `configure_aston()` function to install miniconda along with the necessary python dependencies.
 
 ##### **Entab**
 
