@@ -266,6 +266,7 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
     xx <- as.matrix(xx[!is.na(xx[,1]),])
     rownames(xx) <- xx[,1]
     xx <- xx[, 2, drop = FALSE]
+    colnames(xx) <- "Intensity"
     format <- "long"
   } else if (format_in == "dad"){
     format <- "wide"
