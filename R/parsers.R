@@ -14,7 +14,7 @@
 #' @export sp_converter
 sp_converter <- function(file, format_out = c("matrix", "data.frame"),
                          read_metadata = TRUE){
-  if (!exists("trace_file")) configure_aston()
+  check_aston_configuration()
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   x <- trace_file$agilent_uv$AgilentDAD(file)
   x <- pd$DataFrame(x$data$values, columns=x$data$columns,
@@ -49,7 +49,7 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
 #' @export uv_converter
 uv_converter <- function(file, format_out = c("matrix","data.frame"),
                          correction=TRUE, read_metadata = TRUE){
-  if (!exists("trace_file")) configure_aston()
+  check_aston_configuration()
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
@@ -85,7 +85,7 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
 #' @import reticulate
 #' @noRd
 trace_converter <- function(file, format_out = c("matrix", "data.frame")){
-  if (!exists("trace_file")) configure_aston()
+  check_aston_configuration()
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
@@ -121,21 +121,30 @@ configure_aston <- function(){
   env <- reticulate::configure_environment("chromConverter")
   if (!env){
     reqs <- c("pandas","scipy","numpy","aston")
-    reqs_available <- sapply(reqs, py_module_available)
+    reqs_available <- sapply(reqs, reticulate::py_module_available)
     if (!all(reqs_available)){
-      py_install(reqs[which(!reqs_available)], pip = TRUE)
+      conda_install(reqs[which(!reqs_available)], pip = TRUE)
     }
   }
-  if (!exists("trace_file") | !exists("pd") | !exists("csv")){
-    pos <- 1
-    envir = as.environment(pos)
-    assign("trace_file", reticulate::import("aston.tracefile", delay_load = TRUE), envir = envir)
-    assign("pd", reticulate::import("pandas", delay_load = TRUE), envir = envir)
-    assign("csv", reticulate::import("csv", delay_load = TRUE), envir = envir)
-    # trace_file <<- reticulate::import("aston.tracefile", delay_load = TRUE)
-    # pd <<- reticulate::import("pandas", delay_load = TRUE)
-    # csv <<- reticulate::import("csv", delay_load = TRUE)
+    assign_trace_file()
+}
+
+check_aston_configuration <- function(){
+  assign_trace_file()
+  if (length(trace_file) == 0){
+    ans <- readline("Aston not found. Configure Aston? (y/n)?")
+    if (ans %in% c('y', "Y", "YES", "yes", "Yes")){
+      configure_aston()
+    }
   }
+}
+
+assign_trace_file <- function(){
+  pos <- 1
+  envir = as.environment(pos)
+  assign("trace_file", reticulate::import("aston.tracefile"), envir = envir)
+  assign("pd", reticulate::import("pandas"), envir = envir)
+  assign("csv", reticulate::import("csv"), envir = envir)
 }
 
 #' @name call_entab

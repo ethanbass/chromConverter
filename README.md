@@ -54,7 +54,7 @@ Some of the parsers rely on external software libraries that must be manually in
 
 ##### **Aston**
 
-To install Aston, call the `configure_aston()` function to install miniconda along with the necessary python dependencies.
+To install Aston, call the `configure_aston()` function to install miniconda along with the necessary python dependencies. Running `read_chroms` with the Aston parser selected should also trigger a prompt to install Aston. If you're running Windows, you may need to install the latest version of ['Microsoft Visual C++'](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170) if you don't already have it.
 
 ##### **Entab**
 
