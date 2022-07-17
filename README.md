@@ -114,3 +114,11 @@ chromConverter includes some options to extract metadata from the provided files
 ### Further analysis
 
 For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release).
+
+### Citation
+
+You can cite chromConverter as follows:
+
+Bass, E. (2022). chromConverter (Version v0.2.2). Zenodo. http://doi.org/10.5281/zenodo.2647541.
+
+If you use external libraries to convert your files, you should probably cite those as well in published work.
