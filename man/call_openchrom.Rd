@@ -40,8 +40,8 @@ consist of \code{InputEntries} (the files you want to convert) and \code{
 ProcessEntries} (what you want to do to the files). The parsers are organized
 into broad categories by detector-type and output format. The detector-types
 are \code{msd} (mass selective detectors), \code{csd} (current selective
-detectors, such as FID, ECD, NPD), and \code{wsd} (wavelength selective
-detectors, such as  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
+detectors, e.g. FID, ECD, NPD), and \code{wsd} (wavelength selective
+detectors, e.g.  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
 you must select one of these three options for the input format (\code{format_in}).
 
 \strong{Note:} Turning on the OpenChrom command-line will deactivate the graphical

@@ -6,13 +6,16 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                           chromconverter = c("chemstation_csv", "shimadzu_fid", "shimadzu_dad",
                                              "chromeleon_uv", "waters_arw", "mzml"),
                           aston = c("chemstation_uv", "masshunter_dad", "other"),
-                          entab = c("chemstation_uv", "masshunter_dad", "other"),
+                          entab = c("chemstation_uv", "masshunter_dad", "thermoraw", "other"),
                           thermoraw = c("thermoraw")
   )
   if (find){
     possible_parsers <- names(allowed_formats)[grep(format_in, allowed_formats)]
     if (all(c("aston","entab") %in% possible_parsers)){
       possible_parsers <- ifelse(!requireNamespace("entab", quietly = TRUE), "aston", "entab")
+    }
+    if (all(c("entab","thermoraw") %in% possible_parsers)){
+      possible_parsers <- "thermoraw"
     }
     possible_parsers[1]
   } else{

@@ -125,8 +125,11 @@ read_chroms <- function(paths, find_files,
                          read_metadata = read_metadata, format_out = format_out)
     } else if (format_in == "thermoraw"){
     pattern <- ifelse(is.null(pattern), ".raw", pattern)
-    converter <- partial(read_thermoraw, path_out = path_out, read_metadata = read_metadata,
-                         format_out = format_out)
+    converter <- switch(parser,
+                        "thermoraw" = partial(read_thermoraw, path_out = path_out, read_metadata = read_metadata,
+                                              format_out = format_out),
+                        "entab" = partial(call_entab, read_metadata = read_metadata, format_out = format_out,
+                                          format_in = format_in))
   } else if (format_in == "mzml"){
     pattern <- ifelse(is.null(pattern), ".mzML", pattern)
     converter <- partial(read_mzml, format_out = format_out)
