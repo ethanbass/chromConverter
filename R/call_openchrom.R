@@ -10,8 +10,8 @@
 #' ProcessEntries} (what you want to do to the files). The parsers are organized
 #' into broad categories by detector-type and output format. The detector-types
 #' are \code{msd} (mass selective detectors), \code{csd} (current selective
-#' detectors, such as FID, ECD, NPD), and \code{wsd} (wavelength selective
-#' detectors, such as  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
+#' detectors, e.g. FID, ECD, NPD), and \code{wsd} (wavelength selective
+#' detectors, e.g.  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
 #' you must select one of these three options for the input format (\code{format_in}).
 #'
 #' **Note:** Turning on the OpenChrom command-line will deactivate the graphical
@@ -35,12 +35,12 @@
 #' @export call_openchrom
 
 call_openchrom <- function(files, path_out, format_in,
-                             export_format=c("csv", "cdf", "mzml", "animl"),
+                             export_format = c("csv", "cdf", "mzml", "animl"),
                              return_paths = FALSE){
-  if (missing(format_in))
-    stop("Format must be specified. The options are `msd` for mass spectrometry, `csd` for flame ionization (FID),
-    or `wsd` for DAD/UV data.")
-  export_format <- match.arg(export_format, c("csv", "cdf", "mzml", "cdf"))
+  if (missing(format_in)){
+    stop("Format must be specified. The options are `msd` for mass spectrometry,
+    `csd` for flame ionization (FID), or `wsd` for DAD/UV data.")}
+  export_format <- match.arg(export_format, c("csv", "cdf", "mzml", "animl"))
   if (missing(path_out)){
     path_out <- set_temp_directory()
   }
@@ -50,14 +50,14 @@ call_openchrom <- function(files, path_out, format_in,
   openchrom_path <- configure_call_openchrom()
   path_template <- system.file("openchrom_template.xml", package = "chromConverter")
   x <- xml2::read_xml(x = path_template)
-  # add files to InputEntries
+  ### add files to InputEntries ###
   for (file in files){
   x %>% xml_children %>% .[[3]] %>%
     xml_add_child(.value = "InputEntry")  %>% xml_add_child(xml_cdata(file))
   }
-  # add parser to ProcessEntries
-  msd_mzml_converter<-'ProcessEntry id="msd.export.org.eclipse.chemclipse.msd.converter.supplier.mzml" name="mzML Chromatogram (*.mzML)" description="Reads mzML Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
-  msd_netcdf_converter<-'ProcessEntry id="msd.export.net.openchrom.msd.converter.supplier.cdf" name="ANDI/AIA CDF Chromatogram (*.CDF)" description="Reads an writes ANDI/AIA CDF Chromatograms." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  ### add appropriate parser to ProcessEntries ###
+  msd_mzml_converter <- 'ProcessEntry id="msd.export.org.eclipse.chemclipse.msd.converter.supplier.mzml" name="mzML Chromatogram (*.mzML)" description="Reads mzML Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
+  msd_netcdf_converter <- 'ProcessEntry id="msd.export.net.openchrom.msd.converter.supplier.cdf" name="ANDI/AIA CDF Chromatogram (*.CDF)" description="Reads an writes ANDI/AIA CDF Chromatograms." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
   msd_animl_converter <- 'ProcessEntry id="msd.export.net.openchrom.msd.converter.supplier.animl.chromatogram" name="AnIML MSD Chromatogram (*.animl)" description="Reads and writes Analytical Information Markup Language Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
   msd_csv_converter <- 'ProcessEntry id="msd.export.org.eclipse.chemclipse.msd.converter.supplier.csv" name="CSV Chromatogram (*.csv)" description="Reads and Writes Chromatograms to CSV." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
   csd_csv_converter <- 'ProcessEntry id="csd.export.org.eclipse.chemclipse.csd.converter.supplier.csv" name="CSV Chromatogram (*.csv)" description="Reads and Writes Chromatograms to CSV." jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
@@ -82,7 +82,6 @@ call_openchrom <- function(files, path_out, format_in,
   x %>% xml_children %>% .[[4]] %>% xml_add_child(.value=gsub("path_out", path_out, parser))
   path_xml <- paste0(path_out, "batchfile_", strftime(Sys.time(),format = "%Y-%m-%d_%H-%M-%S"), ".xml")
   write_xml(x, file = path_xml)
-  openchrom_path <- "/Applications/OpenChrom_CL.app/Contents/MacOS/openchrom"
   system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml))
   new_files <- paste0(path_out, sapply(strsplit(basename(files), "\\."), function(x) x[1]), ".", export_format)
   if (return_paths){

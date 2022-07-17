@@ -1,3 +1,8 @@
+## chromConverter 0.2.2
+
+* Fixed bug in `call_openchrom` so that it can actually find 'OpenChrom' path.
+* Fixed bug in `call_openchrom` to allow 'animl' as valid `export_format`.
+
 ## chromConverter 0.2.1
 
 * Added `configure_aston` function for configuration of Aston parsers and fixed issues with configuration of Aston.
@@ -6,9 +11,9 @@
 
 #### New features and formats
 
-* Added `read_shimadzu` function for parsing Shimadzu ascii files.
-* Added `read_chromeleon` function for parsing Chromeleon ascii files.
-* Added `read_thermoraw` function to convert ThermoRawFiles by calling the ThermoRawFileParser.
+* Added `read_shimadzu` function for parsing 'Shimadzu' ascii files.
+* Added `read_chromeleon` function for parsing 'Chromeleon' ascii files.
+* Added `read_thermoraw` function to convert 'Thermo Raw' files by calling the 'ThermoRawFileParser'.
 * Added `read_mzml` function to extract UV data from mzML files using mzR.
 * Added `call_entab` function for calling Entab parsers.
 * Added `call_openchrom` to call OpenChrom parsers through the command-line interface.

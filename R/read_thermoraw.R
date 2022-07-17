@@ -139,7 +139,6 @@ configure_thermo_parser <- function(reconfigure = FALSE, check = FALSE){
     if (!exists & !check){
       warning("ThermoRawFileParser not found!", immediate. = TRUE)
       path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
-      # reconfigure <- TRUE
       writeLines(path_parser, con=system.file('shell/path_parser.txt', package='chromConverter'))
     }
   } else{
@@ -150,7 +149,6 @@ configure_thermo_parser <- function(reconfigure = FALSE, check = FALSE){
     if (!exists & !check){
       warning("ThermoRawFileParser not found!", immediate. = TRUE)
       path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
-      # arg1 <- "mono "
       shell_script[2] <- paste0("mono ", path_parser, ' "$@"')
       writeLines(shell_script, con = system.file('shell/thermofileparser.sh', package='chromConverter'))
     }
