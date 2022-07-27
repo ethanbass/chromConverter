@@ -64,6 +64,14 @@ To install Aston, call the `configure_aston()` function to install miniconda alo
 devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 ```
 
+###### Mac OS X
+
+If you're using RStudio on a Mac, you will likely need to tell R Studio where to find cargo (the Rust package manager) by adding it to your path. You can do this by following the instructions below:
+1. Open your `.Rprofile` file in your home directory (you may need to press Command + Shift + period to reveal hidden files).
+2. Add `Sys.setenv(PATH = paste0("/Users/<user>/.cargo/bin:", Sys.getenv("PATH")))`, replacing <user> with your username. This will append Cargo to your path when you open RStudio.
+3. Save your `.Rprofile` file and restart R Studio.
+4. Install Entab from GitHub.
+
 ##### **ThermoRawFileParser**
 
 Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser) on the command-line. To install the ThermoRawFileParser, follow the instructions [here](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will also need to install mono, following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
@@ -114,3 +122,11 @@ chromConverter includes some options to extract metadata from the provided files
 ### Further analysis
 
 For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release).
+
+### Citation
+
+You can cite chromConverter as follows:
+
+Bass, E. (2022). chromConverter (Version v0.2.2). Zenodo. http://doi.org/10.5281/zenodo.2647541.
+
+If you use external libraries to convert your files, you should probably cite those as well in published work.
