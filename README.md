@@ -87,7 +87,7 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 ### Usage
 
-##### `read_chromes` function
+##### `read_chroms` function
 
 The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a vector of directories or files and the appropriate file format (`format_in`). The supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
 
