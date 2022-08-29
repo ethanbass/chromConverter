@@ -224,7 +224,7 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
   x <- x[,2, drop = FALSE]
   if (read_metadata){
     meta_fields <- grep("Information:", xx)
-    meta <- do.call(rbind,strsplit(xx[(meta_fields[1]+1):(meta_fields[3]-1)],"\t"))
+    meta <- do.call(rbind, strsplit(xx[(meta_fields[1]+1):(meta_fields[length(meta_fields)]-1)],"\t"))
     rownames(meta) <- meta[,1]
     meta <- as.list(meta[,-1])
     x <- attach_metadata(x, meta, format_in = "chromeleon", format_out = format_out,

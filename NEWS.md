@@ -1,3 +1,7 @@
+## chromConverter 0.2.3
+
+* Fixed bug causing Chromeleon metadata parser to fail.
+
 ## chromConverter 0.2.2
 
 * Fixed bug in `call_openchrom` so that it can actually find 'OpenChrom' path.

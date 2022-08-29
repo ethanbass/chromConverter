@@ -1,6 +1,6 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.2.2
+Version: 0.2.3
 Authors@R: person("Ethan", "Bass", , "ethanbass@gmail.com", role = c("aut",
     "cre"), comment = c(ORCID = "0000-0002-6175-6739"))
 Maintainer: Ethan Bass <ethanbass@gmail.com>
@@ -11,7 +11,6 @@ URL: https://github.com/ethanbass/chromConverter,
 BugReports: https://github.com/ethanbass/chromConverter/issues
 Imports:
     purrr,
-    readr,
     readxl,
     reticulate,
     stringr,
@@ -30,7 +29,6 @@ Config/reticulate: list( packages = list( list(package = "scipy"),
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Additional_repositories: https://ethanbass.github.io/drat/
 Config/testthat/edition: 3
-
