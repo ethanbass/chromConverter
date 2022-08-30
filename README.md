@@ -3,6 +3,7 @@
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/chromConverter)](https://cran.r-project.org/package=chromConverter)
 [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/grand-total/chromConverter?color=blue)](https://r-pkg.org/pkg/chromConverter)
+[![metacran downloads](https://cranlogs.r-pkg.org/badges/last-month/chromConverter)](https://cran.r-project.org/package=chromConverter)
 <!-- badges: end -->
 
 ### Overview
