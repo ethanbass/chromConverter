@@ -147,11 +147,6 @@
 </h5>
 <p><a href="https://github.com/bovee/entab" class="external-link">Entab</a> is a Rust-based parsing framework for converting a variety of scientific file formats into tabular data. To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and Entab-R. After following the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
 <pre><code><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></span></code></pre>
-<div class="section level6">
-<h6 id="mac-os-x">Mac OS X<a class="anchor" aria-label="anchor" href="#mac-os-x"></a>
-</h6>
-<p>If you’re using RStudio on a Mac, you will likely need to tell R Studio where to find cargo (the Rust package manager) by adding it to your path. You can do this by following the instructions below: 1. Open your <code>.Rprofile</code> file in your home directory (you may need to press Command + Shift + period to reveal hidden files). 2. Add <code>Sys.setenv(PATH = paste0("/Users/&lt;user&gt;/.cargo/bin:", Sys.getenv("PATH")))</code>, replacing <user> with your username. This will append Cargo to your path when you open RStudio. 3. Save your <code>.Rprofile</code> file and restart R Studio. 4. Install Entab from GitHub.</user></p>
-</div>
 </div>
 <div class="section level5">
 <h5 id="thermorawfileparser">
