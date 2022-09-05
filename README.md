@@ -14,7 +14,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 ### Formats
 ##### External Libraries
 ###### Aston/Entab (*Entab requires separate installation, see [instructions below](README.md#Installation)*)
-- Agilent ChemStation CH, FID, MS, MWD, and UV
+- Agilent ChemStation (`.ch`, `.fid`, `.ms`, .`mwd`, & `.uv`)
 - Agilent MassHunter DAD (`.sp`)  
 
 ###### ThermoRawFileParser (*requires separate installation, see [instructions below](README.md#Installation)*)
