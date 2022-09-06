@@ -65,9 +65,13 @@ from \href{https://github.com/bovee/aston}{Aston}, \href{https://github.com/bove
 and \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser}.
 }
 \details{
-Currently recognizes Agilent ChemStation '.uv', MassHunter '.dad' files, and
-ThermoRaw files. To use Entab and the ThermoRawFileParser, they
-must be manually installed. Please see the instructions in the Read Me.
+Provides a general interface to chromConverter parsers. Currently recognizes
+'Agilent ChemStation' (.uv), 'MassHunter' (.dad) files, 'Thermo RAW',
+'Waters ARW' (.arw), 'Chromeleon ASCII' (.txt), 'Shimadzu ASCII' (.txt). Also,
+wraps Openchrom parsers, which include many additional formats. To use 'Entab',
+'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
+Please see the instructions in the \href{https://ethanbass.github.io/chromConverter/}{README}
+for further details.
 }
 \section{Side effects}{
  If \code{export} is TRUE, chromatograms will be

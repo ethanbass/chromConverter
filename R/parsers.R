@@ -186,10 +186,12 @@ call_entab <- function(file, format_data = c("wide","long"),
   if (read_metadata){
     meta <- r$metadata()
     if (format_in == "chemstation_uv"){
-      meta <- c(meta, read_chemstation_metadata(file))
+      metadata_from_file <- try(read_chemstation_metadata(file), silent = TRUE)
+      meta <- c(meta, metadata_from_file)
     }
     if (format_in == "masshunter_dad"){
-      meta <- c(meta, read_masshunter_metadata(file))
+      metadata_from_file <- try(read_masshunter_metadata(file), silent = TRUE)
+      meta <- c(meta, metadata_from_file)
     }
     x <- attach_metadata(x, meta, format_in = format_in, format_out = format_out,
                          format_data = format_data, parser = "entab")
@@ -197,7 +199,7 @@ call_entab <- function(file, format_data = c("wide","long"),
   x
 }
 
-#' Chromeleon ascii reader
+#' Chromeleon ASCII reader
 #'
 #' @importFrom utils tail read.csv
 #' @param file path to file
@@ -223,12 +225,11 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
   rownames(x) <- x[,1]
   x <- x[,2, drop = FALSE]
   if (read_metadata){
-    meta_fields <- grep("Information:", xx)
-    meta <- do.call(rbind, strsplit(xx[(meta_fields[1]+1):(meta_fields[length(meta_fields)]-1)],"\t"))
-    rownames(meta) <- meta[,1]
-    meta <- as.list(meta[,-1])
-    x <- attach_metadata(x, meta, format_in = "chromeleon", format_out = format_out,
-                         parser = "chromConverter")
+    meta <- try(read_chromeleon_metadata(xx))
+    if (!inherits(meta, "try-error")){
+      x <- attach_metadata(x, meta, format_in = "chromeleon", format_out = format_out,
+                           parser = "chromConverter")
+    }
   }
   x
 }
@@ -299,12 +300,12 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
   if (read_metadata){
     meta_start <- headings[1]
     meta_end <- headings[7]
-    meta <- x[meta_start+1:(meta_end-1)]
+    meta <- x[(meta_start+1):(meta_end-1)]
     meta <- meta[meta!=""]
-    meta<-meta[-grep("\\[", meta)]
-    meta <- stringr::str_split_fixed(meta,"\t",n=2)
+    meta <- meta[-grep("\\[", meta)]
+    meta <- stringr::str_split_fixed(meta, "\t", n = 2)
     meta <- rbind(meta, met)
-    rownames(meta) <- meta[,1]
+    rownames(meta) <- meta[, 1]
     meta <- as.list(meta[,2])
     xx <- attach_metadata(xx, meta, format_in = "shimadzu", format_out = format_out,
                           parser = "chromConverter")
@@ -315,6 +316,10 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
 }
 
 #' Waters ascii (.arw) reader
+#'
+#' Reads 'Waters ARW' files.
+#'
+#' For help exporting files from Empower, see
 #'
 #' @name read_waters_arw
 #' @importFrom utils tail read.csv
@@ -332,12 +337,12 @@ read_waters_arw <- function(file, read_metadata = TRUE,
   if (format_out == "matrix")
     x <- as.matrix(x)
   if (read_metadata){
-    meta <- gsub("\\\"", "", do.call(cbind,strsplit(readLines(file, n = 2),"\t")))
-    rownames(meta) <- meta[,1]
-    meta <- as.list(meta[,-1])
-    x <- attach_metadata(x, meta, format_in = "waters_arw",
-                         format_out = format_out,
-                         parser = "chromConverter")
+    meta <- try(read_waters_metadata(file))
+    if (!inherits(meta, "try-error")){
+      x <- attach_metadata(x, meta, format_in = "waters_arw",
+                           format_out = format_out,
+                           parser = "chromConverter")
+    }
   }
   x
 }

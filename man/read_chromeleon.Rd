@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsers.R
 \name{read_chromeleon}
 \alias{read_chromeleon}
-\title{Chromeleon ascii reader}
+\title{Chromeleon ASCII reader}
 \usage{
 read_chromeleon(
   file,
@@ -22,7 +22,7 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Chromeleon ascii reader
+Chromeleon ASCII reader
 }
 \author{
 Ethan Bass

@@ -4,9 +4,13 @@
 #' from [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab),
 #' and [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser).
 #'
-#' Currently recognizes Agilent ChemStation '.uv', MassHunter '.dad' files, and
-#' ThermoRaw files. To use Entab and the ThermoRawFileParser, they
-#' must be manually installed. Please see the instructions in the Read Me.
+#' Provides a general interface to chromConverter parsers. Currently recognizes
+#' 'Agilent ChemStation' (.uv), 'MassHunter' (.dad) files, 'Thermo RAW',
+#' 'Waters ARW' (.arw), 'Chromeleon ASCII' (.txt), 'Shimadzu ASCII' (.txt). Also,
+#' wraps Openchrom parsers, which include many additional formats. To use 'Entab',
+#' 'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
+#' Please see the instructions in the [README](https://ethanbass.github.io/chromConverter/)
+#' for further details.
 #'
 #' @name read_chroms
 #' @param paths paths to files or folders containing files
@@ -53,16 +57,20 @@ read_chroms <- function(paths, find_files,
                                    "thermoraw", "mzml", "waters_arw", "msd",
                                    "csd", "wsd", "other"),
                         pattern = NULL,
-                        parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom"),
+                        parser = c("", "chromconverter", "aston", "entab",
+                                   "thermoraw", "openchrom"),
                         format_out = c("matrix", "data.frame"),
                         export = FALSE, path_out = NULL,
                         export_format = c("csv", "cdf", "mzml", "animl"),
                         read_metadata = TRUE, dat = NULL){
-  format_in <- match.arg(format_in, c("chemstation_uv", "chemstation_csv", "masshunter_dad", "shimadzu_fid", "shimadzu_dad",
-                                      "chromeleon_uv", "thermoraw", "mzml", "waters_arw",
+  format_in <- match.arg(format_in, c("chemstation_uv", "chemstation_csv",
+                                      "masshunter_dad", "shimadzu_fid",
+                                      "shimadzu_dad", "chromeleon_uv",
+                                      "thermoraw", "mzml", "waters_arw",
                                         "msd", "csd", "wsd", "other"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
-  parser <- match.arg(parser, c("", "chromconverter", "aston","entab", "thermoraw", "openchrom"))
+  parser <- match.arg(parser, c("", "chromconverter", "aston","entab",
+                                          "thermoraw", "openchrom"))
   if (missing(find_files)){
     ft <- all(file_test("-f",paths))
     find_files <- !ft
@@ -126,10 +134,11 @@ read_chroms <- function(paths, find_files,
     } else if (format_in == "thermoraw"){
     pattern <- ifelse(is.null(pattern), ".raw", pattern)
     converter <- switch(parser,
-                        "thermoraw" = partial(read_thermoraw, path_out = path_out, read_metadata = read_metadata,
-                                              format_out = format_out),
-                        "entab" = partial(call_entab, read_metadata = read_metadata, format_out = format_out,
-                                          format_in = format_in))
+                    "thermoraw" = partial(read_thermoraw, path_out = path_out,
+                                            read_metadata = read_metadata,
+                                            format_out = format_out),
+                     "entab" = partial(call_entab, read_metadata = read_metadata,
+                                        format_out = format_out, format_in = format_in))
   } else if (format_in == "mzml"){
     pattern <- ifelse(is.null(pattern), ".mzML", pattern)
     converter <- partial(read_mzml, format_out = format_out)
@@ -148,8 +157,11 @@ read_chroms <- function(paths, find_files,
                          format_in = format_in, export_format = export_format,
                          return_paths = return_paths)
   } else{
-    converter <- switch(parser, "aston" = trace_converter,
-                        "entab" = partial(call_entab, read_metadata = read_metadata, format_out = format_out)
+    converter <- switch(parser,
+                        "aston" = trace_converter,
+                        "entab" = partial(call_entab,
+                                          read_metadata = read_metadata,
+                                          format_out = format_out)
     )
   }
   writer <- switch(export_format, "csv" = export_csvs)
@@ -158,7 +170,7 @@ read_chroms <- function(paths, find_files,
   } else{
     files <- paths
     if (!is.null(pattern)){
-    match <- grep(pattern, files)
+    match <- grep(pattern, files, ignore.case = TRUE)
     if (length(match) == 0){
       warning("The provided files do not match the expected file extension.
       Please confirm that the specified format ('format_in') is correct.",

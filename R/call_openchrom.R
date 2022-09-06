@@ -37,6 +37,9 @@
 call_openchrom <- function(files, path_out, format_in,
                              export_format = c("csv", "cdf", "mzml", "animl"),
                              return_paths = FALSE){
+  if (length(files) == 0){
+    stop("Files not found.")
+  }
   if (missing(format_in)){
     stop("Format must be specified. The options are `msd` for mass spectrometry,
     `csd` for flame ionization (FID), or `wsd` for DAD/UV data.")}

@@ -22,7 +22,10 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Waters ascii (.arw) reader
+Reads 'Waters ARW' files.
+}
+\details{
+For help exporting files from Empower, see
 }
 \author{
 Ethan Bass

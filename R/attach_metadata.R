@@ -129,11 +129,11 @@ read_chemstation_metadata <- function(file, what=c("metadata", "peaktable")){
   # check for .D folder
   if (grepl("\\.D/$", folder,ignore.case = T)){
     # find xls/csv
-    rep <- list.files(folder, pattern = '.xls|.csv',
+    reps <- list.files(folder, pattern = '.xls',
                       ignore.case = TRUE, full.names = TRUE)
-    if (length(rep) > 0){
+    if (length(reps) > 0){
       if (what == "metadata"){
-        meta <- as.data.frame(readxl::read_xls(rep, sheet=1, skip=1))
+        meta <- as.data.frame(readxl::read_xls(reps[1], sheet=1, skip=1))
         meta2<-as.list(meta$Results)
         names(meta2) <- meta$Title
         meta2
@@ -179,4 +179,33 @@ read_masshunter_metadata <- function(file){
     }
   }
   meta_sample
+}
+
+
+#' @name read_chromeleon_metadata
+#' @param file file
+#' @importFrom xml2 read_xml xml_find_all xml_text
+#' @import magrittr
+#' @return A list containing extracted metadata.
+#' @author Ethan Bass
+#' @noRd
+read_chromeleon_metadata <- function(x){
+  meta_fields <- grep("Information:", x)
+  meta <- do.call(rbind, strsplit(x[(meta_fields[1]+1):(meta_fields[length(meta_fields)]-1)],"\t"))
+  rownames(meta) <- meta[,1]
+  meta <- as.list(meta[,-1])
+  meta
+}
+
+#' @name read_waters_metadata
+#' @param file file
+#' @importFrom xml2 read_xml xml_find_all xml_text
+#' @import magrittr
+#' @return A list containing extracted metadata.
+#' @author Ethan Bass
+#' @noRd
+read_waters_metadata <- function(file){
+  meta <- gsub("\\\"", "", do.call(cbind, strsplit(readLines(file, n = 2),"\t")))
+  rownames(meta) <- meta[,1]
+  meta <- as.list(meta[,-1])
 }

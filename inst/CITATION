@@ -9,6 +9,6 @@ citEntry(
   doi      = "10.5281/zenodo.6792521",
   url      = "https://ethanbass.github.io/chromConverter/",
   textVersion = paste("Bass, E. (2022).",
-        "chromConverter: chromatographic file converter (version 0.2.3).",
+        "chromConverter: chromatographic file converter.",
         "https://cran.r-project.org/web/packages/chromConverter/index.html")
 )

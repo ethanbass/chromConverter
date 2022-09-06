@@ -1,6 +1,8 @@
 ## chromConverter 0.2.3
 
 * Fixed bug causing Chromeleon metadata parser to fail.
+* Fixed bug in chemstation metadata parser.
+* Better error-handling for parsing metadata so it doesn't error out the whole program.
 
 ## chromConverter 0.2.2
 
