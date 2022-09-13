@@ -22,10 +22,11 @@ test_that("entab parser works", {
   file <- "testdata/DAD1.uv"
   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE,
-                    read_metadata = FALSE)
+                    read_metadata = TRUE)
   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
+  expect_equal(attr(x1[[1]], "parser"), "entab")
 })
 
 
@@ -36,11 +37,10 @@ test_that("shimadzu parser works", {
   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 })
 
-
 # test_that("thermoraw parser works",{
-#   skip_if_not(configure_thermo_parser(check=T))
-#   file <- "testdata/ladder.txt"
-#   x <- read_chroms(file, format_in = "shimadzu_fid", find_files = FALSE)
+#   skip_if_not(configure_thermo_parser(check = TRUE))
+#   file <- "/Users/ethanbass/Downloads/chrom_files/small.RAW"
+#   x <- read_chroms(file, format_in = "thermoraw", find_files = FALSE)
 #   expect_equal(class(x[[1]]), "matrix")
 #   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 # })
