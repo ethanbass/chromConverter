@@ -366,3 +366,36 @@ read_chemstation_csv <- function(file, format_out = c("matrix","data.frame")){
   }
   x
 }
+
+#' Extract UV data from mzML files
+#'
+#' Extracts UV data from mzML files
+#'
+#' @name read_mzml
+#' @param path path to file
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @return A chromatograms in \code{matrix} format.
+#' @author Ethan Bass
+#' @export read_mzml
+read_mzml <- function(path, format_out = c("matrix", "data.frame")){
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  if (!requireNamespace("mzR", quietly = TRUE)) {
+    stop(
+      "The `mzR` package must be installed from Bioconductor to read `mzML` files:
+      BiocManager::install('mzR')",
+      call. = FALSE)
+  }
+  x <- mzR::openMSfile(path)
+  info <- mzR::header(x)
+  UV_scans <- which(info$msLevel==0)
+  rts <- info[UV_scans,"retentionTime"]
+  lambdas <- seq(info$scanWindowLowerLimit[UV_scans[1]], info$scanWindowUpperLimit[UV_scans[1]])
+  pks <- mzR::peaks(x)
+  data <- t(sapply(UV_scans, function(j) pks[[j]][,2]))
+  rownames(data) <- rts
+  colnames(data) <- lambdas
+  if (format_out == "data.frame"){
+    as.data.frame(data)
+  }
+  data
+}
