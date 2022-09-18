@@ -92,10 +92,7 @@ read_chroms <- function(paths, find_files,
     stop("Cannot locate files. None of the supplied paths exist.")
   }
   if (!is.null(path_out)){
-    if (substr(path_out,1,1) != "/")
-      path_out <- paste0("/", path_out)
-    if (substr(path_out, nchar(path_out)-1, nchar(nchar(path_out))) != "/")
-      path_out <- paste0(path_out, "/")
+    path_out <- check_path(path_out)
   }
   if (export | format_in == "thermoraw" | parser == "openchrom"){
     if (is.null(path_out)){
@@ -107,6 +104,7 @@ read_chroms <- function(paths, find_files,
   }
   if (is.null(dat)){
     dat<-list()}
+
   # choose converter
   if (format_in == "masshunter_dad"){
     pattern <- ifelse(is.null(pattern), ".sp", pattern)
@@ -165,6 +163,7 @@ read_chroms <- function(paths, find_files,
     )
   }
   writer <- switch(export_format, "csv" = export_csvs)
+
   if (find_files){
     files <- find_files(paths, pattern)
   } else{
@@ -181,6 +180,7 @@ read_chroms <- function(paths, find_files,
     }
     }
   }
+
   if (format_in %in% c("chemstation_uv", "masshunter_dad")){
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",

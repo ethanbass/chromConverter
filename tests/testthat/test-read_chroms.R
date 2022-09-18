@@ -44,3 +44,15 @@ test_that("shimadzu parser works", {
 #   expect_equal(class(x[[1]]), "matrix")
 #   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 # })
+
+test_that("check_path works", {
+  expect_equal(check_path("~/Downloads"), "~/Downloads/")
+  expect_equal(check_path("Downloads"), "/Downloads/")
+  expect_equal(check_path("~/Downloads/"), "~/Downloads/")
+  expect_equal(check_path("/Users/foo/"), "/Users/foo/")
+  expect_equal(check_path("Users/foo/"), "/Users/foo/")
+  expect_equal(check_path("/Users/foo"), "/Users/foo/")
+  expect_equal(check_path("Users/foo"), "/Users/foo/")
+})
+
+

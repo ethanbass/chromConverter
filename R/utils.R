@@ -79,3 +79,22 @@ extract_header <- function(x, chrom.idx){
   }
   list(header,index)
 }
+
+#' check path
+#' check that path is properly formatted
+#' @param path path as character string
+#' @noRd
+check_path <- function(path){
+  # check for leading slash
+  if (!(substr(path,1,1) %in% c("/", "~"))){
+    path <- paste0("/", path)
+  }
+
+  # check for trailing slash
+  n <- nchar(path)
+  if (substr(path, n, n) != "/"){
+    path <- paste0(path, "/")
+  }
+  path
+}
+
