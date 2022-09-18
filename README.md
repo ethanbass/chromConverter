@@ -125,3 +125,7 @@ You can cite chromConverter as follows:
 Bass, E. (2022). chromConverter: chromatographic file converter. http://doi.org/10.5281/zenodo.6792521.
 
 If you use external libraries to convert your files, you should probably cite those as well in published work.
+
+### Other related packages
+
+- For tidy extraction of mzML data, see [RaMS](https://github.com/wkumler/RaMS/).
