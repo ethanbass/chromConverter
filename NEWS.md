@@ -8,7 +8,7 @@
 
 * Fixed bug in `call_openchrom` so that it can actually find 'OpenChrom' path.
 * Fixed bug in `call_openchrom` to allow 'animl' as valid `export_format`.
-* Allow 'Thermo Raw' files to be parsed using 'Entab'.
+* Allow 'Thermo RAW' files to be parsed using 'Entab'.
 
 ## chromConverter 0.2.1
 

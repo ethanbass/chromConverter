@@ -25,7 +25,8 @@ A chromatogram in the format specified by \code{format_out}
 Reads 'Waters ARW' files.
 }
 \details{
-For help exporting files from Empower, see
+For help exporting files from Empower, you can consult the official
+documentation: \href{https://support.waters.com/KB_Inf/Empower_Breeze/WKB77571_How_to_export_3D_raw_data_from_Empower_to_a_Microsoft_Excel_spreadsheet}{How_to_export_3D_raw_data_from_Empower}.
 }
 \author{
 Ethan Bass

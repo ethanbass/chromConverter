@@ -319,7 +319,8 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
 #'
 #' Reads 'Waters ARW' files.
 #'
-#' For help exporting files from Empower, see
+#' For help exporting files from Empower, you can consult the official
+#' documentation: [How_to_export_3D_raw_data_from_Empower](https://support.waters.com/KB_Inf/Empower_Breeze/WKB77571_How_to_export_3D_raw_data_from_Empower_to_a_Microsoft_Excel_spreadsheet).
 #'
 #' @name read_waters_arw
 #' @importFrom utils tail read.csv
