@@ -25,7 +25,7 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
   if (read_metadata){
     meta <- read_masshunter_metadata(file)
     x <- attach_metadata(x, meta, format_in = "masshunter_dad",
-                         format_out = format_out, format_data = "wide",
+                         format_out = format_out, data_format = "wide",
                          parser = "aston")
   }
   x
@@ -68,7 +68,7 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
   if (read_metadata){
     meta <- read_chemstation_metadata(file)
     x <- attach_metadata(x, meta, format_in = "chemstation_uv",
-                         format_out = format_out,format_data = "wide",
+                         format_out = format_out, data_format = "wide",
                          parser = "Aston")
   }
   x
@@ -150,7 +150,7 @@ assign_trace_file <- function(){
 #' @name call_entab
 #' @title Entab parsers
 #' @param file path to file
-#' @param format_data Whether to output data in wide or long format.
+#' @param data_format Whether to output data in wide or long format.
 #' @param format_in Format of input.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
@@ -158,7 +158,7 @@ assign_trace_file <- function(){
 #' (retention time x wavelength).
 #' @importFrom tidyr pivot_wider
 #' @export
-call_entab <- function(file, format_data = c("wide","long"),
+call_entab <- function(file, data_format = c("wide","long"),
                          format_in = "",
                          format_out = c("matrix", "data.frame"),
                          read_metadata = TRUE){
@@ -168,10 +168,10 @@ call_entab <- function(file, format_data = c("wide","long"),
          call. = FALSE)
   }
   format_out <- match.arg(format_out, c("matrix","data.frame"))
-  format_data <- match.arg(format_data, c("wide","long"))
+  data_format <- match.arg(data_format, c("wide","long"))
   r <- entab::Reader(file)
   x <- entab::as.data.frame(r)
-  if (format_data == "wide"){
+  if (data_format == "wide"){
     times <- x[x$wavelength == x$wavelength[1], "time"]
     x <- as.data.frame(pivot_wider(x, id_cols = "time",
                                    names_from = "wavelength",
@@ -194,7 +194,7 @@ call_entab <- function(file, format_data = c("wide","long"),
       meta <- c(meta, metadata_from_file)
     }
     x <- attach_metadata(x, meta, format_in = format_in, format_out = format_out,
-                         format_data = format_data, parser = "entab")
+                         data_format = data_format, parser = "entab")
   }
   x
 }
@@ -228,7 +228,7 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
     meta <- try(read_chromeleon_metadata(xx))
     if (!inherits(meta, "try-error")){
       x <- attach_metadata(x, meta, format_in = "chromeleon", format_out = format_out,
-                           parser = "chromConverter")
+                           data_format = "wide", parser = "chromConverter")
     }
   }
   x
@@ -251,13 +251,14 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
 #' @export
 read_shimadzu <- function(file, format_in, read_metadata = TRUE,
                           format_out = c("matrix","data.frame"),
-                          what = c("chromatogram", "peak_table", "both")){
+                          what = "chromatogram"){
   if (missing(format_in))
     stop("`format_in` must be specified. The options are `fid` or `dad`.")
   format_out <- match.arg(format_out, c("matrix","data.frame"))
-  what <- match.arg(what, c("chromatogram", "peak_table", "both"))
+  what <- match.arg(what, c("chromatogram", "peak_table"), several.ok = TRUE)
   x <- readLines(file)
   headings <- grep("\\[*\\]", x)
+  peaktab.idx <- grep("\\[Peak Table", x)
   if (format_in == "fid"){
     chrom.idx <- grep("\\[Chromatogram .*]", x)
     header <- extract_header(x, chrom.idx)
@@ -274,8 +275,7 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
     chrom.idx <- grep("\\[PDA 3D]", x)
     # grep("\\[PDA Multi Chromatogram", x)
     # grep("\\[LC Status Trace", x)
-    peaktab.idx <- grep("\\[Peak Table", x)
-    if (what != "peak_table"){
+    if (any(what == "chromatogram")){
       header <- extract_header(x, chrom.idx)
       met <- header[[1]]
       xx <- read.csv(file, skip = header[[2]], sep="\t", colClasses="numeric",
@@ -286,20 +286,32 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
       wavelengths <- round(seq(met[4,2], met[5,2], length.out = as.numeric(met[6,2])),2)
       colnames(xx) <- wavelengths
     }
-    if (what != "chromatogram"){
+  }
+    if (any(what == "peak_table")){
+      if (length(peaktab.idx) == 0){
+        if (length(what) == 1){
+          stop("Peak table not found!")
+        } else{
+          warning("Peak table not found!")
+          what <- "chromatogram"
+        }
+      }
       peak_tab <-lapply(peaktab.idx, function(idx){
         nrows <- as.numeric(strsplit(x[idx+1],"\t")[[1]][2])
         peak_tab <- read.csv(file, skip = (idx+1), sep="\t", nrows=nrows)
       })
       names(peak_tab) <- gsub("\\[|\\]","", x[peaktab.idx])
     }
-  }
   if (format_out == "data.frame"){
     xx <- as.data.frame(xx)
   }
   if (read_metadata){
-    meta_start <- headings[1]
-    meta_end <- headings[7]
+   idx <-  which(x[headings] %in%
+            c("[Header]", "[File Information]", "[Sample Information]",
+              "[Original Files]", "[File Description]", "[Configuration]")
+          )
+    meta_start <- headings[min(idx)]
+    meta_end <- headings[max(idx) + 1]
     meta <- x[(meta_start+1):(meta_end-1)]
     meta <- meta[meta!=""]
     meta <- meta[-grep("\\[", meta)]
@@ -307,9 +319,15 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
     meta <- rbind(meta, met)
     rownames(meta) <- meta[, 1]
     meta <- as.list(meta[,2])
+    data_format <- switch(format_in,
+                          "fid" = "long",
+                          "dad" = "wide")
     xx <- attach_metadata(xx, meta, format_in = "shimadzu", format_out = format_out,
+                          data_format = data_format,
                           parser = "chromConverter")
   }
+  if ("peak_table" %in% what & "chromatogram" %in% what)
+    what <- "both"
   switch(what, "chromatogram" = xx,
          "peak_table" = peak_tab,
          "both" = list(xx, peak_tab))
@@ -342,6 +360,7 @@ read_waters_arw <- function(file, read_metadata = TRUE,
     if (!inherits(meta, "try-error")){
       x <- attach_metadata(x, meta, format_in = "waters_arw",
                            format_out = format_out,
+                           data_format = "wide",
                            parser = "chromConverter")
     }
   }

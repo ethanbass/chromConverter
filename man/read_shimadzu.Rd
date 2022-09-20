@@ -9,7 +9,7 @@ read_shimadzu(
   format_in,
   read_metadata = TRUE,
   format_out = c("matrix", "data.frame"),
-  what = c("chromatogram", "peak_table", "both")
+  what = "chromatogram"
 )
 }
 \arguments{

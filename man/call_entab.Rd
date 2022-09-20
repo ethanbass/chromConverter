@@ -6,7 +6,7 @@
 \usage{
 call_entab(
   file,
-  format_data = c("wide", "long"),
+  data_format = c("wide", "long"),
   format_in = "",
   format_out = c("matrix", "data.frame"),
   read_metadata = TRUE
@@ -15,7 +15,7 @@ call_entab(
 \arguments{
 \item{file}{path to file}
 
-\item{format_data}{Whether to output data in wide or long format.}
+\item{data_format}{Whether to output data in wide or long format.}
 
 \item{format_in}{Format of input.}
 

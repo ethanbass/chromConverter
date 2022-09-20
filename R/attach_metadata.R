@@ -5,11 +5,11 @@
 #' @param meta List object containing metadata.
 #' @param format_in Chromatogram format
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
-#' @param format_data Whether data is in wide or long format.
+#' @param data_format Whether data is in wide or long format.
 #' @param parser What parser was used to decode the data
 #' @return A chromatogram with attached metadata.
 #' @author Ethan Bass
-attach_metadata <- function(x, meta, format_in, format_out, format_data, parser = NULL){
+attach_metadata <- function(x, meta, format_in, format_out, data_format, parser = NULL){
   if (format_in == "waters_arw"){
     structure(x, instrument = NA,
               detector = NA,
@@ -24,11 +24,12 @@ attach_metadata <- function(x, meta, format_in, format_out, format_data, parser 
               time_range = NA,
               time_interval = NA,
               detector_range = meta$Channel,
-              format = "long",
+              data_format = "long",
               parser = "chromConverter",
               class = format_out)
   } else if (format_in == "shimadzu"){
-    structure(x, instrument = meta$`Instrument Name`,
+    structure(x,
+              instrument = meta$`Instrument Name`,
               detector = meta$`Detector Name`,
               software = c(software = meta$`Application Name`, version = meta$Version),
               method = meta$`Method File`,
@@ -41,7 +42,7 @@ attach_metadata <- function(x, meta, format_in, format_out, format_data, parser 
               time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
               time_interval = meta$`Interval(msec)`,
               detector_range = c(meta$`Start Wavelength(nm)`, meta$`End Wavelength(nm)`),
-              format = format,
+              data_format = data_format,
               parser = "chromConverter",
               class = format_out)
   } else if (format_in == "chromeleon"){
@@ -58,7 +59,7 @@ attach_metadata <- function(x, meta, format_in, format_out, format_data, parser 
               time_range = c(meta$`Time Min. (min)`, meta$`Time Max. (min)`),
               time_interval = meta$`Average Step (s)`,
               detector_range = NA,
-              format = "long",
+              data_format = "long",
               parser = "chromConverter",
               class = format_out)
   # } else if (format_in == "entab"){
@@ -75,7 +76,7 @@ attach_metadata <- function(x, meta, format_in, format_out, format_data, parser 
   #             time_range = NA,
   #             time_interval = NA,
   #             detector_range = NA,
-  #             format = format_data,
+  #             format = data_format,
   #             parser = "entab",
   #             class = format_out)
   } else if (format_in == "chemstation_uv"){
@@ -92,7 +93,7 @@ attach_metadata <- function(x, meta, format_in, format_out, format_data, parser 
               time_range = NA,
               time_interval = NA,
               detector_range = NA,
-              format = format_data,
+              data_format = data_format,
               parser = parser,
               class = format_out)
   } else if (format_in == "masshunter_dad"){
@@ -109,7 +110,7 @@ attach_metadata <- function(x, meta, format_in, format_out, format_data, parser 
     time_range = NA,
     time_interval = NA,
     detector_range = NA,
-    format = format_data,
+    data_format = data_format,
     parser = parser,
     class = format_out)
   }

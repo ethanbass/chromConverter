@@ -4,7 +4,7 @@
 \alias{attach_metadata}
 \title{Attaches metadata to chromatogram}
 \usage{
-attach_metadata(x, meta, format_in, format_out, format_data, parser = NULL)
+attach_metadata(x, meta, format_in, format_out, data_format, parser = NULL)
 }
 \arguments{
 \item{x}{chromatogram}
@@ -15,7 +15,7 @@ attach_metadata(x, meta, format_in, format_out, format_data, parser = NULL)
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
-\item{format_data}{Whether data is in wide or long format.}
+\item{data_format}{Whether data is in wide or long format.}
 
 \item{parser}{What parser was used to decode the data}
 }

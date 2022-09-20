@@ -1,8 +1,10 @@
 ## chromConverter 0.2.3
 
 * Fixed bug causing Chromeleon metadata parser to fail.
-* Fixed bug in chemstation metadata parser.
-* Better error-handling for parsing metadata so it doesn't error out the whole program.
+* Fixed bug in Chemstation metadata parser.
+* Generalized algorithm to acquire shimadzu DAD metadata.
+* Improved error-handling for parsing metadata so it no longer errors out the whole program.
+* Changed `format_data` argument to `data_format` to select wide or long format. 
 
 ## chromConverter 0.2.2
 
