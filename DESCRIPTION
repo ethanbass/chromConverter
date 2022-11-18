@@ -17,6 +17,7 @@ Imports:
     tidyr,
     utils,
     magrittr,
+    RaMS,
     xml2
 Suggests: 
     entab,

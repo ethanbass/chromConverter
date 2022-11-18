@@ -101,7 +101,7 @@ call_openchrom <- function(files, path_out, format_in,
 #' @name configure_call_openchrom
 #' @param cli Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.
 #' If "false", R will disable CLI. If NULL, R will not modify the ini file.
-#' @return No return value.
+#' @return Returns path to OpenChrom command-line application
 #' @author Ethan Bass
 #' @noRd
 configure_call_openchrom <- function(cli = c(NULL, "true", "false")){

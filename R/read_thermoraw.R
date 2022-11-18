@@ -27,7 +27,7 @@
 #' @export read_thermoraw
 
 read_thermoraw <- function(path_in, path_out, format_out = c("matrix", "data.frame"),
-                           read_metadata=TRUE){
+                           read_metadata = TRUE){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   if(!file.exists(path_in)){
     stop("File not found. Check path.")

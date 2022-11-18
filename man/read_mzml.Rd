@@ -2,20 +2,41 @@
 % Please edit documentation in R/parsers.R
 \name{read_mzml}
 \alias{read_mzml}
-\title{Extract UV data from mzML files}
+\title{Extract data from mzML files}
 \usage{
-read_mzml(path, format_out = c("matrix", "data.frame"))
+read_mzml(
+  path,
+  format_out = c("matrix", "data.frame"),
+  parser = c("RaMS", "mzR"),
+  what = c("MS1", "MS2", "BPC", "TIC", "DAD", "chroms", "metadata", "everything"),
+  ...
+)
 }
 \arguments{
 \item{path}{path to file}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{R format. Only applies if \code{mzR} is selected.
+Either \code{matrix} or \code{data.frame}. \code{RaMS} will return
+a list of data.tables regardless of what is selected here.}
+
+\item{parser}{What parser to use. Either \code{RaMS} or \code{mzR}.}
+
+\item{what}{What types of data to return (argument to \code{\link[RaMS]{grabMSdata}}.
+Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD},
+\code{chroms}, \code{metadata}, or \code{everything}).}
+
+\item{...}{Additional arguments to \code{\link[RaMS]{grabMSdata}}.}
 }
 \value{
-A chromatograms in \code{matrix} format.
+If \code{RaMS} is selected, the function will return a list of "tidy"
+\code{data.table} objects. If \code{mzR} is selected, the function will return a
+chromatogram in \code{matrix} or \code{data.frame} format according to the
+value of \code{format_out}.
 }
 \description{
-Extracts UV data from mzML files
+Extracts data from mzML files using parsers from either RaMS or mzR. The RaMS
+parser will return data in tidy (long) format. mzR will return data in wide
+format. Currently the mzR-based parser only returns DAD data.
 }
 \author{
 Ethan Bass
