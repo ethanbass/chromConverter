@@ -25,7 +25,13 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/call_openchrom.html</loc>
   </url>
   <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/call_rainbow.html</loc>
+  </url>
+  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/configure_aston.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/configure_rainbow.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/index.html</loc>
@@ -50,6 +56,9 @@
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_waters_arw.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/reshape_chroms.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/sp_converter.html</loc>

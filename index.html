@@ -77,7 +77,7 @@
 <div class="section level3">
 <h3 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h3>
-<p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including <a href="https://github.com/bovee/aston" class="external-link">Aston</a>, <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, and <a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> as well as some parsers written natively in R for text-based formats.</p>
+<p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including <a href="https://github.com/bovee/aston" class="external-link">Aston</a>, <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, <a href="https://rainbow-api.readthedocs.io/" class="external-link">rainbow</a>, and <a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> as well as some parsers written natively in R for text-based formats.</p>
 </div>
 <div class="section level3">
 <h3 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
@@ -97,6 +97,14 @@
 <h6 id="thermorawfileparser-requires-separate-installation-see-instructions-below">ThermoRawFileParser (<em>requires separate installation, see <a href="README.md#Installation">instructions below</a></em>)<a class="anchor" aria-label="anchor" href="#thermorawfileparser-requires-separate-installation-see-instructions-below"></a>
 </h6>
 <ul><li>Thermo RAW (<code>.raw</code>)</li></ul>
+</div>
+<div class="section level6">
+<h6 id="rainbow">rainbow<a class="anchor" aria-label="anchor" href="#rainbow"></a>
+</h6>
+<ul>
+<li>Agilent (<code>.ch</code>, <code>.fid</code>, <code>.ms</code>, .<code>MSProfile.bin</code>, &amp; <code>.uv</code>)</li>
+<li>Waters (<code>.raw</code> [UV, MS, CAD, ELSD])</li>
+</ul>
 </div>
 <div class="section level6">
 <h6 id="openchrom-requires-separate-installation-see-instructions-below">OpenChrom (<em>requires separate installation, see <a href="README.md#Installation">instructions below</a></em>)<a class="anchor" aria-label="anchor" href="#openchrom-requires-separate-installation-see-instructions-below"></a>
@@ -214,7 +222,7 @@
 </h3>
 <p>You can cite chromConverter as follows:</p>
 <p>Bass, E. (2022). chromConverter: chromatographic file converter. <a href="http://doi.org/10.5281/zenodo.6792521" class="external-link uri">http://doi.org/10.5281/zenodo.6792521</a>.</p>
-<p>If you use external libraries to convert your files, you should probably cite those as well in published work.</p>
+<p>If you use external libraries to convert your files, please cite them as well in published work.</p>
 </div>
 <div class="section level3">
 <h3 id="other-related-packages">Other related packages<a class="anchor" aria-label="anchor" href="#other-related-packages"></a>
