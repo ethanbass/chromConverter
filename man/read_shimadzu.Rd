@@ -7,9 +7,10 @@
 read_shimadzu(
   file,
   format_in,
-  read_metadata = TRUE,
   format_out = c("matrix", "data.frame"),
-  what = "chromatogram"
+  data_format = c("wide", "long"),
+  what = "chromatogram",
+  read_metadata = TRUE
 )
 }
 \arguments{
@@ -17,12 +18,14 @@ read_shimadzu(
 
 \item{format_in}{Format of files. \code{fid} or \code{dad}.}
 
-\item{read_metadata}{Whether to read metadata from file.}
-
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+
+\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
 \item{what}{Whether to extract \code{chromatogram}, \code{peak_table} or
 \code{both}.}
+
+\item{read_metadata}{Whether to read metadata from file.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}

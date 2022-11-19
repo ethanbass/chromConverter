@@ -26,7 +26,8 @@ Suggests:
 Config/reticulate: list( packages = list( list(package = "scipy"),
                                     list(package="numpy"),
                                     list(package = "pandas"),
-                                    list(package="aston", pip = TRUE) ) )
+                                    list(package="aston", pip = TRUE),
+                                    list(package="rainbow-api", pip = TRUE)) )
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)

@@ -1,204 +1,3 @@
-#' Converter for Agilent MassHunter UV files
-#'
-#' Converts a single chromatogram from MassHunter \code{.sp} format to R \code{data.frame}.
-#'
-#' Uses the [Aston](https://github.com/bovee/aston) file parser.
-#'
-#' @name sp_converter
-#' @param file path to file
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
-#' @param read_metadata Logical. Whether to read metadata and attach it to the
-#' chromatogram.
-#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
-#' @import reticulate
-#' @export sp_converter
-sp_converter <- function(file, format_out = c("matrix", "data.frame"),
-                         read_metadata = TRUE){
-  check_aston_configuration()
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  x <- trace_file$agilent_uv$AgilentDAD(file)
-  x <- pd$DataFrame(x$data$values, columns = x$data$columns,
-               index = x$data$index)
-  if (format_out == "matrix"){
-    x <- as.matrix(x)
-  }
-  if (read_metadata){
-    meta <- read_masshunter_metadata(file)
-    x <- attach_metadata(x, meta, format_in = "masshunter_dad",
-                         format_out = format_out, data_format = "wide",
-                         parser = "aston")
-  }
-  x
-}
-
-#' Converter for Agilent ChemStation UV files
-#'
-#' Converts a single chromatogram from ChemStation \code{.uv} format to R \code{data.frame}.
-#'
-#' Uses the [Aston](https://github.com/bovee/aston) file parser.
-#'
-#' @name uv_converter
-#' @param file path to file
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
-#' @param correction Logical. Whether to apply empirical correction. Defaults is
-#' TRUE.
-#' @param read_metadata Logical. Whether to read metadata and attach it to the
-#' chromatogram.
-#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
-#' @import reticulate
-#' @export uv_converter
-uv_converter <- function(file, format_out = c("matrix","data.frame"),
-                         correction=TRUE, read_metadata = TRUE){
-  check_aston_configuration()
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  trace_file <- reticulate::import("aston.tracefile")
-  pd <- reticulate::import("pandas")
-  x <- trace_file$TraceFile(file)
-  x <- pd$DataFrame(x$data$values, columns=x$data$columns,
-                    index=x$data$index)
-  if (format_out == "matrix"){
-    x <- as.matrix(x)
-  }
-  if (correction){
-    # multiply by empirical correction value
-    x <- apply(x,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
-  }
-  # correct column order
-  # x <- lapply(x, function(xx) xx[,order(as.numeric(colnames(xx)))])
-  if (read_metadata){
-    meta <- read_chemstation_metadata(file)
-    x <- attach_metadata(x, meta, format_in = "chemstation_uv",
-                         format_out = format_out, data_format = "wide",
-                         parser = "Aston")
-  }
-  x
-}
-
-#' Aston TraceFile Converter
-#'
-#' Uses Aston parser to figure out file-type and convert to R \code{data.frame}.
-#' @name trace_converter
-#' @title generic converter for other types of files
-#' @param file path to file
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
-#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
-#' @import reticulate
-#' @noRd
-trace_converter <- function(file, format_out = c("matrix", "data.frame")){
-  check_aston_configuration()
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  trace_file <- reticulate::import("aston.tracefile")
-  pd <- reticulate::import("pandas")
-  x <- trace_file$TraceFile(file)
-  x <- pd$DataFrame(x$data$values, columns=x$data$columns,
-               index=x$data$index)
-  if (format_out == "matrix"){
-    x <- as.matrix(x)
-  }
-  x
-}
-
-#' Configure Aston
-#'
-#' Configures reticulate to use Aston file parsers.
-#' @name configure_aston
-#' @return No return value.
-#' @author Ethan Bass
-#' @import reticulate
-#' @export
-configure_aston <- function(){
-  install <- FALSE
-  # path <- miniconda_path()
-  if (!dir.exists(miniconda_path())){
-    install <- readline("It is recommended to install miniconda in your R library to use Aston parsers. Install miniconda now? (y/n)")
-  if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-    install_miniconda()
-  }
-  } # else{
-    # envs <- conda_list()
-    # use_miniconda(envs[grep("r-reticulate", envs$name)[1],2])
-  # }
-  env <- reticulate::configure_environment("chromConverter")
-  if (!env){
-    reqs <- c("pandas","scipy","numpy","aston")
-    reqs_available <- sapply(reqs, reticulate::py_module_available)
-    if (!all(reqs_available)){
-      conda_install(reqs[which(!reqs_available)], pip = TRUE)
-    }
-  }
-    assign_trace_file()
-}
-
-check_aston_configuration <- function(){
-  assign_trace_file()
-  if (length(trace_file) == 0){
-    ans <- readline("Aston not found. Configure Aston? (y/n)?")
-    if (ans %in% c('y', "Y", "YES", "yes", "Yes")){
-      configure_aston()
-    }
-  }
-}
-
-assign_trace_file <- function(){
-  pos <- 1
-  envir = as.environment(pos)
-  assign("trace_file", reticulate::import("aston.tracefile"), envir = envir)
-  assign("pd", reticulate::import("pandas"), envir = envir)
-  assign("csv", reticulate::import("csv"), envir = envir)
-}
-
-#' @name call_entab
-#' @title Entab parsers
-#' @param file path to file
-#' @param data_format Whether to output data in wide or long format.
-#' @param format_in Format of input.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
-#' @param read_metadata Whether to read metadata from file.
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
-#' @importFrom tidyr pivot_wider
-#' @export
-call_entab <- function(file, data_format = c("wide","long"),
-                         format_in = "",
-                         format_out = c("matrix", "data.frame"),
-                         read_metadata = TRUE){
-  if (!requireNamespace("entab", quietly = TRUE)){
-    stop("The entab R package must be installed to use entab parsers:
-      install.packages('entab', repos='https://ethanbass.github.io/drat/')",
-         call. = FALSE)
-  }
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  data_format <- match.arg(data_format, c("wide","long"))
-  r <- entab::Reader(file)
-  x <- entab::as.data.frame(r)
-  if (data_format == "wide"){
-    times <- x[x$wavelength == x$wavelength[1], "time"]
-    x <- as.data.frame(pivot_wider(x, id_cols = "time",
-                                   names_from = "wavelength",
-                                   values_from = "intensity"),
-                       row.names = "time")
-    rownames(x) <- times
-    x <- x[,-1]
-  }
-  if (format_out == "matrix"){
-    x <- as.matrix(x)
-  }
-  if (read_metadata){
-    meta <- r$metadata()
-    if (format_in == "chemstation_uv"){
-      metadata_from_file <- try(read_chemstation_metadata(file), silent = TRUE)
-      meta <- c(meta, metadata_from_file)
-    }
-    if (format_in == "masshunter_dad"){
-      metadata_from_file <- try(read_masshunter_metadata(file), silent = TRUE)
-      meta <- c(meta, metadata_from_file)
-    }
-    x <- attach_metadata(x, meta, format_in = format_in, format_out = format_out,
-                         data_format = data_format, parser = "entab")
-  }
-  x
-}
-
 #' Chromeleon ASCII reader
 #'
 #' @importFrom utils tail read.csv
@@ -240,8 +39,9 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
 #' @importFrom utils tail read.csv
 #' @importFrom stringr str_split_fixed
 #' @param file path to file
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param format_in Format of files. \code{fid} or \code{dad}.
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
 #' @param what Whether to extract \code{chromatogram}, \code{peak_table} or
 #' \code{both}.
@@ -249,12 +49,14 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
 #' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
-read_shimadzu <- function(file, format_in, read_metadata = TRUE,
+read_shimadzu <- function(file, format_in,
                           format_out = c("matrix","data.frame"),
-                          what = "chromatogram"){
+                          data_format = c("wide","long"),
+                          what = "chromatogram", read_metadata = TRUE){
   if (missing(format_in))
     stop("`format_in` must be specified. The options are `fid` or `dad`.")
   format_out <- match.arg(format_out, c("matrix","data.frame"))
+  data_format <- match.arg(data_format, c("wide","long"))
   what <- match.arg(what, c("chromatogram", "peak_table"), several.ok = TRUE)
   x <- readLines(file)
   headings <- grep("\\[*\\]", x)
@@ -269,9 +71,8 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
     rownames(xx) <- xx[,1]
     xx <- xx[, 2, drop = FALSE]
     colnames(xx) <- "Intensity"
-    format <- "long"
+    data_format <- "long"
   } else if (format_in == "dad"){
-    format <- "wide"
     chrom.idx <- grep("\\[PDA 3D]", x)
     # grep("\\[PDA Multi Chromatogram", x)
     # grep("\\[LC Status Trace", x)
@@ -285,6 +86,9 @@ read_shimadzu <- function(file, format_in, read_metadata = TRUE,
       times <- round(seq(met[2,2], met[3,2], length.out = as.numeric(met[7,2])),2)
       wavelengths <- round(seq(met[4,2], met[5,2], length.out = as.numeric(met[6,2])),2)
       colnames(xx) <- wavelengths
+      if (data_format == "long"){
+        xx <- reshape_chrom(xx)
+      }
     }
   }
     if (any(what == "peak_table")){
@@ -390,8 +194,8 @@ read_chemstation_csv <- function(file, format_out = c("matrix","data.frame")){
 #' Extract data from mzML files
 #'
 #' Extracts data from mzML files using parsers from either RaMS or mzR. The RaMS
-#' parser will return data in tidy (long) format. mzR will return data in wide
-#' format. Currently the mzR-based parser only returns DAD data.
+#' parser (default) will only return data in tidy (long) format. mzR will return
+#' data in wide format. Currently the mzR-based parser only returns DAD data.
 #'
 #' @name read_mzml
 #' @importFrom RaMS grabMSdata
@@ -399,6 +203,7 @@ read_chemstation_csv <- function(file, format_out = c("matrix","data.frame")){
 #' @param format_out R format. Only applies if \code{mzR} is selected.
 #' Either \code{matrix} or \code{data.frame}. \code{RaMS} will return
 #' a list of data.tables regardless of what is selected here.
+#' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param parser What parser to use. Either \code{RaMS} or \code{mzR}.
 #' @param what What types of data to return (argument to \code{\link[RaMS]{grabMSdata}}.
 #' Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD},
@@ -411,11 +216,14 @@ read_chemstation_csv <- function(file, format_out = c("matrix","data.frame")){
 #' @author Ethan Bass
 #' @export read_mzml
 
-read_mzml <- function(path, format_out = c("matrix", "data.frame"), parser=c("RaMS","mzR"),
+read_mzml <- function(path, format_out = c("matrix", "data.frame"),
+                      data_format = c("wide","long"),
+                      parser=c("RaMS","mzR"),
                       what=c("MS1","MS2", "BPC", "TIC", "DAD",
                              "chroms", "metadata", "everything"), ...){
   parser <- match.arg(parser, c("RaMS", "mzR"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  data_format <- match.arg(data_format, c("wide","long"))
   what <- match.arg(what, c("MS1","MS2", "BPC", "TIC", "DAD",
                             "chroms", "metadata", "everything"), several.ok = TRUE)
   if (all(c("MS1","MS2", "BPC", "TIC", "DAD",
@@ -441,6 +249,9 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame"), parser=c("Ra
     data <- t(sapply(UV_scans, function(j) pks[[j]][,2]))
     rownames(data) <- rts
     colnames(data) <- lambdas
+    if (data_format == "long"){
+      data <- reshape_chrom(data)
+    }
     if (format_out == "data.frame"){
       data <-as.data.frame(data)
     }

@@ -113,6 +113,23 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
     data_format = data_format,
     parser = parser,
     class = format_out)
+  } else {
+    structure(x, instrument = meta$Instrument,
+              detector = NA,
+              software = NA,
+              method = meta$Method,
+              batch = NA,
+              operator = meta$OperatorName,
+              run_date = meta$AcqTime,
+              sample_name = meta$`Sample Name`,
+              sample_id = meta$`Sample ID`,
+              injection_volume = meta$`Inj Vol`,
+              time_range = NA,
+              time_interval = NA,
+              detector_range = NA,
+              data_format = data_format,
+              parser = parser,
+              class = format_out)
   }
 }
 
@@ -128,7 +145,7 @@ read_chemstation_metadata <- function(file, what=c("metadata", "peaktable")){
   # find xls csv files
   folder <- gsub(basename(file), "", file)
   # check for .D folder
-  if (grepl("\\.D/$", folder,ignore.case = T)){
+  if (grepl("\\.D/$", folder,ignore.case = TRUE)){
     # find xls/csv
     reps <- list.files(folder, pattern = '.xls',
                       ignore.case = TRUE, full.names = TRUE)
@@ -139,7 +156,7 @@ read_chemstation_metadata <- function(file, what=c("metadata", "peaktable")){
         names(meta2) <- meta$Title
         meta2
       } else if (what == "peaktable"){
-        pktab <- as.data.frame(readxl::read_xls(rep, sheet="Peak"))
+        pktab <- as.data.frame(readxl::read_xls(rep, sheet = "Peak"))
         pktab <- pktab[,-c(1:2)]
         pktab
       }
@@ -157,7 +174,7 @@ read_chemstation_metadata <- function(file, what=c("metadata", "peaktable")){
 read_masshunter_metadata <- function(file){
   # check for .D folder
   folder <- gsub(basename(file), "", file)
-  if (grepl("\\.D/|\\.d/$", folder,ignore.case = T)){
+  if (grepl("\\.D/|\\.d/$", folder, ignore.case = TRUE)){
     # find xml
     rep <- list.files(folder, pattern = '.xml',
                       ignore.case = TRUE, full.names = TRUE)

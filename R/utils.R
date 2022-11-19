@@ -7,12 +7,19 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                                              "chromeleon_uv", "waters_arw", "mzml"),
                           aston = c("chemstation_uv", "masshunter_dad", "other"),
                           entab = c("chemstation_uv", "masshunter_dad", "thermoraw", "other"),
+                          rainbow = c("chemstation_uv", "waters_raw",
+                                      "agilent_d", "chemstation"),
                           thermoraw = c("thermoraw")
   )
   if (find){
     possible_parsers <- names(allowed_formats)[grep(format_in, allowed_formats)]
     if (all(c("aston","entab") %in% possible_parsers)){
-      possible_parsers <- ifelse(!requireNamespace("entab", quietly = TRUE), "aston", "entab")
+      if (any(format_in == c("chemstation_uv", "masshunter_dad"))){
+        possible_parsers <- ifelse(!requireNamespace("entab", quietly = TRUE), "aston", "entab")
+      }
+    }
+    if (all(c("rainbow","aston") %in% possible_parsers)){
+      possible_parsers <- "rainbow"
     }
     if (all(c("entab","thermoraw") %in% possible_parsers)){
       possible_parsers <- "thermoraw"

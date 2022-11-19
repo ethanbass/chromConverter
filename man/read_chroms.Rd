@@ -7,12 +7,13 @@
 read_chroms(
   paths,
   find_files,
-  format_in = c("chemstation_uv", "chemstation_csv", "masshunter_dad", "shimadzu_fid",
-    "shimadzu_dad", "chromeleon_uv", "thermoraw", "mzml", "waters_arw", "msd", "csd",
-    "wsd", "other"),
+  format_in = c("agilent_d", "chemstation", "chemstation_uv", "chemstation_csv",
+    "masshunter_dad", "shimadzu_fid", "shimadzu_dad", "chromeleon_uv", "thermoraw",
+    "mzml", "waters_arw", "waters_raw", "msd", "csd", "wsd", "other"),
   pattern = NULL,
-  parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom"),
+  parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
   format_out = c("matrix", "data.frame"),
+  data_format = c("wide", "long"),
   export = FALSE,
   path_out = NULL,
   export_format = c("csv", "cdf", "mzml", "animl"),
@@ -28,17 +29,22 @@ the function with a folder or vector of folders containing the files.
 Otherwise, set to\code{FALSE}.}
 
 \item{format_in}{Format of files to be imported/converted. The current options
-are: \code{chemstation_uv}, \code{chemstation_csv}, \code{masshunter_dad}, \code{shimadzu_fid},
-\code{shimadzu_dad}, \code{chromeleon_uv}, \code{thermoraw}, \code{mzml},
-\code{waters_arw}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.}
+are: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_csv},
+\code{masshunter}, \code{masshunter_dad}, \code{shimadzu_fid}, \code{shimadzu_dad},
+\code{chromeleon_uv}, \code{agilent_d}, \code{thermoraw}, \code{mzml},
+\code{waters_arw}, \code{waters_raw}, \code{msd}, \code{csd}, \code{wsd},
+or \code{other}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}
 
 \item{parser}{What parser to use. Current option are \code{chromconverter},
-\code{aston}, \code{entab}, \code{thermoraw}, or \code{openchrom}.}
+\code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, or \code{rainbow}.}
 
 \item{format_out}{R object format (i.e. data.frame or matrix).}
+
+\item{data_format}{Whether to output data in wide or long format. Either
+\code{wide} or \code{long}.}
 
 \item{export}{Logical. If TRUE, will export files as csvs.}
 
@@ -62,16 +68,18 @@ according to the value of \code{format_out}.
 \description{
 Reads chromatograms from specified folders or vector of paths using file parsers
 from \href{https://github.com/bovee/aston}{Aston}, \href{https://github.com/bovee/entab}{Entab},
-and \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser}.
+\href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser},
+\href{https://lablicate.com/platform/openchrom}{OpenChrom}, and
+\href{https://rainbow-api.readthedocs.io/}{rainbow}.
 }
 \details{
 Provides a general interface to chromConverter parsers. Currently recognizes
 'Agilent ChemStation' (.uv), 'MassHunter' (.dad) files, 'Thermo RAW',
-'Waters ARW' (.arw), 'Chromeleon ASCII' (.txt), 'Shimadzu ASCII' (.txt). Also,
-wraps Openchrom parsers, which include many additional formats. To use 'Entab',
-'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
-Please see the instructions in the \href{https://ethanbass.github.io/chromConverter/}{README}
-for further details.
+'Waters ARW' (.arw), 'Waters RAW' (.raw), 'Chromeleon ASCII' (.txt),
+'Shimadzu ASCII' (.txt). Also, wraps Openchrom parsers, which include many
+additional formats. To use 'Entab', 'ThermoRawFileParser', or 'Openchrom'
+parsers, they must be manually installed. Please see the instructions in the
+\href{https://ethanbass.github.io/chromConverter/}{README} for further details.
 }
 \section{Side effects}{
  If \code{export} is TRUE, chromatograms will be

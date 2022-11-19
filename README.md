@@ -10,7 +10,7 @@
 
 ### Overview
 
-chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser), and [OpenChrom](https://lablicate.com/platform/openchrom) as well as some parsers written natively in R for text-based formats.
+chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser), [rainbow](https://rainbow-api.readthedocs.io/), and [OpenChrom](https://lablicate.com/platform/openchrom) as well as some parsers written natively in R for text-based formats.
 
 ### Formats
 ##### External Libraries
@@ -20,6 +20,10 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 
 ###### ThermoRawFileParser (*requires separate installation, see [instructions below](README.md#Installation)*)
 - Thermo RAW (`.raw`)
+
+###### rainbow
+- Agilent (`.ch`, `.fid`, `.ms`, .`MSProfile.bin`, & `.uv`)
+- Waters (`.raw` [UV, MS, CAD, ELSD])
 
 ###### OpenChrom (*requires separate installation, see [instructions below](README.md#Installation)*)
 - Shimadzu FID (`.gcd`, `.C0#`)
@@ -124,7 +128,7 @@ You can cite chromConverter as follows:
 
 Bass, E. (2022). chromConverter: chromatographic file converter. http://doi.org/10.5281/zenodo.6792521.
 
-If you use external libraries to convert your files, you should probably cite those as well in published work.
+If you use external libraries to convert your files, please cite them as well in published work.
 
 ### Other related packages
 
