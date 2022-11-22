@@ -114,7 +114,7 @@ extract_rb_names <- function(xx){
 configure_rainbow <- function(){
   install <- FALSE
   if (!dir.exists(miniconda_path())){
-    install <- readline("It is recommended to install miniconda in your R library to use Aston parsers. Install miniconda now? (y/n)")
+    install <- readline("It is recommended to install miniconda in your R library to use rainbow parsers. Install miniconda now? (y/n)")
     if (install %in% c('y', "Y", "YES", "yes", "Yes")){
       install_miniconda()
     }
