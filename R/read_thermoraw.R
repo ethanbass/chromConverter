@@ -106,6 +106,7 @@ configure_thermo_parser <- function(reconfigure = FALSE, check = FALSE){
     if (!exists & !check){
       warning("ThermoRawFileParser not found!", immediate. = TRUE)
       path_parser <- readline(prompt="Please provide path to `ThermoRawFileParser.exe`):")
+      path_parser <- gsub("/","\\\\", path_parser)
       writeLines(path_parser, con=system.file('shell/path_parser.txt', package='chromConverter'))
     }
   } else{

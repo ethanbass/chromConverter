@@ -110,6 +110,9 @@ configure_call_openchrom <- function(cli = c(NULL, "true", "false")){
   if (!file.exists(path_parser)){
     warning("OpenChrom not found!", immediate. = TRUE)
     path_parser <- readline(prompt="Please provide path to `OpenChrom` command line):")
+    if (.Platform$OS.type == "windows"){
+      path_parser <- gsub("/","\\\\", path_parser)
+    }
     writeLines(path_parser, con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
   }
   path_ini <- switch(.Platform$OS.type,
