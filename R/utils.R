@@ -93,8 +93,10 @@ extract_header <- function(x, chrom.idx){
 #' @noRd
 check_path <- function(path){
   # check for leading slash
-  if (!(substr(path,1,1) %in% c("/", "~"))){
-    path <- paste0("/", path)
+  if (.Platform$OS.type %in% c("unix","linux")){
+    if (!(substr(path,1,1) %in% c("/", "~"))){
+      path <- paste0("/", path)
+    }
   }
 
   # check for trailing slash

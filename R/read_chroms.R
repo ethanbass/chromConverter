@@ -104,7 +104,7 @@ read_chroms <- function(paths, find_files,
       call. = FALSE)
   }
   exists <- dir.exists(paths) | file.exists(paths)
-  if (mean(exists) == 0){
+  if (all(!exists)){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
   if (!is.null(path_out)){
@@ -220,7 +220,7 @@ read_chroms <- function(paths, find_files,
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
-  } else{ file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])}
+  } else {file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])}
   if (parser != "openchrom"){
     data <- lapply(X=files, function(file){
       df <- try(converter(file), silent = TRUE)
@@ -242,4 +242,3 @@ read_chroms <- function(paths, find_files,
   dat <- append(dat, data)
   dat
 }
-
