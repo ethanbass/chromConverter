@@ -149,7 +149,10 @@ read_chroms <- function(paths, find_files,
                                           read_metadata = read_metadata),
                         "entab" = entab_parser,
                         "rainbow" = rainbow_parser)
-  } else if (format_in == "chromeleon_uv"){
+  } else if (format_in == "chemstation"){
+    pattern <- ifelse(is.null(pattern), "*", pattern)
+    converter <- rainbow_parser
+    } else if (format_in == "chromeleon_uv"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
     converter <- partial(read_chromeleon, read_metadata = read_metadata, format_out = format_out)
   } else if (format_in == "shimadzu_fid"){
