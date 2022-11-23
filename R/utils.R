@@ -104,6 +104,9 @@ check_path <- function(path){
   if (substr(path, n, n) != "/"){
     path <- paste0(path, "/")
   }
+  if (.Platform$OS.type == "windows"){
+    path <- gsub("/", "\\\\", path)
+  }
   path
 }
 
