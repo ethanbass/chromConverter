@@ -225,10 +225,12 @@ read_chroms <- function(paths, find_files,
     }
   }
 
-  if (format_in %in% c("chemstation_uv", "masshunter_dad")){
+  if (format_in %in% c("chemstation_uv", "masshunter_dad", "chemstation", "chemstation_fid")){
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
-                       sapply(file_names, function(n) n[grep("\\.[Dd]", n)]))
+                       sapply(file_names, function(n){
+                         ifelse(any(grepl("\\.[Dd]", n)), grep("\\.[Dd]", n, value=TRUE), tail(n,1))
+                       } ))
   } else {file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])}
   if (parser != "openchrom"){
     data <- lapply(X=files, function(file){

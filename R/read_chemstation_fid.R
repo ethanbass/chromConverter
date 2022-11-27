@@ -3,15 +3,19 @@
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param format_out Matrix or data.frame
 #' @author Ethan Bass
+#' @note This function benefited greatly from the schematic shared by the developers
+#' of the rainbow project (https://rainbow-api.readthedocs.io/en/latest/agilent/ch_fid.html).
 #' @export
 read_chemstation_fid <- function(path, read_metadata=TRUE,
                                  format_out = c("matrix","data.frame")){
+
   f <- file(path, "rb")
   on.exit(close(f))
 
   # HEADER
   version<-readBin(f, "raw", n = 4)
   version <- paste(sapply(version[2:4], rawToChar),collapse="")
+
   endian <- switch(version,
                    "179" = "little",
                    "180" = "big",
@@ -104,4 +108,12 @@ cc_collapse <- function(x){
 #' @noRd
 cc_trim_str <- function(x, len=2){
   substr(x, len, nchar(x))
+}
+
+#' @noRd
+# check for .D folder
+get_chemstation_dir_name <- function(path){
+  dir <- gsub(basename(path), "", path)
+  sp <- str_split_fixed(dir, "/", stringr::str_count(dir,"/")+1)[1,]
+  grep("\\.D|\\.d$", sp, ignore.case = TRUE,value = TRUE)
 }

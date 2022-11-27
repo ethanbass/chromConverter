@@ -20,6 +20,10 @@ read_chemstation_fid(
 \description{
 Parser for reading Agilent FID (.ch) files into R
 }
+\note{
+This function benefited greatly from the schematic shared by the developers
+of the rainbow project (https://rainbow-api.readthedocs.io/en/latest/agilent/ch_fid.html).
+}
 \author{
 Ethan Bass
 }

@@ -8,6 +8,7 @@
 * Added support for parsing `mzML` files with `RaMS`.
 * Added support for parsing "Agilent" (`.D`) and "Waters" (`.raw`) files with [rainbow](https://rainbow-api.readthedocs.io/).
 * Make `data_format` option available consistently for choosing `wide` or `long` format.
+* Added parser in R for "Chemstation" FID (`.ch`) data (versions 179 & 181)
 
 ## chromConverter 0.2.2
 
