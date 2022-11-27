@@ -59,7 +59,7 @@
 
 read_chroms <- function(paths, find_files,
                         format_in=c("agilent_d", "chemstation", "chemstation_uv",
-                                    "chemstation_csv", "masshunter_dad",
+                                    "chemstation_csv", "chemstation_fid", "masshunter_dad",
                                     "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                    "thermoraw", "mzml", "waters_arw", "waters_raw",
                                    "msd", "csd", "wsd", "other"),
@@ -72,7 +72,7 @@ read_chroms <- function(paths, find_files,
                         export_format = c("csv", "cdf", "mzml", "animl"),
                         read_metadata = TRUE, dat = NULL){
   format_in <- match.arg(format_in, c("agilent_d", "chemstation", "chemstation_uv",
-                                      "chemstation_csv", "masshunter_dad",
+                                      "chemstation_csv", "chemstation_fid", "masshunter_dad",
                                       "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                       "thermoraw", "mzml", "waters_arw",
                                       "waters_raw", "msd", "csd", "wsd", "other"))
@@ -182,6 +182,12 @@ read_chroms <- function(paths, find_files,
   } else if (format_in == "chemstation_csv"){
     pattern <- ifelse(is.null(pattern), ".csv|.CSV", pattern)
     converter <- partial(read_chemstation_csv, format_out = format_out)
+  } else if (format_in == "chemstation_fid"){
+    pattern <- ifelse(is.null(pattern), ".ch", pattern)
+    converter <- switch(parser,
+                        "chromconverter" = partial(read_chemstation_fid, read_metadata = read_metadata,
+                         format_out = format_out),
+                        "rainbow" = rainbow_parser)
   } else if (format_in %in% c("msd", "csd", "wsd")){
     if (is.null(pattern) & find_files){
       stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")

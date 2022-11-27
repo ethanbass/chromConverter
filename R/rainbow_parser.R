@@ -21,6 +21,7 @@
 #' @return Returns a (nested) list of \code{matrices} or \code{data.frames} according to
 #' the value of \code{format_out}. Data is ordered according to the value of
 #' \code{by}.
+#' @export
 
 call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshunter",
                                              "chemstation", "chemstation_uv"),

@@ -2,9 +2,11 @@
 
 export(call_entab)
 export(call_openchrom)
+export(call_rainbow)
 export(configure_aston)
 export(configure_rainbow)
 export(read_chemstation_csv)
+export(read_chemstation_fid)
 export(read_chromeleon)
 export(read_chroms)
 export(read_mzml)
