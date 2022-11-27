@@ -108,7 +108,7 @@ dat <- read_chroms(path, find_files = FALSE, path_out="temp", export=TRUE)
 
 ###### Choosing between multiple parsers
 
-For formats where multiple parsers are available, you can choose between them using the `parser` argument. For example, Agilent files can be read using either the Aston or Entab parsers (or in some cases OpenChrom). In this case, it is recommended to use the newer Entab parsers, since Aston is no longer actively supported. However Entab is slightly more complicated to install (see [installation instructions](README.md#Installation) above).
+For formats where multiple parsers are available, you can choose between them using the `parser` argument. For example, Agilent files can now be read using parsers from a number of external libraries, including Aston, Entab, OpenChrom, and rainbow. Some of these parsers must be installed manually as described in the [installation instructions](README.md#Installation) further up the page. It is recommended to use the newer Entab or rainbow parsers, since Aston is no longer actively supported. 
 
 ###### OpenChrom parsers
 
@@ -116,7 +116,7 @@ Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` a
 
 ###### Extracting metadata
 
-chromConverter includes some options to extract metadata from the provided files. If `read_metadata=TRUE`, metadata will be extracted and stored as `attributes` of the associated object. A list of [`attributes`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) can be extracted from any R object using the `attributes()` function.
+chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as `attributes` of the associated object. A list of [`attributes`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) can be extracted from any R object using the `attributes()` function.
 
 ### Further analysis
 
