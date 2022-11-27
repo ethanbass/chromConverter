@@ -40,6 +40,9 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.html</loc>
   </url>
   <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_fid.html</loc>
+  </url>
+  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_chromeleon.html</loc>
   </url>
   <url>
@@ -65,5 +68,8 @@
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/uv_converter.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/write_openchrom_batchfile.html</loc>
   </url>
 </urlset>
