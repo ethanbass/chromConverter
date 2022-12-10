@@ -46,6 +46,7 @@ test_that("shimadzu parser works", {
 # })
 
 test_that("check_path works", {
+  skip_on_os("windows")
   expect_equal(check_path("~/Downloads"), "~/Downloads/")
   expect_equal(check_path("Downloads"), "/Downloads/")
   expect_equal(check_path("~/Downloads/"), "~/Downloads/")

@@ -61,8 +61,8 @@ read_chroms <- function(paths, find_files,
                         format_in=c("agilent_d", "chemstation", "chemstation_uv",
                                     "chemstation_csv", "chemstation_fid", "masshunter_dad",
                                     "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
-                                   "thermoraw", "mzml", "waters_arw", "waters_raw",
-                                   "msd", "csd", "wsd", "other"),
+                                    "thermoraw", "mzml", "waters_arw", "waters_raw",
+                                    "msd", "csd", "wsd", "other"),
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
                                    "thermoraw", "openchrom", "rainbow"),
@@ -233,7 +233,7 @@ read_chroms <- function(paths, find_files,
                        } ))
   } else {file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])}
   if (parser != "openchrom"){
-    data <- lapply(X=files, function(file){
+    data <- lapply(X = files, function(file){
       df <- try(converter(file), silent = TRUE)
     })
     errors <- which(sapply(data, function(x) inherits(x,"try-error")))
@@ -244,7 +244,7 @@ read_chroms <- function(paths, find_files,
       file_names <- file_names[-errors]
     }
   } else{
-    data <-converter(files)
+    data <- converter(files)
   }
   names(data) <- file_names
   if (export & !(parser %in% c("thermoraw", "openchrom"))){

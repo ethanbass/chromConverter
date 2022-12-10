@@ -7,7 +7,7 @@
 * Changed `format_data` argument to `data_format` to select wide or long format.
 * Added support for parsing `mzML` files with `RaMS`.
 * Added support for parsing "Agilent" (`.D`) and "Waters" (`.raw`) files with [rainbow](https://rainbow-api.readthedocs.io/).
-* Make `data_format` option available consistently for choosing `wide` or `long` format.
+* Made `data_format` option available consistently for choosing `wide` or `long` format.
 * Added parser in R for "Chemstation" FID (`.ch`) data (versions 179 & 181)
 * Improved error handling when loading python modules.
 
