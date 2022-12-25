@@ -239,7 +239,8 @@ read_chroms <- function(paths, find_files,
     errors <- which(sapply(data, function(x) inherits(x,"try-error")))
     if (length(errors) > 0){
       warning(data[errors], immediate. = TRUE)
-      message(paste("The following chromatograms could not be interpreted:", errors))
+      message(paste0("The following chromatograms could not be interpreted: ",
+                    paste(errors, collapse = ", ")))
       data <- data[-errors]
       file_names <- file_names[-errors]
     }
