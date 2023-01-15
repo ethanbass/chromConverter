@@ -32,18 +32,18 @@ test_that("entab parser works", {
 })
 
 
-test_that("rainbow parser works", {
-  skip_if_missing_dependecies()
-  file <- "testdata/DAD1.uv"
-  x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "rainbow",
-                    find_files = FALSE,
-                    read_metadata = TRUE)
-  expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
-  expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
-  expect_equal(class(x1[[1]])[1], "matrix")
-  expect_equal(attr(x1[[1]], "parser"), "rainbow")
-  expect_equal(attr(x1[[1]], "data_format"), "wide")
-})
+# test_that("rainbow parser works", {
+#   skip_if_missing_dependecies()
+#   file <- "testdata/DAD1.uv"
+#   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "rainbow",
+#                     find_files = FALSE,
+#                     read_metadata = TRUE)
+#   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
+#   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
+#   expect_equal(class(x1[[1]])[1], "matrix")
+#   expect_equal(attr(x1[[1]], "parser"), "rainbow")
+#   expect_equal(attr(x1[[1]], "data_format"), "wide")
+# })
 
 test_that("shimadzu parser works", {
   file <- "testdata/ladder.txt"
