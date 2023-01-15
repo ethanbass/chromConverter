@@ -177,12 +177,11 @@ decode_double_array <- function(file, offset) {
 
   seek(file, 0, 'end');
   fsize = seek(file, NA, "current");
-
+  offset <- 0x1800
   # Read data
   seek(file, offset, "start")
-  # signal <- readBin(file, (fsize - offset) / 8, "double", "l")
   signal <- readBin(file, what = "double", size = 4, endian = "little",
-                    n = (fsize - offset)/8)
+                    n = (fsize - offset))
   signal <- signal[seq(2,length(signal),2)]
   return(signal)
 }
