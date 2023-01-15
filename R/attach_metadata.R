@@ -9,6 +9,7 @@
 #' @param parser What parser was used to decode the data
 #' @return A chromatogram with attached metadata.
 #' @author Ethan Bass
+
 attach_metadata <- function(x, meta, format_in, format_out, data_format, parser = NULL){
   if (format_in == "waters_arw"){
     structure(x, instrument = NA,

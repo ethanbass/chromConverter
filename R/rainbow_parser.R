@@ -86,6 +86,8 @@ extract_rb_data <- function(xx, format_out = "matrix",
   if (read_metadata){
     try(attr(data, "detector") <- xx$detector)
     try(attr(data, "metadata") <- xx$metadata)
+    attr(data, "parser") <- "rainbow"
+    attr(data, "data_format") <- data_format
   }
   if (format_out == "data.frame"){
     data <- as.data.frame(data)

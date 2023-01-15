@@ -109,4 +109,3 @@ check_path <- function(path){
   }
   path
 }
-
