@@ -24,7 +24,7 @@
 #' @export
 
 call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshunter",
-                                             "chemstation", "chemstation_uv"),
+                                             "chemstation", "chemstation_uv", "chemstation_fid"),
                          format_out = c("matrix", "data.frame"),
                          data_format = c("wide", "long"),
                          by = c("detector","name"), what = NULL,
@@ -39,8 +39,9 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
                       "waters_raw" = rb_read$read,
                       "masshunter" = rb_read$read,
                       "chemstation" = rb_parse_agilent$chemstation$parse_file,
-                      "chemstation_uv" = rb_parse_agilent$chemstation$parse_file)
-  if (format_in %in% c("chemstation","chemstation_uv")){
+                      "chemstation_uv" = rb_parse_agilent$chemstation$parse_file,
+                      "chemstation_fid" = rb_parse_agilent$chemstation$parse_file)
+  if (format_in %in% c("chemstation", "chemstation_uv", "chemstation_fid")){
     by <- "single"
   }
   x <- converter(file)
@@ -92,7 +93,7 @@ extract_rb_data <- function(xx, format_out = "matrix",
   if (format_out == "data.frame"){
     data <- as.data.frame(data)
   }
-  if (data_format == "long"){
+  if (ncol(xx$data) > 1 && data_format == "long"){
     data <- reshape_chrom(data)
   }
   data

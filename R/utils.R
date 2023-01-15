@@ -6,7 +6,7 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                           chromconverter = c("chemstation_csv", "shimadzu_fid", "shimadzu_dad",
                                              "chromeleon_uv", "waters_arw", "mzml", "chemstation_fid"),
                           aston = c("chemstation_uv", "masshunter_dad", "other"),
-                          entab = c("chemstation_uv", "masshunter_dad", "thermoraw", "other"),
+                          entab = c("chemstation_uv", "chemstation_fid", "masshunter_dad", "thermoraw", "other"),
                           rainbow = c("chemstation_uv", "waters_raw",
                                       "agilent_d", "chemstation", "chemstation_fid"),
                           thermoraw = c("thermoraw")

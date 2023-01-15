@@ -183,11 +183,13 @@ read_chroms <- function(paths, find_files,
     pattern <- ifelse(is.null(pattern), ".csv|.CSV", pattern)
     converter <- partial(read_chemstation_csv, format_out = format_out)
   } else if (format_in == "chemstation_fid"){
+    data_format <- "long"
     pattern <- ifelse(is.null(pattern), ".ch", pattern)
     converter <- switch(parser,
                         "chromconverter" = partial(read_chemstation_fid, read_metadata = read_metadata,
                          format_out = format_out),
-                        "rainbow" = rainbow_parser)
+                        "rainbow" = rainbow_parser,
+                        "entab" = entab_parser)
   } else if (format_in %in% c("msd", "csd", "wsd")){
     if (is.null(pattern) & find_files){
       stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
@@ -201,9 +203,7 @@ read_chroms <- function(paths, find_files,
                         "aston" = partial(trace_converter, format_out = format_out,
                                           data_format = data_format,
                                           read_metadata = read_metadata),
-                        "entab" = partial(call_entab,
-                                          read_metadata = read_metadata,
-                                          format_out = format_out)
+                        "entab" = entab_parser
     )
   }
   writer <- switch(export_format, "csv" = export_csvs)

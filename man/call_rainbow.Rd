@@ -6,7 +6,8 @@
 \usage{
 call_rainbow(
   file,
-  format_in = c("agilent_d", "waters_raw", "masshunter", "chemstation", "chemstation_uv"),
+  format_in = c("agilent_d", "waters_raw", "masshunter", "chemstation", "chemstation_uv",
+    "chemstation_fid"),
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   by = c("detector", "name"),
