@@ -61,59 +61,73 @@ read_shimadzu <- function(file, format_in,
   x <- readLines(file)
   headings <- grep("\\[*\\]", x)
   peaktab.idx <- grep("\\[Peak Table", x)
-  if (format_in == "fid"){
-    chrom.idx <- grep("\\[Chromatogram .*]", x)
-    header <- extract_header(x, chrom.idx)
-    met<-header[[1]]
-    xx <- read.csv(file, skip = header[[2]], sep="\t", colClasses="numeric",
-                   na.strings=c("[FractionCollectionReport]","#ofFractions"))
-    xx <- as.matrix(xx[!is.na(xx[,1]),])
-    rownames(xx) <- xx[,1]
-    xx <- xx[, 2, drop = FALSE]
-    colnames(xx) <- "Intensity"
-    data_format <- "long"
-  } else if (format_in == "dad"){
-    chrom.idx <- grep("\\[PDA 3D]", x)
-    # grep("\\[PDA Multi Chromatogram", x)
-    # grep("\\[LC Status Trace", x)
-    if (any(what == "chromatogram")){
-      header <- extract_header(x, chrom.idx)
-      met <- header[[1]]
-      xx <- read.csv(file, skip = header[[2]], sep="\t", colClasses="numeric",
-                     na.strings=c("[FractionCollectionReport]","#ofFractions"), row.names = 1,
-                     nrows = as.numeric(met[6,2]))
-      xx <- as.matrix(xx[!is.na(xx[,1]),])
-      times <- round(seq(met[2,2], met[3,2], length.out = as.numeric(met[7,2])),2)
-      wavelengths <- round(seq(met[4,2], met[5,2], length.out = as.numeric(met[6,2])),2)
-      colnames(xx) <- wavelengths
-      if (data_format == "long"){
-        xx <- reshape_chrom(xx)
-      }
-    }
+  chrom_heading <- switch(format_in,
+                          "fid" = "\\[Chromatogram .*]",
+                          "dad" = "\\[PDA 3D]")
+  chrom.idx <- grep(chrom_heading, x)
+  header <- extract_header(x, chrom.idx)
+  met <- header[[1]]
+  decimal_separator <- ifelse(grepl(",", met[2,2]),",",".")
+  if (decimal_separator == ","){
+    met[2:3,2] <- gsub(",",".",met[2:3,2])
   }
-    if (any(what == "peak_table")){
-      if (length(peaktab.idx) == 0){
-        if (length(what) == 1){
-          stop("Peak table not found!")
-        } else{
-          warning("Peak table not found!")
-          what <- "chromatogram"
+  if (any(what == "chromatogram")){
+    if (format_in == "fid"){
+      xx <- read.csv(file, skip = header[[2]], sep="\t", colClasses="numeric",
+                     na.strings=c("[FractionCollectionReport]","#ofFractions"),
+                     dec = decimal_separator)
+
+      xx <- as.matrix(xx[!is.na(xx[,1]),])
+      rownames(xx) <- xx[,1]
+      xx <- xx[, 2, drop = FALSE]
+      colnames(xx) <- "Intensity"
+      data_format <- "long"
+    } else if (format_in == "dad"){
+        xx <- read.csv(file, skip = header[[2]], sep="\t", colClasses="numeric",
+                       na.strings=c("[FractionCollectionReport]","#ofFractions"), row.names = 1,
+                       nrows = as.numeric(met[7,2]), dec = decimal_separator)
+        xx <- as.matrix(xx[!is.na(xx[,1]),])
+        times <- round(seq(met[2,2], met[3,2], length.out = as.numeric(met[7,2])),2)
+        wavelengths <- round(seq(met[4,2], met[5,2], length.out = as.numeric(met[6,2])),2)
+        colnames(xx) <- wavelengths
+        if (data_format == "long"){
+          xx <- reshape_chrom(xx)
         }
       }
-      peak_tab <-lapply(peaktab.idx, function(idx){
-        nrows <- as.numeric(strsplit(x[idx+1],"\t")[[1]][2])
-        peak_tab <- read.csv(file, skip = (idx+1), sep="\t", nrows=nrows)
-      })
-      names(peak_tab) <- gsub("\\[|\\]","", x[peaktab.idx])
+      if (format_out == "data.frame"){
+        xx <- as.data.frame(xx)
+      }
     }
+  if (any(what == "peak_table")){
+    if (length(peaktab.idx) == 0){
+      if (length(what) == 1){
+        stop("Peak table not found!")
+      } else{
+        warning("Peak table not found!")
+        what <- "chromatogram"
+      }
+    }
+    peak_tab <- lapply(peaktab.idx, function(idx){
+      nrows <- as.numeric(strsplit(x[idx+1],"\t")[[1]][2])
+      peak_tab <- read.csv(file, skip = (idx+1), sep = "\t", nrows = nrows,
+                           dec=decimal_separator)
+    })
+    names(peak_tab) <- gsub("\\[|\\]","", x[peaktab.idx])
+  }
+  if ("peak_table" %in% what & "chromatogram" %in% what){
+    what <- "both"
+  }
   if (format_out == "data.frame"){
     xx <- as.data.frame(xx)
   }
+  xx <- switch(what, "chromatogram" = xx,
+               "peak_table" = peak_tab,
+               "both" = list(xx, peak_tab))
   if (read_metadata){
-   idx <-  which(x[headings] %in%
-            c("[Header]", "[File Information]", "[Sample Information]",
-              "[Original Files]", "[File Description]", "[Configuration]")
-          )
+    idx <-  which(x[headings] %in%
+                    c("[Header]", "[File Information]", "[Sample Information]",
+                      "[Original Files]", "[File Description]", "[Configuration]")
+    )
     meta_start <- headings[min(idx)]
     meta_end <- headings[max(idx) + 1]
     meta <- x[(meta_start+1):(meta_end-1)]
@@ -129,12 +143,8 @@ read_shimadzu <- function(file, format_in,
     xx <- attach_metadata(xx, meta, format_in = "shimadzu", format_out = format_out,
                           data_format = data_format,
                           parser = "chromConverter")
-  }
-  if ("peak_table" %in% what & "chromatogram" %in% what)
-    what <- "both"
-  switch(what, "chromatogram" = xx,
-         "peak_table" = peak_tab,
-         "both" = list(xx, peak_tab))
+    }
+  xx
 }
 
 #' Waters ascii (.arw) reader

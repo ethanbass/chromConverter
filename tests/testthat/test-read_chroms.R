@@ -48,7 +48,7 @@ test_that("entab parser works", {
 test_that("shimadzu parser works", {
   file <- "testdata/ladder.txt"
   x <- read_chroms(file, format_in = "shimadzu_fid", find_files = FALSE)
-  expect_equal(class(x[[1]]), "matrix")
+  expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 })
 
@@ -68,7 +68,7 @@ test_that("check_path works", {
 #   skip_if_not(configure_thermo_parser(check = TRUE))
 #   file <- "/Users/ethanbass/Downloads/chrom_files/small.RAW"
 #   x <- read_chroms(file, format_in = "thermoraw", find_files = FALSE)
-#   expect_equal(class(x[[1]]), "matrix")
+#   expect_equal(class(x[[1]])[1], "matrix")
 #   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 # })
 

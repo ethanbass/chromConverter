@@ -2,14 +2,19 @@
 
 * Fixed bug causing "Chromeleon" metadata parser to fail.
 * Fixed bug in "Chemstation" metadata parser.
-* Generalized algorithm to acquire "Shimadzu" DAD metadata.
-* Improved error-handling for parsing metadata so small problems no longer error out the whole program.
 * Changed `format_data` argument to `data_format` to select wide or long format.
 * Added support for parsing `mzML` files with `RaMS`.
 * Added support for parsing "Agilent" (`.D`) and "Waters" (`.raw`) files with [rainbow](https://rainbow-api.readthedocs.io/).
 * Made `data_format` option available consistently for choosing `wide` or `long` format.
 * Added parser in R for "Chemstation" FID (`.ch`) data (versions 81, 179 & 181).
 * Improved error handling when loading python modules.
+* Improved error-handling for parsing metadata so small problems no longer error out the whole program.
+
+#### Shimadzu ascii parser
+
+* Fixed bug in 'Shimadzu' ascii parser that was cutting chromatograms short.
+* Added automatic detection of decimal separator for reading European-style files.
+* Generalized algorithm to acquire 'Shimadzu' DAD metadata.
 
 ## chromConverter 0.2.2
 

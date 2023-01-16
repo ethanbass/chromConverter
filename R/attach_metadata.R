@@ -27,7 +27,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               detector_range = meta$Channel,
               data_format = "long",
               parser = "chromConverter",
-              class = format_out)
+              format_out = format_out)
   } else if (format_in == "shimadzu"){
     structure(x,
               instrument = meta$`Instrument Name`,
@@ -45,7 +45,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               detector_range = c(meta$`Start Wavelength(nm)`, meta$`End Wavelength(nm)`),
               data_format = data_format,
               parser = "chromConverter",
-              class = format_out)
+              format_out = format_out)
   } else if (format_in == "chromeleon"){
     structure(x, instrument = NA,
               detector = meta$Detector,
@@ -62,7 +62,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               detector_range = NA,
               data_format = "long",
               parser = "chromConverter",
-              class = format_out)
+              format_out = format_out)
   # } else if (format_in == "entab"){
   #   structure(x, instrument = meta$instrument,
   #             detector = NA,
@@ -79,7 +79,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
   #             detector_range = NA,
   #             format = data_format,
   #             parser = "entab",
-  #             class = format_out)
+  #             format_out = format_out)
   } else if (format_in == "chemstation_uv"){
     structure(x, instrument = meta$AcqInstName,
               detector = NA,
@@ -96,7 +96,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               detector_range = NA,
               data_format = data_format,
               parser = parser,
-              class = format_out)
+              format_out = format_out)
   } else if (format_in == "masshunter_dad"){
     structure(x, instrument = meta$Instrument,
     detector = NA,
@@ -113,7 +113,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
     detector_range = NA,
     data_format = data_format,
     parser = parser,
-    class = format_out)
+    format_out = format_out)
   } else {
     structure(x, instrument = meta$Instrument,
               detector = NA,
@@ -128,9 +128,10 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               time_range = NA,
               time_interval = NA,
               detector_range = NA,
-              data_format = data_format,
-              parser = parser,
-              class = format_out)
+              data_format = ifelse(missing(data_format), NA, data_format),
+              parser = ifelse(missing(parser), NA, parser),
+              format_out = ifelse(missing(format_out), NA, format_out)
+    )
   }
 }
 
