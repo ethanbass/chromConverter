@@ -12,8 +12,7 @@ Authors@R: c(
 Maintainer: Ethan Bass <ethanbass@gmail.com>
 Description: Reads chromatograms from binary formats into R objects. Currently supports conversion of 'Agilent ChemStation', 'Agilent MassHunter', and 'ThermoRaw' files as well as various text-based formats. Utilizes file parsers from external libraries, such as 'Aston' <https://github.com/bovee/aston>, 'Entab' <https://github.com/bovee/entab>, 'rainbow' <https://rainbow-api.readthedocs.io/>, and 'ThermoRawFileParser' <https://github.com/compomics/ThermoRawFileParser>.
 License: GPL (>= 3)
-URL: https://github.com/ethanbass/chromConverter,
-    https://ethanbass.github.io/chromConverter/
+URL: https://ethanbass.github.io/chromConverter, https://github.com/ethanbass/chromConverter
 BugReports: https://github.com/ethanbass/chromConverter/issues
 Imports:
     purrr,
