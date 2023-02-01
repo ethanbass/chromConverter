@@ -34,11 +34,12 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - ABSciex DAD (`.wiff`)
 - and many more (see full list [here](https://lablicate.com/platform/openchrom)).
 
-##### Text formats
+##### ChromConverter
 - Chromeleon UV ascii (`.txt`)
 - mzML (`.mzml`)
 - Shimadzu LabSolutions ascii (`.txt`)
 - Waters ascii (`.arw`) (*provisional support*)
+- 'Agilent Chemstation' FID (`.ch` versions 81, 179, 181)
 
 ### Installation
 
