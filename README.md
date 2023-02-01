@@ -56,6 +56,12 @@ install.packages("devtools")
 devtools::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
+or from [R Universe](https://r-universe.dev/):
+
+```
+install.packages("chromConverter", repos="https://ethanbass.r-universe.dev/", type="source")
+```
+
 #### Optional additional dependencies
 
 Some of the parsers rely on external software libraries that must be manually installed.
