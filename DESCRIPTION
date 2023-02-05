@@ -1,6 +1,6 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: c(
     person(given = "Ethan", family = "Bass", email = "ethanbass@gmail.com",
                   role = c("aut", "cre"),
@@ -15,6 +15,7 @@ License: GPL (>= 3)
 URL: https://ethanbass.github.io/chromConverter, https://github.com/ethanbass/chromConverter
 BugReports: https://github.com/ethanbass/chromConverter/issues
 Imports:
+    bitops,
     purrr,
     readxl,
     reticulate,

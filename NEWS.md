@@ -1,3 +1,11 @@
+## chromConverter 0.3.1
+
+* Added support for "Chemstation" UV (`.ch`) files (version 130).
+* Added provisional support for "Chemstation" FID (version 8).
+* Changed name of `read_chemstation_fid` function to `read_chemstation_ch`.
+* Ignore case when matching file extensions in `read_chroms`.
+* Added note to README about configuring RStudio correctly for accessing python parsers.
+
 ## chromConverter 0.3.0
 
 * Fixed bug causing "Chromeleon" metadata parser to fail.

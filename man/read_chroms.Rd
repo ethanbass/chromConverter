@@ -8,8 +8,9 @@ read_chroms(
   paths,
   find_files,
   format_in = c("agilent_d", "chemstation", "chemstation_uv", "chemstation_csv",
-    "chemstation_fid", "masshunter_dad", "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
-    "thermoraw", "mzml", "waters_arw", "waters_raw", "msd", "csd", "wsd", "other"),
+    "chemstation_ch", "chemstation_fid", "masshunter_dad", "shimadzu_fid",
+    "shimadzu_dad", "chromeleon_uv", "thermoraw", "mzml", "waters_arw", "waters_raw",
+    "msd", "csd", "wsd", "other"),
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
   format_out = c("matrix", "data.frame"),
@@ -29,9 +30,10 @@ the function with a folder or vector of folders containing the files.
 Otherwise, set to\code{FALSE}.}
 
 \item{format_in}{Format of files to be imported/converted. The current options
-are: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_csv},
-\code{masshunter}, \code{masshunter_dad}, \code{shimadzu_fid}, \code{shimadzu_dad},
-\code{chromeleon_uv}, \code{agilent_d}, \code{thermoraw}, \code{mzml},
+are: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_ch},
+\code{chemstation_csv}, \code{masshunter}, \code{masshunter_dad},
+\code{shimadzu_fid}, \code{shimadzu_dad}, \code{chromeleon_uv},
+\code{agilent_d}, \code{thermoraw}, \code{mzml},
 \code{waters_arw}, \code{waters_raw}, \code{msd}, \code{csd}, \code{wsd},
 or \code{other}.}
 

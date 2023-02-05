@@ -130,6 +130,10 @@ chromConverter includes some options to extract metadata from the provided files
 
 For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release).
 
+### Other related packages
+
+- For tidy extraction of mzML data, see [RaMS](https://github.com/wkumler/RaMS/).
+
 ### Citation
 
 You can cite chromConverter as follows:
@@ -137,7 +141,3 @@ You can cite chromConverter as follows:
 Bass, E. (2022). chromConverter: chromatographic file converter. http://doi.org/10.5281/zenodo.6792521.
 
 If you use external libraries to convert your files, please cite them as well in published work.
-
-### Other related packages
-
-- For tidy extraction of mzML data, see [RaMS](https://github.com/wkumler/RaMS/).

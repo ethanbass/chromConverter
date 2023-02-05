@@ -1,10 +1,13 @@
 utils::globalVariables(names = c('.'))
 # Globals <- list()
 
+#' @noRd
 check_parser <- function(format_in, parser=NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
-                          chromconverter = c("chemstation_csv", "shimadzu_fid", "shimadzu_dad",
-                                             "chromeleon_uv", "waters_arw", "mzml", "chemstation_fid"),
+                          chromconverter = c("chemstation_csv", "shimadzu_fid",
+                                             "shimadzu_dad", "chromeleon_uv",
+                                             "waters_arw", "mzml",
+                                             "chemstation_fid", "chemstation_ch"),
                           aston = c("chemstation_uv", "masshunter_dad", "other"),
                           entab = c("chemstation_uv", "chemstation_fid", "masshunter_dad", "thermoraw", "other"),
                           rainbow = c("chemstation_uv", "waters_raw",
@@ -36,10 +39,11 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
   }
 }
 
+#' @noRd
 find_files <- function(paths, pattern){
   files <- unlist(lapply(paths, function(path){
     files <- list.files(path = path, pattern = pattern,
-                        full.names = TRUE, recursive = TRUE)
+                        full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
     if (length(files)==0){
       if (!dir.exists(path)){
         warning(paste0("The directory '", basename(path), "' does not exist."))
@@ -52,12 +56,14 @@ find_files <- function(paths, pattern){
   }))
 }
 
+#' @noRd
 export_csvs <- function(data, path.out){
   sapply(seq_along(data), function(i){
     write.csv(data[[i]], file = paste0(paste0(path.out, names(data)[i]),".CSV"))
   })
 }
 
+#' @noRd
 set_temp_directory <- function(){
   ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
   if (ans %in% c("y","Y")){
@@ -70,25 +76,8 @@ set_temp_directory <- function(){
   }
 }
 
-
-extract_header <- function(x, chrom.idx){
-  index <- chrom.idx+1
-  line <- x[index]
-  l <- length(strsplit(line,"\t")[[1]])
-  header <- strsplit(line,"\t")[[1]]
-  while (l > 1) {
-    index <- index+1
-    line <- strsplit(x[index], "\t")[[1]]
-    l <- length(line)
-    if (l == 1 | suppressWarnings(!is.na(as.numeric(line[1]))))
-      break
-    header <- rbind(header, line)
-  }
-  list(header,index)
-}
-
-#' check path
-#' check that path is properly formatted
+#' Check path
+#' Check that path is properly formatted
 #' @param path path as character string
 #' @noRd
 check_path <- function(path){
@@ -108,4 +97,22 @@ check_path <- function(path){
     path <- gsub("/", "\\\\", path)
   }
   path
+}
+
+#' Extract header from Shimadzu ascii files
+#' @noRd
+extract_header <- function(x, chrom.idx, sep){
+  index <- chrom.idx+1
+  line <- x[index]
+  l <- length(strsplit(x = line, split = sep)[[1]])
+  header <- strsplit(x = line, split = sep)[[1]]
+  while (l > 1) {
+    index <- index+1
+    line <- strsplit(x = x[index], split = sep)[[1]]
+    l <- length(line)
+    if (l == 1 | suppressWarnings(!is.na(as.numeric(line[1]))))
+      break
+    header <- rbind(header, line)
+  }
+  list(header,index)
 }

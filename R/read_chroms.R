@@ -20,9 +20,10 @@
 #' the function with a folder or vector of folders containing the files.
 #' Otherwise, set to\code{FALSE}.
 #' @param format_in Format of files to be imported/converted. The current options
-#' are: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_csv},
-#' \code{masshunter}, \code{masshunter_dad}, \code{shimadzu_fid}, \code{shimadzu_dad},
-#' \code{chromeleon_uv}, \code{agilent_d}, \code{thermoraw}, \code{mzml},
+#' are: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_ch},
+#' \code{chemstation_csv}, \code{masshunter}, \code{masshunter_dad},
+#' \code{shimadzu_fid}, \code{shimadzu_dad}, \code{chromeleon_uv},
+#' \code{agilent_d}, \code{thermoraw}, \code{mzml},
 #' \code{waters_arw}, \code{waters_raw}, \code{msd}, \code{csd}, \code{wsd},
 #' or \code{other}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
@@ -59,7 +60,8 @@
 
 read_chroms <- function(paths, find_files,
                         format_in=c("agilent_d", "chemstation", "chemstation_uv",
-                                    "chemstation_csv", "chemstation_fid", "masshunter_dad",
+                                    "chemstation_csv", "chemstation_ch",
+                                    "chemstation_fid", "masshunter_dad",
                                     "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                     "thermoraw", "mzml", "waters_arw", "waters_raw",
                                     "msd", "csd", "wsd", "other"),
@@ -71,8 +73,12 @@ read_chroms <- function(paths, find_files,
                         export = FALSE, path_out = NULL,
                         export_format = c("csv", "cdf", "mzml", "animl"),
                         read_metadata = TRUE, dat = NULL){
+  if (length(format_in) > 1){
+    stop("Please specify the file format of your chromatograms by setting the `format_in` argument.")
+  }
   format_in <- match.arg(format_in, c("agilent_d", "chemstation", "chemstation_uv",
-                                      "chemstation_csv", "chemstation_fid", "masshunter_dad",
+                                      "chemstation_ch", "chemstation_fid",
+                                      "chemstation_csv", "masshunter_dad",
                                       "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                       "thermoraw", "mzml", "waters_arw",
                                       "waters_raw", "msd", "csd", "wsd", "other"))
@@ -182,11 +188,11 @@ read_chroms <- function(paths, find_files,
   } else if (format_in == "chemstation_csv"){
     pattern <- ifelse(is.null(pattern), ".csv|.CSV", pattern)
     converter <- partial(read_chemstation_csv, format_out = format_out)
-  } else if (format_in == "chemstation_fid"){
+  } else if (format_in %in% c("chemstation_fid", "chemstation_ch")){
     data_format <- "long"
     pattern <- ifelse(is.null(pattern), ".ch", pattern)
     converter <- switch(parser,
-                        "chromconverter" = partial(read_chemstation_fid, read_metadata = read_metadata,
+                        "chromconverter" = partial(read_chemstation_ch, read_metadata = read_metadata,
                          format_out = format_out),
                         "rainbow" = rainbow_parser,
                         "entab" = entab_parser)

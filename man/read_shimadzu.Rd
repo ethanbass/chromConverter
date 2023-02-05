@@ -22,8 +22,8 @@ read_shimadzu(
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
-\item{what}{Whether to extract \code{chromatogram}, \code{peak_table} or
-\code{both}.}
+\item{what}{Whether to extract \code{chromatogram} and/or \code{peak_table}.
+Accepts multiple arguments.}
 
 \item{read_metadata}{Whether to read metadata from file.}
 }

@@ -52,7 +52,7 @@ test_that("shimadzu parser works", {
   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 })
 
-test_that("check_path works", {
+test_that("check_path works on unix/linux", {
   skip_on_os("windows")
   expect_equal(check_path("~/Downloads"), "~/Downloads/")
   expect_equal(check_path("Downloads"), "/Downloads/")
@@ -62,7 +62,6 @@ test_that("check_path works", {
   expect_equal(check_path("/Users/foo"), "/Users/foo/")
   expect_equal(check_path("Users/foo"), "/Users/foo/")
 })
-
 
 # test_that("thermoraw parser works",{
 #   skip_if_not(configure_thermo_parser(check = TRUE))

@@ -13,6 +13,7 @@
 #' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @export sp_converter
+
 sp_converter <- function(file, format_out = c("matrix", "data.frame"),
                          data_format = c("wide","long"),
                          read_metadata = TRUE){
