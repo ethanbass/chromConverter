@@ -1,3 +1,7 @@
+## chromConverter 0.3.2
+
+* Fix 'Shimadzu' ascii parser so it can cope with variable entries in PDA header.
+
 ## chromConverter 0.3.1
 
 * Added support for "Chemstation" UV (`.ch`) files (version 130).

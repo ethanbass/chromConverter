@@ -78,39 +78,44 @@ read_shimadzu <- function(file, format_in,
         met[c(2:3), 2] <- gsub(",", ".", met[c(2:3), 2])
       }
 
-        if (format_in == "fid"){
-          xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses="numeric",
-                         na.strings=c("[FractionCollectionReport]","#ofFractions"),
-                         dec = decimal_separator)
-
-          xx <- as.matrix(xx[!is.na(xx[,1]),])
-          rownames(xx) <- xx[,1]
-          xx <- xx[, 2, drop = FALSE]
-          colnames(xx) <- "Intensity"
-          data_format <- "long"
-        } else if (format_in == "dad"){
-            xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses="numeric",
-                           na.strings=c("[FractionCollectionReport]","#ofFractions"), row.names = 1,
-                           nrows = as.numeric(met[7,2]), dec = decimal_separator)
-            xx <- as.matrix(xx[!is.na(xx[,1]),])
-            times <- round(seq(met[2,2], met[3,2], length.out = as.numeric(met[7,2])),2)
-            wavelengths <- round(seq(met[4,2], met[5,2], length.out = as.numeric(met[6,2])),2)
-            colnames(xx) <- wavelengths
-            if (data_format == "long"){
-              xx <- reshape_chrom(xx)
-            }
-          }
-          if (format_out == "data.frame"){
-            xx <- as.data.frame(xx)
-          }
-      } else{
-        if (length(what) == 1){
-          stop("Chromatogram not found.")
-        } else{
-          warning("Chromatogram not found.")
-          what = "peak_table"
+      if (format_in == "fid"){
+        xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses="numeric",
+                       na.strings=c("[FractionCollectionReport]","#ofFractions"),
+                       dec = decimal_separator)
+        xx <- as.matrix(xx[!is.na(xx[,1]),])
+        rownames(xx) <- xx[,1]
+        xx <- xx[, 2, drop = FALSE]
+        colnames(xx) <- "Intensity"
+        data_format <- "long"
+      } else if (format_in == "dad"){
+        nrows <- as.numeric(met[grep("# of Time Axis Points", met[,1]),2])
+        ncols <- as.numeric(met[grep("# of Wavelength Axis Points", met[,1]),2])
+        xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses="numeric",
+                       na.strings=c("[FractionCollectionReport]","#ofFractions"), row.names = 1,
+                       nrows = nrows, dec = decimal_separator)
+        xx <- as.matrix(xx[!is.na(xx[,1]),])
+        times <- round(seq(met[grep("Start Time", met[,1]),2],
+                           met[grep("End Time", met[,1]),2],
+                           length.out = nrows), 2)
+        wavelengths <- round(seq(met[grep("Start Wavelength", met[,1]), 2],
+                                 met[grep("End Wavelength", met[,1]), 2],
+                                 length.out = ncols), 2)
+        colnames(xx) <- wavelengths
+        if (data_format == "long"){
+          xx <- reshape_chrom(xx)
         }
       }
+      if (format_out == "data.frame"){
+        xx <- as.data.frame(xx)
+      }
+    } else{
+      if (length(what) == 1){
+        stop("Chromatogram not found.")
+      } else{
+        warning("Chromatogram not found.")
+        what = "peak_table"
+      }
+    }
   }
 
   ### extract peak_table
@@ -172,8 +177,8 @@ read_shimadzu <- function(file, format_in,
       })
     } else{
       xx <- attach_metadata(xx, meta, format_in = "shimadzu", format_out = format_out,
-                      data_format = data_format,
-                      parser = "chromConverter")
+                            data_format = data_format,
+                            parser = "chromConverter")
     }
   }
   xx

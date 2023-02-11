@@ -39,7 +39,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - mzML (`.mzml`)
 - Shimadzu LabSolutions ascii (`.txt`)
 - Waters ascii (`.arw`) (*provisional support*)
-- 'Agilent Chemstation' FID (`.ch` versions 81, 179, 181)
+- 'Agilent Chemstation' `.ch` files (versions 8, 81, 130, 179, 181)
 
 ### Installation
 
@@ -52,8 +52,8 @@ install.packages("chromConverter")
 Alternatively, the development version of chromConverter can be installed from GitHub as follows:
 
 ```
-install.packages("devtools")
-devtools::install_github("https://github.com/ethanbass/chromConverter/")
+install.packages("remotes")
+remotes::install_github("https://github.com/ethanbass/chromConverter/")
 ```
 
 or from [R Universe](https://r-universe.dev/):
