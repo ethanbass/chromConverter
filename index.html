@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -131,7 +131,7 @@
 <li>mzML (<code>.mzml</code>)</li>
 <li>Shimadzu LabSolutions ascii (<code>.txt</code>)</li>
 <li>Waters ascii (<code>.arw</code>) (<em>provisional support</em>)</li>
-<li>‘Agilent Chemstation’ FID (<code>.ch</code> versions 81, 179, 181)</li>
+<li>‘Agilent Chemstation’ <code>.ch</code> files (versions 8, 81, 130, 179, 181)</li>
 </ul>
 </div>
 </div>
@@ -141,8 +141,8 @@
 <p>chromConverter can now be installed directly from CRAN:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"chromConverter"</span><span class="op">)</span></span></code></pre>
 <p>Alternatively, the development version of chromConverter can be installed from GitHub as follows:</p>
-<pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></span></code></pre>
+<pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></span></code></pre>
 <p>or from <a href="https://r-universe.dev/" class="external-link">R Universe</a>:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"chromConverter"</span>, repos<span class="op">=</span><span class="st">"https://ethanbass.r-universe.dev/"</span>, type<span class="op">=</span><span class="st">"source"</span><span class="op">)</span></span></code></pre>
 <p><strong>Note:</strong> There are some changes in recent versions of RStudio that messed up the behavior of the python bindings through <code>reticulate</code>. If you wish to access python-based parsers (e.g. aston or rainbow) through a recent version of RStudio, it is suggested to change the default settings in RStudio. To do this, open <code>Tools:Global Options...:Python</code> and uncheck the box that says <code>Automatically activate project-local Python environments</code>. Then restart RStudio. Alternatively, this issue can be resolved by adding selecting the correct python interpreter in the Python settings pane. It is recommended to use a local installation of miniconda, which can be installed by running <code><a href="https://rstudio.github.io/reticulate/reference/install_miniconda.html" class="external-link">reticulate::install_miniconda()</a></code>.</p>
