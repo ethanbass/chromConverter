@@ -49,7 +49,7 @@ chromConverter can now be installed directly from CRAN:
 install.packages("chromConverter")
 ```
 
-Alternatively, the development version of chromConverter can be installed from GitHub as follows:
+However, it's recommended to install the development version of chromConverter from GitHub as follows:
 
 ```
 install.packages("remotes")
@@ -61,6 +61,7 @@ or from [R Universe](https://r-universe.dev/):
 ```
 install.packages("chromConverter", repos="https://ethanbass.r-universe.dev/", type="source")
 ```
+
 **Note:** There are some changes in recent versions of RStudio that messed up the behavior of the python bindings through `reticulate`. If you wish to access python-based parsers (e.g. aston or rainbow) through a recent version of RStudio, it is suggested to change the default settings in RStudio. To do this, open `Tools:Global Options...:Python` and uncheck the box that says `Automatically activate project-local Python environments`. Then restart RStudio. Alternatively, this issue can be resolved by adding selecting the correct python interpreter in the Python settings pane. It is recommended to use a local installation of miniconda, which can be installed by running `reticulate::install_miniconda()`.
 
 #### Optional additional dependencies
@@ -129,6 +130,17 @@ chromConverter includes some options to extract metadata from the provided files
 ### Further analysis
 
 For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release).
+
+## Contributing
+
+Contributions of source code, ideas, or documentation are very welcome. Please get in touch (preferable by opening a GitHub [issue](https://github.com/ethanbass/chromatographR/issues)) to discuss any suggestions or to file a bug report. Some good reasons to file an issue:
+
+- You've found an actual bug.  
+- You're getting a cryptic error message that you don't understand.  
+- You have a file format you'd like to read that isn't currently supported by chromatographR.  (If you do this, please make sure to include a link to an example file!)  
+- You have a new feature you'd like to see implemented.  
+
+**Note:** Before filing a bug report, please make sure to install the latest development version of chromConverter from GitHub, in case your bug has already been patched. After installing the latest version, you may also need to refresh your R session to remove the older version from the cache.
 
 ### Other related packages
 
