@@ -34,6 +34,9 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/configure_rainbow.html</loc>
   </url>
   <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/extract_metadata.html</loc>
+  </url>
+  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/index.html</loc>
   </url>
   <url>
@@ -41,6 +44,9 @@
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_chromeleon.html</loc>

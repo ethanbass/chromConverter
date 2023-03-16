@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,7 +78,7 @@
 <div class="section level3">
 <h3 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h3>
-<p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including <a href="https://github.com/bovee/aston" class="external-link">Aston</a>, <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, <a href="https://rainbow-api.readthedocs.io/" class="external-link">rainbow</a>, and <a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> as well as some parsers written natively in R for (mostly) text-based formats.</p>
+<p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including <a href="https://github.com/bovee/aston" class="external-link">Aston</a>, <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, <a href="https://rainbow-api.readthedocs.io/" class="external-link">rainbow</a>, and <a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> as well as some parsers written directly in R for (mostly) text-based formats.</p>
 </div>
 <div class="section level3">
 <h3 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
@@ -145,7 +145,7 @@
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></span></code></pre>
 <p>or from <a href="https://r-universe.dev/" class="external-link">R Universe</a>:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"chromConverter"</span>, repos<span class="op">=</span><span class="st">"https://ethanbass.r-universe.dev/"</span>, type<span class="op">=</span><span class="st">"source"</span><span class="op">)</span></span></code></pre>
-<p><strong>Note:</strong> There are some changes in recent versions of RStudio that messed up the behavior of the python bindings through <code>reticulate</code>. If you wish to access python-based parsers (e.g. aston or rainbow) through a recent version of RStudio, it is suggested to change the default settings in RStudio. To do this, open <code>Tools:Global Options...:Python</code> and uncheck the box that says <code>Automatically activate project-local Python environments</code>. Then restart RStudio. Alternatively, this issue can be resolved by adding selecting the correct python interpreter in the Python settings pane. It is recommended to use a local installation of miniconda, which can be installed by running <code><a href="https://rstudio.github.io/reticulate/reference/install_miniconda.html" class="external-link">reticulate::install_miniconda()</a></code>.</p>
+<p><strong>Note:</strong> There are some changes in recent versions of RStudio that messed up the accessibility of the python bindings through <code>reticulate</code>. If you wish to access python-based parsers (e.g. aston or rainbow) through a recent version of RStudio, it is suggested to first change the default settings in RStudio. To do this, open <code>Tools:Global Options...:Python</code> and uncheck the box that says <code>Automatically activate project-local Python environments</code>. Then restart RStudio. Alternatively, this issue can be resolved by selecting the desired python interpreter in the Python settings pane. It is recommended to use a local installation of miniconda, which can be installed by running <code><a href="https://rstudio.github.io/reticulate/reference/install_miniconda.html" class="external-link">reticulate::install_miniconda()</a></code>.</p>
 <div class="section level4">
 <h4 id="optional-additional-dependencies">Optional additional dependencies<a class="anchor" aria-label="anchor" href="#optional-additional-dependencies"></a>
 </h4>
@@ -161,7 +161,7 @@
 <strong>Entab</strong><a class="anchor" aria-label="anchor" href="#entab"></a>
 </h5>
 <p><a href="https://github.com/bovee/entab" class="external-link">Entab</a> is a Rust-based parsing framework for converting a variety of scientific file formats into tabular data. To use parsers from Entab, you must first install <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust</a> and Entab-R. After following the <a href="https://www.rust-lang.org/tools/install" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
-<pre><code><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></span></code></pre>
+<pre><code><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"https://github.com/bovee/entab/"</span>, subdir <span class="op">=</span> <span class="st">"entab-r"</span><span class="op">)</span></span></code></pre>
 </div>
 <div class="section level5">
 <h5 id="thermorawfileparser">
@@ -178,8 +178,8 @@
 <li>Download OpenChrom from the <a href="https://lablicate.com/platform/openchrom/download" class="external-link">website</a> and place it into a directory of your choice.<br>
 </li>
 <li>If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.</li>
-<li>Follow the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> to activate OpenChrom’s command-line interface. Alternatively, the command-line option can be activated from R by calling <code>configure_openchrom_parser(cli="true")</code> or by calling the openchrom_parser and following the prompts.</li>
-<li>Call <code>read_chroms</code> with <code>parser="openchrom"</code>. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.</li>
+<li>Follow the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> to activate OpenChrom’s command-line interface. Alternatively, the command-line option can be activated from R by calling <code>configure_openchrom_parser(cli = "true")</code> or by calling the OpenChrom parser and following the prompts.</li>
+<li>Call <code>read_chroms</code> with <code>parser = "openchrom"</code>. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.</li>
 </ol>
 </div>
 </div>
@@ -191,14 +191,14 @@
 <h5 id="read_chroms-function">
 <code>read_chroms</code> function<a class="anchor" aria-label="anchor" href="#read_chroms-function"></a>
 </h5>
-<p>The workhorse of chromConverter is the <code>read_chroms</code> function, which functions as a wrapper around all of the supported parsers. To convert files, call <code>read_chroms</code>, specifying the <code>paths</code> to a vector of directories or files and the appropriate file format (<code>format_in</code>). The supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code>, <code>csd</code>, and <code>wsd</code>.</p>
+<p>The workhorse of chromConverter is the <code>read_chroms</code> function, which functions as a wrapper around all of the supported parsers. To convert files, call <code>read_chroms</code>, specifying the <code>paths</code> to a vector of directories or files and the appropriate file format (<code>format_in</code>). Supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code>, <code>csd</code>, and <code>wsd</code>.</p>
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ethanbass.github.io/chromConverter">chromConverter</a></span><span class="op">)</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format.in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></span></code></pre>
-<p>The <code>read_chroms</code> function will attempt to determine an appropriate parser to use and whether you’ve provided a vector of directories or files. However, if you’d like to be more explicit, you can provide input to the <code>parsers</code> and <code>find_files</code> arguments. Setting <code>find_files = FALSE</code> will instruct the function that you are providing a vector of files, while <code>find_files = TRUE</code> implies that you are providing a vector of directories.</p>
+<p>The <code>read_chroms</code> function will attempt to determine an appropriate parser to use and whether you’ve provided a vector of directories or files. However, if you’d like to be more explicit, you can provide arguments to the <code>parsers</code> and <code>find_files</code> arguments. Setting <code>find_files = FALSE</code> will instruct the function that you are providing a vector of files, while <code>find_files = TRUE</code> implies that you are providing a vector of directories.</p>
 <div class="section level6">
 <h6 id="exporting-files">Exporting files<a class="anchor" aria-label="anchor" href="#exporting-files"></a>
 </h6>
-<p>If you’d like to automatically export the files, include the argument <code>export=TRUE</code> along with the path where you’d like to export the files (<code>path_out</code>). Some parsers (e.g. <code>OpenChrom</code> and <code>ThermoRawFileParser</code>) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to <code>path_out</code>.</p>
+<p>If you’d like to automatically export the files, include the argument <code>export = TRUE</code> along with the path where you’d like to export the files (<code>path_out</code>). Some parsers (e.g. <code>OpenChrom</code> and <code>ThermoRawFileParser</code>) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to <code>path_out</code>.</p>
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ethanbass.github.io/chromConverter">chromConverter</a></span><span class="op">)</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, path_out<span class="op">=</span><span class="st">"temp"</span>, export<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre>
 </div>
@@ -215,7 +215,7 @@
 <div class="section level6">
 <h6 id="extracting-metadata">Extracting metadata<a class="anchor" aria-label="anchor" href="#extracting-metadata"></a>
 </h6>
-<p>chromConverter includes some options to extract metadata from the provided files. If <code>read_metadata = TRUE</code>, metadata will be extracted and stored as <code>attributes</code> of the associated object. A list of <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html" class="external-link"><code>attributes</code></a> can be extracted from any R object using the <code><a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes()</a></code> function.</p>
+<p>chromConverter includes some options to extract metadata from the provided files. If <code>read_metadata = TRUE</code>, metadata will be extracted and stored as <code>attributes</code> of the associated object. A list of <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html" class="external-link"><code>attributes</code></a> can be extracted from any R object using the <code><a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes()</a></code> function. Single attributes can be extracted using <code><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr()</a></code>: e.g. `attr(dat[[1]], “sample_name”).</p>
 </div>
 </div>
 </div>
