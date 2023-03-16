@@ -17,6 +17,10 @@ read_chemstation_ch(
 
 \item{format_out}{Matrix or data.frame}
 }
+\value{
+A chromatogram in the format specified by \code{format_out}
+(retention time x wavelength).
+}
 \description{
 Parser for reading Agilent ('.ch') files into R
 }

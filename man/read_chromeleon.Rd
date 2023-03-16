@@ -18,7 +18,7 @@ read_chromeleon(
 \item{read_metadata}{Whether to read metadata from file.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}
+A chromatogram in the format specified by \code{format_out}.
 (retention time x wavelength).
 }
 \description{

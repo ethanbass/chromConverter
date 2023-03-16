@@ -32,7 +32,9 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Shimadzu ascii reader
+Reads 'Shimadzu' ascii files into R. These files are exported from
+'Lab Solutions' by right clicking on samples in the sample list and
+selecting
 }
 \author{
 Ethan Bass

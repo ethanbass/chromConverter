@@ -10,7 +10,7 @@
 
 ### Overview
 
-chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser), [rainbow](https://rainbow-api.readthedocs.io/), and [OpenChrom](https://lablicate.com/platform/openchrom) as well as some parsers written natively in R for (mostly) text-based formats.
+chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser), [rainbow](https://rainbow-api.readthedocs.io/), and [OpenChrom](https://lablicate.com/platform/openchrom) as well as some parsers written directly in R for (mostly) text-based formats.
 
 ### Formats
 ##### External Libraries
@@ -61,7 +61,8 @@ or from [R Universe](https://r-universe.dev/):
 ```
 install.packages("chromConverter", repos="https://ethanbass.r-universe.dev/", type="source")
 ```
-**Note:** There are some changes in recent versions of RStudio that messed up the behavior of the python bindings through `reticulate`. If you wish to access python-based parsers (e.g. aston or rainbow) through a recent version of RStudio, it is suggested to change the default settings in RStudio. To do this, open `Tools:Global Options...:Python` and uncheck the box that says `Automatically activate project-local Python environments`. Then restart RStudio. Alternatively, this issue can be resolved by adding selecting the correct python interpreter in the Python settings pane. It is recommended to use a local installation of miniconda, which can be installed by running `reticulate::install_miniconda()`.
+
+**Note:** There are some changes in recent versions of RStudio that messed up the behavior of the python bindings through `reticulate`. If you wish to access python-based parsers (e.g. aston or rainbow) through a recent version of RStudio, it is suggested to change the default settings in RStudio. To do this, open `Tools:Global Options...:Python` and uncheck the box that says `Automatically activate project-local Python environments`. Then restart RStudio. Alternatively, this issue can be resolved by selecting the correct python interpreter in the Python settings pane. It is recommended to use a local installation of miniconda, which can be installed by running `reticulate::install_miniconda()`.
 
 #### Optional additional dependencies
 
@@ -76,7 +77,7 @@ To install Aston, call the `configure_aston()` function to install miniconda alo
 [Entab](https://github.com/bovee/entab) is a Rust-based parsing framework for converting a variety of scientific file formats into tabular data. To use parsers from Entab, you must first install [Rust](https://www.rust-lang.org/tools/install) and Entab-R. After following the [instructions](https://www.rust-lang.org/tools/install) to install Rust, you can install Entab from GitHub as follows:
 
 ```
-devtools::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
+remotes::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 ```
 
 ##### **ThermoRawFileParser**
@@ -89,25 +90,25 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 1) Download OpenChrom from the [website](https://lablicate.com/platform/openchrom/download) and place it into a directory of your choice.  
 2) If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.
-3) Follow the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to activate OpenChrom's command-line interface. Alternatively, the command-line option can be activated from R by calling `configure_openchrom_parser(cli="true")` or by calling the openchrom_parser and following the prompts.
-4) Call `read_chroms` with `parser="openchrom"`. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  
+3) Follow the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to activate OpenChrom's command-line interface. Alternatively, the command-line option can be activated from R by calling `configure_openchrom_parser(cli = "true")` or by calling the OpenChrom parser and following the prompts.
+4) Call `read_chroms` with `parser = "openchrom"`. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  
 
 ### Usage
 
 ##### `read_chroms` function
 
-The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a vector of directories or files and the appropriate file format (`format_in`). The supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
+The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a vector of directories or files and the appropriate file format (`format_in`). Supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
 
 ```
 library(chromConverter)
 dat <- read_chroms(path, format.in = "chemstation_uv")
 ```
 
-The `read_chroms` function will attempt to determine an appropriate parser to use and whether you've provided a vector of directories or files. However, if you'd like to be more explicit, you can provide input to the `parsers` and `find_files` arguments. Setting `find_files = FALSE` will instruct the function that you are providing a vector of files, while `find_files = TRUE` implies that you are providing a vector of directories.
+The `read_chroms` function will attempt to determine an appropriate parser to use and whether you've provided a vector of directories or files. However, if you'd like to be more explicit, you can provide arguments to the `parsers` and `find_files` arguments. Setting `find_files = FALSE` will instruct the function that you are providing a vector of files, while `find_files = TRUE` implies that you are providing a vector of directories.
 
 ###### Exporting files
 
-If you'd like to automatically export the files, include the argument `export=TRUE` along with the path where you'd like to export the files (`path_out`). Some parsers (e.g. `OpenChrom` and `ThermoRawFileParser`) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to `path_out`.
+If you'd like to automatically export the files, include the argument `export = TRUE` along with the path where you'd like to export the files (`path_out`). Some parsers (e.g. `OpenChrom` and `ThermoRawFileParser`) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to `path_out`.
 
 ```
 library(chromConverter)
@@ -124,7 +125,7 @@ Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` a
 
 ###### Extracting metadata
 
-chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as `attributes` of the associated object. A list of [`attributes`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) can be extracted from any R object using the `attributes()` function.
+chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as `attributes` of the associated object. A list of [`attributes`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) can be extracted from any R object using the `attributes()` function. Single attributes can be extracted using `attr()`: e.g. `attr(dat[[1]], "sample_name").
 
 ### Further analysis
 

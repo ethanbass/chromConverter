@@ -4,6 +4,8 @@
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param format_out Matrix or data.frame
 #' @author Ethan Bass
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
 #' @note This function was adapted from the \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
 #' @export
@@ -20,44 +22,63 @@ read_chemstation_ch <- function(path, read_metadata = TRUE,
   version <- readBin(f, "character", n = 1)
   version <- match.arg(version, choices = c("8", "81", "130", "179","181"))
   if (version %in% c("179","181")){
-    offsets <- list(file_type = 347, #0x15B
-                    sample_name = 858, #0x35A
-                    operator = 1880, #0x758
-                    date = 2391, # 0x957
-                    instrument = 2492, # 0x9BC
-                    method = 2574, # 0xA0E
-                    software = 3089, # 0xC11
-                    unit = 4172, # 0x104C
-                    signal = 4213, # 0x1075
-                    num_times = 278, # 0x116
-                    rt_first = 282, # 0x11A
-                    rt_last = 286, # 0x11E
-                    scaling_factor = 4732, # 0x127C
-                    intercept = 4724,
-                    data_start = 4096 # 0x1000
-                    )
-  } else if (version == "130"){
     offsets <- list(
-                    # sequence_line_or_injection = 252, #UINT16
-                    # injection_or_sequence_line = 256, #UINT16
-                    # data_offset = 264, # UINT32
-                    # start_time = 282,
-                    # end_time = 286,
-                    # version_string = 326, # utf16
-                    file_type = 347, # utf16
-                    sample_name = 858, # utf16
-                    operator = 1880, # utf16
-                    date = 2391, # utf16
-                    inlet = 2492, # utf16
-                    instrument = 2533, # utf16'),
-                    method = 2574, # utf16
-                    software_version = 3601, #utf16'),
-                    software = 3089, # 'utf16'),
-                    software_revision = 3802, #'utf16'),
-                    units = 4172, # 'utf16'),
-                    signal = 4213, # 'utf16'),
-                    zero = 4110, # INT32),
-                    scaling_factor = 4732) #ENDIAN + 'd')
+      file_type = 347, #0x15B
+      sample_name = 858, #0x35A
+      operator = 1880, #0x758
+      date = 2391, # 0x957
+      instrument = 2492, # 0x9BC
+      method = 2574, # 0xA0E
+      software = 3089, # 0xC11
+      unit = 4172, # 0x104C
+      signal = 4213, # 0x1075
+      num_times = 278, # 0x116
+      rt_first = 282, # 0x11A
+      rt_last = 286, # 0x11E
+      scaling_factor = 4732, # 0x127C
+      intercept = 4724,
+      data_start = 4096 # 0x1000
+      )
+  } else if (version == "130"){
+      offsets <- list(
+        # sequence_line_or_injection = 252, #UINT16
+        # injection_or_sequence_line = 256, #UINT16
+        # data_offset = 264, # UINT32
+        # start_time = 282,
+        # end_time = 286,
+        # version_string = 326, # utf16
+        file_type = 347, # utf16
+        sample_name = 858, # utf16
+        operator = 1880, # utf16
+        date = 2391, # utf16
+        inlet = 2492, # utf16
+        instrument = 2533, # utf16'
+        method = 2574, # utf16
+        software_version = 3601, #utf16'
+        software = 3089, # 'utf16'
+        software_revision = 3802, #'utf16'
+        units = 4172, # 'utf16'
+        signal = 4213, # 'utf16'
+        zero = 4110, # INT32
+        scaling_factor = 4732) #ENDIAN + 'd'
+  } else if (version == 30){
+      offsets <- list(
+        file_type = 4, # utf16
+        # sample_name = 858, # utf16
+        operator = 148, # utf16
+        date = 178, # utf16
+        # inlet = 2492, # utf16
+        instrument = 208, # utf16'
+        method = 228, # utf16
+        software_version = 355, #utf16'
+        software = 322, # 'utf16'
+        software_revision = 405, #'utf16'
+        units = 580, # 'utf16'
+        signal = 596, # 'utf16'
+        zero = 4110, # INT32
+        scaling_factor = 4732,
+        data_start = 1024 #ENDIAN + 'd'
+      )
   } else if (version %in% c("8","81")){
     offsets <- list(sample_name = 24,
                     description = 86,
@@ -73,7 +94,7 @@ read_chemstation_ch <- function(path, read_metadata = TRUE,
                     rt_last = 0x11E,
                     scaling_factor = 644,
                     intercept = 636,
-                    data_start = 0x1000)
+                    data_start = 4096)
   }
 
   decoder <- switch(version,
@@ -91,12 +112,11 @@ read_chemstation_ch <- function(path, read_metadata = TRUE,
   seek(f, 264, "start")
   offset <- (readBin(f, "integer", n = 1, endian = "big", size = 4) - 1) * 512
 
-  # data <- FileInfo(file, data, options)
   data <- decoder(f, offset)
 
   seek(f, 282, "start")
   seek(f, 282, "start")
-  # seek(f, where = 0x11A, origin="start")
+
   if (version %in% c("8","130")){
     xmin <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE, endian = "big")) / 60000
     xmax <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE, endian = "big")) / 60000

@@ -1,6 +1,6 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.3.2
+Version: 0.3.3
 Authors@R: c(
     person(given = "Ethan", family = "Bass", email = "ethanbass@gmail.com",
                   role = c("aut", "cre"),
@@ -24,6 +24,7 @@ Imports:
     utils,
     magrittr,
     RaMS,
+    tibble,
     xml2
 Suggests: 
     entab,
@@ -37,6 +38,6 @@ Config/reticulate: list( packages = list( list(package = "scipy"),
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Additional_repositories: https://ethanbass.github.io/drat/
 Config/testthat/edition: 3

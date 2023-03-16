@@ -9,6 +9,7 @@
 #' (retention time x wavelength).
 #' @importFrom tidyr pivot_wider
 #' @export
+
 call_entab <- function(file, data_format = c("wide","long"),
                        format_in = "",
                        format_out = c("matrix", "data.frame"),

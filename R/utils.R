@@ -4,10 +4,11 @@ utils::globalVariables(names = c('.'))
 #' @noRd
 check_parser <- function(format_in, parser=NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
-                          chromconverter = c("chemstation_csv", "shimadzu_fid",
-                                             "shimadzu_dad", "chromeleon_uv",
-                                             "waters_arw", "mzml",
-                                             "chemstation_fid", "chemstation_ch"),
+                          chromconverter = c("chemstation_csv", "chemstation_ch",
+                                             "chemstation_fid", "chemstation_uv",
+                                             "chromeleon_uv", "mzml",
+                                             "shimadzu_fid", "shimadzu_dad",
+                                             "waters_arw"),
                           aston = c("chemstation_uv", "masshunter_dad", "other"),
                           entab = c("chemstation_uv", "chemstation_fid", "masshunter_dad", "thermoraw", "other"),
                           rainbow = c("chemstation_uv", "waters_raw",
@@ -77,7 +78,7 @@ set_temp_directory <- function(){
 }
 
 #' Check path
-#' Check that path is properly formatted
+#' Check that path is properly formatted.
 #' @param path path as character string
 #' @noRd
 check_path <- function(path){

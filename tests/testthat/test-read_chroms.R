@@ -18,6 +18,26 @@ test_that("aston parser works", {
   expect_equal(attr(x1[[1]], "data_format"), "wide")
   })
 
+x1 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "chromconverter",
+                  find_files = FALSE,
+                  read_metadata = TRUE)
+
+test_that("read_chemstation_uv parser works", {
+  expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
+  expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
+  expect_equal(length(x1), length(path_uv))
+  expect_equal(class(x1[[1]])[1], "matrix")
+  expect_equal(attr(x1[[1]], "data_format"), "wide")
+})
+
+test_that ("extract_metadata function works", {
+  meta <- extract_metadata(x1)
+  expect_equal(class(meta), "data.frame")
+  expect_equal(nrow(meta),1)
+  expect_equal(meta$instrument, attr(x1[[1]],"instrument"))
+  expect_equal(meta$parser, attr(x1[[1]],"parser"))
+})
+
 test_that("entab parser works", {
   skip_if_not_installed("entab")
   file <- "testdata/DAD1.uv"

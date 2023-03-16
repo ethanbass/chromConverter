@@ -1,3 +1,12 @@
+## chromConverter 0.3.3
+
+* Added R-based parser for "Chemstation" UV (`.uv`) files (version 131) through
+the `read_chemstation_uv` function.
+* Added `extract_metadata` function for extracting metadata from a list of chromatograms
+and returning it as a `data.frame` or `tibble`.
+* Minor changes to storage of metadata in attributes for the purpose of simplification.
+* Minor updates to documentation.
+
 ## chromConverter 0.3.2
 
 * Fix 'Shimadzu' ascii parser so it can cope with variable entries in PDA header.

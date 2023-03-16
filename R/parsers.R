@@ -4,7 +4,7 @@
 #' @param file path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
-#' @return A chromatogram in the format specified by \code{format_out}
+#' @return A chromatogram in the format specified by \code{format_out}.
 #' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
@@ -34,6 +34,10 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
 }
 
 #' Shimadzu ascii reader
+#'
+#' Reads 'Shimadzu' ascii files into R. These files are exported from
+#' 'Lab Solutions' by right clicking on samples in the sample list and
+#' selecting
 #'
 #' @name read_shimadzu
 #' @importFrom utils tail read.csv
@@ -300,7 +304,7 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame"),
       data <- reshape_chrom(data)
     }
     if (format_out == "data.frame"){
-      data <-as.data.frame(data)
+      data <- as.data.frame(data)
     }
   }
   data

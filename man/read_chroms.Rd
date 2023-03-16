@@ -71,17 +71,18 @@ according to the value of \code{format_out}.
 Reads chromatograms from specified folders or vector of paths using file parsers
 from \href{https://github.com/bovee/aston}{Aston}, \href{https://github.com/bovee/entab}{Entab},
 \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser},
-\href{https://lablicate.com/platform/openchrom}{OpenChrom}, and
-\href{https://rainbow-api.readthedocs.io/}{rainbow}.
+\href{https://lablicate.com/platform/openchrom}{OpenChrom},
+\href{https://rainbow-api.readthedocs.io/}{rainbow}, or internal parsers.
 }
 \details{
 Provides a general interface to chromConverter parsers. Currently recognizes
-'Agilent ChemStation' (.uv), 'MassHunter' (.dad) files, 'Thermo RAW',
-'Waters ARW' (.arw), 'Waters RAW' (.raw), 'Chromeleon ASCII' (.txt),
-'Shimadzu ASCII' (.txt). Also, wraps Openchrom parsers, which include many
-additional formats. To use 'Entab', 'ThermoRawFileParser', or 'Openchrom'
-parsers, they must be manually installed. Please see the instructions in the
-\href{https://ethanbass.github.io/chromConverter/}{README} for further details.
+'Agilent ChemStation' (\code{.uv}, \code{.ch}), 'MassHunter' (\code{.dad}) files,
+'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW' (\code{.raw}),
+'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII' (\code{.txt}). Also, wraps
+Openchrom parsers, which include many additional formats. To use 'Entab',
+'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
+Please see the instructions in the \href{https://ethanbass.github.io/chromConverter/}{README}
+for further details.
 }
 \section{Side effects}{
  If \code{export} is TRUE, chromatograms will be

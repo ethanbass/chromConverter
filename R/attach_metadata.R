@@ -32,7 +32,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
     structure(x,
               instrument = meta$`Instrument Name`,
               detector = meta$`Detector Name`,
-              software = c(software = meta$`Application Name`, version = meta$Version),
+              software_name = meta$`Application Name`,
+              software_version = meta$Version,
               method = meta$`Method File`,
               batch = meta$`Batch File`,
               operator = meta$`Operator Name`,
@@ -40,9 +41,11 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               sample_name = meta$`Sample Name`,
               sample_id = meta$`Sample ID`,
               injection_volume = meta$`Injection Volume`,
-              time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
+              start_time = meta$`Start Time(min)`,
+              end_time = meta$`End Time(min)`,
               time_interval = meta$`Interval(msec)`,
-              detector_range = c(meta$`Start Wavelength(nm)`, meta$`End Wavelength(nm)`),
+              start_wavelength = meta$`Start Wavelength(nm)`,
+              end_wavelength = meta$`End Wavelength(nm)`,
               data_format = data_format,
               parser = "chromConverter",
               format_out = format_out)
@@ -53,11 +56,13 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               method = meta$`Instrument Method`,
               batch = NA,
               operator = meta$`Operator`,
-              run_date = c(date=meta$`Injection Date`, time=meta$`Injection Time`),
+              run_date = meta$`Injection Date`,
+              run_time = meta$`Injection Time`,
               sample_name = meta$Injection,
               sample_id = NA,
               injection_volume = meta$`Injection Volume`,
-              time_range = c(meta$`Time Min. (min)`, meta$`Time Max. (min)`),
+              start_time = meta$`Time Min. (min)`,
+              end_time = meta$`Time Max. (min)`,
               time_interval = meta$`Average Step (s)`,
               detector_range = NA,
               data_format = "long",
@@ -228,4 +233,41 @@ read_waters_metadata <- function(file){
   meta <- gsub("\\\"", "", do.call(cbind, strsplit(readLines(file, n = 2),"\t")))
   rownames(meta) <- meta[,1]
   meta <- as.list(meta[,-1])
+}
+
+#' Extract metadata
+#'
+#' Extract metadata as a data.frame from a list of chromatograms.
+#'
+#' @param chrom_list A list of chromatograms with attached metadata (as returned
+#' by \code{read_chroms} with \code{read_metadata = TRUE}).
+#' @param what A character vector specifying the metadata elements to extract.
+#' @param format_out Format of object. Either \code{data.frame} or \code{tibble}.
+#' @return A data.frame or tibble (according to the value of \code{format_out}),
+#' with samples as rows and the specified metadata elements as columns.
+#' @export
+extract_metadata <- function(chrom_list,
+                             what = c("instrument", "detector", "software",
+                                      "method", "batch", "operator", "run_date",
+                                      "sample_name", "sample_id",
+                                      "injection_volume", "time_range",
+                                      "time_interval", "detector_range",
+                                      "data_format", "parser","format_out"),
+                             format_out = c("data.frame", "tibble")
+                                                  ){
+  what <- match.arg(what, several.ok = TRUE)
+  format_out <- match.arg(format_out, c("data.frame", "tibble"))
+  metadata <- purrr::map_df(chrom_list, function(chrom){
+    unlist(sapply(what, function(x){
+      attr(chrom, which = x)
+    }, simplify = FALSE))
+  })
+  if (format_out == "tibble"){
+    metadata <- tibble::add_column(.data = metadata,
+                                   data.frame(name=names(chrom_list)),
+                                   .before=TRUE)
+  } else if (format_out == "data.frame"){
+    metadata <- data.frame(metadata, row.names = names(chrom_list))
+  }
+  metadata
 }

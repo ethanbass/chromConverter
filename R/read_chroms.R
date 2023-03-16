@@ -3,16 +3,17 @@
 #' Reads chromatograms from specified folders or vector of paths using file parsers
 #' from [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab),
 #' [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser),
-#' [OpenChrom](https://lablicate.com/platform/openchrom), and
-#' [rainbow](https://rainbow-api.readthedocs.io/).
+#' [OpenChrom](https://lablicate.com/platform/openchrom),
+#' [rainbow](https://rainbow-api.readthedocs.io/), or internal parsers.
 #'
 #' Provides a general interface to chromConverter parsers. Currently recognizes
-#' 'Agilent ChemStation' (.uv), 'MassHunter' (.dad) files, 'Thermo RAW',
-#' 'Waters ARW' (.arw), 'Waters RAW' (.raw), 'Chromeleon ASCII' (.txt),
-#' 'Shimadzu ASCII' (.txt). Also, wraps Openchrom parsers, which include many
-#' additional formats. To use 'Entab', 'ThermoRawFileParser', or 'Openchrom'
-#' parsers, they must be manually installed. Please see the instructions in the
-#' [README](https://ethanbass.github.io/chromConverter/) for further details.
+#' 'Agilent ChemStation' (\code{.uv}, \code{.ch}), 'MassHunter' (\code{.dad}) files,
+#' 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW' (\code{.raw}),
+#' 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII' (\code{.txt}). Also, wraps
+#' Openchrom parsers, which include many additional formats. To use 'Entab',
+#' 'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
+#' Please see the instructions in the [README](https://ethanbass.github.io/chromConverter/)
+#' for further details.
 #'
 #' @name read_chroms
 #' @param paths paths to files or folders containing files
@@ -150,6 +151,10 @@ read_chroms <- function(paths, find_files,
   } else if (format_in == "chemstation_uv"){
     pattern <- ifelse(is.null(pattern), ".uv", pattern)
     converter <- switch(parser,
+                        "chromconverter" = partial(read_chemstation_uv,
+                                                   format_out = format_out,
+                                                   data_format = data_format,
+                                                   read_metadata = read_metadata),
                         "aston" = partial(uv_converter, format_out = format_out,
                                           data_format = data_format,
                                           read_metadata = read_metadata),
