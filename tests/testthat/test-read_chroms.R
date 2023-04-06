@@ -3,14 +3,14 @@ library(testthat)
 path_csv <- "testdata/DAD1.CSV"
 path_uv <- "testdata/dad1.uv"
 
-x <- read_chroms(path_csv, format_in = "chemstation_csv")
+x <- read_chroms(path_csv, format_in = "chemstation_csv", progress_bar = FALSE)
 
 test_that("aston parser works", {
   skip_if_missing_dependecies()
   paths <- rep(path_uv,2)
   x1 <- read_chroms(paths, format_in = "chemstation_uv", parser = "aston",
                     find_files = FALSE,
-                    read_metadata = TRUE)
+                    read_metadata = TRUE, progress_bar = FALSE)
   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220.0"]))
   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(length(x1), length(paths))
@@ -20,7 +20,7 @@ test_that("aston parser works", {
 
 x1 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "chromconverter",
                   find_files = FALSE,
-                  read_metadata = TRUE)
+                  read_metadata = TRUE, progress_bar = FALSE)
 
 test_that("read_chemstation_uv parser works", {
   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
@@ -43,7 +43,7 @@ test_that("entab parser works", {
   file <- "testdata/DAD1.uv"
   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE,
-                    read_metadata = TRUE)
+                    read_metadata = TRUE, progress_bar = FALSE)
   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
@@ -67,7 +67,7 @@ test_that("entab parser works", {
 
 test_that("shimadzu parser works", {
   file <- "testdata/ladder.txt"
-  x <- read_chroms(file, format_in = "shimadzu_fid", find_files = FALSE)
+  x <- read_chroms(file, format_in = "shimadzu_fid", find_files = FALSE, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 })
@@ -91,3 +91,21 @@ test_that("check_path works on unix/linux", {
 #   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 # })
 
+test_that("read_mzml works", {
+  ext_filepath <- system.file("extdata", package = "RaMS")
+  DAD_filepath <- list.files(ext_filepath, full.names = TRUE,
+                             pattern = "uv_test_mini.mzML")
+  dad_long <- read_mzml(DAD_filepath, what = "DAD", verbose=FALSE)
+  expect_equal(dad_long,
+               RaMS::grabMSdata(files = DAD_filepath, grab_what = "DAD", verbosity = FALSE)
+  )
+  dad_wide <- read_mzml(DAD_filepath, what = "DAD", verbose=FALSE, data_format="wide")
+  expect_equal(nrow(dad_wide[[1]]), length(unique(dad_long[[1]]$rt)))
+  expect_equal(ncol(dad_wide[[1]]), length(unique(dad_long[[1]]$lambda)))
+  expect_equal(as.numeric(colnames(dad_wide[[1]])), unique(dad_long[[1]]$lambda))
+  expect_equal(as.numeric(rownames(dad_wide[[1]])), unique(dad_long[[1]]$rt))
+})
+
+test_that("get_filetype works as expected", {
+  expect_equal(get_filetype(path_uv), "chemstation_uv")
+})

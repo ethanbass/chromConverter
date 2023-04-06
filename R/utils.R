@@ -117,3 +117,82 @@ extract_header <- function(x, chrom.idx, sep){
   }
   list(header,index)
 }
+
+#' Check for suggested package
+#' @noRd
+check_for_pkg <- function(pkg, return_boolean = FALSE){
+  pkg_exists <- requireNamespace(pkg, quietly = TRUE)
+  if (!pkg_exists) {
+    stop(paste(
+      "Package", sQuote(pkg), "must be installed to perform this action:
+          try", paste0("`install.packages('", pkg, "')`.")),
+      call. = FALSE
+    )
+  }
+  if (return_boolean){
+    pkg_exists
+  }
+}
+
+#' Choose apply function
+#' @return Returns \code{\link[pbapply]{pblapply}} if \code{progress_bar == TRUE},
+#' otherwise returns \code{\link{lapply}}.
+#' @noRd
+choose_apply_fnc <- function(progress_bar, parallel = FALSE, cl = NULL){
+  if (progress_bar){
+    check_for_pkg("pbapply")
+    fn <- pbapply::pblapply
+  } else{
+    fn <- lapply
+  }
+  fn
+}
+
+#'@noRd
+transfer_metadata <- function (new_object, old_object, exclude = c("names", "row.names",
+                                              "class", "dim", "dimnames"))
+{
+  a <- attributes(old_object)
+  a[exclude] <- NULL
+  attributes(new_object) <- c(attributes(new_object), a)
+  new_object
+}
+
+#' @noRd
+get_filetype <- function(file, out = c("format_in", "filetype")){
+  out <- match.arg(out, c("format_in", "filetype"))
+  magic <- readBin(file, what = "raw", n = 4)
+  magic <- paste(paste0("x",as.character(magic)),collapse="/")
+  # magic
+  filetype <- switch(magic,
+                     "x01/x32/x00/x00" = "AgilentChemstationMS",
+                     "x02/x02/x00/x00" = "AgilentMasshunterDADHeader",
+                     "x02/x33/x30/x00" = "AgilentChemstationMWD",
+                     "x02/x33/x31/x00" = "AgilentChemstationDAD",
+                     "x02/x38/x31/x00" = "AgilentChemstationFID", #81
+                     "x03/x02/x00/x00" = "AgilentMasshunterDAD",
+                     "x03/x31/x33/x30" = "AgilentChemstationCH", #131
+                     "x03/x31/x33/x31" = "AgilentChemstationDAD", #131 rainbow
+                     "x03/x31/x37/x39" = "AgilentChemstationFID", #179
+                     "x03/x31/x38/x31" = "AgilentChemstationFID", #181
+                     "x02/x33/x30/x00" = "AgilentChemstationCH", #31/30
+                     "x01/xa1/x46/x00" = "ThermoRAW",
+                     "xd0/xcf/x11/xe0" = "ShimadzuLCD",
+                     "x80/x00/x01/x00" = "WatersRAW"
+  )
+  if (is.null(filetype)){
+    stop("File type not recognized. Please specify a filetype by providing an argument to `format_in`
+          or file an issue at `https://github.com/ethanbass/chromConverter/issues`.")
+  }
+   format_in <- switch(filetype,
+          "AgilentChemstationMS" = "chemstation",
+          "AgilentChemstationCH" = "chemstation_ch",
+          "AgilentChemstationFID" = "chemstation_ch",
+          "AgilentChemstationDAD" = "chemstation_uv",
+          "ThermoRAW" = "thermoraw",
+          "ShimadzuLCD" = "shimadzu_lcd",
+          "WatersRAW" = "waters_raw"
+          )
+
+  switch(out, "filetype" = filetype, "format_in" = format_in)
+}

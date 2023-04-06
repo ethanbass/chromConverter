@@ -125,7 +125,7 @@ Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` a
 
 ###### Extracting metadata
 
-chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as `attributes` of the associated object. A list of [`attributes`](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) can be extracted from any R object using the `attributes()` function. Single attributes can be extracted using `attr()`: e.g. `attr(dat[[1]], "sample_name").
+chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as `attributes` of the associated object. The metadata can then be extracted into a data.frame or tibble using the `extract_metadata` function. 
 
 ### Further analysis
 

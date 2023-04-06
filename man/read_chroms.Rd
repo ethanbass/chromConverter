@@ -19,6 +19,7 @@ read_chroms(
   path_out = NULL,
   export_format = c("csv", "cdf", "mzml", "animl"),
   read_metadata = TRUE,
+  progress_bar,
   dat = NULL
 )
 }
@@ -59,6 +60,9 @@ unless you are using OpenChrom parsers, where you could have \code{csv},
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
 Defaults to TRUE.}
+
+\item{progress_bar}{Logical. Whether to show progress bar. Defaults to
+\code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.}
 
 \item{dat}{Existing list of chromatograms to append results.
 (Defaults to NULL).}

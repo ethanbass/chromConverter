@@ -4,7 +4,15 @@
 \alias{reshape_chroms}
 \title{Reshapes list of chromatograms from wide to long format}
 \usage{
-reshape_chroms(x, idx, sample_var = "sample", lambdas)
+reshape_chroms(
+  x,
+  idx,
+  sample_var = "sample",
+  lambdas = NULL,
+  data_format,
+  combine = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{A list of chromatographic matrices in wide format.}
@@ -14,6 +22,13 @@ reshape_chroms(x, idx, sample_var = "sample", lambdas)
 \item{sample_var}{String with name of new column containing sample IDs.}
 
 \item{lambdas}{Wavelength(s) to include.}
+
+\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+
+\item{combine}{Whether to combine chromatograms into a single \code{data.frame}
+(applicable only if \code{data_format} is TRUE).}
+
+\item{...}{Additional arguments to \code{reshape_chrom}.}
 }
 \value{
 A list of chromatographic matrices in long format.

@@ -4,6 +4,10 @@
 the `read_chemstation_uv` function.
 * Added `extract_metadata` function for extracting metadata from a list of chromatograms
 and returning it as a `data.frame` or `tibble`.
+* Added `progress_bar` option in `read_chroms`.
+* Updated `reshape_chroms` and `reshape_chrom` to allow switching between "wide" and "long" formats.
+* Added wide format option in `read_mzml`.
+* Added automatic detection of file formats by `read_chroms`.
 * Minor changes to storage of metadata in attributes for the purpose of simplification.
 * Minor updates to documentation.
 

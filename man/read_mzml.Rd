@@ -7,9 +7,10 @@
 read_mzml(
   path,
   format_out = c("matrix", "data.frame"),
-  data_format = c("wide", "long"),
+  data_format = c("long", "wide"),
   parser = c("RaMS", "mzR"),
   what = c("MS1", "MS2", "BPC", "TIC", "DAD", "chroms", "metadata", "everything"),
+  verbose = FALSE,
   ...
 )
 }
@@ -27,6 +28,8 @@ a list of data.tables regardless of what is selected here.}
 \item{what}{What types of data to return (argument to \code{\link[RaMS]{grabMSdata}}.
 Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD},
 \code{chroms}, \code{metadata}, or \code{everything}).}
+
+\item{verbose}{Argument to \code{\link[RaMS]{grabMSdata}} controlling \code{verbosity}.}
 
 \item{...}{Additional arguments to \code{\link[RaMS]{grabMSdata}}.}
 }

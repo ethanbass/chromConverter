@@ -42,6 +42,8 @@
 #' \code{cdf}, \code{mzml}, or \code{animl}.
 #' @param read_metadata Logical, whether to attach metadata (if it's available).
 #' Defaults to TRUE.
+#' @param progress_bar Logical. Whether to show progress bar. Defaults to
+#' \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.
 #' @param dat Existing list of chromatograms to append results.
 #' (Defaults to NULL).
 #' @return A list of chromatograms in \code{matrix} or \code{data.frame} format,
@@ -73,9 +75,35 @@ read_chroms <- function(paths, find_files,
                         data_format = c("wide","long"),
                         export = FALSE, path_out = NULL,
                         export_format = c("csv", "cdf", "mzml", "animl"),
-                        read_metadata = TRUE, dat = NULL){
+                        read_metadata = TRUE, progress_bar, dat = NULL){
+  data_format <- match.arg(data_format, c("wide","long"))
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  parser <- match.arg(parser, c("", "chromconverter", "aston","entab",
+                                          "thermoraw", "openchrom", "rainbow"))
+  if (missing(progress_bar)){
+    progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
+  }
+  if (missing(find_files)){
+    if (length(format_in) == 1){
+      if (!(format_in %in% c("agilent_d", "waters_raw"))){
+        ft <- all(file_test("-f", paths))
+      } else {
+        ext <- switch(format_in,
+                          agilent_d = "\\.d",
+                          waters_raw = "\\.raw")
+        ft <- all(grepl(ext, paths, ignore.case = TRUE))
+      }
+      find_files <- !ft
+    } else{
+      find_files <- FALSE
+    }
+  }
   if (length(format_in) > 1){
-    stop("Please specify the file format of your chromatograms by setting the `format_in` argument.")
+    if (!find_files){
+      format_in <- get_filetype(ifelse(length(paths)>1, paths[[1]], paths))
+    } else{
+        stop("Please specify the file format of your chromatograms by setting the `format_in` argument.")
+    }
   }
   format_in <- match.arg(format_in, c("agilent_d", "chemstation", "chemstation_uv",
                                       "chemstation_ch", "chemstation_fid",
@@ -83,21 +111,6 @@ read_chroms <- function(paths, find_files,
                                       "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                       "thermoraw", "mzml", "waters_arw",
                                       "waters_raw", "msd", "csd", "wsd", "other"))
-  data_format <- match.arg(data_format, c("wide","long"))
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
-  parser <- match.arg(parser, c("", "chromconverter", "aston","entab",
-                                          "thermoraw", "openchrom", "rainbow"))
-  if (missing(find_files)){
-    if (!(format_in %in% c("agilent_d", "waters_raw"))){
-      ft <- all(file_test("-f", paths))
-    } else{
-      ext <- switch(format_in,
-                        agilent_d = "\\.d",
-                        waters_raw = "\\.raw")
-      ft <- all(grepl(ext, paths, ignore.case = TRUE))
-    }
-    find_files <- !ft
-  }
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
   }
@@ -244,7 +257,8 @@ read_chroms <- function(paths, find_files,
                        } ))
   } else {file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])}
   if (parser != "openchrom"){
-    data <- lapply(X = files, function(file){
+    laplee <- choose_apply_fnc(progress_bar)
+    data <- laplee(X = files, function(file){
       df <- try(converter(file), silent = TRUE)
     })
     errors <- which(sapply(data, function(x) inherits(x,"try-error")))

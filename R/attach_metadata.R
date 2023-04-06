@@ -255,6 +255,9 @@ extract_metadata <- function(chrom_list,
                                       "data_format", "parser","format_out"),
                              format_out = c("data.frame", "tibble")
                                                   ){
+  if (is.matrix(chrom_list) | is.data.frame(chrom_list)){
+    chrom_list <- list(chrom_list)
+  }
   what <- match.arg(what, several.ok = TRUE)
   format_out <- match.arg(format_out, c("data.frame", "tibble"))
   metadata <- purrr::map_df(chrom_list, function(chrom){
@@ -264,10 +267,10 @@ extract_metadata <- function(chrom_list,
   })
   if (format_out == "tibble"){
     metadata <- tibble::add_column(.data = metadata,
-                                   data.frame(name=names(chrom_list)),
+                                   data.frame(name = names(chrom_list)),
                                    .before=TRUE)
   } else if (format_out == "data.frame"){
-    metadata <- data.frame(metadata, row.names = names(chrom_list))
+    metadata <- data.frame(name = names(chrom_list), metadata, row.names = names(chrom_list))
   }
   metadata
 }
