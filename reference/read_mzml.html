@@ -60,9 +60,10 @@ data in wide format. Currently the mzR-based parser only returns DAD data.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_mzml</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span><span class="op">)</span>,</span>
-<span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span><span class="op">)</span>,</span>
+<span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"long"</span>, <span class="st">"wide"</span><span class="op">)</span>,</span>
 <span>  parser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RaMS"</span>, <span class="st">"mzR"</span><span class="op">)</span>,</span>
 <span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MS1"</span>, <span class="st">"MS2"</span>, <span class="st">"BPC"</span>, <span class="st">"TIC"</span>, <span class="st">"DAD"</span>, <span class="st">"chroms"</span>, <span class="st">"metadata"</span>, <span class="st">"everything"</span><span class="op">)</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -91,6 +92,10 @@ a list of data.tables regardless of what is selected here.</p></dd>
 <dd><p>What types of data to return (argument to <code><a href="https://rdrr.io/pkg/RaMS/man/grabMSdata.html" class="external-link">grabMSdata</a></code>.
 Options include <code>MS1</code>, <code>MS2</code>, <code>BPC</code>, <code>TIC</code>, <code>DAD</code>,
 <code>chroms</code>, <code>metadata</code>, or <code>everything</code>).</p></dd>
+
+
+<dt>verbose</dt>
+<dd><p>Argument to <code><a href="https://rdrr.io/pkg/RaMS/man/grabMSdata.html" class="external-link">grabMSdata</a></code> controlling <code>verbosity</code>.</p></dd>
 
 
 <dt>...</dt>

@@ -215,7 +215,7 @@
 <div class="section level6">
 <h6 id="extracting-metadata">Extracting metadata<a class="anchor" aria-label="anchor" href="#extracting-metadata"></a>
 </h6>
-<p>chromConverter includes some options to extract metadata from the provided files. If <code>read_metadata = TRUE</code>, metadata will be extracted and stored as <code>attributes</code> of the associated object. A list of <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html" class="external-link"><code>attributes</code></a> can be extracted from any R object using the <code><a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes()</a></code> function. Single attributes can be extracted using <code><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr()</a></code>: e.g. `attr(dat[[1]], “sample_name”).</p>
+<p>chromConverter includes some options to extract metadata from the provided files. If <code>read_metadata = TRUE</code>, metadata will be extracted and stored as <code>attributes</code> of the associated object. The metadata can then be extracted into a data.frame or tibble using the <code>extract_metadata</code> function.</p>
 </div>
 </div>
 </div>
