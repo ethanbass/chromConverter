@@ -30,3 +30,6 @@ A chromatogram in the format specified by \code{format_out}.
 \description{
 Read CDF file
 }
+\author{
+Ethan Bass
+}

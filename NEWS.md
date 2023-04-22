@@ -2,7 +2,7 @@
 
 * Added parser for ANDI chrom `cdf` files through the `read_cdf` function.
 * Added parser for 'Lumex' `.mdf` files through the `read_mdf` function.
-* Updated `configure_openchrom` for better discovery of 'OpenChrom' path.
+* Updated `configure_openchrom` for better discovery of 'OpenChrom' path and added `path` argument for directly specifying the path to 'OpenChrom'.
 * Added additional options for file exports. New options for writing
 `chemstation_csv` (utf-16) and `cdf` files through `read_chroms`.
 * Added `wide` and `long` `data_format` options for 2D data, such that the `wide`
@@ -12,6 +12,7 @@ while the `long` format writes retention times as the first column of the object
 data origin.
 * Fixed bug causing sloppy 'Chemstation' FID metadata.
 * Fixed bug that caused padding of 'Chemstation 130' files with extra zeros.
+* Use `fs` package for parsing paths, eliminating buggy `check_paths` function.
 * Added additional tests.
 
 ## chromConverter 0.3.3

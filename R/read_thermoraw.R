@@ -21,7 +21,7 @@
 #' @references
 #' Hulstaert Niels, Jim Shofstahl, Timo Sachsenberg, Mathias Walzer,
 #' Harald Barsnes, Lennart Martens, and Yasset Perez-Riverol.
-#' “=ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.”
+#' ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.
 #' \emph{Journal of Proteome Research} \bold{19}, no. 1 (January 3, 2020): 537–42.
 #' \doi{10.1021/acs.jproteome.9b00328}.
 #' @export read_thermoraw

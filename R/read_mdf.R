@@ -5,6 +5,7 @@
 #' @param read_metadata Whether to read metadata from file.
 #' @return A chromatogram in the format specified by \code{format_out}.
 #' (retention time x wavelength).
+#' @author Ethan Bass
 #' @export
 
 read_mdf <- function(file, format_out = c("matrix","data.frame"),

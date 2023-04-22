@@ -32,7 +32,12 @@
 #' @section Side effects: Chromatograms will be exported in the format specified
 #' by \code{export_format} in the folder specified by \code{path_out}.
 #' @author Ethan Bass
-#' @export call_openchrom
+#' @references
+#' Wenig, Philip and Odermatt, Juergen. OpenChrom: A Cross-Platform Open Source
+#' Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{
+#' BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405. \doi{
+#' 10.1186/1471-2105-11-405}.
+#' @export
 
 call_openchrom <- function(files, path_out, format_in,
                              export_format = c("csv", "cdf", "mzml", "animl"),
@@ -123,23 +128,30 @@ write_openchrom_batchfile <- function(files, path_out,
 #' @name configure_openchrom
 #' @param cli Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.
 #' If "false", R will disable CLI. If NULL, R will not modify the ini file.
+#' @param path Path to 'OpenChrom' executable (Optional). The supplied path will
+#' overwrite the current path.
 #' @importFrom utils read.table write.table
 #' @return Returns path to OpenChrom command-line application
 #' @author Ethan Bass
-#' @noRd
+#' @export
 
-configure_openchrom <- function(cli = c(NULL, "true", "false")){
+configure_openchrom <- function(cli = c(NULL, "true", "false"), path = NULL){
   cli <- match.arg(cli, c(NULL, "true", "false"))
-  path_parser <- readLines(system.file("shell/path_to_openchrom_commandline.txt", package = 'chromConverter'))
-  if (path_parser == "NULL"){
-    path_parser <- switch(.Platform$OS.type,
-            unix = "/Applications/Eclipse.app/Contents/MacOS/openchrom",
-            windows = fs::path(fs::path_home(), "AppData/Local/Programs/OpenChrom"),
-            linux = "/snap/bin/openchrom"
-           )
-    writeLines(path_parser,
-               con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
+  if (is.null(path)){
+    path_parser <- readLines(system.file("shell/path_to_openchrom_commandline.txt", package = 'chromConverter'))
+    if (path_parser == "NULL"){
+      path_parser <- switch(.Platform$OS.type,
+                            unix = "/Applications/Eclipse.app/Contents/MacOS/openchrom",
+                            windows = fs::path(fs::path_home(), "AppData/Local/Programs/OpenChrom"),
+                            linux = "/snap/bin/openchrom"
+      )
+    }
+  } else{
+    path_parser <- path
   }
+  writeLines(path_parser,
+             con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
+
   if (!file.exists(path_parser)){
     warning("OpenChrom not found!", immediate. = TRUE)
     path_parser <- readline(prompt="Please provide path to `OpenChrom` command line):")
@@ -153,24 +165,25 @@ configure_openchrom <- function(cli = c(NULL, "true", "false")){
                      "unix" = paste0(gsub("MacOS/openchrom", "", path_parser), "Eclipse/openchrom.ini"),
                      "linux" = paste0(path_parser, ".uni"),
                      "windows" = paste0(gsub(".exe", "", path_parser), ".ini"))
-  ini <- readLines(path_ini)
-  cli_index <- grep("-Denable.cli.support",ini)
-  ini_split <- strsplit(ini[cli_index],"=")[[1]]
-  cli_tf <- ini_split[2]
-  if(cli_tf == "false"){
-    message("    The OpenChrom command-line interface is turned off!
-    Update `openchrom.ini` to activate the command-line interface (y/n)?
-    (Warning: This will deactivate the GUI on your OpenChrom installation!)")
-    ans <- readline()
-    if (ans %in% c("y","Y", "yes", "Yes", "YES")){
-      cli <- "true"
-    } else{
-      stop("-Denable.cli.support must be enabled to use the OpenChrom parsers from R.")
+  if (is.null(cli)){
+    ini <- readLines(path_ini)
+    cli_index <- grep("-Denable.cli.support", ini)
+    ini_split <- strsplit(ini[cli_index], "=")[[1]]
+    cli_tf <- ini_split[2]
+    if (cli_tf == "false"){
+      message("    The OpenChrom command-line interface is turned off!
+      Update `openchrom.ini` to activate the command-line interface (y/n)?
+      (Warning: This will deactivate the GUI on your OpenChrom installation!)")
+      ans <- readline()
+      if (ans %in% c("y","Y", "yes", "Yes", "YES")){
+        cli <- "true"
+      } else{
+        stop("-Denable.cli.support must be enabled to use the OpenChrom parsers from R.")
+      }
     }
-  }
-  if (cli %in% c("true", "false")){
+  } else if (cli %in% c("true", "false")){
     ini_split[2] <- cli
-    ini[cli_index] <- paste(ini_split, collapse="=")
+    ini[cli_index] <- paste(ini_split, collapse = "=")
     writeLines(ini, path_ini)
   }
   path_parser[1]

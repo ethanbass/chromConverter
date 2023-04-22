@@ -120,7 +120,8 @@ read_chroms <- function(paths, find_files,
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
   }
-  export_format <- match.arg(export_format, c("csv", "chemstation_csv", "cdf", "mzml", "animl"))
+  export_format <- match.arg(export_format, choices =
+                               c("csv", "chemstation_csv", "cdf", "mzml", "animl"))
   check_parser(format_in, parser)
   if (parser != "openchrom" && !(export_format %in% c("csv", "chemstation_csv", "cdf")))
     stop("The selected export format is currently only supported by `openchrom` parsers.")

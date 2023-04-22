@@ -90,8 +90,7 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 1) Download OpenChrom from the [website](https://lablicate.com/platform/openchrom/download) and place it into a directory of your choice.  
 2) If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.
-3) Follow the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to activate OpenChrom's command-line interface. Alternatively, the command-line option can be activated from R by calling `configure_openchrom_parser(cli = "true")` or by calling the OpenChrom parser and following the prompts.
-4) Call `read_chroms` with `parser = "openchrom"`. The first time you call the parser, it will ask you to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  
+3) Call `read_chroms` with `parser = "openchrom"`. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  Alternatively, the command-line option can be activated from R by calling `configure_openchrom(cli = "true")` or following the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to manually activate the CLI. This process can be reversed using the same function: e.g. `configure_openchrom(cli = "false"). To specify an OpenChrom executable in a non-standard location, call `configure_openchrom` with the `path` argument, e.g. `configure_openchrom(cli = "true", path="path_to_openchrom_executable").
 
 ### Usage
 

@@ -1,4 +1,5 @@
 #' Export chromatograms as csvs
+#' @author Ethan Bass
 #' @noRd
 export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE){
   sapply(seq_along(data), function(i){
@@ -8,6 +9,7 @@ export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE)
 }
 
 #' Export chromatograms as CDFs
+#' @author Ethan Bass
 #' @noRd
 export_cdfs <- function(data, path_out){
   sapply(seq_along(data), function(i){
@@ -17,6 +19,7 @@ export_cdfs <- function(data, path_out){
 }
 
 #' Write CDF file from chromatogram
+#' @author Ethan Bass
 #' @noRd
 write_cdf <- function(x, sample_name, path_out){
   check_for_pkg("ncdf4")
@@ -91,6 +94,8 @@ nc_add_global_attributes <- function(nc, meta, sample_name){
   }
 }
 
+#' Format metadata for CDF
+#' @author Ethan Bass
 #' @noRd
 format_metadata_for_cdf <- function(x){
   # datetime_str <- x[which(x$Property=="Time"),"Value"]

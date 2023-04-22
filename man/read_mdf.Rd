@@ -27,3 +27,6 @@ A chromatogram in the format specified by \code{format_out}.
 \description{
 Read MDF files into R
 }
+\author{
+Ethan Bass
+}

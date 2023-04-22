@@ -6,6 +6,7 @@
 #' @param what Whether to extract \code{chromatogram} and/or \code{peak_table}.
 #' @return A chromatogram in the format specified by \code{format_out}.
 #' (retention time x wavelength).
+#' @author Ethan Bass
 #' @export
 
 read_cdf <- function(file, format_out = c("matrix","data.frame"),

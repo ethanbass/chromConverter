@@ -85,29 +85,6 @@ set_temp_directory <- function(){
   }
 }
 
-#' Check path
-#' Check that path is properly formatted.
-#' @param path path as character string
-#' @noRd
-check_path <- function(path){
-  # check for leading slash
-  if (.Platform$OS.type %in% c("unix","linux")){
-    if (!(substr(path,1,1) %in% c("/", "~"))){
-      path <- paste0("/", path)
-    }
-  }
-
-  # check for trailing slash
-  n <- nchar(path)
-  if (substr(path, n, n) != "/"){
-    path <- paste0(path, "/")
-  }
-  if (.Platform$OS.type == "windows"){
-    path <- gsub("/", "\\\\", path)
-  }
-  path
-}
-
 #' Extract header from Shimadzu ascii files
 #' @noRd
 extract_header <- function(x, chrom.idx, sep){
