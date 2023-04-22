@@ -1,3 +1,19 @@
+## chromConverter 0.3.4
+
+* Added parser for ANDI chrom `cdf` files through the `read_cdf` function.
+* Added parser for 'Lumex' `.mdf` files through the `read_mdf` function.
+* Updated `configure_openchrom` for better discovery of 'OpenChrom' path.
+* Added additional options for file exports. New options for writing
+`chemstation_csv` (utf-16) and `cdf` files through `read_chroms`.
+* Added `wide` and `long` `data_format` options for 2D data, such that the `wide`
+format option writes retention times as rownames of the matrix or data.frame
+while the `long` format writes retention times as the first column of the object.
+* Slightly restructured metadata fields. Added `source_file` field to track
+data origin.
+* Fixed bug causing sloppy 'Chemstation' FID metadata.
+* Fixed bug that caused padding of 'Chemstation 130' files with extra zeros.
+* Added additional tests.
+
 ## chromConverter 0.3.3
 
 * Added R-based parser for "Chemstation" UV (`.uv`) files (version 131) through
@@ -9,6 +25,8 @@ and returning it as a `data.frame` or `tibble`.
 * Added wide format option in `read_mzml`.
 * Added automatic detection of file formats by `read_chroms`.
 * Minor changes to storage of metadata in attributes for the purpose of simplification.
+* Fixed bug preventing removal of file extensions for 'Agilent' data when using `read_chroms`.
+* Standardized run date/time in metadata to `POSIXct` format.
 * Minor updates to documentation.
 
 ## chromConverter 0.3.2

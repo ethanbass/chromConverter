@@ -6,29 +6,36 @@
 #' @param format_in Chromatogram format
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether data is in wide or long format.
-#' @param parser What parser was used to decode the data
+#' @param parser What parser was used to decode the data.
+#' @param source_file The path to the source file.
 #' @return A chromatogram with attached metadata.
 #' @author Ethan Bass
 
-attach_metadata <- function(x, meta, format_in, format_out, data_format, parser = NULL){
-  if (format_in == "waters_arw"){
+attach_metadata <- function(x, meta, format_in, format_out, data_format, parser = NULL,
+                            source_file){
+  switch(format_in,
+    "waters_arw" = {
     structure(x, instrument = NA,
               detector = NA,
               software = NA,
               method = meta$`Instrument Method Name`,
               batch = meta$`Sample Set Name`,
               operator = NA,
-              run_date = NA,
+              run_datetime = NA,
               sample_name = meta$SampleName,
               sample_id = NA,
-              injection_volume = NA,
+              sample_injection_volume = NA,
+              sample_amount = NA,
               time_range = NA,
               time_interval = NA,
+              time_unit = NA,
               detector_range = meta$Channel,
+              detector_unit = NA,
+              source_file = source_file,
               data_format = "long",
               parser = "chromConverter",
               format_out = format_out)
-  } else if (format_in == "shimadzu"){
+  }, "shimadzu" = {
     structure(x,
               instrument = meta$`Instrument Name`,
               detector = meta$`Detector Name`,
@@ -37,37 +44,59 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               method = meta$`Method File`,
               batch = meta$`Batch File`,
               operator = meta$`Operator Name`,
-              run_date = meta$Acquired,
+              run_datetime = as.POSIXct(meta$Acquired, format = "%m/%d/%Y %I:%M:%S %p"),
               sample_name = meta$`Sample Name`,
               sample_id = meta$`Sample ID`,
-              injection_volume = meta$`Injection Volume`,
-              start_time = meta$`Start Time(min)`,
-              end_time = meta$`End Time(min)`,
+              sample_injection_volume = meta$`Injection Volume`,
+              sample_amount = meta$`Injection Volume`,
+              time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
+              # start_time = meta$`Start Time(min)`,
+              # end_time = meta$`End Time(min)`,
               time_interval = meta$`Interval(msec)`,
-              start_wavelength = meta$`Start Wavelength(nm)`,
-              end_wavelength = meta$`End Wavelength(nm)`,
+              time_interval_unit = get_time_unit(
+                grep("Interval", names(meta), value=TRUE)[1], format_in = "shimadzu"),
+              time_unit = get_time_unit(
+                grep("Start Time", names(meta), value=TRUE)[1], format_in = "shimadzu"),
+              detector_range = c(meta$`Start Wavelength(nm)`,meta$`End Wavelength(nm)`),
+              # detector_end = meta$`End Wavelength(nm)`,
+              detector_unit = NA,
+              source_file = source_file,
               data_format = data_format,
               parser = "chromConverter",
               format_out = format_out)
-  } else if (format_in == "chromeleon"){
+  }, "chromeleon" = {
     structure(x, instrument = NA,
               detector = meta$Detector,
               software = meta$`Generating Data System`,
               method = meta$`Instrument Method`,
               batch = NA,
               operator = meta$`Operator`,
-              run_date = meta$`Injection Date`,
-              run_time = meta$`Injection Time`,
+              run_datetime = as.POSIXct(paste(meta$`Injection Date`, meta$`Injection Time`),
+                                        format = "%m/%d/%Y %H:%M:%S"),
+              # run_date = meta$`Injection Date`,
+              # run_time = meta$`Injection Time`,
               sample_name = meta$Injection,
               sample_id = NA,
-              injection_volume = meta$`Injection Volume`,
-              start_time = meta$`Time Min. (min)`,
-              end_time = meta$`Time Max. (min)`,
+              sample_injection_volume = meta$`Injection Volume`,
+              sample_amount =  meta$`Injection Volume`,
+              time_range = c(meta$`Time Min. (min)`, meta$`Time Max. (min)`),
+              # start_time = meta$`Time Min. (min)`,
+              # end_time = meta$`Time Max. (min)`,
               time_interval = meta$`Average Step (s)`,
+              time_interval_unit <- get_time_unit(
+                grep("Average Step", names(meta), value = TRUE)[1],
+                format_in = "chromeleon"),
+              time_unit = get_time_unit(
+                grep("Time Min.", names(meta), value = TRUE)[1],
+                format_in="chromeleon"),
+              # uniform_sampling = meta$`Min. Step (s)` == meta$`Max. Step (s)`,
               detector_range = NA,
+              detector_unit = meta$`Signal Unit`,
+              source_file = source_file,
+              format_out = format_out,
               data_format = "long",
-              parser = "chromConverter",
-              format_out = format_out)
+              parser = "chromConverter"
+              )
   # } else if (format_in == "entab"){
   #   structure(x, instrument = meta$instrument,
   #             detector = NA,
@@ -75,7 +104,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
   #             method = meta$method,
   #             batch = meta$SeqPathAndFile,
   #             operator = meta$operator,
-  #             run_date = meta$run_date,
+  #             run_datetime = meta$run_date,
   #             sample_name = meta$sample,
   #             sample_id = NA,
   #             injection_volume = meta$InjVolume,
@@ -85,58 +114,137 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
   #             format = data_format,
   #             parser = "entab",
   #             format_out = format_out)
-  } else if (format_in == "chemstation_uv"){
+  }, "chemstation_uv" = {
     structure(x, instrument = meta$AcqInstName,
               detector = NA,
               software = meta$Version,
               method = meta$AcqMeth,
               batch = meta$SeqPathAndFile,
               operator = meta$AcqOp,
-              run_date = meta$InjDateTime,
+              run_datetime = meta$InjDateTime,
               sample_name = meta$SampleName,
               sample_id = NA,
-              injection_volume = meta$InjVolume,
+              sample_injection_volume = meta$InjVolume,
+              sample_amount = meta$InjVolume,
               time_range = NA,
               time_interval = NA,
+              time_unit = NA,
               detector_range = NA,
+              detector_unit = NA,
+              source_file = source_file,
               data_format = data_format,
               parser = parser,
               format_out = format_out)
-  } else if (format_in == "masshunter_dad"){
-    structure(x, instrument = meta$Instrument,
-    detector = NA,
-    software = NA,
-    method = meta$Method,
-    batch = NA,
-    operator = meta$OperatorName,
-    run_date = meta$AcqTime,
-    sample_name = meta$`Sample Name`,
-    sample_id = meta$`Sample ID`,
-    injection_volume = meta$`Inj Vol`,
-    time_range = NA,
-    time_interval = NA,
-    detector_range = NA,
-    data_format = data_format,
-    parser = parser,
-    format_out = format_out)
-  } else {
+  }, "masshunter_dad" = {
+      structure(x, instrument = meta$Instrument,
+                detector = NA,
+                software = NA,
+                method = meta$Method,
+                batch = NA,
+                operator = meta$OperatorName,
+                run_datetime = meta$AcqTime,
+                sample_name = meta$`Sample Name`,
+                sample_id = meta$`Sample ID`,
+                sample_injection_volume = meta$`Inj Vol`,
+                sample_amount = meta$`Inj Vol`,
+                time_range = NA,
+                time_interval = NA,
+                time_unit = NA,
+                detector_range = NA,
+                detector_unit = NA,
+                source_file = source_file,
+                data_format = data_format,
+                parser = parser,
+                format_out = format_out)
+  }, "cdf" = {
+    structure(x, instrument = NA,
+              detector = get_metadata_field(meta, "detector_name"),
+              software = NA,
+              method = NA,
+              batch = get_metadata_field(meta, "experiment_title"),
+              operator = get_metadata_field(meta, "operator_name"),
+              run_datetime = as.POSIXct(
+                get_metadata_field(meta, "injection_date_time_stamp"),
+                                        format = "%Y%m%d%H%M%S%z"),
+              sample_name = get_metadata_field(meta, "sample_name"),
+              sample_id = get_metadata_field(meta, "sample_id"),
+              sample_type = get_metadata_field(meta, "sample_type"),
+              sample_injection_volume = get_metadata_field(meta, "sample_injection_volume"),
+              sample_amount = get_metadata_field(meta, "sample_amount"),
+              time_start = NA,
+              time_end = NA,
+              time_interval = NA,
+              time_unit = get_metadata_field(meta, "retention_unit"),
+              detector_range = NA,
+              # detector_end = NA,
+              detector_unit = get_metadata_field(meta, "detector_unit"),
+              source_file = ifelse(missing(source_file), NA, source_file),
+              format_out = ifelse(missing(format_out), NA, format_out),
+              data_format = ifelse(missing(data_format), NA, data_format),
+              parser = "chromConverter")
+  }, "mdf" = {
+    structure(x, instrument = meta[meta$Property == "Instrument","Value"],
+              detector = "Variable Wavelength Detector",
+              software = NA,
+              method = NA,
+              batch = get_metadata_field(meta, "experiment_title"),
+              operator = meta[meta$Property == "Operator", "Value"],
+              run_datetime = as.POSIXct(
+                meta[meta$Property == "Time", "Value"],
+                format = "%d.%m.%Y %H:%M:%S"),
+              sample_name = get_metadata_field(meta, "sample_name"),
+              sample_id = get_metadata_field(meta, "sample_id"),
+              sample_type = "unknown",
+              sample_injection_volume = 1,
+              sample_amount = 1,
+              time_start = meta[meta$Group=="Interval Time" & meta$Property == "From", "Value"],
+              time_end = meta[meta$Group=="Interval Time" & meta$Property == "To", "Value"],
+              time_interval = meta[meta$Group=="Interval Time" & meta$Property == "Step", "Value"],
+              time_unit = meta[meta$Group=="Interval Time" & meta$Property == "Units", "Value"],
+              detector_range = meta[meta$Property == "Wave", "Value"],
+              # detector_end = meta[meta$Property == "Wave", "Value"],
+              detector_unit = meta[meta$Group=="Array photometric" & meta$Property == "Units", "Value"],
+              source_file = ifelse(missing(source_file), NA, source_file),
+              format_out = ifelse(missing(format_out), NA, format_out),
+              data_format = ifelse(missing(data_format), NA, data_format),
+              parser = "chromConverter")
+  }, "default" = {
     structure(x, instrument = meta$Instrument,
               detector = NA,
               software = NA,
               method = meta$Method,
               batch = NA,
               operator = meta$OperatorName,
-              run_date = meta$AcqTime,
+              run_datetime = meta$AcqTime,
               sample_name = meta$`Sample Name`,
               sample_id = meta$`Sample ID`,
-              injection_volume = meta$`Inj Vol`,
+              sample_injection_volume = meta$`Inj Vol`,
+              sample_amount = meta$`Inj Vol`,
               time_range = NA,
               time_interval = NA,
+              time_unit = NA,
               detector_range = NA,
+              detector_unit = NA,
+              source_file = source_file,
+              format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
-              parser = ifelse(missing(parser), NA, parser),
-              format_out = ifelse(missing(format_out), NA, format_out)
-    )
+              parser = ifelse(missing(parser), NA, parser)
+              )
+  }
+ )
+}
+
+#' @noRd
+get_metadata_field <- function(x, field){
+  ifelse(!is.null(x[[field]]), x[[field]], NA)
+}
+
+#' @noRd
+get_time_unit <- function(string, format_in){
+  if (format_in %in% c("chromeleon","shimadzu")){
+    pattern <- "\\((.*?)\\)"
+    unit <- gsub("\\(|\\)", "", regmatches(string, regexpr(pattern, string))[[1]])
+    switch(unit, "min" = "Minutes", "sec" = "Seconds")
   }
 }
 

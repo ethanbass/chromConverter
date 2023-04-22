@@ -50,7 +50,7 @@ call_openchrom <- function(files, path_out, format_in,
   if(!file.exists(path_out)){
     stop("'path_out' not found. Make sure directory exists.")
   }
-  openchrom_path <- configure_call_openchrom()
+  openchrom_path <- configure_openchrom()
   path_xml <- write_openchrom_batchfile(files = files, path_out=path_out, format_in = format_in,
                             export_format = export_format)
   system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml))
@@ -120,22 +120,34 @@ write_openchrom_batchfile <- function(files, path_out,
 
 #' Configure OpenChrom parser
 #'
-#' @name configure_call_openchrom
+#' @name configure_openchrom
 #' @param cli Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.
 #' If "false", R will disable CLI. If NULL, R will not modify the ini file.
+#' @importFrom utils read.table write.table
 #' @return Returns path to OpenChrom command-line application
 #' @author Ethan Bass
 #' @noRd
-configure_call_openchrom <- function(cli = c(NULL, "true", "false")){
+
+configure_openchrom <- function(cli = c(NULL, "true", "false")){
   cli <- match.arg(cli, c(NULL, "true", "false"))
   path_parser <- readLines(system.file("shell/path_to_openchrom_commandline.txt", package = 'chromConverter'))
+  if (path_parser == "NULL"){
+    path_parser <- switch(.Platform$OS.type,
+            unix = "/Applications/Eclipse.app/Contents/MacOS/openchrom",
+            windows = fs::path(fs::path_home(), "AppData/Local/Programs/OpenChrom"),
+            linux = "/snap/bin/openchrom"
+           )
+    writeLines(path_parser,
+               con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
+  }
   if (!file.exists(path_parser)){
     warning("OpenChrom not found!", immediate. = TRUE)
     path_parser <- readline(prompt="Please provide path to `OpenChrom` command line):")
     if (.Platform$OS.type == "windows"){
       path_parser <- gsub("/","\\\\", path_parser)
     }
-    writeLines(path_parser, con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
+    writeLines(path_parser,
+               con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
   }
   path_ini <- switch(.Platform$OS.type,
                      "unix" = paste0(gsub("MacOS/openchrom", "", path_parser), "Eclipse/openchrom.ini"),

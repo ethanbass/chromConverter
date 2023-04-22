@@ -33,7 +33,7 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
     meta <- read_masshunter_metadata(file)
     x <- attach_metadata(x, meta, format_in = "masshunter_dad",
                          format_out = format_out, data_format = "wide",
-                         parser = "aston")
+                         parser = "aston", source_file = file)
   }
   x
 }
@@ -82,7 +82,7 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
     meta <- read_chemstation_metadata(file)
     x <- attach_metadata(x, meta, format_in = "chemstation_uv",
                          format_out = format_out, data_format = "wide",
-                         parser = "Aston")
+                         parser = "Aston", source_file = file)
   }
   x
 }

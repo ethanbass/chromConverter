@@ -12,9 +12,9 @@
 #' (https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html).
 #' @export
 
-read_chemstation_uv <- function(path, read_metadata = TRUE,
-                                format_out = c("matrix","data.frame"),
-                                data_format = c("wide","long")){
+read_chemstation_uv <- function(path, format_out = c("matrix","data.frame"),
+                                data_format = c("wide","long"),
+                                read_metadata = TRUE){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
 
@@ -127,6 +127,7 @@ read_chemstation_uv <- function(path, read_metadata = TRUE,
 
   if (read_metadata){
     data <- structure(data, file_version = meta$file_type, sample_name = meta$sample_name,
+                      file_source = path,
                       operator = meta$operator, run_date = meta$date,
                       instrument = meta$detector,
                       method = meta$method, software_version = NA,

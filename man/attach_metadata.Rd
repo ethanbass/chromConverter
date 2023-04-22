@@ -4,7 +4,15 @@
 \alias{attach_metadata}
 \title{Attaches metadata to chromatogram}
 \usage{
-attach_metadata(x, meta, format_in, format_out, data_format, parser = NULL)
+attach_metadata(
+  x,
+  meta,
+  format_in,
+  format_out,
+  data_format,
+  parser = NULL,
+  source_file
+)
 }
 \arguments{
 \item{x}{chromatogram}
@@ -17,7 +25,9 @@ attach_metadata(x, meta, format_in, format_out, data_format, parser = NULL)
 
 \item{data_format}{Whether data is in wide or long format.}
 
-\item{parser}{What parser was used to decode the data}
+\item{parser}{What parser was used to decode the data.}
+
+\item{source_file}{The path to the source file.}
 }
 \value{
 A chromatogram with attached metadata.

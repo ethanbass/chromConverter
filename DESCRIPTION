@@ -1,6 +1,6 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.3.3
+Version: 0.3.4
 Authors@R: c(
     person(given = "Ethan", family = "Bass", email = "ethanbass@gmail.com",
                   role = c("aut", "cre"),
@@ -30,6 +30,7 @@ Imports:
 Suggests: 
     entab,
     mzR,
+    ncdf4,
     pbapply,
     testthat (>= 3.0.0)
 Config/reticulate: list( packages = list( list(package = "scipy"),
