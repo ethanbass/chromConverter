@@ -106,11 +106,12 @@ format_metadata_for_cdf <- function(x){
                      "sec" = "Seconds", "seconds" = "Seconds",
                      "min" = "Minutes", "minutes" = "Minutes",
                      "default" = "Minutes")
-
+  get_nc_version <- switch(.Platform$OS.type, "windows" = )
   meta <- list(dataset_completeness = "C1",
              aia_template_revision = "1.0",
              protocol_template_revision = "1.0",
-             netcdf_revision = system("nc-config --version", intern = TRUE),
+             netcdf_revision = stringr::str_extract(ncdf4::nc_version(),
+                                                             "(?<=library version\\s)\\d+\\.\\d+\\.\\d+")
              administrative_comments = paste("Collected on", attr(x, "instrument")),
              languages = "English only",
              converter_name = "chromconverter",
