@@ -56,16 +56,24 @@ call_openchrom <- function(files, path_out, format_in,
     stop("'path_out' not found. Make sure directory exists.")
   }
   openchrom_path <- configure_openchrom()
-  path_xml <- write_openchrom_batchfile(files = files, path_out=path_out, format_in = format_in,
-                            export_format = export_format)
+  path_xml <- write_openchrom_batchfile(files = files, path_out = path_out,
+                                        format_in = format_in,
+                                        export_format = export_format)
   system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml))
-  new_files <- paste0(path_out, sapply(strsplit(basename(files), "\\."), function(x) x[1]), ".", export_format)
+  new_files <- fs::path(path_out,
+                        fs::path_ext_remove(fs::path_file(files)),
+                        ext = switch(export_format, "animl" = "animl",
+                                     "csv" = "csv", "cdf" = "CDF",
+                                     "mzml" = "mzML"))
   if (return_paths){
     new_files
   } else{
-    if (export_format == "csv"){
-      lapply(new_files, read.csv)
-    }
+    file_reader <- switch(export_format,
+                          "csv" = read.csv,
+                          "cdf" = read_cdf,
+                          "animl" = warning("An animl parser is not currently available in chromConverter"),
+                          "mzml" = read_mzml)
+      lapply(new_files, file_reader)
   }
 }
 
@@ -118,7 +126,7 @@ write_openchrom_batchfile <- function(files, path_out,
                      "animl" = wsd_animl_converter)
   }
   x %>% xml_children %>% .[[4]] %>% xml_add_child(.value=gsub("path_out", path_out, parser))
-  path_xml <- paste0(path_out, "batchfile_", strftime(Sys.time(),format = "%Y-%m-%d_%H-%M-%S"), ".xml")
+  path_xml <- fs::path(path_out, paste0("batchfile_", strftime(Sys.time(),format = "%Y-%m-%d_%H-%M-%S")), ext = "xml")
   write_xml(x, file = path_xml)
   path_xml
 }
@@ -135,8 +143,8 @@ write_openchrom_batchfile <- function(files, path_out,
 #' @author Ethan Bass
 #' @export
 
-configure_openchrom <- function(cli = c(NULL, "true", "false"), path = NULL){
-  cli <- match.arg(cli, c(NULL, "true", "false"))
+configure_openchrom <- function(cli = c("null", "true", "false"), path = NULL){
+  cli <- match.arg(cli, c("null", "true", "false"))
   if (is.null(path)){
     path_parser <- readLines(system.file("shell/path_to_openchrom_commandline.txt", package = 'chromConverter'))
     if (path_parser == "NULL"){
@@ -165,11 +173,11 @@ configure_openchrom <- function(cli = c(NULL, "true", "false"), path = NULL){
                      "unix" = paste0(gsub("MacOS/openchrom", "", path_parser), "Eclipse/openchrom.ini"),
                      "linux" = paste0(path_parser, ".uni"),
                      "windows" = paste0(gsub(".exe", "", path_parser), ".ini"))
+  ini <- readLines(path_ini)
+  cli_index <- grep("-Denable.cli.support", ini)
+  ini_split <- strsplit(ini[cli_index], "=")[[1]]
+  cli_tf <- ini_split[2]
   if (is.null(cli)){
-    ini <- readLines(path_ini)
-    cli_index <- grep("-Denable.cli.support", ini)
-    ini_split <- strsplit(ini[cli_index], "=")[[1]]
-    cli_tf <- ini_split[2]
     if (cli_tf == "false"){
       message("    The OpenChrom command-line interface is turned off!
       Update `openchrom.ini` to activate the command-line interface (y/n)?
