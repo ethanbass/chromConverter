@@ -143,14 +143,14 @@ write_openchrom_batchfile <- function(files, path_out,
 #' @author Ethan Bass
 #' @export
 
-configure_openchrom <- function(cli = c("null", "true", "false"), path = NULL){
-  cli <- match.arg(cli, c("null", "true", "false"))
+configure_openchrom <- function(cli = c("null", "true", "false", "status"), path = NULL){
+  cli <- match.arg(cli, c("null", "true", "false", "status"))
   if (is.null(path)){
     path_parser <- readLines(system.file("shell/path_to_openchrom_commandline.txt", package = 'chromConverter'))
     if (path_parser == "NULL"){
       path_parser <- switch(.Platform$OS.type,
                             unix = "/Applications/Eclipse.app/Contents/MacOS/openchrom",
-                            windows = fs::path(fs::path_home(), "AppData/Local/Programs/OpenChrom"),
+                            windows = fs::path(fs::path_home(), "AppData/Local/Programs/OpenChrom/openchrom.exe"),
                             linux = "/snap/bin/openchrom"
       )
     }
@@ -176,9 +176,10 @@ configure_openchrom <- function(cli = c("null", "true", "false"), path = NULL){
   ini <- readLines(path_ini)
   cli_index <- grep("-Denable.cli.support", ini)
   ini_split <- strsplit(ini[cli_index], "=")[[1]]
-  cli_tf <- ini_split[2]
-  if (is.null(cli)){
-    if (cli_tf == "false"){
+  cli_bool <- ini_split[2]
+
+  if (cli == "null"){
+    if (cli_bool == "false"){
       message("    The OpenChrom command-line interface is turned off!
       Update `openchrom.ini` to activate the command-line interface (y/n)?
       (Warning: This will deactivate the GUI on your OpenChrom installation!)")
@@ -189,7 +190,10 @@ configure_openchrom <- function(cli = c("null", "true", "false"), path = NULL){
         stop("-Denable.cli.support must be enabled to use the OpenChrom parsers from R.")
       }
     }
-  } else if (cli %in% c("true", "false")){
+  } else if (cli == "status"){
+    return(cli_bool)
+  }
+  if (cli %in% c("true", "false")){
     ini_split[2] <- cli
     ini[cli_index] <- paste(ini_split, collapse = "=")
     writeLines(ini, path_ini)
