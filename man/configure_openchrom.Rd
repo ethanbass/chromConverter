@@ -4,7 +4,7 @@
 \alias{configure_openchrom}
 \title{Configure OpenChrom parser}
 \usage{
-configure_openchrom(cli = c(NULL, "true", "false"), path = NULL)
+configure_openchrom(cli = c("null", "true", "false", "status"), path = NULL)
 }
 \arguments{
 \item{cli}{Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.

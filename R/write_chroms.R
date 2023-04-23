@@ -110,8 +110,8 @@ format_metadata_for_cdf <- function(x){
   meta <- list(dataset_completeness = "C1",
              aia_template_revision = "1.0",
              protocol_template_revision = "1.0",
-             netcdf_revision = stringr::str_extract(ncdf4::nc_version(),
-                                                             "(?<=library version\\s)\\d+\\.\\d+\\.\\d+")
+             netcdf_revision = paste("netCDF", stringr::str_extract(ncdf4::nc_version(),
+                                                             "(?<=library version\\s)\\d+\\.\\d+\\.\\d+")),
              administrative_comments = paste("Collected on", attr(x, "instrument")),
              languages = "English only",
              converter_name = "chromconverter",
