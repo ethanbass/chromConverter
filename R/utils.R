@@ -108,15 +108,14 @@ extract_header <- function(x, chrom.idx, sep){
 #' @keywords internal
 check_for_pkg <- function(pkg, return_boolean = FALSE){
   pkg_exists <- requireNamespace(pkg, quietly = TRUE)
-  if (!pkg_exists) {
+  if (return_boolean){
+    return(pkg_exists)
+  } else if (!pkg_exists) {
     stop(paste(
       "Package", sQuote(pkg), "must be installed to perform this action:
           try", paste0("`install.packages('", pkg, "')`.")),
       call. = FALSE
     )
-  }
-  if (return_boolean){
-    pkg_exists
   }
 }
 
