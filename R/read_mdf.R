@@ -3,8 +3,8 @@
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
-#' @return A chromatogram in the format specified by \code{format_out}.
-#' (retention time x wavelength).
+#' @return A chromatogram in the format specified by the \code{format_out} and
+#' \code{data_format} arguments (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 
@@ -24,8 +24,9 @@ read_mdf <- function(file, format_out = c("matrix","data.frame"),
   array2_len <- as.numeric(meta[which(meta$Group == "Array current" & meta$Property == "Size"),"Value"])
 
   # read array 1
-  seek(f, 1018, "start")
-  seek(f, 1018, "start")
+  end_metadata <- seek(f,NA,"current") - 1
+  seek(f, end_metadata, "start")
+  seek(f, end_metadata, "start")
   photo_array <- readBin(f, "double", size=8, n=array1_len)
 
   # read array 2
