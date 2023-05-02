@@ -24,13 +24,13 @@ read_mdf <- function(file, format_out = c("matrix","data.frame"),
   array2_len <- as.numeric(meta[which(meta$Group == "Array current" & meta$Property == "Size"),"Value"])
 
   # read array 1
-  end_metadata <- seek(f,NA,"current") - 1
+  end_metadata <- seek(f, NA, "current") - 1
   seek(f, end_metadata, "start")
   seek(f, end_metadata, "start")
-  photo_array <- readBin(f, "double", size=8, n=array1_len)
+  photo_array <- readBin(f, "double", size = 8, n = array1_len)
 
   # read array 2
-  current_array <-readBin(f, "integer", size=4, n=array2_len)
+  current_array <- readBin(f, "integer", size = 4, n = array2_len)
 
   # close file
   close(f)
@@ -44,9 +44,11 @@ read_mdf <- function(file, format_out = c("matrix","data.frame"),
 
   # construct data.frame
   if (data_format == "wide"){
-    data <- data.frame(Intensity = photo_array, Current = current_array, row.names=time_array)
+    data <- data.frame(Intensity = photo_array, Current = current_array,
+                       row.names = time_array)
   } else if (data_format == "long"){
-    data <- data.frame(RT = time_array, Intensity = photo_array, Current = current_array)
+    data <- data.frame(RT = time_array, Intensity = photo_array,
+                       Current = current_array)
   }
 
   if (data_format == "long"){
@@ -66,6 +68,7 @@ read_mdf <- function(file, format_out = c("matrix","data.frame"),
 #' Extract MDF metadata
 #' @noRd
 extract_mdf_metadata <- function(x){
+  x <- stringr::str_replace_all(x, "\xb5", "micro")
   ma <- strsplit(x, "\n")[[1]]
   splitAt <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
   x2 <- splitAt(ma, grep("\\[*\\]", ma))
