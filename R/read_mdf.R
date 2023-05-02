@@ -18,7 +18,6 @@ read_mdf <- function(file, format_out = c("matrix","data.frame"),
   # extract metadata
   metadata <- readBin(f, "character", n = 1)
   meta <- extract_mdf_metadata(metadata)
-  # meta <- rbind(meta, c(Property = "source_file", file, Group = "Conversion"))
 
   array1_len <- as.numeric(meta[which(meta$Group == "Array photometric" & meta$Property == "Size"),"Value"])
   array2_len <- as.numeric(meta[which(meta$Group == "Array current" & meta$Property == "Size"),"Value"])
