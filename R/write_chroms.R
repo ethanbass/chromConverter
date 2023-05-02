@@ -39,7 +39,7 @@ write_cdf <- function(x, sample_name, path_out){
   filename <- fs::path_ext_remove(fs::path_file(sample_name))
   file_out <- fs::path(path_out, filename, ext = "cdf")
   if (fs::file_exists(file_out)){
-    warning("File already exists and will not be overwritten.", immediate. = TRUE)
+    warning(paste("File", sQuote(basename(file_out)), "already exists and will not be overwritten."), immediate. = TRUE)
   }
   # define dimensions
   point_number <- ncdf4::ncdim_def("point_number", "",
