@@ -21,8 +21,8 @@ read_mdf(
 \item{read_metadata}{Whether to read metadata from file.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}.
-(retention time x wavelength).
+A chromatogram in the format specified by the \code{format_out} and
+\code{data_format} arguments (retention time x wavelength).
 }
 \description{
 Read MDF files into R

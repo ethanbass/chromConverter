@@ -17,15 +17,18 @@ read_cdf(
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
-\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+\item{data_format}{Whether to return data in \code{wide} or \code{long} format.
+For 2D files, "long" format returns the retention time as the first column of
+the data.frame or matrix while "wide" format returns the retention time as the
+rownames of the object.}
 
 \item{what}{Whether to extract \code{chromatogram} and/or \code{peak_table}.}
 
 \item{read_metadata}{Whether to read metadata from file.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}.
-(retention time x wavelength).
+A chromatogram in the format specified by the \code{format_out} and
+\code{data_format} arguments (retention time x wavelength).
 }
 \description{
 Read CDF file
