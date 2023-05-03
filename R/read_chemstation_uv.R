@@ -78,7 +78,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix","data.frame"),
   seek(f, offsets$data_start + 0x8)
 
   # Read and unpack wavelength information
-  wave_info <- readBin(f, integer(), n=3, size=2, endian="little")
+  wave_info <- readBin(f, integer(), n = 3, size = 2, endian = "little")
   lambda_start <- wave_info[1] %/% 20
   lambda_end <- wave_info[2] %/% 20
   delta_lambda <- wave_info[3] %/% 20
