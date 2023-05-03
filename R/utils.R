@@ -9,10 +9,12 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                                              "chromeleon_uv", "mzml",
                                              "shimadzu_fid", "shimadzu_dad",
                                              "waters_arw", "mdf", "cdf"),
-                          aston = c("chemstation_uv", "masshunter_dad", "other"),
-                          entab = c("chemstation_uv", "chemstation_fid", "masshunter_dad", "thermoraw", "other"),
-                          rainbow = c("chemstation_uv", "waters_raw",
-                                      "agilent_d", "chemstation", "chemstation_fid"),
+                          aston = c("chemstation", "chemstation_uv", "masshunter_dad", "other"),
+                          entab = c("chemstation", "chemstation_ch", "chemstation_fid",
+                          "chemstation_uv", "masshunter_dad", "thermoraw", "other"),
+                          rainbow = c("chemstation", "chemstation_ch", "chemstation_fid",
+                                      "chemstation_uv", "waters_raw",
+                                      "agilent_d"),
                           thermoraw = c("thermoraw")
   )
   if (find){
