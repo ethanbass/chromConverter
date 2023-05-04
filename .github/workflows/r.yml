@@ -15,9 +15,13 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-    runs-on: macos-latest
+  R-CMD-check:
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+
     strategy:
+      fail-fast: false
       matrix:
         config:
           - {os: macos-latest,   r: 'release', python: '3.9'}
@@ -25,6 +29,10 @@ jobs:
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release', python: '3.9'}
           - {os: ubuntu-latest,   r: 'release', python: '3.9'}
           - {os: ubuntu-latest,   r: 'oldrel-1', python: '3.9'}
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
 
     steps:
       - uses: actions/checkout@v3
