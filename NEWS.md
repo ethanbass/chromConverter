@@ -1,14 +1,15 @@
-## chromConverter 0.3.4
+## chromConverter 0.4.0
 
 * Added parser for ANDI chrom `cdf` files through the `read_cdf` function.
 * Added parser for 'Lumex' `.mdf` files through the `read_mdf` function.
 * Added additional options for file exports. New options for writing
-`chemstation_csv` (utf-16) and `cdf` files through `read_chroms`.
+`chemstation_csv` (utf-16) and ANDI chrom `cdf` files through `read_chroms`.
 * Added `wide` and `long` `data_format` options for 2D data, such that the `wide`
-format option writes retention times as rownames of the matrix or data.frame
+format option writes retention times as rownames of the matrix or data.frame.
 while the `long` format writes retention times as the first column of the object.
 * Added preliminary support for automatic filetype detection by `read_chroms` when
 providing direct paths to files (i.e. when `find_files == FALSE`).
+* Added `read_varian_peaklist` function for reading peak lists from 'Varian MS Workstation'.
 * Updated `configure_openchrom` for better discovery of 'OpenChrom' path and added `path` argument for directly specifying the path to 'OpenChrom'.
 * Slightly restructured metadata fields. Added `source_file` field to track
 data origin.
