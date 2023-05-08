@@ -31,6 +31,9 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/configure_aston.html</loc>
   </url>
   <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/configure_openchrom.html</loc>
+  </url>
+  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/configure_rainbow.html</loc>
   </url>
   <url>
@@ -38,6 +41,9 @@
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/read_cdf.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.html</loc>
@@ -55,6 +61,9 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/read_chroms.html</loc>
   </url>
   <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/read_mdf.html</loc>
+  </url>
+  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_mzml.html</loc>
   </url>
   <url>
@@ -62,6 +71,9 @@
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_thermoraw.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/read_varian_peaklist.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/read_waters_arw.html</loc>
