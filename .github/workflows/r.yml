@@ -47,9 +47,8 @@ jobs:
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
+          install.packages(c("ncdf4"))
           remotes::install_deps(dependencies = TRUE)
-          install.packages("BiocManager")
-          BiocManager::install("mzR")
           reticulate::install_miniconda()
           reticulate::conda_create('r-reticulate', packages = c('python==3.9', 'numpy', 'scipy', 'pandas'))
           reticulate::conda_install('r-reticulate', packages = c('aston'), pip=TRUE)
