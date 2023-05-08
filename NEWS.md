@@ -1,22 +1,24 @@
 ## chromConverter 0.4.0
 
+### New features
+
 * Added parser for ANDI chrom `cdf` files through the `read_cdf` function.
 * Added parser for 'Lumex' `.mdf` files through the `read_mdf` function.
 * Added additional options for file exports. New options for writing
 `chemstation_csv` (utf-16) and ANDI chrom `cdf` files through `read_chroms`.
-* Added `wide` and `long` `data_format` options for 2D data, such that the `wide`
-format option writes retention times as rownames of the matrix or data.frame.
-while the `long` format writes retention times as the first column of the object.
-* Added preliminary support for automatic filetype detection by `read_chroms` when
-providing direct paths to files (i.e. when `find_files == FALSE`).
+* Added preliminary support for automatic filetype detection by `read_chroms` when providing direct paths to files (i.e. when `find_files == FALSE`).
 * Added `read_varian_peaklist` function for reading peak lists from 'Varian MS Workstation'.
+
+### Other improvements and bug fixes:
+
+* Added `wide` and `long` `data_format` options for 2D data, such that the `wide` format option writes retention times as rownames of the matrix or data.frame. while the `long` format writes retention times as the first column of the object.
 * Updated `configure_openchrom` for better discovery of 'OpenChrom' path and added `path` argument for directly specifying the path to 'OpenChrom'.
 * Slightly restructured metadata fields. Added `source_file` field to track
 data origin.
 * Standardized datetime stamps so they are always converted to POSIXct format.
+* Now use `fs` package for parsing paths, eliminating buggy `check_paths` function.
 * Fixed bug causing sloppy 'Chemstation' FID metadata.
 * Fixed bug that caused padding of 'Chemstation 130' files with extra zeros.
-* Use `fs` package for parsing paths, eliminating buggy `check_paths` function.
 * Added additional tests.
 
 ## chromConverter 0.3.3
