@@ -12,9 +12,9 @@
 #' (https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html).
 #' @export
 
-read_chemstation_uv <- function(path, read_metadata = TRUE,
-                                format_out = c("matrix","data.frame"),
-                                data_format = c("wide","long")){
+read_chemstation_uv <- function(path, format_out = c("matrix","data.frame"),
+                                data_format = c("wide","long"),
+                                read_metadata = TRUE){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
 
@@ -78,7 +78,7 @@ read_chemstation_uv <- function(path, read_metadata = TRUE,
   seek(f, offsets$data_start + 0x8)
 
   # Read and unpack wavelength information
-  wave_info <- readBin(f, integer(), n=3, size=2, endian="little")
+  wave_info <- readBin(f, integer(), n = 3, size = 2, endian = "little")
   lambda_start <- wave_info[1] %/% 20
   lambda_end <- wave_info[2] %/% 20
   delta_lambda <- wave_info[3] %/% 20
@@ -127,6 +127,7 @@ read_chemstation_uv <- function(path, read_metadata = TRUE,
 
   if (read_metadata){
     data <- structure(data, file_version = meta$file_type, sample_name = meta$sample_name,
+                      file_source = path,
                       operator = meta$operator, run_date = meta$date,
                       instrument = meta$detector,
                       method = meta$method, software_version = NA,

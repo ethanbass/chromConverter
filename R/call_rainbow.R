@@ -40,7 +40,9 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
                       "masshunter" = rb_read$read,
                       "chemstation" = rb_parse_agilent$chemstation$parse_file,
                       "chemstation_uv" = rb_parse_agilent$chemstation$parse_file,
-                      "chemstation_fid" = rb_parse_agilent$chemstation$parse_file)
+                      "chemstation_fid" = rb_parse_agilent$chemstation$parse_file,
+                      "chemstation_ch" = rb_parse_agilent$chemstation$parse_file,
+                      "default" = rb_read$read)
   if (format_in %in% c("chemstation", "chemstation_uv", "chemstation_fid")){
     by <- "single"
   }

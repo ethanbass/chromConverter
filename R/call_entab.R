@@ -47,7 +47,8 @@ call_entab <- function(file, data_format = c("wide","long"),
       meta <- c(meta, metadata_from_file)
     }
     x <- attach_metadata(x, meta, format_in = format_in, format_out = format_out,
-                         data_format = data_format, parser = "entab")
+                         data_format = data_format, parser = "entab",
+                         source_file = file)
   }
   x
 }

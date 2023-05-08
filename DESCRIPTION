@@ -1,13 +1,16 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.3.3
+Version: 0.4.0
 Authors@R: c(
     person(given = "Ethan", family = "Bass", email = "ethanbass@gmail.com",
                   role = c("aut", "cre"),
                   comment = c(ORCID = "0000-0002-6175-6739")),
     person(given = "James", family = "Dillon", role = c("ctb", "cph"),
-    comment = "Author and copyright holder of source code adapted from the
-    'Chromatography Toolbox' for parsing Agilent FID files.")
+    comment = c("Author and copyright holder of source code adapted from the
+    'Chromatography Toolbox' for parsing 'Agilent' FID files.")),
+    person(given = "Evan", family = "Shi", role = c("ctb", "cph"),
+    comment = c("Author and copyright holder of source code adapted from 'rainbow'
+    for parsing 'Agilent' UV files."))
     )
 Maintainer: Ethan Bass <ethanbass@gmail.com>
 Description: Reads chromatograms from binary formats into R objects. Currently supports conversion of 'Agilent ChemStation', 'Agilent MassHunter', and 'ThermoRaw' files as well as various text-based formats. Utilizes file parsers from external libraries, such as 'Aston' <https://github.com/bovee/aston>, 'Entab' <https://github.com/bovee/entab>, 'rainbow' <https://rainbow-api.readthedocs.io/>, and 'ThermoRawFileParser' <https://github.com/compomics/ThermoRawFileParser>.
@@ -30,6 +33,7 @@ Imports:
 Suggests: 
     entab,
     mzR,
+    ncdf4,
     pbapply,
     testthat (>= 3.0.0)
 Config/reticulate: list( packages = list( list(package = "scipy"),

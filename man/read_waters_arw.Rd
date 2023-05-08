@@ -6,16 +6,19 @@
 \usage{
 read_waters_arw(
   file,
-  read_metadata = TRUE,
-  format_out = c("matrix", "data.frame")
+  format_out = c("matrix", "data.frame"),
+  data_format = c("wide", "long"),
+  read_metadata = TRUE
 )
 }
 \arguments{
 \item{file}{path to file}
 
-\item{read_metadata}{Whether to read metadata from file.}
-
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+
+\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+
+\item{read_metadata}{Whether to read metadata from file.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}

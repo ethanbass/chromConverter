@@ -54,6 +54,12 @@ call from R.
 by \code{export_format} in the folder specified by \code{path_out}.
 }
 
+\references{
+Wenig, Philip and Odermatt, Juergen. OpenChrom: A Cross-Platform Open Source
+Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{
+BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405. \doi{
+10.1186/1471-2105-11-405}.
+}
 \author{
 Ethan Bass
 }

@@ -8,11 +8,13 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                                              "chemstation_fid", "chemstation_uv",
                                              "chromeleon_uv", "mzml",
                                              "shimadzu_fid", "shimadzu_dad",
-                                             "waters_arw"),
-                          aston = c("chemstation_uv", "masshunter_dad", "other"),
-                          entab = c("chemstation_uv", "chemstation_fid", "masshunter_dad", "thermoraw", "other"),
-                          rainbow = c("chemstation_uv", "waters_raw",
-                                      "agilent_d", "chemstation", "chemstation_fid"),
+                                             "waters_arw", "mdf", "cdf"),
+                          aston = c("chemstation", "chemstation_uv", "masshunter_dad", "other"),
+                          entab = c("chemstation", "chemstation_ch", "chemstation_fid",
+                          "chemstation_uv", "masshunter_dad", "thermoraw", "other"),
+                          rainbow = c("chemstation", "chemstation_ch", "chemstation_fid",
+                                      "chemstation_uv", "waters_raw",
+                                      "agilent_d"),
                           thermoraw = c("thermoraw")
   )
   if (find){
@@ -41,6 +43,22 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
 }
 
 #' @noRd
+format_to_extension <- function(format_in){
+  switch(format_in,
+         "agilent_d" = ".d|.D",
+         "chemstation_uv" = ".uv|.UV",
+          "chemstation_ch" = ".ch|.CH",
+         "chemstation_fid" = ".ch|.CH",
+          "chemstation_csv" = ".csv|.CSV",
+         "masshunter_dad" = ".sp|.SP",
+         "shimadzu_fid" = ".txt",
+         "shimadzu_dad" = ".txt",
+         "chromeleon_uv" = ".txt",
+    "thermoraw" = ".raw", "mzml" = ".mzml", "waters_arw" = ".arw",
+    "waters_raw" = ".raw", "msd" = ".", "csd" =".", "wsd" =".", "mdf" = ".mdf|.MDF", "other"=".")
+}
+
+#' @noRd
 find_files <- function(paths, pattern){
   files <- unlist(lapply(paths, function(path){
     files <- list.files(path = path, pattern = pattern,
@@ -58,46 +76,15 @@ find_files <- function(paths, pattern){
 }
 
 #' @noRd
-export_csvs <- function(data, path.out){
-  sapply(seq_along(data), function(i){
-    write.csv(data[[i]], file = paste0(paste0(path.out, names(data)[i]),".CSV"))
-  })
-}
-
-#' @noRd
 set_temp_directory <- function(){
   ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
   if (ans %in% c("y","Y")){
-    if (!dir.exists("temp"))
-      dir.create("temp")
-    path_out <- paste0(getwd(),'/temp/')
+    fs::dir_create("temp")
+    path_out <- fs::path(getwd(),"temp")
     path_out
   } else{
     stop("Must specify directory to export files.")
   }
-}
-
-#' Check path
-#' Check that path is properly formatted.
-#' @param path path as character string
-#' @noRd
-check_path <- function(path){
-  # check for leading slash
-  if (.Platform$OS.type %in% c("unix","linux")){
-    if (!(substr(path,1,1) %in% c("/", "~"))){
-      path <- paste0("/", path)
-    }
-  }
-
-  # check for trailing slash
-  n <- nchar(path)
-  if (substr(path, n, n) != "/"){
-    path <- paste0(path, "/")
-  }
-  if (.Platform$OS.type == "windows"){
-    path <- gsub("/", "\\\\", path)
-  }
-  path
 }
 
 #' Extract header from Shimadzu ascii files
@@ -120,17 +107,17 @@ extract_header <- function(x, chrom.idx, sep){
 
 #' Check for suggested package
 #' @noRd
+#' @keywords internal
 check_for_pkg <- function(pkg, return_boolean = FALSE){
   pkg_exists <- requireNamespace(pkg, quietly = TRUE)
-  if (!pkg_exists) {
+  if (return_boolean){
+    return(pkg_exists)
+  } else if (!pkg_exists) {
     stop(paste(
       "Package", sQuote(pkg), "must be installed to perform this action:
           try", paste0("`install.packages('", pkg, "')`.")),
       call. = FALSE
     )
-  }
-  if (return_boolean){
-    pkg_exists
   }
 }
 

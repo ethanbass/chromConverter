@@ -6,19 +6,19 @@
 \usage{
 read_chemstation_uv(
   path,
-  read_metadata = TRUE,
   format_out = c("matrix", "data.frame"),
-  data_format = c("wide", "long")
+  data_format = c("wide", "long"),
+  read_metadata = TRUE
 )
 }
 \arguments{
 \item{path}{Path to \code{.uv} file}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
-
 \item{format_out}{Matrix or data.frame}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
+
+\item{read_metadata}{Logical. Whether to attach metadata.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}

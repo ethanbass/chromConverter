@@ -6,16 +6,19 @@
 \usage{
 read_chemstation_ch(
   path,
-  read_metadata = TRUE,
-  format_out = c("matrix", "data.frame")
+  format_out = c("matrix", "data.frame"),
+  data_format = c("wide", "long"),
+  read_metadata = TRUE
 )
 }
 \arguments{
 \item{path}{Path to \code{.ch} file}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{format_out}{Matrix or data.frame.}
 
-\item{format_out}{Matrix or data.frame}
+\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+
+\item{read_metadata}{Logical. Whether to attach metadata.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}

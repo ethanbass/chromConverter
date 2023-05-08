@@ -10,16 +10,17 @@ read_chroms(
   format_in = c("agilent_d", "chemstation", "chemstation_uv", "chemstation_csv",
     "chemstation_ch", "chemstation_fid", "masshunter_dad", "shimadzu_fid",
     "shimadzu_dad", "chromeleon_uv", "thermoraw", "mzml", "waters_arw", "waters_raw",
-    "msd", "csd", "wsd", "other"),
+    "msd", "csd", "wsd", "mdf", "other"),
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   export = FALSE,
   path_out = NULL,
-  export_format = c("csv", "cdf", "mzml", "animl"),
+  export_format = c("csv", "chemstation_csv", "cdf", "mzml", "animl"),
   read_metadata = TRUE,
   progress_bar,
+  sample_names = NULL,
   dat = NULL
 )
 }
@@ -49,20 +50,25 @@ case file extension will be deduced from \code{format_in}.}
 \item{data_format}{Whether to output data in wide or long format. Either
 \code{wide} or \code{long}.}
 
-\item{export}{Logical. If TRUE, will export files as csvs.}
+\item{export}{Logical. If TRUE, the program will export files in the format
+specified by \code{export_format} in the directory specified by \code{path_out}.}
 
 \item{path_out}{Path for exporting files. If path not specified, files will
 export to current working directory.}
 
-\item{export_format}{Export format. Currently the only option is \code{.csv},
-unless you are using OpenChrom parsers, where you could have \code{csv},
-\code{cdf}, \code{mzml}, or \code{animl}.}
+\item{export_format}{Export format. Currently the options include \code{.csv},
+\code{chemstation_csv} (utf-16 encoding), and \code{cdf}, unless you are using
+OpenChrom parsers, where there are two additional options: \code{mzml}, and
+\code{animl}.}
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
 Defaults to TRUE.}
 
 \item{progress_bar}{Logical. Whether to show progress bar. Defaults to
 \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.}
+
+\item{sample_names}{An optional character vector of sample names. Otherwise
+sample names default to the basename of the specified files.}
 
 \item{dat}{Existing list of chromatograms to append results.
 (Defaults to NULL).}

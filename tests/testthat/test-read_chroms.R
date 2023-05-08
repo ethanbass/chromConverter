@@ -1,13 +1,13 @@
 library(testthat)
 
-path_csv <- "testdata/DAD1.CSV"
+path_csv <- "testdata/dad1.csv"
 path_uv <- "testdata/dad1.uv"
 
 x <- read_chroms(path_csv, format_in = "chemstation_csv", progress_bar = FALSE)
 
 test_that("aston parser works", {
   skip_if_missing_dependecies()
-  paths <- rep(path_uv,2)
+  paths <- rep(path_uv, 2)
   x1 <- read_chroms(paths, format_in = "chemstation_uv", parser = "aston",
                     find_files = FALSE,
                     read_metadata = TRUE, progress_bar = FALSE)
@@ -16,7 +16,8 @@ test_that("aston parser works", {
   expect_equal(length(x1), length(paths))
   expect_equal(class(x1[[1]])[1], "matrix")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
-  })
+  expect_equal(names(x1), c("dad1", "dad1"))
+})
 
 x1 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "chromconverter",
                   find_files = FALSE,
@@ -40,7 +41,7 @@ test_that ("extract_metadata function works", {
 
 test_that("entab parser works", {
   skip_if_not_installed("entab")
-  file <- "testdata/DAD1.uv"
+  file <- "testdata/dad1.uv"
   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE,
                     read_metadata = TRUE, progress_bar = FALSE)
@@ -51,45 +52,12 @@ test_that("entab parser works", {
   expect_equal(attr(x1[[1]], "data_format"), "wide")
 })
 
-
-# test_that("rainbow parser works", {
-#   skip_if_missing_dependecies()
-#   file <- "testdata/DAD1.uv"
-#   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "rainbow",
-#                     find_files = FALSE,
-#                     read_metadata = TRUE)
-#   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
-#   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
-#   expect_equal(class(x1[[1]])[1], "matrix")
-#   expect_equal(attr(x1[[1]], "parser"), "rainbow")
-#   expect_equal(attr(x1[[1]], "data_format"), "wide")
-# })
-
 test_that("shimadzu parser works", {
   file <- "testdata/ladder.txt"
   x <- read_chroms(file, format_in = "shimadzu_fid", find_files = FALSE, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 })
-
-test_that("check_path works on unix/linux", {
-  skip_on_os("windows")
-  expect_equal(check_path("~/Downloads"), "~/Downloads/")
-  expect_equal(check_path("Downloads"), "/Downloads/")
-  expect_equal(check_path("~/Downloads/"), "~/Downloads/")
-  expect_equal(check_path("/Users/foo/"), "/Users/foo/")
-  expect_equal(check_path("Users/foo/"), "/Users/foo/")
-  expect_equal(check_path("/Users/foo"), "/Users/foo/")
-  expect_equal(check_path("Users/foo"), "/Users/foo/")
-})
-
-# test_that("thermoraw parser works",{
-#   skip_if_not(configure_thermo_parser(check = TRUE))
-#   file <- "/Users/ethanbass/Downloads/chrom_files/small.RAW"
-#   x <- read_chroms(file, format_in = "thermoraw", find_files = FALSE)
-#   expect_equal(class(x[[1]])[1], "matrix")
-#   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
-# })
 
 test_that("read_mzml works", {
   ext_filepath <- system.file("extdata", package = "RaMS")
@@ -109,3 +77,61 @@ test_that("read_mzml works", {
 test_that("get_filetype works as expected", {
   expect_equal(get_filetype(path_uv), "chemstation_uv")
 })
+
+# test_that("thermoraw parser works",{
+#   skip_if_not(configure_thermo_parser(check = TRUE))
+#   file <- "/Users/ethanbass/Downloads/chrom_files/small.RAW"
+#   x <- read_chroms(file, format_in = "thermoraw", find_files = FALSE)
+#   expect_equal(class(x[[1]])[1], "matrix")
+#   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
+# })
+
+# test_that("rainbow parser works", {
+#   skip_if_missing_dependecies()
+#   file <- "testdata/DAD1.uv"
+#   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "rainbow",
+#                     find_files = FALSE,
+#                     read_metadata = TRUE)
+#   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
+#   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
+#   expect_equal(class(x1[[1]])[1], "matrix")
+#   expect_equal(attr(x1[[1]], "parser"), "rainbow")
+#   expect_equal(attr(x1[[1]], "data_format"), "wide")
+# })
+
+# test_that("check_path works on unix/linux", {
+#   skip_on_os("windows")
+#   expect_equal(check_path("~/Downloads"), "~/Downloads/")
+#   expect_equal(check_path("Downloads"), "/Downloads/")
+#   expect_equal(check_path("~/Downloads/"), "~/Downloads/")
+#   expect_equal(check_path("/Users/foo/"), "/Users/foo/")
+#   expect_equal(check_path("Users/foo/"), "/Users/foo/")
+#   expect_equal(check_path("/Users/foo"), "/Users/foo/")
+#   expect_equal(check_path("Users/foo"), "/Users/foo/")
+# })
+
+test_that("read_chroms exports csvs correctly", {
+  skip_on_cran()
+  path_out <-  tempdir(check = TRUE)
+  on.exit(unlink(c(fs::path(path_out, "dad1", ext = "csv"), path_out)))
+  x1 <- read_chroms(paths = path_uv, export=TRUE, path_out = path_out,
+                    export_format="csv", format_out = "data.frame",
+                    progress_bar = FALSE)
+  x1_out <- read.csv(fs::path(path_out, "dad1", ext="csv"), row.names=1)
+  expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
+  # unlink(fs::path(path_out, "dad1", ext = "csv"))
+  # unlink(path_out)
+})
+
+test_that("read_chroms exports cdf files correctly", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+  path_out <-  tempdir(check = TRUE)
+  on.exit(unlink(c(fs::path(path_out, "ladder", ext = "cdf"), path_out)))
+  file <- "testdata/ladder.txt"
+  x1 <- read_chroms(paths = file, format_in = "shimadzu_fid", export = TRUE, path_out = path_out,
+                    export_format = "cdf", progress_bar = FALSE)
+  x1_out <- read_cdf(fs::path(path_out, "ladder", ext = "cdf"))
+  expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
+})
+

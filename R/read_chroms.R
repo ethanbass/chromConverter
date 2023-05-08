@@ -34,16 +34,20 @@
 #' @param format_out R object format (i.e. data.frame or matrix).
 #' @param data_format Whether to output data in wide or long format. Either
 #' \code{wide} or \code{long}.
-#' @param export Logical. If TRUE, will export files as csvs.
+#' @param export Logical. If TRUE, the program will export files in the format
+#' specified by \code{export_format} in the directory specified by \code{path_out}.
 #' @param path_out Path for exporting files. If path not specified, files will
 #' export to current working directory.
-#' @param export_format Export format. Currently the only option is \code{.csv},
-#' unless you are using OpenChrom parsers, where you could have \code{csv},
-#' \code{cdf}, \code{mzml}, or \code{animl}.
+#' @param export_format Export format. Currently the options include \code{.csv},
+#' \code{chemstation_csv} (utf-16 encoding), and \code{cdf}, unless you are using
+#' OpenChrom parsers, where there are two additional options: \code{mzml}, and
+#' \code{animl}.
 #' @param read_metadata Logical, whether to attach metadata (if it's available).
 #' Defaults to TRUE.
 #' @param progress_bar Logical. Whether to show progress bar. Defaults to
 #' \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.
+#' @param sample_names An optional character vector of sample names. Otherwise
+#' sample names default to the basename of the specified files.
 #' @param dat Existing list of chromatograms to append results.
 #' (Defaults to NULL).
 #' @return A list of chromatograms in \code{matrix} or \code{data.frame} format,
@@ -67,15 +71,16 @@ read_chroms <- function(paths, find_files,
                                     "chemstation_fid", "masshunter_dad",
                                     "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                     "thermoraw", "mzml", "waters_arw", "waters_raw",
-                                    "msd", "csd", "wsd", "other"),
+                                    "msd", "csd", "wsd", "mdf", "other"),
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
                                    "thermoraw", "openchrom", "rainbow"),
                         format_out = c("matrix", "data.frame"),
                         data_format = c("wide","long"),
                         export = FALSE, path_out = NULL,
-                        export_format = c("csv", "cdf", "mzml", "animl"),
-                        read_metadata = TRUE, progress_bar, dat = NULL){
+                        export_format = c("csv", "chemstation_csv", "cdf", "mzml", "animl"),
+                        read_metadata = TRUE, progress_bar, sample_names = NULL,
+                        dat = NULL){
   data_format <- match.arg(data_format, c("wide","long"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   parser <- match.arg(parser, c("", "chromconverter", "aston","entab",
@@ -110,14 +115,18 @@ read_chroms <- function(paths, find_files,
                                       "chemstation_csv", "masshunter_dad",
                                       "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                       "thermoraw", "mzml", "waters_arw",
-                                      "waters_raw", "msd", "csd", "wsd", "other"))
+                                      "waters_raw", "msd", "csd", "wsd", "mdf",
+                                      "cdf", "other"))
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
   }
-  export_format <- match.arg(export_format, c("csv", "cdf", "mzml", "animl"))
+  export_format <- match.arg(export_format, choices =
+                               c("csv", "chemstation_csv", "cdf", "mzml", "animl"))
   check_parser(format_in, parser)
-  if (parser != "openchrom" & export_format != "csv")
-    stop("Only `csv` format is currently supported for exporting files unless the parser is `openchrom`.")
+  if (parser != "openchrom" && !(export_format %in% c("csv", "chemstation_csv", "cdf")))
+    stop("The selected export format is currently only supported by `openchrom` parsers.")
+  # if (export_format == "cdf" && format_in != "mdf" && parser != "openchrom")
+    # stop("Currently CDF exports are only available for MDF files.")
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
     stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
@@ -127,19 +136,16 @@ read_chroms <- function(paths, find_files,
   if (all(!exists)){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
-  if (!is.null(path_out)){
-    path_out <- check_path(path_out)
-  }
   if (export | format_in == "thermoraw" | parser == "openchrom"){
     if (is.null(path_out)){
       path_out <- set_temp_directory()
     }
     if (!dir.exists(path_out)){
-      stop(paste0("The export directory '", path_out, "' does not exist."))
+      stop(paste0("The export directory '", path_out, "' could not be found."))
     }
   }
   if (is.null(dat)){
-    dat<-list()}
+    dat <- list()}
 
   # choose converter
   entab_parser <- partial(call_entab, format_in = format_in,
@@ -178,21 +184,24 @@ read_chroms <- function(paths, find_files,
     converter <- rainbow_parser
     } else if (format_in == "chromeleon_uv"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
-    converter <- partial(read_chromeleon, read_metadata = read_metadata, format_out = format_out)
+    converter <- partial(read_chromeleon, format_out = format_out,
+                         data_format = data_format, read_metadata = read_metadata)
   } else if (format_in == "shimadzu_fid"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
     converter <- partial(read_shimadzu, format_in = "fid",
-                         read_metadata = read_metadata, format_out = format_out)
+                         format_out = format_out, data_format = data_format,
+                         read_metadata = read_metadata)
   } else if (format_in == "shimadzu_dad"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
     converter <- partial(read_shimadzu, format_in = "dad",
-                         read_metadata = read_metadata, format_out = format_out)
+                         format_out = format_out, data_format = data_format,
+                         read_metadata = read_metadata)
     } else if (format_in == "thermoraw"){
     pattern <- ifelse(is.null(pattern), ".raw", pattern)
     converter <- switch(parser,
                     "thermoraw" = partial(read_thermoraw, path_out = path_out,
-                                            read_metadata = read_metadata,
-                                            format_out = format_out),
+                                          format_out = format_out,
+                                          read_metadata = read_metadata),
                      "entab" = entab_parser)
   } else if (format_in == "mzml"){
     pattern <- ifelse(is.null(pattern), ".mzML", pattern)
@@ -207,11 +216,12 @@ read_chroms <- function(paths, find_files,
     pattern <- ifelse(is.null(pattern), ".csv|.CSV", pattern)
     converter <- partial(read_chemstation_csv, format_out = format_out)
   } else if (format_in %in% c("chemstation_fid", "chemstation_ch")){
-    data_format <- "long"
     pattern <- ifelse(is.null(pattern), ".ch", pattern)
     converter <- switch(parser,
-                        "chromconverter" = partial(read_chemstation_ch, read_metadata = read_metadata,
-                         format_out = format_out),
+                        "chromconverter" = partial(read_chemstation_ch,
+                                                   format_out = format_out,
+                                                   data_format = data_format,
+                                                   read_metadata = read_metadata),
                         "rainbow" = rainbow_parser,
                         "entab" = entab_parser)
   } else if (format_in %in% c("msd", "csd", "wsd")){
@@ -222,7 +232,17 @@ read_chroms <- function(paths, find_files,
     converter <- partial(call_openchrom, path_out = path_out,
                          format_in = format_in, export_format = export_format,
                          return_paths = return_paths)
-  } else{
+  } else if (format_in == "mdf"){
+    pattern <- ifelse(is.null(pattern), ".mdf|.MDF", pattern)
+    converter <- partial(read_mdf, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata)
+  } else if (format_in == "cdf"){
+      pattern <- ifelse(is.null(pattern), ".cdf|.CDF", pattern)
+      converter <- partial(read_cdf, format_out = format_out,
+                           data_format = data_format,
+                           read_metadata = read_metadata)
+  } else {
     converter <- switch(parser,
                         "aston" = partial(trace_converter, format_out = format_out,
                                           data_format = data_format,
@@ -230,11 +250,10 @@ read_chroms <- function(paths, find_files,
                         "entab" = entab_parser
     )
   }
-  writer <- switch(export_format, "csv" = export_csvs)
 
   if (find_files){
     files <- find_files(paths, pattern)
-  } else{
+  } else {
     files <- paths
     if (!is.null(pattern)){
     match <- grep(pattern, files, ignore.case = TRUE)
@@ -249,12 +268,12 @@ read_chroms <- function(paths, find_files,
     }
   }
 
-  if (format_in %in% c("chemstation_uv", "masshunter_dad", "chemstation", "chemstation_fid")){
+  if (all(grepl(".d$", files, ignore.case = TRUE))){
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n){
-                         ifelse(any(grepl("\\.[Dd]", n)), grep("\\.[Dd]", n, value=TRUE), tail(n,1))
-                       } ))
+                         ifelse(any(grepl("\\.[Dd]", n)), grep("\\.[Dd]", n, value = TRUE), tail(n,1))
+                       }))
   } else {file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])}
   if (parser != "openchrom"){
     laplee <- choose_apply_fnc(progress_bar)
@@ -272,8 +291,16 @@ read_chroms <- function(paths, find_files,
   } else{
     data <- converter(files)
   }
-  names(data) <- file_names
+  if (!is.null(sample_names)){
+    names(data) <- sample_names
+  } else{
+    names(data) <- file_names
+  }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
+    writer <- switch(export_format, csv = export_csvs,
+                     chemstation_csv = purrr::partial(export_csvs, fileEncoding = "utf16"),
+                     cdf = export_cdfs)
+
     writer(data, path_out)
   }
   dat <- append(dat, data)
