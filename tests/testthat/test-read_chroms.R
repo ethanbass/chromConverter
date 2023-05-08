@@ -1,6 +1,6 @@
 library(testthat)
 
-path_csv <- "testdata/DAD1.CSV"
+path_csv <- "testdata/dad1.csv"
 path_uv <- "testdata/dad1.uv"
 
 x <- read_chroms(path_csv, format_in = "chemstation_csv", progress_bar = FALSE)
@@ -41,7 +41,7 @@ test_that ("extract_metadata function works", {
 
 test_that("entab parser works", {
   skip_if_not_installed("entab")
-  file <- "testdata/DAD1.uv"
+  file <- "testdata/dad1.uv"
   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE,
                     read_metadata = TRUE, progress_bar = FALSE)
