@@ -8,7 +8,7 @@ Read peak list from 'Varian MS Workstation'.}
 read_varian_peaklist(file)
 }
 \arguments{
-\item{file}{Path to varian peaklist file.}
+\item{file}{Path to Varian peak list file.}
 }
 \description{
 Read varian peaklist.

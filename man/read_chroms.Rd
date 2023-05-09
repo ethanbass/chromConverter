@@ -31,11 +31,11 @@ read_chroms(
 the function with a folder or vector of folders containing the files.
 Otherwise, set to\code{FALSE}.}
 
-\item{format_in}{Format of files to be imported/converted. The current options
-are: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_ch},
+\item{format_in}{Format of files to be imported/converted. Current options
+include: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_ch},
 \code{chemstation_csv}, \code{masshunter}, \code{masshunter_dad},
 \code{shimadzu_fid}, \code{shimadzu_dad}, \code{chromeleon_uv},
-\code{agilent_d}, \code{thermoraw}, \code{mzml},
+\code{agilent_d}, \code{thermoraw}, \code{mzml}, \code{cdf}, \code{mdf},
 \code{waters_arw}, \code{waters_raw}, \code{msd}, \code{csd}, \code{wsd},
 or \code{other}.}
 
@@ -43,7 +43,8 @@ or \code{other}.}
 case file extension will be deduced from \code{format_in}.}
 
 \item{parser}{What parser to use. Current option are \code{chromconverter},
-\code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, or \code{rainbow}.}
+\code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, or
+\code{rainbow}.}
 
 \item{format_out}{R object format (i.e. data.frame or matrix).}
 
@@ -57,9 +58,9 @@ specified by \code{export_format} in the directory specified by \code{path_out}.
 export to current working directory.}
 
 \item{export_format}{Export format. Currently the options include \code{.csv},
-\code{chemstation_csv} (utf-16 encoding), and \code{cdf}, unless you are using
-OpenChrom parsers, where there are two additional options: \code{mzml}, and
-\code{animl}.}
+\code{chemstation_csv} (utf-16 encoding), and \code{cdf}, unless you are
+using OpenChrom parsers, where there are two additional options: \code{mzml},
+and \code{animl}.}
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
 Defaults to TRUE.}
@@ -78,27 +79,28 @@ A list of chromatograms in \code{matrix} or \code{data.frame} format,
 according to the value of \code{format_out}.
 }
 \description{
-Reads chromatograms from specified folders or vector of paths using file parsers
-from \href{https://github.com/bovee/aston}{Aston}, \href{https://github.com/bovee/entab}{Entab},
+Reads chromatograms from specified folders or vector of paths using file
+parsers from \href{https://github.com/bovee/aston}{Aston},
+\href{https://github.com/bovee/entab}{Entab},
 \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser},
 \href{https://lablicate.com/platform/openchrom}{OpenChrom},
 \href{https://rainbow-api.readthedocs.io/}{rainbow}, or internal parsers.
 }
 \details{
 Provides a general interface to chromConverter parsers. Currently recognizes
-'Agilent ChemStation' (\code{.uv}, \code{.ch}), 'MassHunter' (\code{.dad}) files,
-'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW' (\code{.raw}),
-'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII' (\code{.txt}). Also, wraps
-Openchrom parsers, which include many additional formats. To use 'Entab',
-'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
-Please see the instructions in the \href{https://ethanbass.github.io/chromConverter/}{README}
-for further details.
+'Agilent ChemStation' (\code{.uv}, \code{.ch}), 'MassHunter' (\code{.dad})
+files, 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW'
+(\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
+(\code{.txt}). Also, wraps Openchrom parsers, which include many additional
+formats. To use 'Entab', 'ThermoRawFileParser', or 'Openchrom' parsers,
+they must be manually installed. Please see the instructions in the
+\href{https://ethanbass.github.io/chromConverter/}{README} for further details.
 }
 \section{Side effects}{
  If \code{export} is TRUE, chromatograms will be
-exported in the format specified by \code{export_format} in the folder specified
-by \code{path_out}. Currently, the only option for export is \code{csv} unless
-the \code{parser} is \code{openchrom}.
+exported in the format specified by \code{export_format} in the folder
+specified by \code{path_out}. Currently, the only option for export is
+\code{csv} unless the \code{parser} is \code{openchrom}.
 }
 
 \examples{

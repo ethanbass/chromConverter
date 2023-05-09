@@ -28,7 +28,8 @@ A chromatogram in the format specified by \code{format_out}
 Parser for reading Agilent ('.ch') files into R
 }
 \note{
-This function was adapted from the \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
+This function was adapted from the
+\href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 ((c) James Dillon 2014).
 }
 \author{

@@ -36,15 +36,17 @@ system call to the command-line interface. To use this function
 \details{
 The \code{call_openchrom} works by creating an \code{xml} batchfile and
 feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
-consist of \code{InputEntries} (the files you want to convert) and \code{
-ProcessEntries} (what you want to do to the files). The parsers are organized
-into broad categories by detector-type and output format. The detector-types
-are \code{msd} (mass selective detectors), \code{csd} (current selective
-detectors, e.g. FID, ECD, NPD), and \code{wsd} (wavelength selective
-detectors, e.g.  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
-you must select one of these three options for the input format (\code{format_in}).
-
-\strong{Note:} Turning on the OpenChrom command-line will deactivate the graphical
+consist of \code{InputEntries} (the files you want to convert) and
+\code{ProcessEntries} (what you want to do to the files). The parsers are
+organized into broad categories by detector-type and output format. The
+detector-types are \code{msd} (mass selective detectors), \code{csd}
+(current selective detectors, e.g. FID, ECD, NPD), and \code{wsd}
+(wavelength selective detectors, e.g.  DAD, and UV/VIS). Thus, when calling
+the OpenChrom parsers, you must select one of these three options for the
+input format (\code{format_in}).
+}
+\note{
+Turning on the OpenChrom command-line will deactivate the graphical
 user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
 it is recommended to create a separate command-line version of OpenChrom to
 call from R.
@@ -57,8 +59,8 @@ by \code{export_format} in the folder specified by \code{path_out}.
 \references{
 Wenig, Philip and Odermatt, Juergen. OpenChrom: A Cross-Platform Open Source
 Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{
-BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405. \doi{
-10.1186/1471-2105-11-405}.
+BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405.
+\doi{10.1186/1471-2105-11-405}.
 }
 \author{
 Ethan Bass

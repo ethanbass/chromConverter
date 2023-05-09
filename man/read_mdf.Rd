@@ -12,7 +12,7 @@ read_mdf(
 )
 }
 \arguments{
-\item{file}{Path to a 'Lumex' \code{.mdf} file}
+\item{file}{The path to a 'Lumex' \code{.mdf} file.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 

@@ -1,5 +1,5 @@
 #' Read MDF files into R
-#' @param file Path to a 'Lumex' \code{.mdf} file
+#' @param file The path to a 'Lumex' \code{.mdf} file.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.

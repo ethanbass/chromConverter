@@ -7,7 +7,8 @@
 #' @author Ethan Bass
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
-#' @note This function was adapted from the \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
+#' @note This function was adapted from the
+#' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
 #' @export
 
@@ -111,8 +112,8 @@ cc_trim_str <- function(x, len=2){
   substr(x, len, nchar(x))
 }
 
+#' Find .D folder
 #' @noRd
-# check for .D folder
 get_chemstation_dir_name <- function(path){
   dir <- gsub(basename(path), "", path)
   sp <- str_split_fixed(dir, "/", stringr::str_count(dir,"/")+1)[1,]
@@ -124,9 +125,11 @@ get_nchar <- function(f){
   as.numeric(readBin(f, what = "raw", n = 1))
 }
 
+#' Decode double delta array
 #' @noRd
-#' @note This function was adapted from the \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox} ((c) James Dillon 2014).
-
+#' @note This function was adapted from the
+#' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
+#' ((c) James Dillon 2014).
 decode_double_delta <- function(file, offset) {
 
   seek(file, 0, 'end')
@@ -161,9 +164,11 @@ decode_double_delta <- function(file, offset) {
   return(signal)
 }
 
+#' Decode double array
 #' @noRd
-#' @note This function was adapted from the \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox} ((c) James Dillon 2014).
-
+#' @note This function was adapted from the
+#' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
+#' ((c) James Dillon 2014).
 decode_double_array <- function(file, offset) {
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
@@ -176,8 +181,11 @@ decode_double_array <- function(file, offset) {
   return(signal)
 }
 
+#' Decode delta array
 #' @noRd
-#' @note This function was adapted from the \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox} ((c) James Dillon 2014).
+#' @note This function was adapted from the
+#' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
+#' ((c) James Dillon 2014).
 decode_delta <- function(file, offset) {
     seek(file, 0, 'end')
     fsize <- seek(file, NA, "current")
@@ -215,6 +223,7 @@ decode_delta <- function(file, offset) {
   return(signal)
 }
 
+#' Get Agilent offsets
 #' @noRd
 get_agilent_offsets <- function(version){
   if (version %in% c("179","181")){

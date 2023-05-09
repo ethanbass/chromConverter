@@ -1,6 +1,6 @@
 #' Read varian peaklist.
 #' Read peak list from 'Varian MS Workstation'.
-#' @param file Path to varian peaklist file.
+#' @param file Path to Varian peak list file.
 #' @importFrom utils read.csv
 #' @author Ethan Bass
 #' @export
