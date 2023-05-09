@@ -100,14 +100,18 @@ of chromatograms in <code>data.frame</code> format. Otherwise, it will not retur
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The <code>call_openchrom</code> works by creating an <code>xml</code> batchfile and
 feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
-consist of <code>InputEntries</code> (the files you want to convert) and <code>
-ProcessEntries</code> (what you want to do to the files). The parsers are organized
-into broad categories by detector-type and output format. The detector-types
-are <code>msd</code> (mass selective detectors), <code>csd</code> (current selective
-detectors, e.g. FID, ECD, NPD), and <code>wsd</code> (wavelength selective
-detectors, e.g.  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers,
-you must select one of these three options for the input format (<code>format_in</code>).</p>
-<p><strong>Note:</strong> Turning on the OpenChrom command-line will deactivate the graphical
+consist of <code>InputEntries</code> (the files you want to convert) and
+<code>ProcessEntries</code> (what you want to do to the files). The parsers are
+organized into broad categories by detector-type and output format. The
+detector-types are <code>msd</code> (mass selective detectors), <code>csd</code>
+(current selective detectors, e.g. FID, ECD, NPD), and <code>wsd</code>
+(wavelength selective detectors, e.g.  DAD, and UV/VIS). Thus, when calling
+the OpenChrom parsers, you must select one of these three options for the
+input format (<code>format_in</code>).</p>
+    </div>
+    <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>Turning on the OpenChrom command-line will deactivate the graphical
 user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
 it is recommended to create a separate command-line version of OpenChrom to
 call from R.</p>
@@ -121,8 +125,8 @@ by <code>export_format</code> in the folder specified by <code>path_out</code>.<
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Wenig, Philip and Odermatt, Juergen. OpenChrom: A Cross-Platform Open Source
 Software for the Mass Spectrometric Analysis of Chromatographic Data. <em>
-BMC Bioinformatics</em> <b>11</b>, no. 1 (July 30, 2010): 405. <a href="https://doi.org/%0A10.1186/1471-2105-11-405" class="external-link">doi:
-10.1186/1471-2105-11-405</a>
+BMC Bioinformatics</em> <b>11</b>, no. 1 (July 30, 2010): 405.
+<a href="https://doi.org/10.1186/1471-2105-11-405" class="external-link">doi:10.1186/1471-2105-11-405</a>
 .</p>
     </div>
     <div class="section level2">
