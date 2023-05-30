@@ -14,7 +14,9 @@ If "false", R will disable CLI. If NULL, R will not modify the ini file.}
 overwrite the current path.}
 }
 \value{
-Returns path to OpenChrom command-line application
+If \code{cli} is set to \code{"status"}, returns a Boolean value
+indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
+the path to OpenChrom command-line application.
 }
 \description{
 Configure OpenChrom parser

@@ -24,11 +24,12 @@ read_chemstation_ch <- function(path, format_out = c("matrix","data.frame"),
   # HEADER
   seek(f, 1, "start")
   version <- readBin(f, "character", n = 1)
-  version <- match.arg(version, choices = c("8", "81", "130", "179", "181"))
+  version <- match.arg(version, choices = c("8", "81", "30", "130", "179", "181"))
   offsets <- get_agilent_offsets(version)
   decoder <- switch(version,
                     "8" = decode_delta,
                     "81" = decode_double_delta,
+                    "30" = decode_delta,
                     "130" = decode_delta,
                     "181" = decode_double_delta,
                     "179" = decode_double_array)
@@ -46,7 +47,7 @@ read_chemstation_ch <- function(path, format_out = c("matrix","data.frame"),
   seek(f, where = 282, origin = "start")
   seek(f, where = 282, origin = "start")
 
-  if (version %in% c("8","130")){
+  if (version %in% c("8", "30", "130")){
     xmin <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE, endian = "big")) / 60000
     xmax <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE, endian = "big")) / 60000
   } else {
@@ -74,6 +75,7 @@ read_chemstation_ch <- function(path, format_out = c("matrix","data.frame"),
     if (read_metadata){
       meta_slots <- switch(version, "8" = 9,
                                     "81" = 9,
+                                    "30" = 11,
                                     "130" = 12,
                                     "181" = 9,
                                     "179" = 9)
@@ -81,7 +83,11 @@ read_chemstation_ch <- function(path, format_out = c("matrix","data.frame"),
     meta <- lapply(offsets[seq_len(meta_slots)], function(offset){
       seek(f, where = offset, origin = "start")
       n <- get_nchar(f)
-      cc_collapse(readBin(f, "character", n = n))
+      if (version == "30"){
+        readBin(f, what = "character")
+      } else{
+        cc_collapse(readBin(f, "character", n = n))
+      }
     })
   if (read_metadata){
     datetime_regex <- "(\\d{2}-[A-Za-z]{3}-\\d{2}, \\d{2}:\\d{2}:\\d{2})|(\\d{2}/\\d{2}/\\d{4} \\d{1,2}:\\d{2}:\\d{2} (?:AM|PM)?)"
@@ -177,7 +183,7 @@ decode_double_array <- function(file, offset) {
   seek(file, offset, "start")
   signal <- readBin(file, what = "double", size = 4, endian = "little",
                     n = (fsize - offset))
-  signal <- signal[seq(2,length(signal),2)]
+  signal <- signal[seq(2, length(signal), 2)]
   return(signal)
 }
 
@@ -264,12 +270,12 @@ get_agilent_offsets <- function(version){
       software_revision = 3802, #'utf16'
       units = 4172, # 'utf16'
       signal = 4213, # 'utf16'
-      zero = 4110, # INT32
+      intercept = 4110, # INT32
       scaling_factor = 4732) #ENDIAN + 'd'
   } else if (version == 30){
     offsets <- list(
       file_type = 4, # utf16
-      # sample_name = 858, # utf16
+      sample_name = 24, # utf16
       operator = 148, # utf16
       date = 178, # utf16
       # inlet = 2492, # utf16
@@ -280,8 +286,8 @@ get_agilent_offsets <- function(version){
       software_revision = 405, #'utf16'
       units = 580, # 'utf16'
       signal = 596, # 'utf16'
-      zero = 4110, # INT32
-      scaling_factor = 4732,
+      intercept = 636, # INT32
+      scaling_factor = 644,
       data_start = 1024 #ENDIAN + 'd'
     )
   } else if (version %in% c("8","81")){

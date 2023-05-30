@@ -4,10 +4,16 @@
 \alias{configure_rainbow}
 \title{Configure rainbow}
 \usage{
-configure_rainbow()
+configure_rainbow(return_boolean = FALSE)
+}
+\arguments{
+\item{return_boolean}{Logical. Whether to return a Boolean value indicating
+if the chromConverter environment is correctly configured.}
 }
 \value{
-No return value.
+If \code{return_boolean} is \code{TRUE}, returns a Boolean value
+indicating whether the chromConverter environment is configured correctly.
+Otherwise, there is no return value.
 }
 \description{
 Configures reticulate to use rainbow file parsers.

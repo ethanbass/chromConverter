@@ -121,11 +121,15 @@ trace_converter <- function(file, format_out = c("matrix", "data.frame"),
 #'
 #' Configures reticulate to use Aston file parsers.
 #' @name configure_aston
-#' @return No return value.
+#' @param return_boolean Logical. Whether to return a Boolean value indicating
+#' if the chromConverter environment is correctly configured.
+#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
+#' indicating whether the chromConverter environment is configured correctly.
+#' Otherwise, there is no return value.
 #' @author Ethan Bass
 #' @import reticulate
 #' @export
-configure_aston <- function(){
+configure_aston <- function(return_boolean=FALSE){
   install <- FALSE
   # path <- miniconda_path()
   if (!dir.exists(miniconda_path())){
@@ -146,6 +150,9 @@ configure_aston <- function(){
     }
   }
   assign_trace_file()
+  if (return_boolean){
+    return(env)
+  }
 }
 
 #' @noRd

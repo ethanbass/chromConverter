@@ -140,7 +140,9 @@ write_openchrom_batchfile <- function(files, path_out,
 #' @param path Path to 'OpenChrom' executable (Optional). The supplied path will
 #' overwrite the current path.
 #' @importFrom utils read.table write.table
-#' @return Returns path to OpenChrom command-line application
+#' @return If \code{cli} is set to \code{"status"}, returns a Boolean value
+#' indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
+#' the path to OpenChrom command-line application.
 #' @author Ethan Bass
 #' @export
 

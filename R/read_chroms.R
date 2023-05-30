@@ -107,7 +107,7 @@ read_chroms <- function(paths, find_files,
   }
   if (length(format_in) > 1){
     if (!find_files){
-      format_in <- get_filetype(ifelse(length(paths)>1, paths[[1]], paths))
+      format_in <- get_filetype(paths[1])
     } else{
         stop("Please specify the file format of your chromatograms by setting the `format_in` argument.")
     }
@@ -269,14 +269,15 @@ read_chroms <- function(paths, find_files,
     }
     }
   }
-
   if (all(grepl(".d$", files, ignore.case = TRUE))){
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n){
                          ifelse(any(grepl("\\.[Dd]", n)), grep("\\.[Dd]", n, value = TRUE), tail(n,1))
                        }))
-  } else {file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])}
+  } else {
+    file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
+  }
   if (parser != "openchrom"){
     laplee <- choose_apply_fnc(progress_bar)
     data <- laplee(X = files, function(file){

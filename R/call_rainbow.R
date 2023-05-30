@@ -113,11 +113,15 @@ extract_rb_names <- function(xx){
 #'
 #' Configures reticulate to use rainbow file parsers.
 #' @name configure_rainbow
-#' @return No return value.
+#' @param return_boolean Logical. Whether to return a Boolean value indicating
+#' if the chromConverter environment is correctly configured.
+#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
+#' indicating whether the chromConverter environment is configured correctly.
+#' Otherwise, there is no return value.
 #' @author Ethan Bass
 #' @import reticulate
 #' @export
-configure_rainbow <- function(){
+configure_rainbow <- function(return_boolean = FALSE){
   install <- FALSE
   if (!dir.exists(miniconda_path())){
     install <- readline("It is recommended to install miniconda in your R library to use rainbow parsers. Install miniconda now? (y/n)")
@@ -134,6 +138,9 @@ configure_rainbow <- function(){
     }
   }
   assign_rb_read()
+  if (return_boolean){
+    env
+  }
 }
 
 #' @noRd

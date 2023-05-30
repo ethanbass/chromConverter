@@ -1,3 +1,21 @@
+## chromConverter 0.4.1
+
+### New features 
+
+* Added support for "Chemstation" UV (`.ch`) files (version 30).
+
+### Minor improvements
+
+* Updated `read_chromeleon` to better deal with comma decimal separators in metadata.
+* Updated `read_chromeleon` to deal with more datetime formats.
+* Updated `read_chromeleon` to deal with unicode microliters.
+* Added tests for rainbow parser and `read_chemstation_ch`.
+
+### Bug fixes
+
+* Fixed bug preventing compilation of PDF manual.
+* Fixed new bug causing failure to correctly read names of chemstation files from .D directory.
+
 ## chromConverter 0.4.0
 
 ### New features

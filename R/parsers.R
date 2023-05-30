@@ -16,10 +16,13 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
   xx <- readLines(file)
+  xx <- remove_unicode_chars(xx)
   start <- tail(grep("Data:", xx), 1)
-  x <- read.csv(file, skip = start, sep="\t")
+  x <- read.csv(file, skip = start, sep="\t", row.names = NULL)
   x <- x[,-2, drop = FALSE]
+  x <- x[,colSums(is.na(x)) < nrow(x)]
   if (any(grepl(",",as.data.frame(x)[-1,2]))){
+    decimal_separator <- ","
     x <- apply(x, 2, function(x) gsub("\\.", "", x))
     x <- apply(x, 2, function(x) gsub(",", ".", x))
   }
@@ -34,6 +37,9 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
   }
   if (read_metadata){
     meta <- try(read_chromeleon_metadata(xx))
+    if (decimal_separator == ","){
+      meta <- lapply(meta, function(x) gsub(",",".",x))
+    }
     if (!inherits(meta, "try-error")){
       x <- attach_metadata(x, meta, format_in = "chromeleon", format_out = format_out,
                            data_format = "wide", parser = "chromConverter",

@@ -65,14 +65,27 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               parser = "chromConverter",
               format_out = format_out)
   }, "chromeleon" = {
+    datetime.idx <- unlist(sapply(c("Date$","Time$"), function(str) grep(str, names(meta))))
+    datetime <- unlist(meta[datetime.idx])
+    if (length(datetime > 1)){
+      datetime <- paste(datetime, collapse=" ")
+    }
+    datetime <- as.POSIXct(datetime, format = c("%m/%d/%Y %H:%M:%S", "%d.%m.%Y %H:%M:%S",
+                                      "%m/%d/%Y %H:%M:%S %p %z"))
+    datetime <- datetime[!is.na(datetime)]
+    time_interval_unit <- tryCatch({
+      get_time_unit(grep("Average Step", names(meta), value = TRUE)[1],
+                    format_in = "chromeleon")}, error = function(err) NA)
+    time_unit <- tryCatch({
+      get_time_unit(grep("Time Min.", names(meta), value = TRUE)[1],
+                    format_in="chromeleon")}, error = function(err) NA)
     structure(x, instrument = NA,
               detector = meta$Detector,
               software = meta$`Generating Data System`,
               method = meta$`Instrument Method`,
               batch = NA,
               operator = meta$`Operator`,
-              run_datetime = as.POSIXct(paste(meta$`Injection Date`, meta$`Injection Time`),
-                                        format = "%m/%d/%Y %H:%M:%S"),
+              run_datetime = datetime,
               # run_date = meta$`Injection Date`,
               # run_time = meta$`Injection Time`,
               sample_name = meta$Injection,
@@ -82,13 +95,9 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               time_range = c(meta$`Time Min. (min)`, meta$`Time Max. (min)`),
               # start_time = meta$`Time Min. (min)`,
               # end_time = meta$`Time Max. (min)`,
-              time_interval = meta$`Average Step (s)`,
-              time_interval_unit <- get_time_unit(
-                grep("Average Step", names(meta), value = TRUE)[1],
-                format_in = "chromeleon"),
-              time_unit = get_time_unit(
-                grep("Time Min.", names(meta), value = TRUE)[1],
-                format_in="chromeleon"),
+              time_interval = meta[[grep("Average Step", names(meta))]],
+              time_interval_unit = time_interval_unit,
+              time_unit = time_unit,
               # uniform_sampling = meta$`Min. Step (s)` == meta$`Max. Step (s)`,
               detector_range = NA,
               detector_unit = meta$`Signal Unit`,

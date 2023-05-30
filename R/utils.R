@@ -1,6 +1,7 @@
 utils::globalVariables(names = c('.'))
 # Globals <- list()
 
+#' Check parser
 #' @noRd
 check_parser <- function(format_in, parser=NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
@@ -42,6 +43,13 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
   }
 }
 
+#' Remove unicode characters
+#' @noRd
+remove_unicode_chars <- function(x){
+  stringr::str_replace_all(x, "\xb5", "micro")
+}
+
+#' Format extension
 #' @noRd
 format_to_extension <- function(format_in){
   switch(format_in,
@@ -135,6 +143,7 @@ choose_apply_fnc <- function(progress_bar, parallel = FALSE, cl = NULL){
   fn
 }
 
+#' Transfer metadata
 #'@noRd
 transfer_metadata <- function (new_object, old_object, exclude = c("names", "row.names",
                                               "class", "dim", "dimnames"))
@@ -145,6 +154,7 @@ transfer_metadata <- function (new_object, old_object, exclude = c("names", "row
   new_object
 }
 
+#' Get filetype
 #' @noRd
 get_filetype <- function(file, out = c("format_in", "filetype")){
   out <- match.arg(out, c("format_in", "filetype"))
@@ -154,7 +164,7 @@ get_filetype <- function(file, out = c("format_in", "filetype")){
   filetype <- switch(magic,
                      "x01/x32/x00/x00" = "AgilentChemstationMS",
                      "x02/x02/x00/x00" = "AgilentMasshunterDADHeader",
-                     "x02/x33/x30/x00" = "AgilentChemstationMWD",
+                     # "x02/x33/x30/x00" = "AgilentChemstationMWD",
                      "x02/x33/x31/x00" = "AgilentChemstationDAD",
                      "x02/x38/x31/x00" = "AgilentChemstationFID", #81
                      "x03/x02/x00/x00" = "AgilentMasshunterDAD",
