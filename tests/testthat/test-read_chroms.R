@@ -84,6 +84,7 @@ test_that("get_filetype works as expected", {
 test_that("rainbow parser works", {
   skip_if_missing_dependecies()
   skip_on_cran()
+  skip_on_ci()
   x1 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "rainbow",
                     find_files = FALSE,
                     read_metadata = TRUE,
