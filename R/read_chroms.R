@@ -269,7 +269,7 @@ read_chroms <- function(paths, find_files,
     }
     }
   }
-  if (all(grepl(".d$", files, ignore.case = TRUE))){
+  if (all(grepl("\\.[Dd]$|\\.[Dd]?[/\\\\]",files))){
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n){
