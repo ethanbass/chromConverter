@@ -8,7 +8,7 @@ citEntry(
   version  = "version 0.4.1",
   doi      = "10.5281/zenodo.6792521",
   url      = "https://ethanbass.github.io/chromConverter/",
-  textVersion = paste("Bass, E. (2022).",
+  textVersion = paste("Bass, E. (2023).",
         "chromConverter: chromatographic file converter.",
         "http://doi.org/10.5281/zenodo.6792521.")
 )
