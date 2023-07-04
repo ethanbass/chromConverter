@@ -86,7 +86,7 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 ##### **OpenChrom**
 
-[OpenChrom](https://lablicate.com/platform/openchrom) is opensource chromatography software, containing a large number of [file parsers](https://lablicate.com/platform/openchrom), which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
+[OpenChrom](https://lablicate.com/platform/openchrom) is opensource chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
 
 1) Download OpenChrom from the [website](https://lablicate.com/platform/openchrom/download) and place it into a directory of your choice.  
 2) If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.
