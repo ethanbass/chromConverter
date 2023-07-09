@@ -136,6 +136,7 @@ get_nchar <- function(f){
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
+
 decode_double_delta <- function(file, offset) {
 
   seek(file, 0, 'end')
@@ -308,4 +309,33 @@ get_agilent_offsets <- function(version){
                     data_start = 4096)
   }
   offsets
+}
+
+#' Parser for reading Agilent ('.dx') files into R
+#' @importFrom utils unzip
+#' @param path Path to \code{.dx} file
+#' @param format_out Matrix or data.frame.
+#' @param data_format Whether to return data in \code{wide} or \code{long} format.
+#' @param read_metadata Logical. Whether to attach metadata.
+#' @author Ethan Bass
+#' @return A chromatogram in the format specified by \code{format_out}
+#' (retention time x wavelength).
+#' @author Ethan Bass
+#' @export
+read_agilent_dx <-  function(path, format_out = c("matrix","data.frame"),
+                                  data_format = c("wide","long"),
+                                  read_metadata = TRUE){
+    format_out <- match.arg(format_out, c("matrix","data.frame"))
+    data_format <- match.arg(data_format, c("wide","long"))
+    files <- unzip(path, list = TRUE)
+    files.idx <- grep(".ch$", files$Name, ignore.case = TRUE)
+
+    # make temp directory
+    tmp <- tempdir()
+    on.exit(unlink(path), add = TRUE)
+    # unzip .dx file
+    unzip(file, files = files$Name[files.idx], exdir = tmp)
+    # read in `.ch` files
+    read_chemstation_ch(fs::path(tmp, files$Name[files.idx]), format_out = format_out,
+                        data_format = data_format, read_metadata = read_metadata)
 }

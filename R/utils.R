@@ -5,9 +5,10 @@ utils::globalVariables(names = c('.'))
 #' @noRd
 check_parser <- function(format_in, parser=NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
-                          chromconverter = c("chemstation_csv", "chemstation_ch",
-                                             "chemstation_fid", "chemstation_uv",
-                                             "chromeleon_uv", "mzml",
+                          chromconverter = c("agilent_dx", "chemstation_csv",
+                                             "chemstation_ch", "chemstation_fid",
+                                             "chemstation_uv", "chromeleon_uv",
+                                             "mzml",
                                              "shimadzu_fid", "shimadzu_dad",
                                              "waters_arw", "mdf", "cdf"),
                           aston = c("chemstation", "chemstation_uv", "masshunter_dad", "other"),

@@ -1,3 +1,9 @@
+## chromConverter 0.4.2
+
+* Added preliminary support for reading "Agilent" (`.dx`) files through
+`read_agilentdx` function.
+* Added support for reading "Chemstation" REPORTs.
+
 ## chromConverter 0.4.1
 
 ### New features 

@@ -7,10 +7,10 @@
 read_chroms(
   paths,
   find_files,
-  format_in = c("agilent_d", "chemstation", "chemstation_uv", "chemstation_csv",
-    "chemstation_ch", "chemstation_fid", "masshunter_dad", "shimadzu_fid",
-    "shimadzu_dad", "chromeleon_uv", "thermoraw", "mzml", "waters_arw", "waters_raw",
-    "msd", "csd", "wsd", "mdf", "other"),
+  format_in = c("agilent_d", "agilent_dx", "chemstation", "chemstation_fid",
+    "chemstation_ch", "chemstation_csv", "chemstation_uv", "masshunter_dad",
+    "chromeleon_uv", "shimadzu_fid", "shimadzu_dad", "thermoraw", "mzml", "waters_arw",
+    "waters_raw", "msd", "csd", "wsd", "mdf", "other"),
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
   format_out = c("matrix", "data.frame"),
@@ -32,12 +32,12 @@ the function with a folder or vector of folders containing the files.
 Otherwise, set to\code{FALSE}.}
 
 \item{format_in}{Format of files to be imported/converted. Current options
-include: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_ch},
-\code{chemstation_csv}, \code{masshunter}, \code{masshunter_dad},
-\code{shimadzu_fid}, \code{shimadzu_dad}, \code{chromeleon_uv},
-\code{agilent_d}, \code{thermoraw}, \code{mzml}, \code{cdf}, \code{mdf},
-\code{waters_arw}, \code{waters_raw}, \code{msd}, \code{csd}, \code{wsd},
-or \code{other}.}
+include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
+\code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
+\code{masshunter}, \code{masshunter_dad}, \code{chromeleon_uv},
+\code{shimadzu_fid}, \code{shimadzu_dad}, \code{thermoraw},
+\code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{cdf}, \code{mdf},
+\code{msd}, \code{csd}, \code{wsd}, or \code{other}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}
@@ -88,7 +88,7 @@ parsers from \href{https://github.com/bovee/aston}{Aston},
 }
 \details{
 Provides a general interface to chromConverter parsers. Currently recognizes
-'Agilent ChemStation' (\code{.uv}, \code{.ch}), 'MassHunter' (\code{.dad})
+'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'MassHunter' (\code{.dad})
 files, 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW'
 (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
 (\code{.txt}). Also, wraps Openchrom parsers, which include many additional

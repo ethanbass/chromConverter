@@ -8,7 +8,7 @@
 #' [rainbow](https://rainbow-api.readthedocs.io/), or internal parsers.
 #'
 #' Provides a general interface to chromConverter parsers. Currently recognizes
-#' 'Agilent ChemStation' (\code{.uv}, \code{.ch}), 'MassHunter' (\code{.dad})
+#' 'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'MassHunter' (\code{.dad})
 #' files, 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW'
 #' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
 #' (\code{.txt}). Also, wraps Openchrom parsers, which include many additional
@@ -22,12 +22,12 @@
 #' the function with a folder or vector of folders containing the files.
 #' Otherwise, set to\code{FALSE}.
 #' @param format_in Format of files to be imported/converted. Current options
-#' include: \code{chemstation_uv}, \code{chemstation}, \code{chemstation_ch},
-#' \code{chemstation_csv}, \code{masshunter}, \code{masshunter_dad},
-#' \code{shimadzu_fid}, \code{shimadzu_dad}, \code{chromeleon_uv},
-#' \code{agilent_d}, \code{thermoraw}, \code{mzml}, \code{cdf}, \code{mdf},
-#' \code{waters_arw}, \code{waters_raw}, \code{msd}, \code{csd}, \code{wsd},
-#' or \code{other}.
+#' include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
+#' \code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
+#' \code{masshunter}, \code{masshunter_dad}, \code{chromeleon_uv},
+#' \code{shimadzu_fid}, \code{shimadzu_dad}, \code{thermoraw},
+#' \code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{cdf}, \code{mdf},
+#' \code{msd}, \code{csd}, \code{wsd}, or \code{other}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format_in}.
 #' @param parser What parser to use. Current option are \code{chromconverter},
@@ -68,11 +68,13 @@
 #' @export read_chroms
 
 read_chroms <- function(paths, find_files,
-                        format_in=c("agilent_d", "chemstation", "chemstation_uv",
-                                    "chemstation_csv", "chemstation_ch",
-                                    "chemstation_fid", "masshunter_dad",
-                                    "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
-                                    "thermoraw", "mzml", "waters_arw", "waters_raw",
+                        format_in=c("agilent_d", "agilent_dx", "chemstation",
+                                    "chemstation_fid", "chemstation_ch",
+                                    "chemstation_csv", "chemstation_uv",
+                                    "masshunter_dad", "chromeleon_uv",
+                                    "shimadzu_fid", "shimadzu_dad",
+                                    "thermoraw", "mzml",
+                                    "waters_arw", "waters_raw",
                                     "msd", "csd", "wsd", "mdf", "other"),
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
@@ -162,6 +164,11 @@ read_chroms <- function(paths, find_files,
   if (format_in == "agilent_d"){
     pattern <- ifelse(is.null(pattern), ".D", pattern)
     converter <- rainbow_parser
+  } else if (format_in == "agilent_dx"){
+    pattern <- ifelse(is.null(pattern), ".dx", pattern)
+    converter <- partial(read_agilent_dx, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata)
   } else if (format_in == "masshunter_dad"){
     pattern <- ifelse(is.null(pattern), ".sp", pattern)
     converter <- switch(parser,
@@ -184,7 +191,7 @@ read_chroms <- function(paths, find_files,
   } else if (format_in == "chemstation"){
     pattern <- ifelse(is.null(pattern), "*", pattern)
     converter <- rainbow_parser
-    } else if (format_in == "chromeleon_uv"){
+  } else if (format_in == "chromeleon_uv"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
     converter <- partial(read_chromeleon, format_out = format_out,
                          data_format = data_format, read_metadata = read_metadata)

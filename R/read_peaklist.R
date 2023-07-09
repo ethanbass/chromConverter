@@ -1,3 +1,4 @@
+
 #' Read varian peaklist.
 #' Read peak list from 'Varian MS Workstation'.
 #' @param file Path to Varian peak list file.
