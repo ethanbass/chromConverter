@@ -15,26 +15,30 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
                             source_file){
   switch(format_in,
     "waters_arw" = {
-    structure(x, instrument = NA,
-              detector = NA,
-              software = NA,
-              method = meta$`Instrument Method Name`,
-              batch = meta$`Sample Set Name`,
-              operator = NA,
-              run_datetime = NA,
-              sample_name = meta$SampleName,
-              sample_id = NA,
-              sample_injection_volume = NA,
-              sample_amount = NA,
-              time_range = NA,
-              time_interval = NA,
-              time_unit = NA,
-              detector_range = meta$Channel,
-              detector_unit = NA,
-              source_file = source_file,
-              data_format = "long",
-              parser = "chromConverter",
-              format_out = format_out)
+      structure(x, instrument = NA,
+                detector = get_metadata_field(meta, "Channel Type"),
+                software = get_metadata_field(meta,"Source S/W Info"),
+                method = get_metadata_field(meta,"Instrument Method Name"),
+                batch = get_metadata_field(meta,"Sample Set Name"),
+                operator = NA,
+                run_datetime = NA,
+                sample_name = get_metadata_field(meta,"SampleName"),
+                sample_id = NA,
+                sample_injection_volume = NA,
+                sample_amount = NA,
+                time_range = c(get_metadata_field(meta, "Data Start"),
+                               get_metadata_field(meta, "Data End")),
+                time_interval = NA,
+                time_unit = NA,
+                detector_range = ifelse("Channel Description" %in% names(meta),
+                                          get_metadata_field(meta, "Channel Description"),
+                                          get_metadata_field(meta, "Channel")
+                                        ),
+                detector_unit = get_metadata_field(meta, "Det. Units"),
+                source_file = source_file,
+                data_format = "long",
+                parser = "chromConverter",
+                format_out = format_out)
   }, "shimadzu" = {
     structure(x,
               instrument = meta$`Instrument Name`,
@@ -347,10 +351,13 @@ read_chromeleon_metadata <- function(x){
 #' @author Ethan Bass
 #' @noRd
 read_waters_metadata <- function(file){
-  meta <- gsub("\\\"", "", do.call(cbind, strsplit(readLines(file, n = 2),"\t")))
+  ll <- readLines(file, n=2)
+  ll <- iconv(ll,from = "ISO-8859-1", to = "UTF-8")
+  meta <- gsub("\\\"", "", do.call(cbind, strsplit(ll,"\t")))
   rownames(meta) <- meta[,1]
   meta <- as.list(meta[,-1])
 }
+
 
 #' Extract metadata
 #'

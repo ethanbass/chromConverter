@@ -231,10 +231,23 @@ read_waters_arw <- function(file, format_out = c("matrix","data.frame"),
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
   x <- read.csv(file, sep="\t", skip = 2, header = FALSE, row.names = 1)
+  # PDA (3D)
+  if (rownames(x)[1] == "Wavelength"){
+    colnames(x) <- x[1,]
+    rm <- 1
+    if (rownames(x)[2] == "Time"){
+      rm <- c(rm,2)
+    }
+    x <- x[-rm,]
+    if (data_format == "long"){
+      x <- as.data.frame(reshape_chrom(x, data_format = "long"))
+    }
+  }
+  # 1D
   if (ncol(x) == 1){
     colnames(x) <- "Intensity"
     if (data_format == "long"){
-      x <- data.frame(RT = rownames(x), Intensity=x[,1])
+      x <- data.frame(RT = rownames(x), Intensity = x[,1])
     }
   }
   if (format_out == "matrix"){
