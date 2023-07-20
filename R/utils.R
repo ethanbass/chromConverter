@@ -138,6 +138,9 @@ choose_apply_fnc <- function(progress_bar, parallel = FALSE, cl = NULL){
   if (progress_bar){
     check_for_pkg("pbapply")
     fn <- pbapply::pblapply
+    if (!is.null(cl)){
+      fn <- purrr::partial(fn, cl = cl)
+    }
   } else{
     fn <- lapply
   }

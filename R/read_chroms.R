@@ -48,6 +48,9 @@
 #' Defaults to TRUE.
 #' @param progress_bar Logical. Whether to show progress bar. Defaults to
 #' \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.
+#' @param cl Argument to \code{\link[pbapply]{pbapply}} specifying the number
+#' of clusters to use or a cluster object created by
+#' \code{\link[parallel]{makeCluster}}. Defaults to 1.
 #' @param sample_names An optional character vector of sample names. Otherwise
 #' sample names default to the basename of the specified files.
 #' @param dat Existing list of chromatograms to append results.
@@ -83,11 +86,11 @@ read_chroms <- function(paths, find_files,
                         data_format = c("wide","long"),
                         export = FALSE, path_out = NULL,
                         export_format = c("csv", "chemstation_csv", "cdf", "mzml", "animl"),
-                        read_metadata = TRUE, progress_bar, sample_names = NULL,
-                        dat = NULL){
+                        read_metadata = TRUE, progress_bar, cl = 1,
+                        sample_names = NULL, dat = NULL){
   data_format <- match.arg(data_format, c("wide","long"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
-  parser <- match.arg(parser, c("", "chromconverter", "aston","entab",
+  parser <- match.arg(tolower(parser), c("", "chromconverter", "aston","entab",
                                           "thermoraw", "openchrom", "rainbow"))
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
@@ -286,7 +289,7 @@ read_chroms <- function(paths, find_files,
     file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
   }
   if (parser != "openchrom"){
-    laplee <- choose_apply_fnc(progress_bar)
+    laplee <- choose_apply_fnc(progress_bar, cl = cl)
     data <- laplee(X = files, function(file){
       df <- try(converter(file), silent = TRUE)
     })

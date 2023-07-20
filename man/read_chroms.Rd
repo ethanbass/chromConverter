@@ -20,6 +20,7 @@ read_chroms(
   export_format = c("csv", "chemstation_csv", "cdf", "mzml", "animl"),
   read_metadata = TRUE,
   progress_bar,
+  cl = 1,
   sample_names = NULL,
   dat = NULL
 )
@@ -67,6 +68,10 @@ Defaults to TRUE.}
 
 \item{progress_bar}{Logical. Whether to show progress bar. Defaults to
 \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.}
+
+\item{cl}{Argument to \code{\link[pbapply]{pbapply}} specifying the number
+of clusters to use or a cluster object created by
+\code{\link[parallel]{makeCluster}}. Defaults to 1.}
 
 \item{sample_names}{An optional character vector of sample names. Otherwise
 sample names default to the basename of the specified files.}

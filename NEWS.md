@@ -1,8 +1,10 @@
-## chromConverter 0.4.2
+## chromConverter 0.5.0
 
+* Added support for parallelization through `pbapply` package. The `pbapply` 
+package must be installed to enable parallel processing. 
 * Added preliminary support for reading "Agilent" (`.dx`) files through
 `read_agilentdx` function.
-* Added support for reading "Chemstation" REPORTs.
+* Added support for reading "Chemstation" REPORT files.
 
 ## chromConverter 0.4.1
 

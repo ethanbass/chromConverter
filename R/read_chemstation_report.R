@@ -9,7 +9,7 @@
 
 read_chemstation_report <- function(file, data_format = c("chromatographr", "chemstation"),
                                     metadata_format = c("list","data.frame")){
-  data_format <- match.arg(data_format, c("chromatographr", "chemstation"))
+  data_format <- match.arg(tolower(data_format), c("chromatographr", "chemstation"))
   metadata_format = match.arg(metadata_format, c("list","data.frame"))
   x <- readLines(file, encoding = "UTF-16LE", skipNul = TRUE)
   x[1] <- gsub("\xff\xfe", "", x[1], useBytes = TRUE)
@@ -57,7 +57,7 @@ read_chemstation_report <- function(file, data_format = c("chromatographr", "che
   peak_lists
 }
 
-#' Convert 'Chemstation' REPORT peaklist to data.frame.
+#' Convert 'Chemstation' REPORT peak list to data.frame.
 #' @param table The table to convert.
 #' @param data_format Format to output data. Either \code{chromatographr} or
 #' \code{chemstation}.
@@ -111,9 +111,10 @@ remove_blank_lines <- function(x){
 #' \code{data.frame}.
 #' @author Ethan Bass
 #' @export
+
 read_chemstation_reports <- function(files, data_format = c("chromatographr", "chemstation"),
                                      metadata_format = c("list","data.frame")){
-  data_format <- match.arg(data_format, c("chromatographr", "chemstation"))
+  data_format <- match.arg(tolower(data_format), c("chromatographr", "chemstation"))
   metadata_format = match.arg(metadata_format, c("list","data.frame"))
   names(files) <- sub(".*/([^/]+)\\.D/.*$", "\\1", files)
   pks <- lapply(seq_along(files), function(i){
