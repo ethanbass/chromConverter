@@ -1,9 +1,17 @@
 #' Read 'Shimadzu' LCD
 #' @param path Path to LCD file.
+#' @param format_out Matrix or data.frame.
+#' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
+#' @note This parser is experimental and may still need some work.
 #' @export
+read_shimadzu_lcd <- function(path,format_out = c("matrix","data.frame"),
+                              data_format = c("wide","long"),
+                              read_metadata = TRUE){
+  format_out <- match.arg(format_out, c("matrix","data.frame"))
+  data_format <- match.arg(data_format, c("wide","long"))
 
-read_shimadzu_lcd <- function(path){
   path_meta <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Data Item"))
   meta <- xml2::read_xml(path_meta)
   xpath_expression <- "//CN"
@@ -14,6 +22,12 @@ read_shimadzu_lcd <- function(path){
 
   lambdas <- read_shimadzu_wavelengths(path)
   colnames(dat) <- lambdas
+  if (data_format == "long"){
+    data <- reshape_chrom(data)
+  }
+  if (format_out == "data.frame"){
+    data <- as.data.frame(data)
+  }
   dat
 }
 
@@ -108,18 +122,37 @@ twos_complement <- function(bin, exp){
 }
 
 #' Convert integer to binary
+#' @author Stuart K. Grange
+#' @note This function is borrowed from the threadr package
+#' \url{https://github.com/skgrange/threadr/} where it's licensed under GPL3.
 #' @noRd
 as_binary <- function(x, n = 32) {
-
   # Check type
   if (!is.integer(x)) stop("Input must be an integer.", call. = FALSE)
-
   # Do
   x <- sapply(x, function(x) integer_to_binary(x, n))
-
   # Return
   x
+}
 
+#' Convert integer to binary
+#' @author Stuart K. Grange
+#' @note This function is borrowed from the threadr package
+#' \url{https://github.com/skgrange/threadr/} where it's licensed under GPL3.
+#' @noRd
+integer_to_binary <- function(x, n) {
+  # Convert to a vector of integers
+  x <- intToBits(x)
+  # Drop leading zeros
+  x <- as.integer(x)
+  # Filter to a certain number of bits
+  x <- x[1:n]
+  # Reverse order of vector
+  x <- rev(x)
+  # Collapse vector into string
+  x <- stringr::str_c(x, collapse = "")
+  # Return
+  x
 }
 
 #' Extract wavelengths from Shimadzu LCD

@@ -4,13 +4,27 @@
 \alias{read_shimadzu_lcd}
 \title{Read 'Shimadzu' LCD}
 \usage{
-read_shimadzu_lcd(path)
+read_shimadzu_lcd(
+  path,
+  format_out = c("matrix", "data.frame"),
+  data_format = c("wide", "long"),
+  read_metadata = TRUE
+)
 }
 \arguments{
 \item{path}{Path to LCD file.}
+
+\item{format_out}{Matrix or data.frame.}
+
+\item{data_format}{Either \code{wide} (default) or \code{long}.}
+
+\item{read_metadata}{Logical. Whether to attach metadata.}
 }
 \description{
 Read 'Shimadzu' LCD
+}
+\note{
+This parser is experimental and may still need some work.
 }
 \author{
 Ethan Bass

@@ -1,8 +1,8 @@
 #' Parser for reading Agilent UV (.uv) files into R
 #' @param path Path to \code{.uv} file
-#' @param read_metadata Logical. Whether to attach metadata.
-#' @param format_out Matrix or data.frame
+#' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param read_metadata Logical. Whether to attach metadata.
 #' @importFrom utils head tail
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
