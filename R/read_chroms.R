@@ -118,7 +118,7 @@ read_chroms <- function(paths, find_files,
     }
   }
   format_in <- match.arg(format_in, c("agilent_d", "chemstation", "chemstation_uv",
-                                      "chemstation_ch", "chemstation_fid",
+                                      "chemstation_ch", "chemstation_130", "chemstation_fid",
                                       "chemstation_csv", "masshunter_dad",
                                       "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                       "thermoraw", "mzml", "waters_arw",
@@ -227,7 +227,7 @@ read_chroms <- function(paths, find_files,
   } else if (format_in == "chemstation_csv"){
     pattern <- ifelse(is.null(pattern), ".csv|.CSV", pattern)
     converter <- partial(read_chemstation_csv, format_out = format_out)
-  } else if (format_in %in% c("chemstation_fid", "chemstation_ch")){
+  } else if (format_in %in% c("chemstation_fid", "chemstation_ch", "chemstation_130")){
     pattern <- ifelse(is.null(pattern), ".ch", pattern)
     converter <- switch(parser,
                         "chromconverter" = partial(read_chemstation_ch,

@@ -109,7 +109,7 @@ test_that("chemstation_ch parser works", {
   expect_equal(attr(x1[[1]], "file_version"), "130")
   expect_equal(ncol(x1[[1]]), 1)
   x2 <- read_chroms("testdata/dad1B.ch", progress_bar = FALSE,
-                    data_format ="long", format_out="data.frame")[[1]]
+                    data_format = "long", format_out = "data.frame")[[1]]
   expect_equal(ncol(x2), 2)
   expect_equal(class(x2), "data.frame")
   expect_equal(as.numeric(rownames(x1[[1]])), x2[,1])
@@ -122,7 +122,7 @@ test_that("read_chroms exports csvs correctly", {
   x1 <- read_chroms(paths = path_uv, export=TRUE, path_out = path_out,
                     export_format="csv", format_out = "data.frame",
                     progress_bar = FALSE)
-  x1_out <- read.csv(fs::path(path_out, "dad1", ext="csv"), row.names=1)
+  x1_out <- read.csv(fs::path(path_out, "dad1", ext = "csv"), row.names = 1)
   expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
 })
 
@@ -145,3 +145,5 @@ test_that("read_chroms exports cdf files correctly", {
 #   expect_equal(class(x[[1]])[1], "matrix")
 #   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 # })
+
+test_that(read_)

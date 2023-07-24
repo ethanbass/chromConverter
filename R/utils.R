@@ -8,7 +8,7 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                           chromconverter = c("agilent_dx", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
-                                             "mzml",
+                                             "mzml", "chemstation_130",
                                              "shimadzu_fid", "shimadzu_dad",
                                              "waters_arw", "mdf", "cdf"),
                           aston = c("chemstation", "chemstation_uv", "masshunter_dad", "other"),
@@ -20,17 +20,22 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                           thermoraw = c("thermoraw")
   )
   if (find){
+    if (!reticulate::py_module_available("aston")){
+      allowed_formats <- allowed_formats[-which(names(allowed_formats) == "aston")]
+    }
+    if (!reticulate::py_module_available("rainbow")){
+      allowed_formats <- allowed_formats[-which(names(allowed_formats) == "rainbow")]
+    }
+    if (!requireNamespace("entab", quietly = TRUE)){
+      allowed_formats <- allowed_formats[-which(names(allowed_formats) == "entab")]
+    }
     possible_parsers <- names(allowed_formats)[grep(format_in, allowed_formats)]
-    if (all(c("aston","entab") %in% possible_parsers)){
-      if (any(format_in == c("chemstation_uv", "masshunter_dad"))){
-        possible_parsers <- ifelse(!requireNamespace("entab", quietly = TRUE), "aston", "entab")
+    if (length(possible_parsers) > 1){
+      possible_parsers <- possible_parsers[match(
+        c("thermoraw", "entab", "chromconverter", "rainbow", "aston"), possible_parsers)]
+      if (any(is.na(possible_parsers))){
+        possible_parsers <- possible_parsers[-which(is.na(possible_parsers))]
       }
-    }
-    if (all(c("rainbow","aston") %in% possible_parsers)){
-      possible_parsers <- "rainbow"
-    }
-    if (all(c("entab","thermoraw") %in% possible_parsers)){
-      possible_parsers <- "thermoraw"
     }
     possible_parsers[1]
   } else{
@@ -172,7 +177,7 @@ get_filetype <- function(file, out = c("format_in", "filetype")){
                      "x02/x33/x31/x00" = "AgilentChemstationDAD",
                      "x02/x38/x31/x00" = "AgilentChemstationFID", #81
                      "x03/x02/x00/x00" = "AgilentMasshunterDAD",
-                     "x03/x31/x33/x30" = "AgilentChemstationCH", #131
+                     "x03/x31/x33/x30" = "AgilentChemstationCH130", #130
                      "x03/x31/x33/x31" = "AgilentChemstationDAD", #131 rainbow
                      "x03/x31/x37/x39" = "AgilentChemstationFID", #179
                      "x03/x31/x38/x31" = "AgilentChemstationFID", #181
@@ -188,6 +193,7 @@ get_filetype <- function(file, out = c("format_in", "filetype")){
    format_in <- switch(filetype,
           "AgilentChemstationMS" = "chemstation",
           "AgilentChemstationCH" = "chemstation_ch",
+          "AgilentChemstationCH130" = "chemstation_130",
           "AgilentChemstationFID" = "chemstation_ch",
           "AgilentChemstationDAD" = "chemstation_uv",
           "ThermoRAW" = "thermoraw",

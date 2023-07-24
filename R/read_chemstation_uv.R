@@ -97,7 +97,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix","data.frame"),
 
   # Read data and populate arrays
   for (i in seq_len(nval)) {
-    readBin(f, integer(), n=1, size=4)  # Discard first 4 bytes
+    readBin(f, integer(), n = 1, size = 4)  # Discard first 4 bytes
     times[i] <- readBin(f, integer(), n=1, size=4)
     readBin(f, raw(), n=14)  # Discard 14 bytes
     absorb_accum <- 0
