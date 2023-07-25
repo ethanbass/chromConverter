@@ -9,7 +9,7 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                                              "chemstation_fid", "chemstation_uv",
                                              "chromeleon_uv", "mzml",
                                              "shimadzu_fid", "shimadzu_dad",
-                                             "waters_arw", "mdf", "cdf"),
+                                             "waters_arw", "mdf", "cdf", "shimadzu_lcd"),
                           aston = c("chemstation", "chemstation_uv", "masshunter_dad", "other"),
                           entab = c("chemstation", "chemstation_ch", "chemstation_fid",
                           "chemstation_uv", "masshunter_dad", "thermoraw", "other"),
