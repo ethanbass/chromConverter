@@ -18,10 +18,10 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
   xx <- readLines(file)
   xx <- remove_unicode_chars(xx)
   start <- tail(grep("Data:", xx), 1)
-  x <- read.csv(file, skip = start, sep="\t", row.names = NULL)
+  x <- read.csv(file, skip = start, sep = "\t", row.names = NULL)
   x <- x[,-2, drop = FALSE]
   x <- x[,colSums(is.na(x)) < nrow(x)]
-  if (any(grepl(",",as.data.frame(x)[-1,2]))){
+  if (any(grepl(",",as.data.frame(x)[-1, 2]))){
     decimal_separator <- ","
     x <- apply(x, 2, function(x) gsub("\\.", "", x))
     x <- apply(x, 2, function(x) gsub(",", ".", x))
@@ -93,7 +93,7 @@ read_shimadzu <- function(file, format_in,
     if (length(chrom.idx) != 0){
       header <- try(extract_shimadzu_header(x = x, chrom.idx = chrom.idx, sep = sep))
       met <- header[[1]]
-      decimal_separator <- ifelse(grepl(",", met[2, 2]),",",".")
+      decimal_separator <- ifelse(grepl(",", met[2, 2]), ",", ".")
       if (decimal_separator == ","){
         met[c(2:3), 2] <- gsub(",", ".", met[c(2:3), 2])
       }
@@ -103,15 +103,15 @@ read_shimadzu <- function(file, format_in,
                        na.strings = c("[FractionCollectionReport]","#ofFractions"),
                        dec = decimal_separator)
         xx <- as.matrix(xx[!is.na(xx[,1]),])
-        rownames(xx) <- xx[,1]
+        rownames(xx) <- xx[, 1]
         xx <- xx[, 2, drop = FALSE]
         colnames(xx) <- "Intensity"
         if (data_format == "long"){
           xx <- cbind(RT = as.numeric(rownames(xx)), Intensity = as.numeric(xx[,1]))
         }
       } else if (format_in == "dad"){
-        nrows <- as.numeric(met[grep("# of Time Axis Points", met[,1]),2])
-        ncols <- as.numeric(met[grep("# of Wavelength Axis Points", met[,1]),2])
+        nrows <- as.numeric(met[grep("# of Time Axis Points", met[,1]), 2])
+        ncols <- as.numeric(met[grep("# of Wavelength Axis Points", met[,1]), 2])
         xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses="numeric",
                        na.strings = c("[FractionCollectionReport]","#ofFractions"),
                        row.names = 1, nrows = nrows, dec = decimal_separator)
@@ -146,13 +146,13 @@ read_shimadzu <- function(file, format_in,
       }
     }
     peak_tab <- lapply(peaktab.idx, function(idx){
-      nrows <- as.numeric(strsplit(x = x[idx+1], split = sep)[[1]][2])
+      nrows <- as.numeric(strsplit(x = x[idx + 1], split = sep)[[1]][2])
       if (!is.na(nrows) && nrows > 0){
-        time_column <- grep("R.Time", strsplit(x = x[[idx+2]], split = sep)[[1]])
-        t1 <- strsplit(x = x[[idx+3]], split = sep)[[1]][time_column]
+        time_column <- grep("R.Time", strsplit(x = x[[idx + 2]], split = sep)[[1]])
+        t1 <- strsplit(x = x[[idx + 3]], split = sep)[[1]][time_column]
         decimal_separator <- ifelse(grepl(".", t1), ".", ",")
 
-        peak_tab <- read.csv(file, skip = (idx+1), sep = sep, nrows = nrows,
+        peak_tab <- read.csv(file, skip = (idx + 1), sep = sep, nrows = nrows,
                              dec = decimal_separator)
       } else{NA}
     })
@@ -173,7 +173,7 @@ read_shimadzu <- function(file, format_in,
                                     "[File Description]", "[Configuration]") )
     meta_start <- headings[min(idx)]
     meta_end <- headings[max(idx) + 1]
-    meta <- x[(meta_start+1):(meta_end-1)]
+    meta <- x[(meta_start + 1):(meta_end - 1)]
     meta <- meta[meta!=""]
     meta <- meta[-grep("\\[", meta)]
     meta <- stringr::str_split_fixed(meta, pattern = sep, n = 2)
