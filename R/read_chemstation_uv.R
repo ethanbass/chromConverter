@@ -12,11 +12,11 @@
 #' (https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html).
 #' @export
 
-read_chemstation_uv <- function(path, format_out = c("matrix","data.frame"),
-                                data_format = c("wide","long"),
+read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
+                                data_format = c("wide", "long"),
                                 read_metadata = TRUE){
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  data_format <- match.arg(data_format, c("wide","long"))
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  data_format <- match.arg(data_format, c("wide", "long"))
 
   f <- file(path, "rb")
   on.exit(close(f))
@@ -88,8 +88,8 @@ read_chemstation_uv <- function(path, format_out = c("matrix","data.frame"),
   n_lambdas <- length(lambdas)
 
   # BODY
-  seek(f, where = offsets$data_start, origin="start")
-  seek(f, where = offsets$data_start, origin="start")
+  seek(f, where = offsets$data_start, origin = "start")
+  seek(f, where = offsets$data_start, origin = "start")
 
   # Initialize empty arrays
   times <- integer(nval)
