@@ -58,10 +58,10 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               # end_time = meta$`End Time(min)`,
               time_interval = meta$`Interval(msec)`,
               time_interval_unit = get_time_unit(
-                grep("Interval", names(meta), value=TRUE)[1], format_in = "shimadzu"),
+                grep("Interval", names(meta), value = TRUE)[1], format_in = "shimadzu"),
               time_unit = get_time_unit(
                 grep("Start Time", names(meta), value=TRUE)[1], format_in = "shimadzu"),
-              detector_range = c(meta$`Start Wavelength(nm)`,meta$`End Wavelength(nm)`),
+              detector_range = c(meta$`Start Wavelength(nm)`, meta$`End Wavelength(nm)`),
               # detector_end = meta$`End Wavelength(nm)`,
               detector_unit = NA,
               source_file = source_file,
@@ -275,10 +275,14 @@ get_metadata_field <- function(x, field){
 
 #' @noRd
 get_time_unit <- function(string, format_in){
-  if (format_in %in% c("chromeleon","shimadzu")){
-    pattern <- "\\((.*?)\\)"
-    unit <- gsub("\\(|\\)", "", regmatches(string, regexpr(pattern, string))[[1]])
-    switch(unit, "min" = "Minutes", "sec" = "Seconds")
+  if (length(string) == 0 || is.na(string)){
+    NA
+  } else{
+    if (format_in %in% c("chromeleon", "shimadzu")){
+      pattern <- "\\((.*?)\\)"
+      unit <- gsub("\\(|\\)", "", regmatches(string, regexpr(pattern, string))[[1]])
+      switch(unit, "min" = "Minutes", "sec" = "Seconds")
+    } else NA
   }
 }
 

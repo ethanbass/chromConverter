@@ -91,7 +91,7 @@ read_shimadzu <- function(file, format_in,
 
   if (any(what == "chromatogram")){
     if (length(chrom.idx) != 0){
-      header <- try(extract_header(x = x, chrom.idx = chrom.idx, sep = sep))
+      header <- try(extract_shimadzu_header(x = x, chrom.idx = chrom.idx, sep = sep))
       met <- header[[1]]
       decimal_separator <- ifelse(grepl(",", met[2, 2]),",",".")
       if (decimal_separator == ","){
@@ -99,8 +99,8 @@ read_shimadzu <- function(file, format_in,
       }
 
       if (format_in == "fid"){
-        xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses="numeric",
-                       na.strings=c("[FractionCollectionReport]","#ofFractions"),
+        xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses = "numeric",
+                       na.strings = c("[FractionCollectionReport]","#ofFractions"),
                        dec = decimal_separator)
         xx <- as.matrix(xx[!is.na(xx[,1]),])
         rownames(xx) <- xx[,1]
@@ -113,15 +113,10 @@ read_shimadzu <- function(file, format_in,
         nrows <- as.numeric(met[grep("# of Time Axis Points", met[,1]),2])
         ncols <- as.numeric(met[grep("# of Wavelength Axis Points", met[,1]),2])
         xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses="numeric",
-                       na.strings=c("[FractionCollectionReport]","#ofFractions"), row.names = 1,
-                       nrows = nrows, dec = decimal_separator)
+                       na.strings = c("[FractionCollectionReport]","#ofFractions"),
+                       row.names = 1, nrows = nrows, dec = decimal_separator)
         xx <- as.matrix(xx[!is.na(xx[,1]),])
-        times <- round(seq(met[grep("Start Time", met[,1]),2],
-                           met[grep("End Time", met[,1]),2],
-                           length.out = nrows), 2)
-        wavelengths <- round(seq(met[grep("Start Wavelength", met[,1]), 2],
-                                 met[grep("End Wavelength", met[,1]), 2],
-                                 length.out = ncols), 2)
+        colnames(xx) <- as.numeric(gsub("X", "", colnames(xx)))*0.01
         colnames(xx) <- wavelengths
         if (data_format == "long"){
           xx <- reshape_chrom(xx)
@@ -173,10 +168,9 @@ read_shimadzu <- function(file, format_in,
                "peak_table" = peak_tab,
                "both" = list(chromatogram = xx, peak_table = peak_tab))
   if (read_metadata){
-    idx <-  which(x[headings] %in%
-                    c("[Header]", "[File Information]", "[Sample Information]",
-                      "[Original Files]", "[File Description]", "[Configuration]")
-    )
+    idx <- which(x[headings] %in% c("[Header]", "[File Information]",
+                                    "[Sample Information]", "[Original Files]",
+                                    "[File Description]", "[Configuration]") )
     meta_start <- headings[min(idx)]
     meta_end <- headings[max(idx) + 1]
     meta <- x[(meta_start+1):(meta_end-1)]

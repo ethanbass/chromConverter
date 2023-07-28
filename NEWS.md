@@ -1,10 +1,17 @@
 ## chromConverter 0.5.0
 
-* Added support for parallelization through `pbapply` package. The `pbapply` 
-package must be manually installed to enable parallel processing. 
+### New features
+
+* Added support for parallelization through `pbapply` package. (The `pbapply` 
+package must be manually installed to enable parallel processing). 
 * Added preliminary support for reading "Agilent" (`.dx`) files through
 `read_agilentdx` function.
 * Added support for reading "Chemstation" REPORT files.
+
+### Bug fixes
+
+* Corrected Shimadzu DAD parser so it uses wavelengths written to file instead of inferring them.
+* Fixed bug causing failure of 'Shimadzu' ascii parser to read metadata (when `what == "peak_table"`).
 
 ## chromConverter 0.4.2
 

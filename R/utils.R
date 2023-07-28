@@ -103,13 +103,13 @@ set_temp_directory <- function(){
 
 #' Extract header from Shimadzu ascii files
 #' @noRd
-extract_header <- function(x, chrom.idx, sep){
-  index <- chrom.idx+1
+extract_shimadzu_header <- function(x, chrom.idx, sep){
+  index <- chrom.idx + 1
   line <- x[index]
   l <- length(strsplit(x = line, split = sep)[[1]])
   header <- strsplit(x = line, split = sep)[[1]]
   while (l > 1) {
-    index <- index+1
+    index <- index + 1
     line <- strsplit(x = x[index], split = sep)[[1]]
     l <- length(line)
     if (l == 1 | suppressWarnings(!is.na(as.numeric(line[1]))))
