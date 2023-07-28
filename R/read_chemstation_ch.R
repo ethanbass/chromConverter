@@ -48,8 +48,10 @@ read_chemstation_ch <- function(path, format_out = c("matrix","data.frame"),
   seek(f, where = 282, origin = "start")
 
   if (version %in% c("8", "30", "130")){
-    xmin <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE, endian = "big")) / 60000
-    xmax <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE, endian = "big")) / 60000
+    xmin <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE,
+                              endian = "big")) / 60000
+    xmax <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE,
+                              endian = "big")) / 60000
   } else {
     xmin <- readBin(f, "numeric", n = 1, endian = "big", size = 4) / 60000
     xmax <- readBin(f, "numeric", n = 1, endian = "big", size = 4) / 60000
@@ -123,7 +125,7 @@ cc_trim_str <- function(x, len=2){
 get_chemstation_dir_name <- function(path){
   dir <- gsub(basename(path), "", path)
   sp <- str_split_fixed(dir, "/", stringr::str_count(dir,"/")+1)[1,]
-  grep("\\.D|\\.d$", sp, ignore.case = TRUE,value = TRUE)
+  grep("\\.D|\\.d$", sp, ignore.case = TRUE, value = TRUE)
 }
 
 #' @noRd
