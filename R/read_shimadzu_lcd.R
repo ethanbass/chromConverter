@@ -6,21 +6,26 @@
 #' @author Ethan Bass
 #' @note This parser is experimental and may still need some work.
 #' @export
-read_shimadzu_lcd <- function(path,format_out = c("matrix","data.frame"),
+read_shimadzu_lcd <- function(path, format_out = c("matrix","data.frame"),
                               data_format = c("wide","long"),
                               read_metadata = TRUE){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
 
-  path_meta <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Data Item"))
-  meta <- xml2::read_xml(path_meta)
-  xpath_expression <- "//CN"
-  result <- xml_find_all(meta, xpath_expression)
-  nval <- as.numeric(xml_text(result[[1]]))
-
-  dat <- read_shimadzu_raw(path, nval = nval)
+  # path_meta <- try(export_stream(path, stream =  c("PDA 3D Raw Data", "3D Data Item")),
+  #                  silent = TRUE)
+  # if (file.exists(path_meta)){
+  #   meta <- xml2::read_xml(path_meta)
+  #   xpath_expression <- "//CN"
+  #   result <- xml_find_all(meta, xpath_expression)
+  #   nval <- as.numeric(xml_text(result[[1]]))
+  # } else nval <- NULL
 
   lambdas <- read_shimadzu_wavelengths(path)
+  n_lambdas <- length(lambdas)
+
+  dat <- read_shimadzu_raw(path, n_lambdas = n_lambdas)
+
   colnames(dat) <- lambdas
   if (data_format == "long"){
     data <- reshape_chrom(data)
@@ -34,14 +39,30 @@ read_shimadzu_lcd <- function(path,format_out = c("matrix","data.frame"),
 #' Read 'Shimadzu' LCD 3D raw data
 #' @author Ethan Bass
 #' @noRd
-read_shimadzu_raw <- function(path, nval){
+
+read_shimadzu_raw <- function(path, n_lambdas = NULL){
   path_raw <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Raw Data"))
   f <- file(path_raw, "rb")
   on.exit(close(f))
-  mat <- pbapply::pbsapply(seq_len(nval), function(i){
-    decode_shimadzu_block(f)
-  })
-  mat <- t(mat)
+
+  seek(f, 0, 'end')
+  fsize <- seek(f, NA, "current")
+
+  # Read data
+
+  seek(f, 0, "start")
+  seek(f, 0, "start")
+
+  mat <- matrix(NA, nrow = fsize/(n_lambdas*1.5), ncol = n_lambdas)
+  i <- 1
+  while (seek(f, NA, "current") < fsize) {
+    mat[i,] <- decode_shimadzu_block(f)
+    i <- i + 1
+  }
+  if (any(is.na(mat[,1]))){
+    mat <- mat[-which(is.na(mat[,1])),]
+  }
+  mat
 }
 
 #' Export OLE stream
@@ -50,6 +71,7 @@ read_shimadzu_raw <- function(path, nval){
 export_stream <- function(path, stream, path_out){
   py_run_string('import olefile')
   py_run_string(paste0('ole = olefile.OleFileIO("', path, '")'))
+
   python_stream <- paste(paste0("'",stream, "'"), collapse=', ')
   py_run_string(paste0("st = ole.openstream([", python_stream, "])"))
   py_run_string('dat = st.read()')
