@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_shimadzu_lcd.R
 \name{read_shimadzu_lcd}
 \alias{read_shimadzu_lcd}
-\title{Read 'Shimadzu' LCD}
+\title{Read 3D PDA data stream from 'Shimadzu' LCD file.}
 \usage{
 read_shimadzu_lcd(
   path,
@@ -21,7 +21,8 @@ read_shimadzu_lcd(
 \item{read_metadata}{Logical. Whether to attach metadata.}
 }
 \description{
-Read 'Shimadzu' LCD
+Relies on the \href{https://pypi.org/project/olefile/}{olefile} package in Python
+to unpack files.
 }
 \note{
 This parser is experimental and may still need some work.

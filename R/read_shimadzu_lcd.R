@@ -1,4 +1,8 @@
-#' Read 'Shimadzu' LCD
+#' Read 3D PDA data stream from 'Shimadzu' LCD file.
+#'
+#' Relies on the [olefile](https://pypi.org/project/olefile/) package in Python
+#' to unpack files.
+#'
 #' @param path Path to LCD file.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
@@ -6,34 +10,82 @@
 #' @author Ethan Bass
 #' @note This parser is experimental and may still need some work.
 #' @export
+
 read_shimadzu_lcd <- function(path, format_out = c("matrix","data.frame"),
                               data_format = c("wide","long"),
                               read_metadata = TRUE){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
 
-  # path_meta <- try(export_stream(path, stream =  c("PDA 3D Raw Data", "3D Data Item")),
-  #                  silent = TRUE)
-  # if (file.exists(path_meta)){
-  #   meta <- xml2::read_xml(path_meta)
-  #   xpath_expression <- "//CN"
-  #   result <- xml_find_all(meta, xpath_expression)
-  #   nval <- as.numeric(xml_text(result[[1]]))
-  # } else nval <- NULL
-
+  # read wavelengths from "Wavelength Table" stream
   lambdas <- read_shimadzu_wavelengths(path)
   n_lambdas <- length(lambdas)
 
+  # read data from "3D Raw Data" stream
   dat <- read_shimadzu_raw(path, n_lambdas = n_lambdas)
-
   colnames(dat) <- lambdas
-  if (data_format == "long"){
-    data <- reshape_chrom(data)
+
+  # infer times from "PDA.1.Method" stream
+  method_metadata <- read_sz_method(path)
+  times <- get_sz_times(method_metadata, nval = nrow(dat))
+  if (inherits(times, "numeric")){
+    rownames(dat) <- times
   }
+
+  if (data_format == "long"){
+    dat <- reshape_chrom(dat, data_format = "wide")
+  }
+
   if (format_out == "data.frame"){
     data <- as.data.frame(data)
   }
   dat
+}
+
+#' Read Shimadzu "Method" stream
+#' @author Ethan Bass
+#' @noRd
+read_sz_method <- function(path){
+  method_path <- export_stream(path,
+                                   stream = c("GUMM_Information", "ShimadzuPDA.1",
+                                              "PDA.1.METHOD"),
+                                   remove_null_bytes = TRUE)
+  if (is.na(method_path)){
+    warning("Method stream could not be found -- unable to infer retention times.")
+    return(NA)
+  } else{
+    method_stream <- xml2::read_xml(method_path)
+
+    sz_extract_upd_elements <- function(method_stream, xpath,
+                                        data_format = c("list", "data.frame")){
+      data_format <- match.arg(data_format, c("list","data.frame"))
+      upd_elements <- xml2::xml_find_all(method_stream, xpath)
+
+      vals <- suppressWarnings(as.numeric(xml2::xml_text(
+        xml2::xml_find_first(upd_elements, ".//Val"))))
+      data <- as.list(vals)
+      names(data) <- xml2::xml_attr(upd_elements, "ID")
+
+      if (data_format == "data.frame"){
+        data <- as.data.frame(do.call(rbind, data))
+        colnames(data) <- "Val"
+      }
+      data
+    }
+
+    sz_extract_upd_elements(method_stream, xpath = "/GUD/UP/UPD")
+  }
+}
+
+#' Infer times from 'Shimadzu' Method stream
+#' @author Ethan Bass
+#' @noRd
+get_sz_times <- function(sz_method, nval){
+    start_time <- try(get_metadata_field(sz_method, "StTm")/60000, silent = TRUE)
+    end_time <- try(get_metadata_field(sz_method, "EdTm")/60000, silent = TRUE)
+    if (inherits(start_time, "numeric") & inherits(end_time, "numeric")){
+      seq(from = start_time, to = end_time, length.out = nval)
+    } else NA
 }
 
 #' Read 'Shimadzu' LCD 3D raw data
@@ -41,7 +93,7 @@ read_shimadzu_lcd <- function(path, format_out = c("matrix","data.frame"),
 #' @noRd
 
 read_shimadzu_raw <- function(path, n_lambdas = NULL){
-  path_raw <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Raw Data"))
+  path_raw <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Raw Data"), verbose = TRUE)
   f <- file(path_raw, "rb")
   on.exit(close(f))
 
@@ -66,21 +118,36 @@ read_shimadzu_raw <- function(path, n_lambdas = NULL){
 }
 
 #' Export OLE stream
+#' Use olefile to export te specified stream.
+#' @param file Path to ole file.
 #' @author Ethan Bass
 #' @noRd
-export_stream <- function(path, stream, path_out){
+export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
+                          verbose = FALSE){
   py_run_string('import olefile')
-  py_run_string(paste0('ole = olefile.OleFileIO("', path, '")'))
+  py_run_string(paste0('ole = olefile.OleFileIO("', path_in, '")'))
+  python_stream <- paste0("[", paste(paste0("'", stream, "'"), collapse = ', '),"]")
+  stream_exists <- py_eval(paste0("ole.exists(", python_stream, ")"))
+  if (!stream_exists){
+    if (verbose){
+      warning(paste0("The stream ", sQuote(python_stream), " could not be found."),
+              immediate. = TRUE)
+    }
+    return(NA)
+  } else{
+    py_run_string(paste0("st = ole.openstream(", python_stream, ")"))
+    py_run_string('data = st.read()')
 
-  python_stream <- paste(paste0("'",stream, "'"), collapse=', ')
-  py_run_string(paste0("st = ole.openstream([", python_stream, "])"))
-  py_run_string('dat = st.read()')
-  if (missing(path_out)){
-    path_out = tempfile()
+    if (missing(path_out)){
+      path_out <- tempfile()
+    }
+    if (remove_null_bytes){
+      py_run_string("data = data.replace(b'\\x00', b'')")
+    }
+    py_run_string(paste0('with open("', path_out ,'", "wb") as binary_file:
+      binary_file.write(data)'))
+    path_out
   }
-  py_run_string(paste0('with open("', path_out ,'", "wb") as binary_file:
-    binary_file.write(dat)'))
-  path_out
 }
 
 #' Read 'Shimadzu' LCD data block
