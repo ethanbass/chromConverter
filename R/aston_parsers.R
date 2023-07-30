@@ -1,6 +1,7 @@
 #' Converter for Agilent MassHunter UV files
 #'
-#' Converts a single chromatogram from MassHunter \code{.sp} format to R \code{data.frame}.
+#' Converts a single chromatogram from MassHunter \code{.sp} format to R
+#' \code{data.frame}.
 #'
 #' Uses the [Aston](https://github.com/bovee/aston) file parser.
 #'
@@ -40,7 +41,8 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
 
 #' Converter for Agilent ChemStation UV files
 #'
-#' Converts a single chromatogram from ChemStation \code{.uv} format to R \code{data.frame}.
+#' Converts a single chromatogram from ChemStation \code{.uv} format to R
+#' \code{data.frame}.
 #'
 #' Uses the [Aston](https://github.com/bovee/aston) file parser.
 #'
@@ -74,10 +76,9 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
   }
   if (correction){
     # multiply by empirical correction value
-    x <- apply(x,2,function(xx)xx*0.9536743164062551070259132757200859487056732177734375)
+    correction_value <- 0.9536743164062551070259132757200859487056732177734375
+    x <- apply(x,2,function(xx)xx*correction_value)
   }
-  # correct column order
-  # x <- lapply(x, function(xx) xx[,order(as.numeric(colnames(xx)))])
   if (read_metadata){
     meta <- read_chemstation_metadata(file)
     x <- attach_metadata(x, meta, format_in = "chemstation_uv",
@@ -129,24 +130,21 @@ trace_converter <- function(file, format_out = c("matrix", "data.frame"),
 #' @author Ethan Bass
 #' @import reticulate
 #' @export
-configure_aston <- function(return_boolean=FALSE){
+configure_aston <- function(return_boolean = FALSE){
   install <- FALSE
-  # path <- miniconda_path()
   if (!dir.exists(miniconda_path())){
     install <- readline("It is recommended to install miniconda in your R library to use Aston parsers. Install miniconda now? (y/n)")
     if (install %in% c('y', "Y", "YES", "yes", "Yes")){
       install_miniconda()
     }
-  } # else{
-  # envs <- conda_list()
-  # use_miniconda(envs[grep("r-reticulate", envs$name)[1],2])
-  # }
+  }
   env <- reticulate::configure_environment("chromConverter")
   if (!env){
     reqs <- c("pandas","scipy","numpy","aston")
     reqs_available <- sapply(reqs, reticulate::py_module_available)
     if (!all(reqs_available)){
-      conda_install(envname = "chromConverter", reqs[which(!reqs_available)], pip = TRUE)
+      conda_install(envname = "chromConverter", reqs[which(!reqs_available)],
+                    pip = TRUE)
     }
   }
   assign_trace_file()
