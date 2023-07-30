@@ -41,9 +41,9 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
       meta <- lapply(meta, function(x) gsub(",",".",x))
     }
     if (!inherits(meta, "try-error")){
-      x <- attach_metadata(x, meta, format_in = "chromeleon", format_out = format_out,
-                           data_format = "wide", parser = "chromConverter",
-                           source_file = file)
+      x <- attach_metadata(x, meta, format_in = "chromeleon",
+                           format_out = format_out, data_format = "wide",
+                           parser = "chromConverter", source_file = file)
     }
   }
   x
@@ -113,8 +113,8 @@ read_shimadzu <- function(file, format_in,
         nrows <- as.numeric(met[grep("# of Time Axis Points", met[,1]),2])
         ncols <- as.numeric(met[grep("# of Wavelength Axis Points", met[,1]),2])
         xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses="numeric",
-                       na.strings=c("[FractionCollectionReport]","#ofFractions"), row.names = 1,
-                       nrows = nrows, dec = decimal_separator)
+                       na.strings=c("[FractionCollectionReport]","#ofFractions"),
+                       row.names = 1, nrows = nrows, dec = decimal_separator)
         xx <- as.matrix(xx[!is.na(xx[,1]),])
         times <- round(seq(met[grep("Start Time", met[,1]),2],
                            met[grep("End Time", met[,1]),2],
@@ -345,7 +345,8 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame"),
       info <- mzR::header(x)
       UV_scans <- which(info$msLevel==0)
       rts <- info[UV_scans,"retentionTime"]
-      lambdas <- seq(info$scanWindowLowerLimit[UV_scans[1]], info$scanWindowUpperLimit[UV_scans[1]])
+      lambdas <- seq(info$scanWindowLowerLimit[UV_scans[1]],
+                     info$scanWindowUpperLimit[UV_scans[1]])
       pks <- mzR::peaks(x)
       data <- t(sapply(UV_scans, function(j) pks[[j]][,2]))
       rownames(data) <- rts
