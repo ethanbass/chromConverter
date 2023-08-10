@@ -1,6 +1,10 @@
+## chromConverter 0.4.3
+
+* Fixed bug in `chemstation_ch` parser ([#17](https://github.com/ethanbass/chromConverter/issues/17))
+
 ## chromConverter 0.4.2
 
-Added support for parsing "Waters" ascii (`.arw`) PDA files.
+* Added support for parsing "Waters" ascii (`.arw`) PDA files.
 
 ## chromConverter 0.4.1
 

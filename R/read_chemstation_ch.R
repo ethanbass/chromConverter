@@ -58,6 +58,9 @@ read_chemstation_ch <- function(path, format_out = c("matrix","data.frame"),
 
     seek(f, offsets$intercept, "start")
     intercept <- readBin(f, "double", n = 1, endian = "big", size = 8)
+    if (is.na(intercept)){
+      intercept <- 0
+    }
 
     seek(f, offsets$scaling_factor, "start")
     scaling_factor <- readBin(f, "double", n = 1, endian = "big", size = 8)
