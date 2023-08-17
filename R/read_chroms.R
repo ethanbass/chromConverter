@@ -46,6 +46,8 @@
 #' and \code{animl}.
 #' @param read_metadata Logical, whether to attach metadata (if it's available).
 #' Defaults to TRUE.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
 #' @param progress_bar Logical. Whether to show progress bar. Defaults to
 #' \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.
 #' @param cl Argument to \code{\link[pbapply]{pbapply}} specifying the number
@@ -86,12 +88,15 @@ read_chroms <- function(paths, find_files,
                         data_format = c("wide","long"),
                         export = FALSE, path_out = NULL,
                         export_format = c("csv", "chemstation_csv", "cdf", "mzml", "animl"),
-                        read_metadata = TRUE, progress_bar, cl = 1,
+                        read_metadata = TRUE,
+                        metadata_format = c("chromconverter", "raw"),
+                        progress_bar, cl = 1,
                         sample_names = NULL, dat = NULL){
   data_format <- match.arg(data_format, c("wide","long"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   parser <- match.arg(tolower(parser), c("", "chromconverter", "aston","entab",
                                           "thermoraw", "openchrom", "rainbow"))
+  metadata_format <- match.arg(tolower(metadata_format), c("chromconverter", "raw"))
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
@@ -117,9 +122,13 @@ read_chroms <- function(paths, find_files,
         stop("Please specify the file format of your chromatograms by setting the `format_in` argument.")
     }
   }
-  format_in <- match.arg(format_in, c("agilent_d", "chemstation", "chemstation_uv",
-                                      "chemstation_ch", "chemstation_130", "chemstation_fid",
-                                      "chemstation_csv", "masshunter_dad",
+  format_in <- match.arg(format_in, c("agilent_d", "agilent_dx", "chemstation",
+                                      "chemstation_uv", "chemstation_ch",
+                                      "chemstation_30", "chemstation_31",
+                                      "chemstation_130", "chemstation_131",
+                                      "chemstation_179",
+                                      "chemstation_81", "chemstation_181",
+                                      "chemstation_fid", "chemstation_csv", "masshunter_dad",
                                       "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
                                       "thermoraw", "mzml", "waters_arw",
                                       "waters_raw", "msd", "csd", "wsd", "mdf",
@@ -143,7 +152,7 @@ read_chroms <- function(paths, find_files,
   if (all(!exists)){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
-  if (export | format_in == "thermoraw" | parser == "openchrom"){
+  if (export | parser == "openchrom"){
     if (is.null(path_out)){
       path_out <- set_temp_directory()
     }
@@ -152,116 +161,126 @@ read_chroms <- function(paths, find_files,
     }
   }
   if (is.null(dat)){
-    dat <- list()}
+    dat <- list()
+  }
 
-  # choose converter
   entab_parser <- partial(call_entab, format_in = format_in,
                           format_out = format_out,
                           data_format = data_format,
                           read_metadata = read_metadata)
 
   rainbow_parser <- partial(call_rainbow, format_in = format_in,
-          format_out = format_out, data_format = data_format,
-          read_metadata = read_metadata)
+                            format_out = format_out, data_format = data_format,
+                            read_metadata = read_metadata)
 
   if (format_in == "agilent_d"){
     pattern <- ifelse(is.null(pattern), ".D", pattern)
     converter <- rainbow_parser
   } else if (format_in == "agilent_dx"){
-      pattern <- ifelse(is.null(pattern), ".dx", pattern)
-      converter <- partial(read_agilent_dx, format_out = format_out,
-                           data_format = data_format,
-                           read_metadata = read_metadata)
+    pattern <- ifelse(is.null(pattern), ".dx", pattern)
+    converter <- partial(read_agilent_dx, path_out = path_out,
+                         format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata)
   } else if (format_in == "masshunter_dad"){
-      pattern <- ifelse(is.null(pattern), ".sp", pattern)
-      converter <- switch(parser,
-                          "aston" = partial(sp_converter, format_out = format_out,
-                                            data_format = data_format,
-                                            read_metadata = read_metadata),
-                          "entab" = entab_parser)
+    pattern <- ifelse(is.null(pattern), ".sp", pattern)
+    converter <- switch(parser,
+                        "aston" = partial(sp_converter, format_out = format_out,
+                                          data_format = data_format,
+                                          read_metadata = read_metadata,
+                                          metadata_format = metadata_format),
+                        "entab" = entab_parser)
   } else if (format_in == "chemstation_uv"){
-      pattern <- ifelse(is.null(pattern), ".uv", pattern)
-      converter <- switch(parser,
-                          "chromconverter" = partial(read_chemstation_uv,
-                                                     format_out = format_out,
-                                                     data_format = data_format,
-                                                     read_metadata = read_metadata),
-                          "aston" = partial(uv_converter, format_out = format_out,
-                                            data_format = data_format,
-                                            read_metadata = read_metadata),
-                          "entab" = entab_parser,
-                          "rainbow" = rainbow_parser)
+    pattern <- ifelse(is.null(pattern), ".uv", pattern)
+    converter <- switch(parser,
+                        "chromconverter" = partial(read_chemstation_uv,
+                                                   format_out = format_out,
+                                                   data_format = data_format,
+                                                   read_metadata = read_metadata,
+                                                   metadata_format = metadata_format),
+                        "aston" = partial(uv_converter, format_out = format_out,
+                                          data_format = data_format,
+                                          read_metadata = read_metadata,
+                                          metadata_format = metadata_format),
+                        "entab" = entab_parser,
+                        "rainbow" = rainbow_parser)
   } else if (format_in == "chemstation"){
-      pattern <- ifelse(is.null(pattern), "*", pattern)
-      converter <- rainbow_parser
+    pattern <- ifelse(is.null(pattern), "*", pattern)
+    converter <- rainbow_parser
   } else if (format_in == "chromeleon_uv"){
-      pattern <- ifelse(is.null(pattern), ".txt", pattern)
-      converter <- partial(read_chromeleon, format_out = format_out,
-                           data_format = data_format,
-                           read_metadata = read_metadata)
+    pattern <- ifelse(is.null(pattern), ".txt", pattern)
+    converter <- partial(read_chromeleon, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata,
+                         metadata_format = metadata_format)
   } else if (format_in == "shimadzu_fid"){
-      pattern <- ifelse(is.null(pattern), ".txt", pattern)
-      converter <- partial(read_shimadzu, format_in = "fid",
-                           format_out = format_out, data_format = data_format,
-                           read_metadata = read_metadata)
+    pattern <- ifelse(is.null(pattern), ".txt", pattern)
+    converter <- partial(read_shimadzu, format_in = "fid",
+                         format_out = format_out, data_format = data_format,
+                         read_metadata = read_metadata,
+                         metadata_format = metadata_format)
   } else if (format_in == "shimadzu_dad"){
-      pattern <- ifelse(is.null(pattern), ".txt", pattern)
-      converter <- partial(read_shimadzu, format_in = "dad",
-                           format_out = format_out, data_format = data_format,
-                           read_metadata = read_metadata)
+    pattern <- ifelse(is.null(pattern), ".txt", pattern)
+    converter <- partial(read_shimadzu, format_in = "dad",
+                         format_out = format_out, data_format = data_format,
+                         read_metadata = read_metadata,
+                         metadata_format = metadata_format)
   } else if (format_in == "thermoraw"){
-      pattern <- ifelse(is.null(pattern), ".raw", pattern)
-      converter <- switch(parser,
-                      "thermoraw" = partial(read_thermoraw, path_out = path_out,
-                                            format_out = format_out,
-                                            read_metadata = read_metadata),
-                       "entab" = entab_parser)
+    pattern <- ifelse(is.null(pattern), ".raw", pattern)
+    converter <- switch(parser,
+                        "thermoraw" = partial(read_thermoraw, path_out = path_out,
+                                              format_out = format_out,
+                                              read_metadata = read_metadata),
+                        "entab" = entab_parser)
   } else if (format_in == "mzml"){
-      pattern <- ifelse(is.null(pattern), ".mzML", pattern)
-      converter <- partial(read_mzml, format_out = format_out)
+    pattern <- ifelse(is.null(pattern), ".mzML", pattern)
+    converter <- partial(read_mzml, format_out = format_out)
   } else if (format_in == "waters_arw"){
-      pattern <- ifelse(is.null(pattern), ".arw", pattern)
-      converter <- partial(read_waters_arw, format_out = format_out)
+    pattern <- ifelse(is.null(pattern), ".arw", pattern)
+    converter <- partial(read_waters_arw, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata)
   } else if (format_in == "waters_raw"){
-      pattern <- ifelse(is.null(pattern), ".raw", pattern)
-      converter <- rainbow_parser
+    pattern <- ifelse(is.null(pattern), ".raw", pattern)
+    converter <- rainbow_parser
   } else if (format_in == "chemstation_csv"){
-      pattern <- ifelse(is.null(pattern), ".csv|.CSV", pattern)
-      converter <- partial(read_chemstation_csv, format_out = format_out)
-  } else if (format_in %in% c("chemstation_fid", "chemstation_ch", "chemstation_130")){
-      pattern <- ifelse(is.null(pattern), ".ch", pattern)
-      converter <- switch(parser,
-                          "chromconverter" = partial(read_chemstation_ch,
-                                                     format_out = format_out,
-                                                     data_format = data_format,
-                                                     read_metadata = read_metadata),
-                          "rainbow" = rainbow_parser,
-                          "entab" = entab_parser)
+    pattern <- ifelse(is.null(pattern), ".csv|.CSV", pattern)
+    converter <- partial(read_chemstation_csv, format_out = format_out)
+  } else if (grepl("chemstation", format_in)){
+    pattern <- ifelse(is.null(pattern), ".ch", pattern)
+    converter <- switch(parser,
+                        "chromconverter" = partial(read_chemstation_ch,
+                                                   format_out = format_out,
+                                                   data_format = data_format,
+                                                   read_metadata = read_metadata),
+                        "rainbow" = rainbow_parser,
+                        "entab" = entab_parser)
   } else if (format_in %in% c("msd", "csd", "wsd")){
-      if (is.null(pattern) & find_files){
-        stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
-      }
-      return_paths <- ifelse(export_format == "csv", FALSE, TRUE)
-      converter <- partial(call_openchrom, path_out = path_out,
-                           format_in = format_in, export_format = export_format,
-                           return_paths = return_paths)
+    if (is.null(pattern) & find_files){
+      stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
+    }
+    return_paths <- ifelse(export_format == "csv", FALSE, TRUE)
+    converter <- partial(call_openchrom, path_out = path_out,
+                         format_in = format_in, export_format = export_format,
+                         return_paths = return_paths)
   } else if (format_in == "mdf"){
-      pattern <- ifelse(is.null(pattern), ".mdf|.MDF", pattern)
-      converter <- partial(read_mdf, format_out = format_out,
-                           data_format = data_format,
-                           read_metadata = read_metadata)
+    pattern <- ifelse(is.null(pattern), ".mdf|.MDF", pattern)
+    converter <- partial(read_mdf, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata)
   } else if (format_in == "cdf"){
-      pattern <- ifelse(is.null(pattern), ".cdf|.CDF", pattern)
-      converter <- partial(read_cdf, format_out = format_out,
-                           data_format = data_format,
-                           read_metadata = read_metadata)
+    pattern <- ifelse(is.null(pattern), ".cdf|.CDF", pattern)
+    converter <- partial(read_cdf, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata)
   } else {
-      converter <- switch(parser,
-                          "aston" = partial(trace_converter, format_out = format_out,
-                                            data_format = data_format,
-                                            read_metadata = read_metadata),
-                          "entab" = entab_parser
-      )
+    converter <- switch(parser,
+                        "aston" = partial(trace_converter, format_out = format_out,
+                                          data_format = data_format,
+                                          read_metadata = read_metadata,
+                                          metadata_format = metadata_format),
+                        "entab" = entab_parser
+    )
   }
 
   if (find_files){

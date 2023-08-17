@@ -19,6 +19,7 @@ read_chroms(
   path_out = NULL,
   export_format = c("csv", "chemstation_csv", "cdf", "mzml", "animl"),
   read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw"),
   progress_bar,
   cl = 1,
   sample_names = NULL,
@@ -65,6 +66,9 @@ and \code{animl}.}
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
 Defaults to TRUE.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
 
 \item{progress_bar}{Logical. Whether to show progress bar. Defaults to
 \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.}
