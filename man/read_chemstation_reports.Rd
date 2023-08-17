@@ -6,8 +6,8 @@
 \usage{
 read_chemstation_reports(
   files,
-  data_format = c("chromatographr", "chemstation"),
-  metadata_format = c("list", "data.frame")
+  data_format = c("chromatographr", "original"),
+  metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
@@ -16,8 +16,8 @@ read_chemstation_reports(
 \item{data_format}{Format to output data. Either \code{chromatographr} or
 \code{chemstation}.}
 
-\item{metadata_format}{Format to output metadata. Either \code{list} or
-\code{data.frame}.}
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
+\code{raw}.}
 }
 \description{
 Read Agilent Chemstation Reports

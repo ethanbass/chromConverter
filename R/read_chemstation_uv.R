@@ -1,8 +1,10 @@
 #' Parser for reading Agilent UV (.uv) files into R
 #' @param path Path to \code{.uv} file
-#' @param read_metadata Logical. Whether to attach metadata.
 #' @param format_out Matrix or data.frame
 #' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param read_metadata Logical. Whether to attach metadata.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
 #' @importFrom utils head tail
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
@@ -14,9 +16,13 @@
 
 read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
                                 data_format = c("wide", "long"),
-                                read_metadata = TRUE){
+                                read_metadata = TRUE,
+                                metadata_format = c("chromconverter", "raw")){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format,
+                            chromconverter = "waters_arw", raw = "raw")
 
   f <- file(path, "rb")
   on.exit(close(f))

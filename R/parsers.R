@@ -5,6 +5,8 @@
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
+#' \code{raw}.
 #' @return A chromatogram in the format specified by \code{format_out}.
 #' (retention time x wavelength).
 #' @author Ethan Bass
@@ -12,9 +14,13 @@
 
 read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
                             data_format = c("wide","long"),
-                            read_metadata = TRUE){
+                            read_metadata = TRUE,
+                            metadata_format = c("chromconverter", "raw")){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format, chromconverter = "chromeleon",
+                           raw = raw)
   xx <- readLines(file)
   xx <- remove_unicode_chars(xx)
   start <- tail(grep("Data:", xx), 1)
@@ -25,6 +31,8 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
     decimal_separator <- ","
     x <- apply(x, 2, function(x) gsub("\\.", "", x))
     x <- apply(x, 2, function(x) gsub(",", ".", x))
+  } else {
+    decimal_separator <- "."
   }
   x <- apply(x, 2, as.numeric)
   colnames(x) <- c("RT","Intensity")
@@ -41,8 +49,8 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
       meta <- lapply(meta, function(x) gsub(",",".",x))
     }
     if (!inherits(meta, "try-error")){
-      x <- attach_metadata(x, meta, format_in = "chromeleon", format_out = format_out,
-                           data_format = "wide", parser = "chromConverter",
+      x <- attach_metadata(x, meta, format_in = metadata_format, format_out = format_out,
+                           data_format = data_format, parser = "chromConverter",
                            source_file = file)
     }
   }
@@ -62,23 +70,31 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
 #' @param format_in Format of files. \code{fid} or \code{dad}.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Whether to read metadata from file.
+#' @param peaktable_format Whether to return peak tables in \code{chromatographr} or
+#' \code{original} format.
 #' @param what Whether to extract \code{chromatogram} and/or \code{peak_table}.
 #' Accepts multiple arguments.
+#' @param read_metadata Whether to read metadata from file.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
+#' \code{raw}.
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 
 read_shimadzu <- function(file, format_in,
-                          format_out = c("matrix","data.frame"),
-                          data_format = c("wide","long"),
+                          format_out = c("matrix", "data.frame"),
+                          data_format = c("wide", "long"),
+                          peaktable_format = c("chromatographr", "original"),
                           what = "chromatogram",
-                          read_metadata = TRUE){
+                          read_metadata = TRUE,
+                          metadata_format = c("chromconverter", "raw")){
   if (missing(format_in))
     stop("`format_in` must be specified. The options are `fid` or `dad`.")
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
+  peaktable_format <- match.arg(peaktable_format, c("chromatographr","original"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   what <- match.arg(what, c("chromatogram", "peak_table"), several.ok = TRUE)
   x <- readLines(file)
   sep <- substr(x[2], 17, 17)
@@ -117,9 +133,8 @@ read_shimadzu <- function(file, format_in,
                        row.names = 1, nrows = nrows, dec = decimal_separator)
         xx <- as.matrix(xx[!is.na(xx[,1]),])
         colnames(xx) <- as.numeric(gsub("X", "", colnames(xx)))*0.01
-        colnames(xx) <- wavelengths
         if (data_format == "long"){
-          xx <- reshape_chrom(xx)
+          xx <- reshape_chrom(xx, data_format = "long")
         }
       }
       if (format_out == "data.frame"){
@@ -154,6 +169,12 @@ read_shimadzu <- function(file, format_in,
 
         peak_tab <- read.csv(file, skip = (idx + 1), sep = sep, nrows = nrows,
                              dec = decimal_separator)
+        if (peaktable_format == "chromatographr"){
+          peak_tab <- peak_tab[, c("R.Time", "I.Time", "F.Time", "Area", "Height")]
+          colnames(peak_tab) <- c("rt", "start", "end", "area", "height")
+          # cbind(sample = gsub("\\[|\\]","", x[idx]), peak_tab)
+        }
+        peak_tab
       } else{NA}
     })
     names(peak_tab) <- gsub("\\[|\\]","", x[peaktab.idx])
@@ -182,9 +203,6 @@ read_shimadzu <- function(file, format_in,
     }
     rownames(meta) <- meta[, 1]
     meta <- as.list(meta[,2])
-    # data_format <- switch(format_in,
-    #                       "fid" = "long",
-    #                       "dad" = "wide")
     if (inherits(xx, "list")){
       xx <- lapply(xx, function(xxx){
         attach_metadata(xxx, meta, format_in = "shimadzu",
@@ -214,31 +232,35 @@ read_shimadzu <- function(file, format_in,
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 
-read_waters_arw <- function(file, format_out = c("matrix","data.frame"),
-                            data_format = c("wide","long"),
-                            read_metadata = TRUE){
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  data_format <- match.arg(data_format, c("wide","long"))
-  x <- read.csv(file, sep="\t", skip = 2, header = FALSE, row.names = 1)
+read_waters_arw <- function(file, format_out = c("matrix", "data.frame"),
+                            data_format = c("wide", "long"),
+                            read_metadata = TRUE,
+                            metadata_format = c("chromconverter", "raw")){
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  data_format <- match.arg(data_format, c("wide", "long"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format,
+                            chromconverter = "waters_arw", raw = "raw")
+  x <- read.csv(file, sep = "\t", skip = 2, header = FALSE, row.names = 1)
   # PDA (3D)
   if (rownames(x)[1] == "Wavelength"){
     colnames(x) <- x[1,]
     rm <- 1
     if (rownames(x)[2] == "Time"){
-      rm <- c(rm,2)
+      rm <- c(rm, 2)
     }
     x <- x[-rm,]
     if (data_format == "long"){
       x <- as.data.frame(reshape_chrom(x, data_format = "long"))
     }
-  }
-  # 1D
-  if (ncol(x) == 1){
+  } else if (ncol(x) == 1){
     colnames(x) <- "Intensity"
     if (data_format == "long"){
       x <- data.frame(RT = rownames(x), Intensity = x[,1])
@@ -250,7 +272,7 @@ read_waters_arw <- function(file, format_out = c("matrix","data.frame"),
   if (read_metadata){
     meta <- try(read_waters_metadata(file))
     if (!inherits(meta, "try-error")){
-      x <- attach_metadata(x, meta, format_in = "waters_arw",
+      x <- attach_metadata(x, meta, format_in = metadata_format,
                            format_out = format_out,
                            data_format = data_format,
                            parser = "chromConverter",

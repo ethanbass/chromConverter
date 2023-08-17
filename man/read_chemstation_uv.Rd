@@ -8,7 +8,8 @@ read_chemstation_uv(
   path,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ read_chemstation_uv(
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}

@@ -36,11 +36,15 @@ andi_ms_error <- function(...){
 
 #' Read ANDI chrom file
 #' @noRd
-read_andi_chrom <- function(file, format_out = c("matrix","data.frame"),
-                            data_format = c("wide","long"),
-                           what = "chromatogram", read_metadata = TRUE){
+read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
+                            data_format = c("wide", "long"),
+                           what = "chromatogram", read_metadata = TRUE,
+                           metadata_format = c("chromconverter", "raw")){
   data_format <- match.arg(data_format, c("wide","long"))
   format_out <- match.arg(format_out, c("matrix","data.frame"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format,
+                            chromconverter = "cdf", raw = "raw")
   what <- match.arg(what, c("chromatogram", "peak_table"), several.ok = TRUE)
   nc <- ncdf4::nc_open(file)
   if (any(what == "chromatogram")){
@@ -87,7 +91,7 @@ read_andi_chrom <- function(file, format_out = c("matrix","data.frame"),
                         parser = "chromconverter", source_file = file)
       })
     } else{
-    data <- attach_metadata(data, meta = meta, format_in = "cdf",
+    data <- attach_metadata(data, meta = meta, format_in = metadata_format,
                             format_out = format_out, data_format = data_format,
                             parser = "chromconverter", source_file = file)
     }
