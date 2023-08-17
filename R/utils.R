@@ -8,7 +8,11 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                           chromconverter = c("agilent_dx", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
-                                             "mzml", "chemstation_130",
+                                             "chemstation_30", "chemstation_31",
+                                             "chemstation_130", "chemstation_131",
+                                             "chemstation_179",
+                                             "chemstation_81", "chemstation_181",
+                                             "mzml",
                                              "shimadzu_fid", "shimadzu_dad",
                                              "waters_arw", "mdf", "cdf"),
                           aston = c("chemstation", "chemstation_uv", "masshunter_dad", "other"),
@@ -53,6 +57,21 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
 #' @noRd
 remove_unicode_chars <- function(x){
   stringr::str_replace_all(x, "\xb5", "micro")
+}
+
+#' Extract file names
+#' @noRd
+extract_filenames <- function(files){
+  if (all(grepl("\\.[Dd]$|\\.[Dd]?[/\\\\]", files))){
+    file_names <- strsplit(files, "/")
+    file_names <- gsub("\\.[Dd]", "",
+                       sapply(file_names, function(n){
+                         ifelse(any(grepl("\\.[Dd]", n)), grep("\\.[Dd]", n, value = TRUE), tail(n,1))
+                       }))
+  } else {
+    file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
+  }
+  file_names
 }
 
 #' Format extension
@@ -155,8 +174,7 @@ choose_apply_fnc <- function(progress_bar, parallel = FALSE, cl = NULL){
 #' Transfer metadata
 #'@noRd
 transfer_metadata <- function (new_object, old_object, exclude = c("names", "row.names",
-                                              "class", "dim", "dimnames"))
-{
+                                              "class", "dim", "dimnames")){
   a <- attributes(old_object)
   a[exclude] <- NULL
   attributes(new_object) <- c(attributes(new_object), a)
@@ -174,14 +192,14 @@ get_filetype <- function(file, out = c("format_in", "filetype")){
                      "x01/x32/x00/x00" = "AgilentChemstationMS",
                      "x02/x02/x00/x00" = "AgilentMasshunterDADHeader",
                      # "x02/x33/x30/x00" = "AgilentChemstationMWD",
-                     "x02/x33/x31/x00" = "AgilentChemstationDAD",
-                     "x02/x38/x31/x00" = "AgilentChemstationFID", #81
                      "x03/x02/x00/x00" = "AgilentMasshunterDAD",
-                     "x03/x31/x33/x30" = "AgilentChemstationCH130", #130
-                     "x03/x31/x33/x31" = "AgilentChemstationDAD", #131 rainbow
-                     "x03/x31/x37/x39" = "AgilentChemstationFID", #179
-                     "x03/x31/x38/x31" = "AgilentChemstationFID", #181
-                     "x02/x33/x30/x00" = "AgilentChemstationCH", #31/30
+                     "x02/x33/x30/x00" = "chemstation_30",
+                     "x02/x33/x31/x00" = "chemstation_31",
+                     "x03/x31/x33/x30" = "chemstation_130", #130
+                     "x03/x31/x33/x31" = "chemstation_131", #131 rainbow
+                     "x03/x31/x37/x39" = "chemstation_179", #179
+                     "x02/x38/x31/x00" = "chemstation_81", #81
+                     "x03/x31/x38/x31" = "chemstation_181", #181
                      "x01/xa1/x46/x00" = "ThermoRAW",
                      "xd0/xcf/x11/xe0" = "ShimadzuLCD",
                      "x80/x00/x01/x00" = "WatersRAW"
@@ -190,15 +208,16 @@ get_filetype <- function(file, out = c("format_in", "filetype")){
     stop("File type not recognized. Please specify a filetype by providing an argument to `format_in`
           or file an issue at `https://github.com/ethanbass/chromConverter/issues`.")
   }
-   format_in <- switch(filetype,
+  format_in <- switch(filetype,
           "AgilentChemstationMS" = "chemstation",
           "AgilentChemstationCH" = "chemstation_ch",
-          "AgilentChemstationCH130" = "chemstation_130",
           "AgilentChemstationFID" = "chemstation_ch",
-          "AgilentChemstationDAD" = "chemstation_uv",
+          "chemstation_31" = "chemstation_uv",
+          "chemstation_131" = "chemstation_uv",
           "ThermoRAW" = "thermoraw",
           "ShimadzuLCD" = "shimadzu_lcd",
-          "WatersRAW" = "waters_raw"
+          "WatersRAW" = "waters_raw",
+          filetype
           )
 
   switch(out, "filetype" = filetype, "format_in" = format_in)
