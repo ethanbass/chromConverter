@@ -49,8 +49,7 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
       meta <- lapply(meta, function(x) gsub(",",".",x))
     }
     if (!inherits(meta, "try-error")){
-      x <- attach_metadata(x, meta, format_in = "chromeleon",
-                           metadata_format = metadata_format,
+      x <- attach_metadata(x, meta, format_in = metadata_format,
                            format_out = format_out, data_format = data_format,
                            parser = "chromConverter", source_file = file)
     }

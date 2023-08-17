@@ -135,7 +135,7 @@ test_that("read_chroms can read 'Chromeleon' comma-separated files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
   path <- system.file("chromeleon_comma.txt", package = "chromConverterExtraTests")
-  x <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE)
+  x <- read_chroms(path, format_in = "chromeleon_uv", progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(3241, 1))
   expect_equal(attr(x[[1]], "parser"), "chromConverter")

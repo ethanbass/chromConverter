@@ -73,10 +73,10 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               parser = "chromConverter",
               format_out = format_out)
   }, "chromeleon" = {
-    datetime.idx <- unlist(sapply(c("Date$","Time$"), function(str) grep(str, names(meta))))
+    datetime.idx <- unlist(sapply(c("Date$", "Time$"), function(str) grep(str, names(meta))))
     datetime <- unlist(meta[datetime.idx])
     if (length(datetime > 1)){
-      datetime <- paste(datetime, collapse=" ")
+      datetime <- paste(datetime, collapse = " ")
     }
     datetime <- as.POSIXct(datetime, format = c("%m/%d/%Y %H:%M:%S", "%d.%m.%Y %H:%M:%S",
                                       "%m/%d/%Y %H:%M:%S %p %z"))
