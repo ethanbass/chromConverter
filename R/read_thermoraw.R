@@ -7,8 +7,9 @@
 #' must be manually installed.
 #'
 #' @name read_thermoraw
-#' @param path_in path to file
-#' @param path_out directory to export \code{mzML} files.
+#' @param path_in Path to file.
+#' @param path_out Path to directory to export \code{mzML} files. If
+#' \code{path_out} isn't specified, a temp directory will be used.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
 #' @return A chromatogram in the format specified by \code{format_out}.
