@@ -10,28 +10,35 @@
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Logical. Whether to read metadata and attach it to the
 #' chromatogram.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
 #' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @export sp_converter
 
 sp_converter <- function(file, format_out = c("matrix", "data.frame"),
                          data_format = c("wide","long"),
-                         read_metadata = TRUE){
+                         read_metadata = TRUE,
+                         metadata_format = c("chromconverter", "raw")){
   check_aston_configuration()
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format,
+                            chromconverter = "masshunter_dad", raw = "raw")
+
   x <- trace_file$agilent_uv$AgilentDAD(file)
   x <- pd$DataFrame(x$data$values, columns = x$data$columns,
                     index = x$data$index)
   if (data_format == "long"){
-    x <- reshape_chrom(x)
+    x <- reshape_chrom(x, data_format = "long")
   }
   if (format_out == "matrix"){
     x <- as.matrix(x)
   }
   if (read_metadata){
     meta <- read_masshunter_metadata(file)
-    x <- attach_metadata(x, meta, format_in = "masshunter_dad",
+    x <- attach_metadata(x, meta, format_in = metadata_format,
                          format_out = format_out, data_format = "wide",
                          parser = "aston", source_file = file)
   }
@@ -52,22 +59,28 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
 #' TRUE.
 #' @param read_metadata Logical. Whether to read metadata and attach it to the
 #' chromatogram.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
 #' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @export uv_converter
 uv_converter <- function(file, format_out = c("matrix","data.frame"),
                          data_format = c("wide","long"),
-                         correction=TRUE, read_metadata = TRUE){
+                         correction = TRUE, read_metadata = TRUE,
+                         metadata_format = c("chromconverter", "raw")){
   check_aston_configuration()
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format,
+                            chromconverter = "chemstation_uv", raw = "raw")
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
   x <- trace_file$TraceFile(file)
   x <- pd$DataFrame(x$data$values, columns=x$data$columns,
                     index=x$data$index)
   if (data_format == "long"){
-    x <- reshape_chrom(x)
+    x <- reshape_chrom(x, data_format = "long")
   }
   if (format_out == "matrix"){
     x <- as.matrix(x)
@@ -80,7 +93,7 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
   # x <- lapply(x, function(xx) xx[,order(as.numeric(colnames(xx)))])
   if (read_metadata){
     meta <- read_chemstation_metadata(file)
-    x <- attach_metadata(x, meta, format_in = "chemstation_uv",
+    x <- attach_metadata(x, meta, format_in = metadata_format,
                          format_out = format_out, data_format = "wide",
                          parser = "Aston", source_file = file)
   }
@@ -99,17 +112,17 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
 #' @import reticulate
 #' @noRd
 trace_converter <- function(file, format_out = c("matrix", "data.frame"),
-                            data_format = c("wide","long")){
+                            data_format = c("wide", "long")){
   check_aston_configuration()
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  data_format <- match.arg(data_format, c("wide","long"))
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  data_format <- match.arg(data_format, c("wide", "long"))
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
   x <- trace_file$TraceFile(file)
-  x <- pd$DataFrame(x$data$values, columns=x$data$columns,
-                    index=x$data$index)
+  x <- pd$DataFrame(x$data$values, columns = x$data$columns,
+                    index = x$data$index)
   if (data_format == "long"){
-    x <- reshape_chrom(x)
+    x <- reshape_chrom(x, data_format = "long")
   }
   if (format_out == "matrix"){
     x <- as.matrix(x)
