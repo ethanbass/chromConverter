@@ -9,7 +9,8 @@ call_entab(
   data_format = c("wide", "long"),
   format_in = "",
   format_out = c("matrix", "data.frame"),
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
@@ -22,6 +23,9 @@ call_entab(
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
 \item{read_metadata}{Whether to read metadata from file.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}

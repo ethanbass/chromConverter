@@ -9,8 +9,10 @@ read_shimadzu(
   format_in,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
+  peaktable_format = c("chromatographr", "original"),
   what = "chromatogram",
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
@@ -22,10 +24,16 @@ read_shimadzu(
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
+\item{peaktable_format}{Whether to return peak tables in \code{chromatographr} or
+\code{original} format.}
+
 \item{what}{Whether to extract \code{chromatogram} and/or \code{peak_table}.
 Accepts multiple arguments.}
 
 \item{read_metadata}{Whether to read metadata from file.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
+\code{raw}.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}

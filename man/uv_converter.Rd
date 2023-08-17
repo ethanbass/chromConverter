@@ -9,7 +9,8 @@ uv_converter(
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   correction = TRUE,
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
@@ -24,6 +25,9 @@ TRUE.}
 
 \item{read_metadata}{Logical. Whether to read metadata and attach it to the
 chromatogram.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
 }
 \value{
 A chromatogram in \code{data.frame} format (retention time x wavelength).
