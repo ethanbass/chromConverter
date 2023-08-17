@@ -12,11 +12,11 @@
 #' @return A list of chromatographic matrices in long format.
 #' @author Ethan Bass
 
-reshape_chroms <- function(x, idx, sample_var = "sample", lambdas=NULL,
+reshape_chroms <- function(x, idx, sample_var = "sample", lambdas = NULL,
                            data_format, combine = TRUE, ...){
   if (missing(data_format)){
-    data_format <- switch(attr(x[[1]],"data_format"),
-           long="wide",wide="long")
+    data_format <- switch(attr(x[[1]], "data_format"),
+           long = "wide", wide = "long")
   }
   if (missing(idx)){
     idx <- seq_along(x)
@@ -25,7 +25,7 @@ reshape_chroms <- function(x, idx, sample_var = "sample", lambdas=NULL,
     if (is.null(lambdas)){
       if (data_format == "wide"){
         lambda.idx <- grep("lambda", colnames(x[[i]]))
-        lambdas <- unique(as.data.frame(x[[i]])[,lambda.idx])
+        lambdas <- unique(as.data.frame(x[[i]])[, lambda.idx])
       } else if (data_format == "long"){
         lambdas <- colnames(x[[i]])
       }
@@ -110,7 +110,7 @@ reshape_chrom_wide <- function(x, lambdas, lambda_var = "lambda", time_var="rt",
     x <- x[which(x[,lambda_var] %in% lambdas),]
   }
   data <- reshape(x, idvar=time_var, timevar=lambda_var, v.names = value_var,
-                  new.row.names = unique(x$rt), direction="wide", drop=drop)
+                  new.row.names = unique(x$rt), direction = "wide", drop = drop)
   colnames(data) <- gsub(paste0(value_var,"."),"", colnames(data))
   data <- as.matrix(data)
   rownames(data) <- data[,1]
