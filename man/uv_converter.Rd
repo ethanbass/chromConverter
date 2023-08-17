@@ -33,7 +33,8 @@ or \code{raw}.}
 A chromatogram in \code{data.frame} format (retention time x wavelength).
 }
 \description{
-Converts a single chromatogram from ChemStation \code{.uv} format to R \code{data.frame}.
+Converts a single chromatogram from ChemStation \code{.uv} format to R
+\code{data.frame}.
 }
 \details{
 Uses the \href{https://github.com/bovee/aston}{Aston} file parser.

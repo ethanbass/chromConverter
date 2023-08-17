@@ -87,7 +87,8 @@ read_chroms <- function(paths, find_files,
                         format_out = c("matrix", "data.frame"),
                         data_format = c("wide","long"),
                         export = FALSE, path_out = NULL,
-                        export_format = c("csv", "chemstation_csv", "cdf", "mzml", "animl"),
+                        export_format = c("csv", "chemstation_csv", "cdf",
+                                          "mzml", "animl"),
                         read_metadata = TRUE,
                         metadata_format = c("chromconverter", "raw"),
                         progress_bar, cl = 1,
@@ -303,7 +304,9 @@ read_chroms <- function(paths, find_files,
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n){
-                         ifelse(any(grepl("\\.[Dd]", n)), grep("\\.[Dd]", n, value = TRUE), tail(n,1))
+                         ifelse(any(grepl("\\.[Dd]", n)),
+                                yes = grep("\\.[Dd]", n, value = TRUE),
+                                no = tail(n,1))
                        }))
   } else {
     file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
@@ -330,10 +333,11 @@ read_chroms <- function(paths, find_files,
     names(data) <- file_names
   }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
-    writer <- switch(export_format, csv = export_csvs,
-                     chemstation_csv = purrr::partial(export_csvs, fileEncoding = "utf16"),
+    writer <- switch(export_format,
+                     csv = export_csvs,
+                     chemstation_csv = purrr::partial(export_csvs,
+                                                      fileEncoding = "utf16"),
                      cdf = export_cdfs)
-
     writer(data, path_out)
   }
   dat <- append(dat, data)

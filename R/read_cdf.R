@@ -12,7 +12,7 @@
 #' @author Ethan Bass
 #' @export
 
-read_cdf <- function(file, format_out = c("matrix","data.frame"),
+read_cdf <- function(file, format_out = c("matrix", "data.frame"),
                      data_format = c("wide","long"),
                      what = "chromatogram", read_metadata = TRUE){
   check_for_pkg("ncdf4")

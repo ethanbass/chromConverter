@@ -30,7 +30,7 @@ package must be manually installed to enable parallel processing).
 
 ## chromConverter 0.4.2
 
-Added support for parsing "Waters" ascii (`.arw`) PDA files.
+* Added support for parsing "Waters" ascii (`.arw`) PDA files.
 
 ## chromConverter 0.4.1
 
