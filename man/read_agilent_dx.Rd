@@ -6,13 +6,16 @@
 \usage{
 read_agilent_dx(
   path,
+  path_out = NULL,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   read_metadata = TRUE
 )
 }
 \arguments{
-\item{path}{Path to \code{.dx} file}
+\item{path}{Path to \code{.dx} file.}
+
+\item{path_out}{Path to directory to export unzipped files.}
 
 \item{format_out}{Matrix or data.frame.}
 

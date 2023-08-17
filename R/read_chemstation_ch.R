@@ -13,7 +13,7 @@
 #' @export
 
 read_chemstation_ch <- function(path, format_out = c("matrix","data.frame"),
-                                data_format = c("wide","long"),
+                                data_format = c("wide", "long"),
                                 read_metadata = TRUE){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide","long"))
@@ -60,6 +60,9 @@ read_chemstation_ch <- function(path, format_out = c("matrix","data.frame"),
 
     seek(f, offsets$intercept, "start")
     intercept <- readBin(f, "double", n = 1, endian = "big", size = 8)
+    if (is.na(intercept)){
+      intercept <- 0
+    }
 
     seek(f, offsets$scaling_factor, "start")
     scaling_factor <- readBin(f, "double", n = 1, endian = "big", size = 8)
@@ -138,7 +141,6 @@ get_nchar <- function(f){
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
-
 decode_double_delta <- function(file, offset) {
 
   seek(file, 0, 'end')
@@ -315,7 +317,8 @@ get_agilent_offsets <- function(version){
 
 #' Parser for reading Agilent ('.dx') files into R
 #' @importFrom utils unzip
-#' @param path Path to \code{.dx} file
+#' @param path Path to \code{.dx} file.
+#' @param path_out Path to directory to export unzipped files.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Logical. Whether to attach metadata.
@@ -324,20 +327,24 @@ get_agilent_offsets <- function(version){
 #' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
-read_agilent_dx <-  function(path, format_out = c("matrix","data.frame"),
+read_agilent_dx <-  function(path, path_out = NULL, format_out = c("matrix","data.frame"),
                                   data_format = c("wide","long"),
                                   read_metadata = TRUE){
     format_out <- match.arg(format_out, c("matrix","data.frame"))
     data_format <- match.arg(data_format, c("wide","long"))
     files <- unzip(path, list = TRUE)
     files.idx <- grep(".ch$", files$Name, ignore.case = TRUE)
-
     # make temp directory
-    tmp <- tempdir()
-    on.exit(unlink(path), add = TRUE)
+    if (is.null(path_out)){
+      path_out <- tempdir()
+      on.exit(unlink(path_out), add = TRUE)
+    }
+    # copy .dx file to directory
+    file.copy(path, path_out)
+    path <- fs::path(path_out, basename(path))
     # unzip .dx file
-    unzip(file, files = files$Name[files.idx], exdir = tmp)
+    unzip(path, files = files$Name[files.idx], exdir = path_out)
     # read in `.ch` files
-    read_chemstation_ch(fs::path(tmp, files$Name[files.idx]), format_out = format_out,
+    read_chemstation_ch(fs::path(path_out, files$Name[files.idx]), format_out = format_out,
                         data_format = data_format, read_metadata = read_metadata)
 }
