@@ -2,16 +2,30 @@
 
 ### New features
 
-* Added support for parallelization through `pbapply` package. (The `pbapply` 
+* Added support for parallel processing through `pbapply` package. (The `pbapply` 
 package must be manually installed to enable parallel processing). 
-* Added preliminary support for reading "Agilent" (`.dx`) files through
+* Added preliminary support for reading 'Agilent' (`.dx`) files through
 `read_agilentdx` function.
-* Added support for reading "Chemstation" REPORT files.
+* Added support for reading 'Chemstation' REPORT files.
+* Added `read_peaklist` function for reading peak lists. Currently 'Agilent Chemstation' and
+'Shimadzu ASCII' formats are supported.
+
+### Other Improvements
+
+* Improved automatic format detection by `read_chroms`.
+* Refactored `read_thermoraw` function to simplify paths.
+* The `read_thermoraw` function now uses temp directory (without prompting) if an export directory is not specified through the `path_out` argument.
 
 ### Bug fixes
 
-* Corrected Shimadzu DAD parser so it uses wavelengths written to file instead of inferring them.
-* Fixed bug causing failure of 'Shimadzu' ascii parser to read metadata (when `what == "peak_table"`).
+* Corrected 'Shimadzu' DAD parser so it uses wavelengths written to file instead of inferring them.
+* Fixed bug causing failure of 'Shimadzu' ascii parser (when `what == "peak_table"` and `read_metadata == TRUE`).
+* Fixed bug causing 'MDF' files to export as data.frames when `format_out == "matrix"`.
+* Fixed misleading `data_format` attributes in 'Waters ARW' and 'Chromeleon' parsers.
+
+## chromConverter 0.4.3
+
+* Fixed bug in `chemstation_ch` parser (version 130) ([#17](https://github.com/ethanbass/chromConverter/issues/17))
 
 ## chromConverter 0.4.2
 
