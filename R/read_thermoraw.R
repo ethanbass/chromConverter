@@ -26,46 +26,41 @@
 #' \doi{10.1021/acs.jproteome.9b00328}.
 #' @export read_thermoraw
 
-read_thermoraw <- function(path_in, path_out, format_out = c("matrix", "data.frame"),
+read_thermoraw <- function(path_in, path_out = NULL, format_out = c("matrix", "data.frame"),
                            read_metadata = TRUE){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   if(!file.exists(path_in)){
     stop("File not found. Check path.")
   }
-  base <- basename(path_in)
-  if (missing(path_out)){
-    path_out <- set_temp_directory()
+  base_name <- basename(path_in)
+  base_name <- strsplit(base_name, "\\.")[[1]][1]
+  if (is.null(path_out)){
+    path_out <- tempdir()
   }
-  if(!file.exists(path_out)){
-    stop("'path_out' not found. Make sure directory exists.")
+  if(!dir.exists(path_out)){
+    stop("Export directory not found. Please check `path_out` argument and try again.")
   }
   configure_thermo_parser()
   if (.Platform$OS.type != "windows"){
-    system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
-                              " -o=", path_out, " -a"))
-    new_path <- paste0(path_out, strsplit(base,"\\.")[[1]][1],".mzML")
+    system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'),
+                              " -i=", path_in, " -o=", path_out, " -a"))
     if (read_metadata){
-      system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
-                                " -o=", path_out, " -m=1"))
-      meta_path <- paste0(path_out, strsplit(base, "\\.")[[1]][1], "-metadata.txt")
+      system2("sh", args = paste0(system.file('shell/thermofileparser.sh', package='chromConverter'),
+                                  " -i=", path_in, " -o=", path_out, " -m=1"))
     }
   } else {
     parser_path <- readLines(system.file('shell/path_parser.txt', package='chromConverter'))
     shell(paste0(parser_path, " -i=", path_in,
                               " -o=", path_out, " -a"))
-    new_path <- paste(path_out,
-                      paste0(strsplit(base,"\\.")[[1]][1],".mzML"),
-                      sep="\\")
     if (read_metadata){
       shell(paste0(parser_path, " -i=", path_in,
                                 " -o=", path_out, " -m=1"))
-      meta_path <- paste(path_out,
-                         paste0(strsplit(base, "\\.")[[1]][1], "-metadata.txt"),
-                         sep = "\\")
     }
   }
+  new_path <- fs::path(path_out, base_name, ext = "mzML")
   x <- read_mzml(new_path, format_out)
   if (read_metadata){
+    meta_path <- fs::path(path_out, paste0(base_name, "-metadata"), ext = "txt")
     meta <- strsplit(readLines(meta_path), "=",fixed = TRUE)
     meta <- do.call(rbind,meta)
     rownames(meta) <- meta[,1]
