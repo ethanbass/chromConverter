@@ -14,6 +14,10 @@
 attach_metadata <- function(x, meta, format_in, format_out, data_format, parser = NULL,
                             source_file){
   switch(format_in,
+    "raw" = {
+      structure(x, metadata = meta, data_format = data_format, parser = parser,
+                source_file = source_file)
+    },
     "waters_arw" = {
       structure(x, instrument = NA,
                 detector = get_metadata_field(meta, "Channel Type"),
@@ -36,7 +40,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
                                         ),
                 detector_unit = get_metadata_field(meta, "Det. Units"),
                 source_file = source_file,
-                data_format = "long",
+                data_format = data_format,
                 parser = "chromConverter",
                 format_out = format_out)
   }, "shimadzu" = {
@@ -107,7 +111,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               detector_unit = meta$`Signal Unit`,
               source_file = source_file,
               format_out = format_out,
-              data_format = "long",
+              data_format = data_format,
               parser = "chromConverter"
               )
   # } else if (format_in == "entab"){
@@ -149,17 +153,17 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               parser = parser,
               format_out = format_out)
   }, "chemstation_peaklist" = {
-    structure(x, instrument = meta$AcqInstName,
+    structure(x, instrument = meta$`Acq. Instrument`,
               detector = NA,
-              software = meta$Version,
-              method = meta$AcqMeth,
-              batch = meta$SeqPathAndFile,
-              operator = meta$AcqOp,
-              run_datetime = meta$InjDateTime,
-              sample_name = meta$SampleName,
+              software = NA,
+              method = meta$Method,
+              batch = NA,
+              operator = meta$`Acq. Operator`,
+              run_datetime = NA,
+              sample_name = meta$`Sample Name`,
               sample_id = NA,
-              sample_injection_volume = meta$InjVolume,
-              sample_amount = meta$InjVolume,
+              sample_injection_volume = meta$`Inj Volume`,
+              sample_amount = meta$`Inj Volume`,
               time_range = NA,
               time_interval = NA,
               time_unit = NA,
