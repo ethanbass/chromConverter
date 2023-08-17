@@ -11,11 +11,11 @@
 #' @note This parser is experimental and may still need some work.
 #' @export
 
-read_shimadzu_lcd <- function(path, format_out = c("matrix","data.frame"),
-                              data_format = c("wide","long"),
+read_shimadzu_lcd <- function(path, format_out = c("matrix", "data.frame"),
+                              data_format = c("wide", "long"),
                               read_metadata = TRUE){
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  data_format <- match.arg(data_format, c("wide","long"))
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  data_format <- match.arg(data_format, c("wide", "long"))
 
   olefile_installed <- reticulate::py_module_available("olefile")
   if (!olefile_installed){
@@ -63,7 +63,7 @@ read_sz_method <- function(path){
 
     sz_extract_upd_elements <- function(method_stream, xpath,
                                         data_format = c("list", "data.frame")){
-      data_format <- match.arg(data_format, c("list","data.frame"))
+      data_format <- match.arg(data_format, c("list", "data.frame"))
       upd_elements <- xml2::xml_find_all(method_stream, xpath)
 
       vals <- suppressWarnings(as.numeric(xml2::xml_text(
@@ -98,7 +98,8 @@ get_sz_times <- function(sz_method, nval){
 #' @noRd
 
 read_shimadzu_raw <- function(path, n_lambdas = NULL){
-  path_raw <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Raw Data"), verbose = TRUE)
+  path_raw <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Raw Data"),
+                            verbose = TRUE)
   f <- file(path_raw, "rb")
   on.exit(close(f))
 
@@ -188,7 +189,8 @@ decode_shimadzu_block <- function(file) {
         buffer[[2]] <- twos_complement(substr(bin, 5, nchar(bin)))
       } else if (hex1 > 1){
         buffer[[4]] <- readBin(file, "raw", n = (hex1 %/% 2), size = 1)
-        bin <- paste(as_binary(strtoi(c(buffer[[3]], buffer[[4]]), 16), 8), collapse="")
+        bin <- paste(as_binary(strtoi(c(buffer[[3]], buffer[[4]]), 16), 8),
+                     collapse = "")
         if (hex1 %% 2 == 0){
           buffer[[2]] <- strtoi(substr(bin, 5, nchar(bin)), 2)
         } else {
