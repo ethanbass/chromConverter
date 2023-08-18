@@ -9,7 +9,7 @@ read_thermoraw(
   path_out = NULL,
   format_out = c("matrix", "data.frame"),
   read_metadata = TRUE,
-  metadata_format = c("original", "raw")
+  metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{

@@ -25,6 +25,7 @@
 #' @param files files to parse
 #' @param path_out directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param export_format Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
 #' Defaults to \code{mzml}.
 #' @param return_paths Logical. If TRUE, the function will return a character vector of paths to the newly created files.

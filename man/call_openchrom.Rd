@@ -6,9 +6,10 @@
 \usage{
 call_openchrom(
   files,
-  path_out,
+  path_out = NULL,
   format_in,
-  export_format = c("csv", "cdf", "mzml", "animl"),
+  format_out = c("matrix", "data.frame"),
+  export_format = c("mzml", "csv", "cdf", "animl"),
   return_paths = FALSE
 )
 }
@@ -19,7 +20,10 @@ call_openchrom(
 
 \item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame ionization data, or \code{wsd} for DAD/UV data.}
 
-\item{export_format}{Either \code{csv}, \code{cdf}, \code{mzml},  \code{animl}.}
+\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+
+\item{export_format}{Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
+Defaults to \code{mzml}.}
 
 \item{return_paths}{Logical. If TRUE, the function will return a character vector of paths to the newly created files.}
 }
