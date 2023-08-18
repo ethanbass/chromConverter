@@ -204,3 +204,44 @@ test_that("read_chroms can read `Agilent` dx files", {
   expect_equal(class(x1)[1], "data.frame")
   expect_equal(dim(x1), c(10000, 2))
 })
+
+test_that("read chroms can read 'Thermo RAW' files", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_thermorawfileparser()
+  path <- system.file("20220404_CirA_D2_04.raw", package = "chromConverterExtraTests")
+  x <- read_chroms(path, progress_bar = FALSE)[[1]]
+  expect_equal(class(x), "list")
+  expect_equal(names(x), c("MS1", "MS2", "DAD", "BPC", "TIC", "chroms", "metadata"))
+})
+
+test_that("read chroms can use 'OpenChrom' parsers", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_openchrom()
+  path <- system.file("DCM1.SMS", package = "chromConverterExtraTests")
+  x <- read_chroms(path, format_in = "msd", progress_bar = FALSE)[[1]]
+  expect_equal(class(x)[1], "matrix")
+  expect_equal(dim(x), c(3032, 297))
+  x <- read_chroms(path, format_in = "msd", progress_bar = FALSE, export_format = "mzml")[[1]]
+  expect_equal(class(x), "list")
+  expect_equal(dim(x$MS1), c(469732,4))
+})
+
+test_that("read_varian_peaklist function works", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("varian_peaklist.csv", package = "chromConverterExtraTests")
+  x <- read_varian_peaklist(path)
+  expect_s3_class(x, "data.frame")
+  expect_equal(dim(x), c(46476, 15))
+})
+
+test_that("read_cdf can read peak tables", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("WAT_9962.CDF", package = "chromConverterExtraTests")
+  x <- read_cdf(path, what = "peak_table")
+  expect_s3_class(x, "data.frame")
+  expect_equal(dim(x), c(3,4))
+})
