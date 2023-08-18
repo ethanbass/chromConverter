@@ -153,7 +153,7 @@ read_chroms <- function(paths, find_files,
   if (all(!exists)){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
-  if (export | parser == "openchrom"){
+  if (export){
     if (is.null(path_out)){
       path_out <- set_temp_directory()
     }
@@ -231,7 +231,8 @@ read_chroms <- function(paths, find_files,
     converter <- switch(parser,
                         "thermoraw" = partial(read_thermoraw, path_out = path_out,
                                               format_out = format_out,
-                                              read_metadata = read_metadata),
+                                              read_metadata = read_metadata,
+                                              metadata_format = metadata_format),
                         "entab" = entab_parser)
   } else if (format_in == "mzml"){
     pattern <- ifelse(is.null(pattern), ".mzML", pattern)
@@ -260,7 +261,8 @@ read_chroms <- function(paths, find_files,
     if (is.null(pattern) & find_files){
       stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
     }
-    return_paths <- ifelse(export_format == "csv", FALSE, TRUE)
+    # return paths if animl is selected
+    return_paths <- ifelse(export_format == "animl", TRUE, FALSE)
     converter <- partial(call_openchrom, path_out = path_out,
                          format_in = format_in, export_format = export_format,
                          return_paths = return_paths)
