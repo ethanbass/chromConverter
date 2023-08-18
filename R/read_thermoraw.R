@@ -12,6 +12,8 @@
 #' \code{path_out} isn't specified, a temp directory will be used.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
+#' \code{raw}.
 #' @return A chromatogram in the format specified by \code{format_out}.
 #' @section Side effects: Exports chromatograms in \code{mzml format} to the
 #' folder specified by \code{path_out}.
@@ -27,14 +29,17 @@
 #' \doi{10.1021/acs.jproteome.9b00328}.
 #' @export read_thermoraw
 
-read_thermoraw <- function(path_in, path_out = NULL, format_out = c("matrix", "data.frame"),
-                           read_metadata = TRUE){
+read_thermoraw <- function(path_in, path_out = NULL,
+                           format_out = c("matrix", "data.frame"),
+                           read_metadata = TRUE,
+                           metadata_format = c("chromconverter", "raw")){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format, chromconverter = "thermoraw",
+                             raw = "raw")
   if(!file.exists(path_in)){
     stop("File not found. Check path.")
   }
-  base_name <- basename(path_in)
-  base_name <- strsplit(base_name, "\\.")[[1]][1]
   if (is.null(path_out)){
     path_out <- tempdir()
   }
@@ -58,31 +63,19 @@ read_thermoraw <- function(path_in, path_out = NULL, format_out = c("matrix", "d
                                 " -o=", path_out, " -m=1"))
     }
   }
+  base_name <- basename(path_in)
+  base_name <- strsplit(base_name, "\\.")[[1]][1]
   new_path <- fs::path(path_out, base_name, ext = "mzML")
   x <- read_mzml(new_path, format_out)
   if (read_metadata){
     meta_path <- fs::path(path_out, paste0(base_name, "-metadata"), ext = "txt")
-    meta <- strsplit(readLines(meta_path), "=",fixed = TRUE)
-    meta <- do.call(rbind,meta)
+    meta <- strsplit(readLines(meta_path), "=", fixed = TRUE)
+    meta <- do.call(rbind, meta)
     rownames(meta) <- meta[,1]
     meta <- as.list(meta[,-1])
-    x <- structure(x, instrument = c(meta$`Instrument model`, meta$`Instrument name`, meta$`Instrument serial number`),
-                    detector = NA,
-                    software = meta$`Software version`,
-                    method = NA,
-                    batch = NA,
-                    operator = NA,
-                    run_date = meta$`Creation date`,
-                    sample_name = basename(meta$`RAW file path`),
-                    sample_id = meta$`Sample id`,
-                    vial = meta$`Sample vial`,
-                    injection_volume = meta$`Sample injection volume`,
-                    sample_dilution = meta$`Sample dilution factor`,
-                    time_range = meta$`Time range`,
-                    time_interval = meta$`Interval(msec)`,
-                    format = "long",
-                    parser = "chromConverter",
-                    class = format_out)
+    x <- attach_metadata(x, meta, format_in = metadata_format,
+                         format_out = format_out, data_format = data_format,
+                         source_file = path_in)
   }
   x
 }

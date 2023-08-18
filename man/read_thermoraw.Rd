@@ -8,7 +8,8 @@ read_thermoraw(
   path_in,
   path_out = NULL,
   format_out = c("matrix", "data.frame"),
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("original", "raw")
 )
 }
 \arguments{
@@ -20,6 +21,9 @@ read_thermoraw(
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
 \item{read_metadata}{Whether to read metadata from file.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
+\code{raw}.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}.

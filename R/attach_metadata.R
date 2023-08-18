@@ -246,6 +246,27 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
               parser = "chromConverter")
+  }, "thermoraw" = {
+    structure(x, instrument = c(meta$`Instrument model`, meta$`Instrument name`,
+                                meta$`Instrument serial number`),
+              detector = NA,
+              software = meta$`Software version`,
+              method = NA,
+              batch = NA,
+              operator = NA,
+              run_date = meta$`Creation date`,
+              sample_name = basename(meta$`RAW file path`),
+              sample_id = meta$`Sample id`,
+              vial = meta$`Sample vial`,
+              injection_volume = meta$`Sample injection volume`,
+              sample_dilution = meta$`Sample dilution factor`,
+              time_range = meta$`Time range`,
+              time_interval = meta$`Interval(msec)`,
+              source_file = ifelse(missing(source_file), NA, source_file),
+              format_out = ifelse(missing(format_out), NA, format_out),
+              data_format = "long",
+              parser = "ThermoRawFileParser"
+    )
   }, "default" = {
     structure(x, instrument = meta$Instrument,
               detector = NA,
