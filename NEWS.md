@@ -14,8 +14,9 @@ package must be manually installed to enable parallel processing).
 
 * Improved automatic filetype detection by `read_chroms`.
 * Refactored `read_thermoraw` function to simplify paths.
-* The `read_thermoraw` function now uses temp directory (without prompting) if an export directory is not specified through the `path_out` argument.
-* Added additional tests, attaining 74% test coverage.
+* The `thermoraw` and `openchrom` parsers now use an actual temp directory (without prompting) if an export directory is not specified through the `path_out` argument.
+* Added additional tests, attaining 82% test coverage.
+* Changed default `openchrom` export format to `mzml`.
 
 ### Bug fixes
 
