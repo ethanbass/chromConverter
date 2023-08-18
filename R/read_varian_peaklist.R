@@ -10,12 +10,12 @@ read_varian_peaklist <- function(file){
   x$V1[x$V1 == ""] <- NA
   x <- tidyr::fill(data = x, "V1", .direction = "down")
 
-  column_names <- x[2,]
+  column_names <- x[1,]
   column_names[1] <- "compound"
   colnames(x) <- column_names
 
-  x <- x[-which(x$`Line#` == "Line#"),]
   x <- x[-which(x$`Line#` == ""), ]
+  x <- x[-which(x$`Line#` == "Line#"),]
 
   x$Area <- as.numeric(x$Area)
   x$Height <- as.numeric(x$Height)
