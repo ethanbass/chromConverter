@@ -74,7 +74,7 @@ read_thermoraw <- function(path_in, path_out = NULL,
     rownames(meta) <- meta[,1]
     meta <- as.list(meta[,-1])
     x <- attach_metadata(x, meta, format_in = metadata_format,
-                         format_out = format_out, data_format = data_format,
+                         format_out = format_out, data_format = "long",
                          source_file = path_in)
   }
   x
