@@ -1,15 +1,41 @@
-#' Read 3D PDA data stream from 'Shimadzu' LCD file.
+#' Shimadzu LCD parser
 #'
-#' Relies on the [olefile](https://pypi.org/project/olefile/) package in Python
-#' to unpack files.
+#' Read 3D PDA data stream from 'Shimadzu' LCD files.
+#'
+#' A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are
+#' encoded as 'Microsoft' OLE documents. The parser relies on the
+#' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
+#' files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Data Item}.
+#' The PDA data stream contains a segment for each retention time, beginning
+#' with a 24-byte header.
+#'
+#' The 24 byte header consists of the following fields:
+#' * 4 bytes: segment label (\code{17234}).
+#' * 4 bytes: ???
+#' * 4 bytes: Little-endian integer specifying the number of wavelength values
+#' in the segment.
+#' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
+#' * 8 bytes of \code{00}s
+#'
+#' Each segment is divided into two sub-segments, which begin and end with an
+#' integer specifying the length of the sub-segment in bytes. All known values
+#' in this data stream are little-endian and the data are delta-encoded. The
+#' first hexadecimal digit of each value is a sign digit
+#' specifying the number of bytes in the delta and whether the value is positive
+#' or negative. The sign digit represents the number of hexadecimal digits used
+#' to encode each value. Even numbered sign digits correspond to positive deltas,
+#' whereas odd numbers indicate negative deltas. Positive values are encoded as
+#' little-endian integers, while negative values are encoded as two's
+#' complements. The value at each position is derived by subtracting the delta
+#' from the previous value.
 #'
 #' @param path Path to LCD file.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
-#' @note This parser is experimental and may still need some work. It is not yet
-#' able to interpret much metadata from the files.
+#' @note This parser is experimental and may still
+#' need some work. It is not yet able to interpret much metadata from the files.
 #' @export
 
 read_shimadzu_lcd <- function(path, format_out = c("matrix", "data.frame"),
