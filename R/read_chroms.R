@@ -78,7 +78,7 @@ read_chroms <- function(paths, find_files,
                                     "chemstation_csv", "chemstation_uv",
                                     "masshunter_dad", "chromeleon_uv",
                                     "shimadzu_fid", "shimadzu_dad",
-                                    "thermoraw", "mzml",
+                                    "shimadzu_lcd", "thermoraw", "mzml",
                                     "waters_arw", "waters_raw",
                                     "msd", "csd", "wsd", "mdf", "other"),
                         pattern = NULL,
@@ -130,10 +130,10 @@ read_chroms <- function(paths, find_files,
                                       "chemstation_179",
                                       "chemstation_81", "chemstation_181",
                                       "chemstation_fid", "chemstation_csv", "masshunter_dad",
-                                      "shimadzu_fid", "shimadzu_dad", "chromeleon_uv",
-                                      "thermoraw", "mzml", "waters_arw",
-                                      "waters_raw", "msd", "csd", "wsd", "mdf",
-                                      "cdf", "other"))
+                                      "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
+                                      "chromeleon_uv", "thermoraw", "mzml",
+                                      "waters_arw", "waters_raw", "msd", "csd",
+                                      "wsd", "mdf", "cdf", "other"))
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
   }
@@ -226,6 +226,11 @@ read_chroms <- function(paths, find_files,
                          format_out = format_out, data_format = data_format,
                          read_metadata = read_metadata,
                          metadata_format = metadata_format)
+  }  else if (format_in == "shimadzu_lcd"){
+    pattern <- ifelse(is.null(pattern), ".lcd", pattern)
+    converter <- partial(read_shimadzu_lcd, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata)
   } else if (format_in == "thermoraw"){
     pattern <- ifelse(is.null(pattern), ".raw", pattern)
     converter <- switch(parser,

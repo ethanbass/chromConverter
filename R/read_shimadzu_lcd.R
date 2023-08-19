@@ -8,7 +8,8 @@
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
-#' @note This parser is experimental and may still need some work.
+#' @note This parser is experimental and may still need some work. It is not yet
+#' able to interpret much metadata from the files.
 #' @export
 
 read_shimadzu_lcd <- function(path, format_out = c("matrix", "data.frame"),

@@ -25,7 +25,8 @@ Relies on the \href{https://pypi.org/project/olefile/}{olefile} package in Pytho
 to unpack files.
 }
 \note{
-This parser is experimental and may still need some work.
+This parser is experimental and may still need some work. It is not yet
+able to interpret much metadata from the files.
 }
 \author{
 Ethan Bass

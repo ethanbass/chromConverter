@@ -13,7 +13,7 @@ read_chemstation_uv(
 )
 }
 \arguments{
-\item{path}{Path to \code{.uv} file}
+\item{path}{Path to \code{.uv} file.}
 
 \item{format_out}{Matrix or data.frame.}
 

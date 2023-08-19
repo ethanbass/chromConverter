@@ -249,6 +249,4 @@ test_that("read_cdf can read peak tables", {
   expect_s3_class(x, "data.frame")
   expect_equal(dim(x), c(3,4))
 })
-# install.packages("~/R_packages/chromConverter",repos=NULL,type="source")
-# install.packages("~/R_packages/chromConverterExtraTests",repos=NULL,type="source")
 

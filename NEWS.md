@@ -6,6 +6,7 @@
 package must be manually installed to enable parallel processing). 
 * Added preliminary support for reading 'Agilent' (`.dx`) files through
 `read_agilentdx` function.
+* Added parser for Shimadzu `.lcd` files through the `read_shimadzu_lcd` function. Only the PDA stream (not MS) is currently supported.
 * Added support for reading 'Chemstation' REPORT files.
 * Added `read_peaklist` function for reading peak lists. Currently 'Agilent Chemstation' and
 'Shimadzu ASCII' formats are supported.
@@ -14,7 +15,7 @@ package must be manually installed to enable parallel processing).
 
 * Improved automatic filetype detection by `read_chroms`.
 * Refactored `read_thermoraw` function to simplify paths.
-* The `thermoraw` and `openchrom` parsers now use an actual temp directory (without prompting) if an export directory is not specified through the `path_out` argument.
+* The `thermoraw` and `openchrom` parsers now use a real temp directory if an export directory is not specified through the `path_out` argument.
 * Added additional tests, attaining 82% test coverage.
 * Changed default `openchrom` export format to `mzml`.
 
