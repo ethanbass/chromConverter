@@ -15,7 +15,7 @@ read_chemstation_uv(
 \arguments{
 \item{path}{Path to \code{.uv} file}
 
-\item{format_out}{Matrix or data.frame}
+\item{format_out}{Matrix or data.frame.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
