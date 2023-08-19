@@ -130,10 +130,10 @@ read_shimadzu_raw <- function(path, n_lambdas = NULL){
 #' @noRd
 export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
                           verbose = FALSE){
-  py_run_string('import olefile')
-  py_run_string(paste0('ole = olefile.OleFileIO("', path_in, '")'))
+  reticulate::py_run_string('import olefile')
+  reticulate::py_run_string(paste0('ole = olefile.OleFileIO("', path_in, '")'))
   python_stream <- paste0("[", paste(paste0("'", stream, "'"), collapse = ', '),"]")
-  stream_exists <- py_eval(paste0("ole.exists(", python_stream, ")"))
+  stream_exists <- reticulate::py_eval(paste0("ole.exists(", python_stream, ")"))
   if (!stream_exists){
     if (verbose){
       warning(paste0("The stream ", sQuote(python_stream), " could not be found."),
@@ -141,16 +141,16 @@ export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
     }
     return(NA)
   } else{
-    py_run_string(paste0("st = ole.openstream(", python_stream, ")"))
-    py_run_string('data = st.read()')
+    reticulate::py_run_string(paste0("st = ole.openstream(", python_stream, ")"))
+    reticulate::py_run_string('data = st.read()')
 
     if (missing(path_out)){
       path_out <- tempfile()
     }
     if (remove_null_bytes){
-      py_run_string("data = data.replace(b'\\x00', b'')")
+      reticulate::py_run_string("data = data.replace(b'\\x00', b'')")
     }
-    py_run_string(paste0('with open("', path_out ,'", "wb") as binary_file:
+    reticulate::py_run_string(paste0('with open("', path_out ,'", "wb") as binary_file:
       binary_file.write(data)'))
     path_out
   }
@@ -302,3 +302,4 @@ configure_olefile <- function(return_boolean = FALSE){
     return(env)
   }
 }
+
