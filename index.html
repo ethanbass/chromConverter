@@ -173,13 +173,17 @@
 <h5 id="openchrom">
 <strong>OpenChrom</strong><a class="anchor" aria-label="anchor" href="#openchrom"></a>
 </h5>
+<div class="section level6">
+<h6 id="note-support-for-the-commmand-line-interface-has-been-removed-from-openchrom-as-of-version-150-older-versions-eg-14x-should-still-work-for-now">(<strong>Note:</strong> Support for the commmand line interface has been removed from OpenChrom (as of <code>version 1.5.0</code>). Older versions (e.g. <code>1.4.x</code>) should still work for now).<a class="anchor" aria-label="anchor" href="#note-support-for-the-commmand-line-interface-has-been-removed-from-openchrom-as-of-version-150-older-versions-eg-14x-should-still-work-for-now"></a>
+</h6>
 <p><a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> is opensource chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you’d still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below:</p>
 <ol style="list-style-type: decimal">
-<li>Download OpenChrom from the <a href="https://lablicate.com/platform/openchrom/download" class="external-link">website</a> and place it into a directory of your choice.<br>
+<li>Download <a href="https://lablicate.com/platform/openchrom/download" class="external-link">OpenChrom</a> (<strong>version 1.4.x only</strong>) and place it into a directory of your choice.<br>
 </li>
 <li>If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.</li>
 <li>Call <code>read_chroms</code> with <code>parser = "openchrom"</code>. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line. Alternatively, the command-line option can be activated from R by calling <code>configure_openchrom(cli = "true")</code> or following the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> to manually activate the CLI. This process can be reversed using the same function: e.g. <code>configure_openchrom(cli = "false"). To specify an OpenChrom executable in a non-standard location, call</code>configure_openchrom<code>with the</code>path<code>argument, e.g.</code>configure_openchrom(cli = “true”, path=“path_to_openchrom_executable”).</li>
 </ol>
+</div>
 </div>
 </div>
 </div>
