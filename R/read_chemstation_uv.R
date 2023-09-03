@@ -1,4 +1,7 @@
-#' Parser for reading Agilent UV (.uv) files into R
+#' Read 'Chemstation' DAD files
+#'
+#' Parser for reading Agilent UV (.uv) files into R.
+#'
 #' @importFrom utils head tail
 #' @param path Path to \code{.uv} file.
 #' @param format_out Matrix or data.frame.
@@ -30,9 +33,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   seek(f, 1, "start")
   version <- readBin(f, "character", n = 1)
   version <- match.arg(version, choices = c("31", "131"))
-  if (version != "131"){
-    stop("Only type 131 files are currently supported by this parser.")
-  }
+
   if (version == "131"){
     offsets <- list(file_type = 326,
                     sample_name = 858,
@@ -43,42 +44,40 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
                     software = 3089,
                     units = 3093,
                     vial = 4055,
-                    num_times = 278,
+                    num_times = 278, #big-endian
                     rt_first = 282,
                     rt_last = 286,
                     scaling_factor = 3085,
                     data_start = 4096)
   } else if (version == "31"){
-    offsets <- list(file_type = 4,
-                    # sample_name = 858,
-                    operator = 148,
-                    date = 178,
-                    detector = 208,
-                    method = 228,
-                    # software = 3089,
-                    units = 326,
-                    # vial = 4055,
-                    num_times = 278,
-                    rt_first = 282,
-                    rt_last = 286,
-                    scaling_factor = 3085,
-                    data_start = 0x202)
+      offsets <- list(file_type = 4,
+                      sample_name = 24,
+                      operator = 148,
+                      date = 178,
+                      detector = 208,
+                      method = 228,
+                      # unknown = 260,
+                      num_times = 278, # big-endian
+                      scaling_factor = 318,
+                      units = 326,
+                      data_start = 512)
   }
 
-
-  meta <- lapply(offsets[seq_len(9)], function(offset){
+  n_metadata_fields <- switch(version, "131" = 9,
+                              "31" = 6)
+  meta <- lapply(offsets[seq_len(n_metadata_fields)], function(offset){
     seek(f, where = offset, origin = "start")
     n <- get_nchar(f)
     cc_collapse(readBin(f, "character", n = 1))
   })
 
-  #Number of data values
-  seek(f, where = offsets$num_times, origin="start")
-  nval <- readBin(f, "int", n=1, endian = "big", signed = 2)
+  # Number of data values
+  seek(f, where = offsets$num_times, origin = "start")
+  nval <- readBin(f, "int", n = 1, endian = "big", signed = 2)
 
-  #Scaling factor
-  seek(f, where = offsets$scaling_factor, origin="start")
-  scaling_value <- readBin(f, "double", n=1, endian = "big")
+  # Scaling factor
+  seek(f, where = offsets$scaling_factor, origin = "start")
+  scaling_value <- readBin(f, "double", n = 1, endian = "big")
 
   # Seek to the start of data segment header
   seek(f, offsets$data_start + 0x8)
@@ -90,7 +89,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   delta_lambda <- wave_info[3] %/% 20
 
   # Compute wavelengths and number of wavelengths
-  lambdas <- seq(lambda_start, lambda_end, by=delta_lambda)
+  lambdas <- seq(lambda_start, lambda_end, by = delta_lambda)
   n_lambdas <- length(lambdas)
 
   # BODY
@@ -132,7 +131,8 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   }
 
   if (read_metadata){
-    data <- structure(data, file_version = meta$file_type, sample_name = meta$sample_name,
+    data <- structure(data, file_version = meta$file_type,
+                      sample_name = meta$sample_name,
                       file_source = path,
                       operator = meta$operator, run_date = meta$date,
                       instrument = meta$detector,
@@ -140,7 +140,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
                       software = NA, software_rev = NA,
                       signal = NA, unit = meta$units,
                       vial = meta$vial,
-                      time_range = c(head(times,1), tail(times,1)),
+                      time_range = c(head(times, 1), tail(times, 1)),
                       data_format = "wide", parser = "chromConverter")
   }
   data
