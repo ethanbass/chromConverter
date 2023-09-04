@@ -48,16 +48,19 @@ read_thermoraw <- function(path_in, path_out = NULL,
   }
   configure_thermo_parser()
   if (.Platform$OS.type != "windows"){
-    system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'),
+    system2("sh", args=paste0(system.file('shell/thermofileparser.sh',
+                                          package='chromConverter'),
                               " -i=", path_in, " -o=", path_out, " -a"))
     if (read_metadata){
-      system2("sh", args = paste0(system.file('shell/thermofileparser.sh', package='chromConverter'),
+      system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
+                                              package='chromConverter'),
                                   " -i=", path_in, " -o=", path_out, " -m=1"))
     }
   } else {
-    parser_path <- readLines(system.file('shell/path_parser.txt', package='chromConverter'))
-    shell(paste0(parser_path, " -i=", path_in,
-                              " -o=", path_out, " -a"))
+      parser_path <- readLines(system.file('shell/path_parser.txt',
+                                           package='chromConverter'))
+      shell(paste0(parser_path, " -i=", path_in,
+                                " -o=", path_out, " -a"))
     if (read_metadata){
       shell(paste0(parser_path, " -i=", path_in,
                                 " -o=", path_out, " -m=1"))
