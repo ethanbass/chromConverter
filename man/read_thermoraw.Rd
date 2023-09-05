@@ -9,7 +9,8 @@ read_thermoraw(
   path_out = NULL,
   format_out = c("matrix", "data.frame"),
   read_metadata = TRUE,
-  metadata_format = c("chromconverter", "raw")
+  metadata_format = c("chromconverter", "raw"),
+  verbose = getOption("verbose")
 )
 }
 \arguments{
@@ -24,6 +25,8 @@ read_thermoraw(
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
+
+\item{verbose}{Logical. Whether to print output from OpenChrom to the console.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}.

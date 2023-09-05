@@ -53,6 +53,8 @@
 #' @param cl Argument to \code{\link[pbapply]{pbapply}} specifying the number
 #' of clusters to use or a cluster object created by
 #' \code{\link[parallel]{makeCluster}}. Defaults to 1.
+#' @param verbose Logical. Whether to print output from external parsers to the
+#' R console.
 #' @param sample_names An optional character vector of sample names. Otherwise
 #' sample names default to the basename of the specified files.
 #' @param dat Existing list of chromatograms to append results.
@@ -92,6 +94,7 @@ read_chroms <- function(paths, find_files,
                         read_metadata = TRUE,
                         metadata_format = c("chromconverter", "raw"),
                         progress_bar, cl = 1,
+                        verbose = getOption("verbose"),
                         sample_names = NULL, dat = NULL){
   data_format <- match.arg(data_format, c("wide","long"))
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
@@ -137,8 +140,13 @@ read_chroms <- function(paths, find_files,
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
   }
-  export_format <- match.arg(export_format, choices =
-                               c("csv", "chemstation_csv", "cdf", "mzml", "animl"))
+  if (length(export_format) > 1 && parser == "openchrom"){
+    export_format = "mzml"
+  } else{
+    export_format <- match.arg(export_format, choices =
+                                 c("csv", "chemstation_csv",
+                                   "cdf", "mzml", "animl"))
+  }
   check_parser(format_in, parser)
   if (parser != "openchrom" && !(export_format %in% c("csv", "chemstation_csv", "cdf")))
     stop("The selected export format is currently only supported by `openchrom` parsers.")
@@ -205,9 +213,6 @@ read_chroms <- function(paths, find_files,
                                           metadata_format = metadata_format),
                         "entab" = entab_parser,
                         "rainbow" = rainbow_parser)
-  } else if (format_in == "chemstation"){
-    pattern <- ifelse(is.null(pattern), "*", pattern)
-    converter <- rainbow_parser
   } else if (format_in == "chromeleon_uv"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
     converter <- partial(read_chromeleon, format_out = format_out,
@@ -237,7 +242,8 @@ read_chroms <- function(paths, find_files,
                         "thermoraw" = partial(read_thermoraw, path_out = path_out,
                                               format_out = format_out,
                                               read_metadata = read_metadata,
-                                              metadata_format = metadata_format),
+                                              metadata_format = metadata_format,
+                                              verbose = verbose),
                         "entab" = entab_parser)
   } else if (format_in == "mzml"){
     pattern <- ifelse(is.null(pattern), ".mzML", pattern)
@@ -270,7 +276,7 @@ read_chroms <- function(paths, find_files,
     return_paths <- ifelse(export_format == "animl", TRUE, FALSE)
     converter <- partial(call_openchrom, path_out = path_out,
                          format_in = format_in, export_format = export_format,
-                         return_paths = return_paths)
+                         return_paths = return_paths, verbose = verbose)
   } else if (format_in == "mdf"){
     pattern <- ifelse(is.null(pattern), ".mdf|.MDF", pattern)
     converter <- partial(read_mdf, format_out = format_out,

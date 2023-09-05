@@ -14,6 +14,7 @@
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
 #' \code{raw}.
+#' @param verbose Logical. Whether to print output from OpenChrom to the console.
 #' @return A chromatogram in the format specified by \code{format_out}.
 #' @section Side effects: Exports chromatograms in \code{mzml format} to the
 #' folder specified by \code{path_out}.
@@ -32,7 +33,8 @@
 read_thermoraw <- function(path_in, path_out = NULL,
                            format_out = c("matrix", "data.frame"),
                            read_metadata = TRUE,
-                           metadata_format = c("chromconverter", "raw")){
+                           metadata_format = c("chromconverter", "raw"),
+                           verbose = getOption("verbose")){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, chromconverter = "thermoraw",
@@ -47,14 +49,17 @@ read_thermoraw <- function(path_in, path_out = NULL,
     stop("Export directory not found. Please check `path_out` argument and try again.")
   }
   configure_thermo_parser()
+  verbose <- switch(as.character(verbose), "TRUE" = "")
   if (.Platform$OS.type != "windows"){
-    system2("sh", args=paste0(system.file('shell/thermofileparser.sh',
+    system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
                                           package='chromConverter'),
-                              " -i=", path_in, " -o=", path_out, " -a"))
+                              " -i=", path_in, " -o=", path_out, " -a"),
+            stdout = verbose)
     if (read_metadata){
       system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
                                               package='chromConverter'),
-                                  " -i=", path_in, " -o=", path_out, " -m=1"))
+                                  " -i=", path_in, " -o=", path_out, " -m=1"),
+              stdout = verbose)
     }
   } else {
       parser_path <- readLines(system.file('shell/path_parser.txt',

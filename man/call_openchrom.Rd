@@ -10,7 +10,8 @@ call_openchrom(
   format_in,
   format_out = c("matrix", "data.frame"),
   export_format = c("mzml", "csv", "cdf", "animl"),
-  return_paths = FALSE
+  return_paths = FALSE,
+  verbose = getOption("verbose")
 )
 }
 \arguments{
@@ -25,7 +26,10 @@ call_openchrom(
 \item{export_format}{Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
 Defaults to \code{mzml}.}
 
-\item{return_paths}{Logical. If TRUE, the function will return a character vector of paths to the newly created files.}
+\item{return_paths}{Logical. If TRUE, the function will return a character
+vector of paths to the newly created files.}
+
+\item{verbose}{Logical. Whether to print output from OpenChrom to the console.}
 }
 \value{
 If \code{return_paths} is TRUE, the function will return a vector of paths to the newly created files.
@@ -35,7 +39,10 @@ of chromatograms in \code{data.frame} format. Otherwise, it will not return anyt
 \description{
 Writes \code{xml} batch-files and calls OpenChrom file parsers using a
 system call to the command-line interface. To use this function
-\href{https://lablicate.com/platform/openchrom}{OpenChrom} must be manually installed.
+\href{https://lablicate.com/platform/openchrom}{OpenChrom} (version 0.4.0) must be
+manually installed. The command line interface is no longer supported in the
+latest versions of OpenChrom (starting with version 0.5.0), so the function
+will not work with these new versions.
 }
 \details{
 The \code{call_openchrom} works by creating an \code{xml} batchfile and
