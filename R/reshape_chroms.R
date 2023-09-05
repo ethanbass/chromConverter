@@ -65,25 +65,34 @@ reshape_chrom <- function(x, data_format, ...){
 #' @return A chromatographic matrix in long format.
 #' @author Ethan Bass
 #' @noRd
-reshape_chrom_long <- function(x, lambdas, format_out=c("data.frame","matrix")){
+reshape_chrom_long <- function(x, lambdas, format_out = NULL){
   if (!is.null(attr(x, "data_format")) && attr(x, "data_format") == "long"){
     warning("The data already appear to be in long format!", immediate. = TRUE)
   }
-  if (ncol(x) == 1)
-    stop("The provided data is already in long format!")
-  format_out <- match.arg(format_out,c("data.frame","matrix"))
-  xx <- as.data.frame(x)
-  if (!missing(lambdas)){
-    xx <- xx[,lambdas, drop = FALSE]
+  if (is.null(format_out)){
+    format_out <- class(x)[1]
   }
-  data <- reshape(as.data.frame(rt=rownames(xx), xx), direction = "long",
-                  varying = list(1:ncol(xx)), v.names="absorbance",
-                  times = colnames(xx), timevar = "lambda",
-                  idvar = "rt", ids = rownames(xx))
-  rownames(data) <- NULL
-  data$rt <- as.numeric(data$rt)
-  data$lambda <- as.numeric(data$lambda)
-  data <- data[,c(3,2,1)]
+
+  format_out <- match.arg(format_out, c("data.frame", "matrix"))
+  xx <- as.data.frame(x)
+
+  if (ncol(x) == 1){
+    data <- data.frame(RT = as.numeric(rownames(xx)), Intensity = xx[,1],
+               row.names = NULL)
+  } else {
+    if (!missing(lambdas)){
+      xx <- xx[,lambdas, drop = FALSE]
+    }
+    data <- reshape(as.data.frame(rt = rownames(xx), xx), direction = "long",
+                    varying = list(1:ncol(xx)), v.names = "absorbance",
+                    times = colnames(xx), timevar = "lambda",
+                    idvar = "rt", ids = rownames(xx))
+    rownames(data) <- NULL
+    data$rt <- as.numeric(data$rt)
+    data$lambda <- as.numeric(data$lambda)
+    data <- data[, c(3,2,1)]
+  }
+
   if (format_out == "matrix"){
     data <- as.matrix(data)
   }
