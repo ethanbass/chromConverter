@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_uv.R
 \name{read_chemstation_uv}
 \alias{read_chemstation_uv}
-\title{Parser for reading Agilent UV (.uv) files into R}
+\title{Read 'Chemstation' DAD files}
 \usage{
 read_chemstation_uv(
   path,
@@ -29,7 +29,7 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Parser for reading Agilent UV (.uv) files into R
+Parser for reading Agilent UV (.uv) files into R.
 }
 \note{
 This function was adapted from the parser in the rainbow project
