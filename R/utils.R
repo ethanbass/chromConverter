@@ -1,24 +1,73 @@
 utils::globalVariables(names = c('.'))
 # Globals <- list()
 
+
+#' Get filetype
+#' @noRd
+get_filetype <- function(file, out = c("format_in", "filetype")){
+  out <- match.arg(out, c("format_in", "filetype"))
+  magic <- readBin(file, what = "raw", n = 4)
+  magic <- paste(paste0("x",as.character(magic)),collapse="/")
+  # magic
+  filetype <- switch(magic,
+                     "x01/x32/x00/x00" = "AgilentChemstationMS",
+                     "x02/x02/x00/x00" = "AgilentMasshunterDADHeader",
+                     # "x02/x33/x30/x00" = "AgilentChemstationMWD",
+                     "x03/x02/x00/x00" = "AgilentMasshunterDAD",
+                     "x02/x33/x30/x00" = "chemstation_30",
+                     "x02/x33/x31/x00" = "chemstation_31",
+                     "x03/x31/x33/x30" = "chemstation_130", #130
+                     "x03/x31/x33/x31" = "chemstation_131", #131
+                     "x03/x31/x37/x39" = "chemstation_179", #179
+                     "x02/x38/x31/x00" = "chemstation_81", #81
+                     "x03/x31/x38/x31" = "chemstation_181", #181
+                     "x01/xa1/x46/x00" = "ThermoRAW",
+                     "xd0/xcf/x11/xe0" = "ShimadzuLCD",
+                     "x80/x00/x01/x00" = "WatersRAW"
+  )
+  if (is.null(filetype)){
+    stop("File type not recognized. Please specify a filetype by providing an argument to `format_in`
+          or file an issue at `https://github.com/ethanbass/chromConverter/issues`.")
+  }
+  format_in <- switch(filetype,
+                      "AgilentChemstationMS" = "chemstation",
+                      "AgilentChemstationCH" = "chemstation_ch",
+                      "AgilentChemstationFID" = "chemstation_ch",
+                      "chemstation_31" = "chemstation_uv",
+                      "chemstation_131" = "chemstation_uv",
+                      "ThermoRAW" = "thermoraw",
+                      "ShimadzuLCD" = "shimadzu_lcd",
+                      "WatersRAW" = "waters_raw",
+                      filetype
+  )
+
+  switch(out, "filetype" = filetype, "format_in" = format_in)
+}
+
 #' Check parser
 #' @noRd
 check_parser <- function(format_in, parser=NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
-                          chromconverter = c("agilent_dx", "chemstation_csv",
+                          chromconverter = c("agilent_dx", "cdf", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
                                              "chemstation_30", "chemstation_31",
                                              "chemstation_130", "chemstation_131",
-                                             "chemstation_179",
-                                             "chemstation_81", "chemstation_181",
-                                             "mzml",
+                                             "chemstation_179", "chemstation_81",
+                                             "chemstation_181", "mzml", "mdf",
                                              "shimadzu_fid", "shimadzu_dad",
-                                             "waters_arw", "mdf", "cdf", "shimadzu_lcd"),
-                          aston = c("chemstation", "chemstation_uv", "masshunter_dad", "other"),
-                          entab = c("chemstation", "chemstation_ch", "chemstation_fid",
-                          "chemstation_uv", "masshunter_dad", "thermoraw", "other"),
-                          rainbow = c("chemstation", "chemstation_ch", "chemstation_fid",
+                                             "shimadzu_lcd", "waters_arw"),
+                          aston = c("chemstation", "chemstation_uv",
+                                    "chemstation_131",
+                                    "masshunter_dad", "other"),
+                          entab = c("chemstation", "chemstation_ch",
+                                    "chemstation_30", "chemstation_31",
+                                    "chemstation_131", "chemstation_fid",
+                                    "chemstation_uv", "masshunter_dad",
+                                    "thermoraw", "other"),
+                          rainbow = c("chemstation", "chemstation_ch",
+                                      "chemstation_130","chemstation_131",
+                                      "chemstation_fid", "chemstation_179",
                                       "chemstation_uv", "waters_raw",
                                       "agilent_d"),
                           thermoraw = c("thermoraw")
@@ -43,13 +92,13 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
     }
     possible_parsers[1]
   } else{
-  if (!(format_in %in% allowed_formats[[parser]])){
-    stop("Mismatched arguments!", "\n\n", "The ", paste0(sQuote(format_in), " format can be converted using the following parsers: ",
-      paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]), collapse = ", "), ". \n \n",
-      "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
-                                  paste(sQuote(allowed_formats[[parser]]), collapse=", "), ". \n \n",
-      "Please double check your arguments and try again."))
-  }
+    if (!(format_in %in% allowed_formats[[parser]])){
+      stop("Mismatched arguments!", "\n\n", "The ", paste0(sQuote(format_in), " format can be converted using the following parsers: ",
+        paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]), collapse = ", "), ". \n \n",
+        "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
+                                    paste(sQuote(allowed_formats[[parser]]), collapse=", "), ". \n \n",
+        "Please double check your arguments and try again."))
+    }
   }
 }
 
@@ -88,7 +137,8 @@ format_to_extension <- function(format_in){
          "shimadzu_dad" = ".txt",
          "chromeleon_uv" = ".txt",
     "thermoraw" = ".raw", "mzml" = ".mzml", "waters_arw" = ".arw",
-    "waters_raw" = ".raw", "msd" = ".", "csd" =".", "wsd" =".", "mdf" = ".mdf|.MDF", "other"=".")
+    "waters_raw" = ".raw", "msd" = ".", "csd" =".", "wsd" =".",
+    "mdf" = ".mdf|.MDF", "other"=".")
 }
 
 #' @noRd
@@ -181,44 +231,3 @@ transfer_metadata <- function (new_object, old_object, exclude = c("names", "row
   new_object
 }
 
-#' Get filetype
-#' @noRd
-get_filetype <- function(file, out = c("format_in", "filetype")){
-  out <- match.arg(out, c("format_in", "filetype"))
-  magic <- readBin(file, what = "raw", n = 4)
-  magic <- paste(paste0("x",as.character(magic)),collapse="/")
-  # magic
-  filetype <- switch(magic,
-                     "x01/x32/x00/x00" = "AgilentChemstationMS",
-                     "x02/x02/x00/x00" = "AgilentMasshunterDADHeader",
-                     # "x02/x33/x30/x00" = "AgilentChemstationMWD",
-                     "x03/x02/x00/x00" = "AgilentMasshunterDAD",
-                     "x02/x33/x30/x00" = "chemstation_30",
-                     "x02/x33/x31/x00" = "chemstation_31",
-                     "x03/x31/x33/x30" = "chemstation_130", #130
-                     "x03/x31/x33/x31" = "chemstation_131", #131 rainbow
-                     "x03/x31/x37/x39" = "chemstation_179", #179
-                     "x02/x38/x31/x00" = "chemstation_81", #81
-                     "x03/x31/x38/x31" = "chemstation_181", #181
-                     "x01/xa1/x46/x00" = "ThermoRAW",
-                     "xd0/xcf/x11/xe0" = "ShimadzuLCD",
-                     "x80/x00/x01/x00" = "WatersRAW"
-  )
-  if (is.null(filetype)){
-    stop("File type not recognized. Please specify a filetype by providing an argument to `format_in`
-          or file an issue at `https://github.com/ethanbass/chromConverter/issues`.")
-  }
-  format_in <- switch(filetype,
-          "AgilentChemstationMS" = "chemstation",
-          "AgilentChemstationCH" = "chemstation_ch",
-          "AgilentChemstationFID" = "chemstation_ch",
-          "chemstation_31" = "chemstation_uv",
-          "chemstation_131" = "chemstation_uv",
-          "ThermoRAW" = "thermoraw",
-          "ShimadzuLCD" = "shimadzu_lcd",
-          "WatersRAW" = "waters_raw",
-          filetype
-          )
-
-  switch(out, "filetype" = filetype, "format_in" = format_in)
-}
