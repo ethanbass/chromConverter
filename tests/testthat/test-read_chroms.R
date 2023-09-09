@@ -138,15 +138,6 @@ test_that("read_chroms exports cdf files correctly", {
   expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
 })
 
-# test_that("thermoraw parser works",{
-#   skip_if_not(configure_thermo_parser(check = TRUE))
-#   file <- "/Users/ethanbass/Library/CloudStorage/Box-Box/chromatography_test_files/thermo_files/small.RAW"
-#   x <- read_chroms(file, format_in = "thermoraw", find_files = FALSE)
-#   expect_equal(class(x[[1]])[1], "matrix")
-#   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
-# })
-
-
 test_that("read_peaklist can read chemstation reports", {
   path <- "testdata/RUTIN2.D/Report.TXT"
   x <- read_peaklist(path, format_in = "chemstation")
