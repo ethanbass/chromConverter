@@ -130,7 +130,7 @@ read_chroms <- function(paths, find_files,
                                       "chemstation_uv", "chemstation_ch",
                                       "chemstation_30", "chemstation_31",
                                       "chemstation_130", "chemstation_131",
-                                      "chemstation_179",
+                                      "openlab_131", "chemstation_179",
                                       "chemstation_81", "chemstation_181",
                                       "chemstation_fid", "chemstation_csv", "masshunter_dad",
                                       "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
@@ -199,7 +199,7 @@ read_chroms <- function(paths, find_files,
                                           read_metadata = read_metadata,
                                           metadata_format = metadata_format),
                         "entab" = entab_parser)
-  } else if (format_in == "chemstation_uv"){
+  } else if (format_in == "chemstation_uv" | grepl("31", format_in)){
     pattern <- ifelse(is.null(pattern), ".uv", pattern)
     converter <- switch(parser,
                         "chromconverter" = partial(read_chemstation_uv,

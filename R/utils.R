@@ -4,9 +4,12 @@ utils::globalVariables(names = c('.'))
 
 #' Get filetype
 #' @noRd
-get_filetype <- function(file, out = c("format_in", "filetype")){
+get_filetype <- function(path, out = c("format_in", "filetype")){
   out <- match.arg(out, c("format_in", "filetype"))
-  magic <- readBin(file, what = "raw", n = 4)
+  f <- file(path, "rb")
+  on.exit(close(f))
+
+  magic <- readBin(f, what = "raw", n = 4)
   magic <- paste(paste0("x",as.character(magic)),collapse="/")
   # magic
   filetype <- switch(magic,
@@ -23,18 +26,27 @@ get_filetype <- function(file, out = c("format_in", "filetype")){
                      "x03/x31/x38/x31" = "chemstation_181", #181
                      "x01/xa1/x46/x00" = "ThermoRAW",
                      "xd0/xcf/x11/xe0" = "ShimadzuLCD",
-                     "x80/x00/x01/x00" = "WatersRAW"
+                     "x80/x00/x01/x00" = "WatersRAW",
+                     "x43/x44/x46/x01" = "cdf"
   )
   if (is.null(filetype)){
     stop("File type not recognized. Please specify a filetype by providing an argument to `format_in`
           or file an issue at `https://github.com/ethanbass/chromConverter/issues`.")
   }
+  if (filetype == "chemstation_131"){
+    seek(f, 348)
+    magic2 <- readBin(f, what="character", n = 2)
+    magic2 <- paste(magic2, collapse="")
+    filetype <- switch(magic2, "OL" = "openlab_131",
+                   "LC" = "chemstation_131")
+  }
   format_in <- switch(filetype,
                       "AgilentChemstationMS" = "chemstation",
                       "AgilentChemstationCH" = "chemstation_ch",
                       "AgilentChemstationFID" = "chemstation_ch",
-                      "chemstation_31" = "chemstation_uv",
-                      "chemstation_131" = "chemstation_uv",
+                      # "chemstation_31" = "chemstation_uv",
+                      # "chemstation_131" = "chemstation_uv",
+                      # "openlab_131" = "chemstation_uv",
                       "ThermoRAW" = "thermoraw",
                       "ShimadzuLCD" = "shimadzu_lcd",
                       "WatersRAW" = "waters_raw",
@@ -53,6 +65,7 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                                              "chemstation_uv", "chromeleon_uv",
                                              "chemstation_30", "chemstation_31",
                                              "chemstation_130", "chemstation_131",
+                                             "openlab_131",
                                              "chemstation_179", "chemstation_81",
                                              "chemstation_181", "mzml", "mdf",
                                              "shimadzu_fid", "shimadzu_dad",
@@ -231,3 +244,18 @@ transfer_metadata <- function (new_object, old_object, exclude = c("names", "row
   new_object
 }
 
+
+#' Rename list
+#' @author Ethan Bass
+#' @noRd
+rename_list <- function(x, new_names){
+  old_names <- names(x)
+  names.idx <- match(names(x), new_names)
+  new_names <- names(new_names)[names.idx]
+  not_found <- which(is.na(new_names))
+  if (any(not_found)){
+    new_names[not_found] <- old_names[not_found]
+  }
+  names(x) <- c("AcqInstName", "AcqMeth", "AcqOp", "InjDateTime", "SampleName")[names.idx]
+  x
+}
