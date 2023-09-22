@@ -25,23 +25,44 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
-                            chromconverter = "waters_arw", raw = "raw")
+                            chromconverter = "chemstation_uv", raw = "raw")
 
   f <- file(path, "rb")
   on.exit(close(f))
 
   seek(f, 1, "start")
   version <- readBin(f, "character", n = 1)
+  seek(f, 348, "start")
+  file_type_code <- paste(file_type_name = readBin(f, "character", n = 2),
+                          collapse = "")
   version <- match.arg(version, choices = c("31", "131"))
-
   if (version == "131"){
+    version <- paste(version, file_type_code, sep = "_")
+  }
+  if (version == "131_LC"){
     offsets <- list(file_type = 326,
+                    # file_type_name = 348,
                     sample_name = 858,
                     operator = 1880,
                     date = 2391,
                     detector = 2492,
                     method = 2574,
                     software = 3089,
+                    units = 3093,
+                    vial = 4055,
+                    num_times = 278, #big-endian
+                    rt_first = 282,
+                    rt_last = 286,
+                    scaling_factor = 3085,
+                    data_start = 4096)
+  } else if (version == "131_OL"){
+      offsets <- list(file_type = 326,
+                    sample_name = 858,
+                    operator = 1880,
+                    date = 2391,
+                    # detector = 2492,
+                    method = 2574,
+                    # software = 3089,
                     units = 3093,
                     vial = 4055,
                     num_times = 278, #big-endian
@@ -63,12 +84,13 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
                       data_start = 512)
   }
 
-  n_metadata_fields <- switch(version, "131" = 9,
-                              "31" = 6)
+  n_metadata_fields <- switch(version, "131_LC" = 9,
+                                       "131_OL" = 7,
+                                       "31" = 6)
   meta <- lapply(offsets[seq_len(n_metadata_fields)], function(offset){
     seek(f, where = offset, origin = "start")
-    n <- get_nchar(f)
-    cc_collapse(readBin(f, "character", n = 1))
+    n_char <- get_nchar(f)
+    cc_collapse(readBin(f, "character", n = n_char))
   })
 
   # Number of data values
@@ -96,41 +118,32 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   seek(f, where = offsets$data_start, origin = "start")
   seek(f, where = offsets$data_start, origin = "start")
 
-  # Initialize empty arrays
-  times <- integer(nval)
-  data <- array(0, dim=c(nval, n_lambdas))
-
   # Read data and populate arrays
-  for (i in seq_len(nval)) {
-    readBin(f, integer(), n = 1, size = 4)  # Discard first 4 bytes
-    times[i] <- readBin(f, integer(), n=1, size=4)
-    readBin(f, raw(), n=14)  # Discard 14 bytes
-    absorb_accum <- 0
-    for (j in seq_len(n_lambdas)) {
-      check_int <- readBin(f, integer(), n = 1, size = 2)
-      if (check_int == -0x8000) {
-        absorb_accum <- readBin(f, integer(), n = 1, size = 4)
-      } else {
-        absorb_accum <- absorb_accum + check_int
-      }
-      data[i, j] <- absorb_accum
-    }
-  }
+  decode_array <- switch(version, "131_OL" = decode_uv_array,
+                    "131_LC" = decode_uv_delta,
+                    "31" = decode_uv_delta)
 
-  times <- times/60000
+  data <- decode_array(f = f, nval = nval, ncol = n_lambdas)
+
   data <- data*scaling_value
-  rownames(data) <- times
   colnames(data) <- lambdas
 
   if (data_format == "long"){
     data <- reshape_chrom(data)
   }
 
-  if (format_out == "matrix"){
-    data <- as.matrix(data)
+  if (format_out == "data.frame"){
+    data <- as.data.frame(data)
   }
 
   if (read_metadata){
+    metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
+    if (!inherits(metadata_from_file, "try-error")){
+      meta <- c(meta, metadata_from_file)
+    }
+    attach_metadata(data, meta, format_in = metadata_format,
+                    data_format = data_format, format_out = format_out,
+                    parser = "chromconverter", source_file = path)
     data <- structure(data, file_version = meta$file_type,
                       sample_name = meta$sample_name,
                       file_source = path,
@@ -140,9 +153,51 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
                       software = NA, software_rev = NA,
                       signal = NA, unit = meta$units,
                       vial = meta$vial,
-                      time_range = c(head(times, 1), tail(times, 1)),
+                      time_range = c(head(rownames(data), 1), tail(rownames(data), 1)),
                       data_format = "wide", parser = "chromConverter")
   }
   data
 }
 
+#' @author Ethan Bass
+#' @noRd
+decode_uv_delta <- function(f, nval, ncol){
+  # Initialize empty arrays
+  times <- integer(nval)
+  data <- array(0, dim = c(nval, ncol))
+  for (i in seq_len(nval)) {
+    readBin(f, integer(), n = 1, size = 4)  # Discard first 4 bytes
+    times[i] <- readBin(f, integer(), n = 1, size = 4)
+    readBin(f, raw(), n = 14)  # Discard 14 bytes
+    absorb_accum <- 0
+    for (j in seq_len(ncol)) {
+      check_int <- readBin(f, integer(), n = 1, size = 2)
+      if (check_int == -0x8000) {
+        absorb_accum <- readBin(f, integer(), n = 1, size = 4)
+      } else {
+        absorb_accum <- absorb_accum + check_int
+      }
+      data[i, j] <- absorb_accum
+    }
+  }
+  times <- times/60000
+  rownames(data) <- times
+  data
+}
+
+#' @author Ethan Bass
+#' @noRd
+decode_uv_array <- function(f, nval, ncol){
+  # Initialize empty arrays
+  times <- integer(nval)
+  data <- array(0, dim = c(nval, ncol))
+  for (i in seq_len(nval)) {
+    readBin(f, integer(), n = 1, size = 4)  # Discard first 4 bytes
+    times[i] <- readBin(f, integer(), n = 1, size = 4)
+    readBin(f, raw(), n = 14)  # Discard 14 bytes
+    data[i,] <- readBin(f, what = "double", size = 8, n = ncol)
+  }
+  times <- times/60000
+  rownames(data) <- times
+  data
+}
