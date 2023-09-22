@@ -78,7 +78,7 @@ test_that("read_mzml works", {
 })
 
 test_that("get_filetype works as expected", {
-  expect_equal(get_filetype(path_uv), "chemstation_uv")
+  expect_equal(get_filetype(path_uv), "chemstation_131")
 })
 
 test_that("Rainbow parser can read chemstation 131 files", {
@@ -119,7 +119,7 @@ test_that("read_chroms exports csvs correctly", {
   skip_on_cran()
   path_out <-  tempdir(check = TRUE)
   on.exit(unlink(c(fs::path(path_out, "dad1", ext = "csv"), path_out)))
-  x1 <- read_chroms(paths = path_uv, export=TRUE, path_out = path_out,
+  x1 <- read_chroms(paths = path_uv, export = TRUE, path_out = path_out,
                     export_format="csv", format_out = "data.frame",
                     progress_bar = FALSE)
   x1_out <- read.csv(fs::path(path_out, "dad1", ext = "csv"), row.names = 1)
