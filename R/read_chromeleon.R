@@ -35,7 +35,7 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
     decimal_separator <- "."
   }
   x <- apply(x, 2, as.numeric)
-  colnames(x) <- c("RT","Intensity")
+  colnames(x) <- c("RT", "Intensity")
   if (data_format == "wide"){
     rownames(x) <- x[,1]
     x <- x[, 2, drop = FALSE]
@@ -46,7 +46,7 @@ read_chromeleon <- function(file, format_out = c("matrix","data.frame"),
   if (read_metadata){
     meta <- try(read_chromeleon_metadata(xx))
     if (decimal_separator == ","){
-      meta <- lapply(meta, function(x) gsub(",",".",x))
+      meta <- lapply(meta, function(x) gsub(",", ".", x))
     }
     if (!inherits(meta, "try-error")){
       x <- attach_metadata(x, meta, format_in = metadata_format,
