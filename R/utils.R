@@ -234,17 +234,6 @@ choose_apply_fnc <- function(progress_bar, parallel = FALSE, cl = NULL){
   fn
 }
 
-#' Transfer metadata
-#'@noRd
-transfer_metadata <- function (new_object, old_object, exclude = c("names", "row.names",
-                                              "class", "dim", "dimnames")){
-  a <- attributes(old_object)
-  a[exclude] <- NULL
-  attributes(new_object) <- c(attributes(new_object), a)
-  new_object
-}
-
-
 #' Rename list
 #' @author Ethan Bass
 #' @noRd
@@ -256,6 +245,6 @@ rename_list <- function(x, new_names){
   if (any(not_found)){
     new_names[not_found] <- old_names[not_found]
   }
-  names(x) <- c("AcqInstName", "AcqMeth", "AcqOp", "InjDateTime", "SampleName")[names.idx]
+  names(x) <- new_names
   x
 }

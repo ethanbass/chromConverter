@@ -13,6 +13,10 @@
 
 attach_metadata <- function(x, meta, format_in, format_out, data_format, parser = NULL,
                             source_file){
+  if (grepl("chemstation", format_in)){
+    format_in <- "chemstation"
+  }
+
   switch(format_in,
     "raw" = {
       structure(x, metadata = meta, data_format = data_format, parser = parser,
@@ -131,26 +135,33 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
   #             format = data_format,
   #             parser = "entab",
   #             format_out = format_out)
-  }, "chemstation_uv" = {
-    structure(x, instrument = meta$AcqInstName,
-              detector = NA,
-              software = meta$Version,
-              method = meta$AcqMeth,
+  }, "chemstation" = {
+    datetime_formats <- c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p", "%d/%m/%Y %I:%M:%S %p")
+    meta$date <- as.POSIXct(meta$date, tz = "UTC", tryFormats = datetime_formats)
+    structure(x, sample_name = iconv(meta$sample_name, sub = ""),
+              sample_id = meta$vial,
+              file_version = meta$version,
+              file_type = meta$file_type,
+              instrument = meta$AcqInstName,
+              detector = meta$`detector`,
+              detector_range = meta$signal,
+              detector_unit = meta$units,
+              software = meta$software,
+              software_version = meta$software_version,
+              software_revision = meta$software_revision,
+              # software = meta$Version,
+              method = meta$method,
               batch = meta$SeqPathAndFile,
-              operator = meta$AcqOp,
-              run_datetime = meta$InjDateTime,
-              sample_name = meta$SampleName,
-              sample_id = NA,
+              operator = meta$operator,
+              run_datetime = meta$date,
               sample_injection_volume = meta$InjVolume,
               sample_amount = meta$InjVolume,
-              time_range = NA,
+              time_range = meta$time_range,
               time_interval = NA,
-              time_unit = NA,
-              detector_range = NA,
-              detector_unit = NA,
+              time_unit = "Minutes",
               source_file = source_file,
               data_format = data_format,
-              parser = parser,
+              parser = "chromConverter",
               format_out = format_out)
   }, "chemstation_peaklist" = {
     structure(x, instrument = meta$`Acq. Instrument`,
@@ -447,4 +458,15 @@ extract_metadata <- function(chrom_list,
     metadata <- data.frame(name = names(chrom_list), metadata, row.names = names(chrom_list))
   }
   metadata
+}
+
+
+#' Transfer metadata
+#'@noRd
+transfer_metadata <- function (new_object, old_object, exclude = c("names", "row.names",
+                                                                   "class", "dim", "dimnames")){
+  a <- attributes(old_object)
+  a[exclude] <- NULL
+  attributes(new_object) <- c(attributes(new_object), a)
+  new_object
 }
