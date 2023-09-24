@@ -2,26 +2,28 @@
 
 ### New features
 
-* Added support for parallel processing through `pbapply` package. (The `pbapply` 
-package must be manually installed to enable parallel processing). 
-* Added preliminary support for reading 'Agilent' (`.dx`) files through
-`read_agilentdx` function.
-* Added parser for Shimadzu `.lcd` files through the `read_shimadzu_lcd` function. Only the PDA stream (not MS) is currently supported.
+* Added support for parallel processing through `pbapply` package. (**Note**: The `pbapply` package must be manually installed to enable parallel processing). 
+* Added internal parser for 'Agilent Chemstation' version 31 files (through `read_chemstation_uv` function).
+* Added support for 'Agilent OpenLab' version 131 files through internal parser. 
+* Added preliminary support for reading 'Agilent' (`.dx`) files (through `read_agilentdx` function).
 * Added support for reading 'Chemstation' REPORT files.
-* Added `read_peaklist` function for reading peak lists. Currently 'Agilent Chemstation' and
-'Shimadzu ASCII' formats are supported.
+* Added parser for Shimadzu `.lcd` files through the `read_shimadzu_lcd` function. Only the PDA stream (not MS) is currently supported.
+* Added `read_peaklist` function for reading peak lists. Currently 'Agilent Chemstation' and 'Shimadzu ASCII' formats are supported.
+* Added `verbose` argument to control console output for external parsers ('OpenChrom' and 'ThermoRawFileParser').
 
 ### Other Improvements
 
 * Improved automatic filetype detection by `read_chroms`.
 * Refactored `read_thermoraw` function to simplify paths.
-* The `thermoraw` and `openchrom` parsers now use a real temp directory if an export directory is not specified through the `path_out` argument.
+* The `thermoraw` and `openchrom` parsers now use a proper temp directory if an export directory is not specified through the `path_out` argument.
+* Re-factored `reshape_chroms`, speeding up conversion from wide to long format.
 * Added additional tests, attaining 82% test coverage.
 * Changed default `openchrom` export format to `mzml`.
+* Minor changes to some metadata fields to better standardize results across different file formats and parsers.
 
 ### Bug fixes
 
-* Corrected 'Shimadzu' DAD parser so it uses wavelengths written to file instead of inferring them.
+* Corrected 'Shimadzu' DAD parser so it reads wavelengths from the file instead of inferring them.
 * Fixed bug causing failure of 'Shimadzu' ascii parser (when `what == "peak_table"` and `read_metadata == TRUE`).
 * Fixed bug causing 'MDF' files to export as data.frames when `format_out == "matrix"`.
 * Fixed misleading `data_format` attributes in 'Waters ARW' and 'Chromeleon' parsers.
