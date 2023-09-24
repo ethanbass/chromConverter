@@ -39,54 +39,13 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   if (version == "131"){
     version <- paste(version, file_type_code, sep = "_")
   }
-  if (version == "131_LC"){
-    offsets <- list(file_type = 326,
-                    # file_type_name = 348,
-                    sample_name = 858,
-                    operator = 1880,
-                    date = 2391,
-                    detector = 2492,
-                    method = 2574,
-                    software = 3089,
-                    units = 3093,
-                    vial = 4055,
-                    num_times = 278, #big-endian
-                    rt_first = 282,
-                    rt_last = 286,
-                    scaling_factor = 3085,
-                    data_start = 4096)
-  } else if (version == "131_OL"){
-      offsets <- list(file_type = 326,
-                    sample_name = 858,
-                    operator = 1880,
-                    date = 2391,
-                    # detector = 2492,
-                    method = 2574,
-                    # software = 3089,
-                    units = 3093,
-                    vial = 4055,
-                    num_times = 278, #big-endian
-                    rt_first = 282,
-                    rt_last = 286,
-                    scaling_factor = 3085,
-                    data_start = 4096)
-  } else if (version == "31"){
-      offsets <- list(file_type = 4,
-                      sample_name = 24,
-                      operator = 148,
-                      date = 178,
-                      detector = 208,
-                      method = 228,
-                      # unknown = 260,
-                      num_times = 278, # big-endian
-                      scaling_factor = 318,
-                      units = 326,
-                      data_start = 512)
-  }
 
-  n_metadata_fields <- switch(version, "131_LC" = 9,
-                                       "131_OL" = 7,
-                                       "31" = 6)
+  offsets <- get_agilent_offsets(version)
+
+  n_metadata_fields <- switch(version, "131_LC" = 10,
+                                       "131_OL" = 8,
+                                       "31" = 8)
+
   meta <- lapply(offsets[seq_len(n_metadata_fields)], function(offset){
     seek(f, where = offset, origin = "start")
     n_char <- get_nchar(f)
@@ -141,20 +100,11 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
     if (!inherits(metadata_from_file, "try-error")){
       meta <- c(meta, metadata_from_file)
     }
-    attach_metadata(data, meta, format_in = metadata_format,
+    meta$signal <- as.numeric(c(lambda_start, lambda_end))
+    meta$time_range = as.numeric(c(head(rownames(data), 1), tail(rownames(data), 1)))
+    data <- attach_metadata(data, meta, format_in = metadata_format,
                     data_format = data_format, format_out = format_out,
                     parser = "chromconverter", source_file = path)
-    data <- structure(data, file_version = meta$file_type,
-                      sample_name = meta$sample_name,
-                      file_source = path,
-                      operator = meta$operator, run_date = meta$date,
-                      instrument = meta$detector,
-                      method = meta$method, software_version = NA,
-                      software = NA, software_rev = NA,
-                      signal = NA, unit = meta$units,
-                      vial = meta$vial,
-                      time_range = c(head(rownames(data), 1), tail(rownames(data), 1)),
-                      data_format = "wide", parser = "chromConverter")
   }
   data
 }
