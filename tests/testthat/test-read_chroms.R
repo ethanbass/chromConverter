@@ -103,7 +103,7 @@ test_that("chromconverter parser can read chemstation 130 files", {
   # expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   # expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
-  expect_equal(attr(x1[[1]], "parser"), "chromConverter")
+  expect_equal(attr(x1[[1]], "parser"), "chromconverter")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
   expect_equal(attr(x1[[1]], "detector_unit"), "mAU")
   expect_equal(attr(x1[[1]], "file_version"), "130")

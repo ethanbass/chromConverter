@@ -45,7 +45,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
                 detector_unit = get_metadata_field(meta, "Det. Units"),
                 source_file = source_file,
                 data_format = data_format,
-                parser = "chromConverter",
+                parser = "chromconverter",
                 format_out = format_out)
   }, "shimadzu" = {
     structure(x,
@@ -74,7 +74,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               detector_unit = NA,
               source_file = source_file,
               data_format = data_format,
-              parser = "chromConverter",
+              parser = "chromconverter",
               format_out = format_out)
   }, "chromeleon" = {
     datetime.idx <- unlist(sapply(c("Date$", "Time$"), function(str) grep(str, names(meta))))
@@ -116,7 +116,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               source_file = source_file,
               format_out = format_out,
               data_format = data_format,
-              parser = "chromConverter"
+              parser = "chromconverter"
               )
   # } else if (format_in == "entab"){
   #   structure(x, instrument = meta$instrument,
@@ -161,7 +161,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               time_unit = "Minutes",
               source_file = source_file,
               data_format = data_format,
-              parser = "chromConverter",
+              parser = parser,
               format_out = format_out)
   }, "chemstation_peaklist" = {
     structure(x, instrument = meta$`Acq. Instrument`,
@@ -230,7 +230,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               source_file = ifelse(missing(source_file), NA, source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
-              parser = "chromConverter")
+              parser = "chromconverter")
   }, "mdf" = {
     structure(x, instrument = meta[meta$Property == "Instrument","Value"],
               detector = "Variable Wavelength Detector",
@@ -256,7 +256,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               source_file = ifelse(missing(source_file), NA, source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
-              parser = "chromConverter")
+              parser = "chromconverter")
   }, "thermoraw" = {
     structure(x, instrument = c(meta$`Instrument model`, meta$`Instrument name`,
                                 meta$`Instrument serial number`),

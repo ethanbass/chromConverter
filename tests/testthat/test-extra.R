@@ -9,7 +9,7 @@ test_that("read_chroms can read 'Agilent Chemstation' version 30 files", {
   x <- read_chroms(path, progress_bar = FALSE, parser="chromconverter")
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(38405, 1))
-  expect_equal(attr(x[[1]], "parser"), "chromConverter")
+  expect_equal(attr(x[[1]], "parser"), "chromconverter")
 
   x1 <- read_chroms(path, progress_bar = FALSE, format_out = "data.frame",
                     data_format = "long", parser = "chromconverter")
@@ -32,7 +32,7 @@ test_that("read_chroms can read 'Agilent Chemstation' 31 files", {
   expect_equal(dim(x1), c(27659, 177))
 
   expect_equal(attr(x1, "parser"), "entab")
-  expect_equal(attr(x, "parser"), "chromConverter")
+  expect_equal(attr(x, "parser"), "chromconverter")
 })
 
 
@@ -46,7 +46,7 @@ test_that("read_chroms can read 'Agilent Chemstation' version 81 files", {
   x <- read_chroms(path, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(2699, 1))
-  expect_equal(attr(x[[1]], "parser"), "chromConverter")
+  expect_equal(attr(x[[1]], "parser"), "chromconverter")
 
   x1 <- read_chroms(path, progress_bar = FALSE,
                     format_out = "data.frame", data_format = "long")
@@ -82,7 +82,7 @@ test_that("read_chroms can read 'Agilent Chemstation' 179 files", {
   x <- read_chroms(path, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(10000, 1))
-  expect_equal(attr(x[[1]], "parser"), "chromConverter")
+  expect_equal(attr(x[[1]], "parser"), "chromconverter")
 
   x1 <- read_chroms(path, progress_bar = FALSE,
                     format_out = "data.frame", data_format = "long")
@@ -129,7 +129,7 @@ test_that("read_chroms can read 'Waters ARW' PDA files", {
   x <- read_chroms(path, format_in = "waters_arw", progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(6001, 489))
-  expect_equal(attr(x[[1]], "parser"), "chromConverter")
+  expect_equal(attr(x[[1]], "parser"), "chromconverter")
   expect_equal(attr(x[[1]], "data_format"), "wide")
 
   x1 <- read_chroms(path, format_in = "waters_arw", progress_bar = FALSE,
@@ -149,7 +149,7 @@ test_that("read_chroms can read 'Chromeleon' comma-separated files", {
   x <- read_chroms(path, format_in = "chromeleon_uv", progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(3241, 1))
-  expect_equal(attr(x[[1]], "parser"), "chromConverter")
+  expect_equal(attr(x[[1]], "parser"), "chromconverter")
   expect_equal(attr(x[[1]], "data_format"), "wide")
 
   x1 <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE,
@@ -170,7 +170,7 @@ test_that("read_chroms can read 'Chromeleon' period-separated files", {
   x <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(10, 1))
-  expect_equal(attr(x[[1]], "parser"), "chromConverter")
+  expect_equal(attr(x[[1]], "parser"), "chromconverter")
 
   x1 <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE,
                     format_out = "data.frame", data_format = "long")
@@ -204,7 +204,7 @@ test_that("read_chroms can read 'Shimadzu' PDA files", {
   x <- read_chroms(path, format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(4689, 328))
-  expect_equal(attr(x, "parser"), "chromConverter")
+  expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "data_format"), "wide")
 
   x1 <- read_chroms(path, format_in="shimadzu_dad", progress_bar = FALSE,
@@ -227,7 +227,7 @@ test_that("read_chroms can read 'Agilent' dx files", {
   x <- read_chroms(path, format_in = "agilent_dx", progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(10000, 1))
-  expect_equal(attr(x, "parser"), "chromConverter")
+  expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "data_format"), "wide")
 
   x1 <- read_chroms(path, format_in="agilent_dx", progress_bar = FALSE,
