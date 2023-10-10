@@ -32,10 +32,12 @@ Imports:
     xml2
 Suggests: 
     entab,
-    mzR,
     ncdf4,
     pbapply,
     testthat (>= 3.0.0)
+Enhances:
+    chromConverterExtraTests,
+    mzR
 Config/reticulate: list( packages = list( list(package = "scipy"),
                                     list(package="numpy"),
                                     list(package = "pandas"),
