@@ -37,7 +37,7 @@ Suggests:
     testthat (>= 3.0.0),
     mzR,
     chromConverterExtraTests
-Config/reticulate: list( packages = list( list(package = "scipy"),
+Config/reticulate: list( packages = list(list(package = "scipy"),
                                     list(package="numpy"),
                                     list(package = "pandas"),
                                     list(package="aston", pip = TRUE),

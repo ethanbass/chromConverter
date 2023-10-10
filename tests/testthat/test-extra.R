@@ -181,8 +181,8 @@ test_that("read_chroms can read 'Chromeleon' period-separated files", {
 
 test_that("read_peaklist can read `Shimadzu` PDA files", {
   skip_on_cran()
+  skip_if_missing_dependecies()
   skip_if_not_installed("chromConverterExtraTests")
-
   path <- system.file("shimadzuDAD_Anthocyanin.txt",
                       package = "chromConverterExtraTests")
 
@@ -238,6 +238,7 @@ test_that("read_chroms can read 'Agilent' dx files", {
 
 test_that("read_chroms can read 'Thermo' RAW files", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("chromConverterExtraTests")
   skip_if_missing_thermorawfileparser()
 
@@ -259,6 +260,7 @@ test_that("read_chroms can read 'Thermo' RAW files", {
 
 test_that("read_chroms can use 'OpenChrom' parsers", {
   skip_on_cran()
+  skip_on_ci()
   skip_if_not_installed("chromConverterExtraTests")
   skip_if_missing_openchrom()
 
@@ -286,8 +288,8 @@ test_that("read_varian_peaklist function works", {
 
 test_that("read_cdf function can read peak tables", {
   skip_on_cran()
+  skip_if_not_installed("ncdf4")
   skip_if_not_installed("chromConverterExtraTests")
-
   path <- system.file("VARIAN1.CDF", package = "chromConverterExtraTests")
   x <- read_cdf(path, what = "peak_table")
   expect_s3_class(x, "data.frame")
