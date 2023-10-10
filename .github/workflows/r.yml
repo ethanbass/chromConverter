@@ -48,6 +48,7 @@ jobs:
         run: |
           install.packages(c("remotes", "rcmdcheck"))
           install.packages(c("ncdf4"))
+          install.packages("chromConverterExtraTests", repos = "https://ethanbass.github.io/drat/")
           remotes::install_deps(dependencies = TRUE)
           reticulate::install_miniconda()
           reticulate::conda_create('r-reticulate', packages = c('python==3.9', 'numpy', 'scipy', 'pandas'))
