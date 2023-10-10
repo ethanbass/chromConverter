@@ -40,8 +40,8 @@ read_peaklist <- function(paths, find_files,
                         metadata_format = c("chromconverter", "raw"),
                         read_metadata = TRUE, progress_bar, cl = 1){
   data_format <- match.arg(tolower(data_format), c("chromatographr", "original"))
-  # format_in <- match.arg(tolower(format_in),
-  #                        c("chemstation", "shimadzu_fid", "shimadzu_dad"))
+  format_in <- match.arg(tolower(format_in),
+                         c("chemstation", "shimadzu_fid", "shimadzu_dad"))
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
