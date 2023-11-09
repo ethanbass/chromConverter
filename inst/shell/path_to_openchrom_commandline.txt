@@ -1,1 +1,1 @@
-/Applications/Eclipse.app/Contents/MacOS/openchrom
+NULL
