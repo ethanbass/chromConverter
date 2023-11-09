@@ -174,6 +174,9 @@ export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
     if (missing(path_out)){
       path_out <- tempfile()
     }
+    if (.Platform$OS.type == "windows"){
+      path_out <- gsub("\\\\", "/", path_out)
+    }
     if (remove_null_bytes){
       reticulate::py_run_string("data = data.replace(b'\\x00', b'')")
     }
@@ -307,7 +310,7 @@ read_shimadzu_wavelengths <- function(path){
 #' Otherwise, there is no return value.
 #' @author Ethan Bass
 #' @import reticulate
-#' @noRd
+#' @export
 configure_olefile <- function(return_boolean = FALSE){
   install <- FALSE
   if (!dir.exists(miniconda_path())){
