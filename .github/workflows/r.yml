@@ -52,7 +52,7 @@ jobs:
           install.packages("chromConverterExtraTests", repos = "https://ethanbass.github.io/drat/")
           reticulate::install_miniconda()
           reticulate::conda_create('r-reticulate', packages = c('python==3.9', 'numpy', 'scipy', 'pandas'))
-          reticulate::conda_install('r-reticulate', packages = c('aston'), pip=TRUE)
+          reticulate::conda_install('r-reticulate', packages = c('aston', "olefile"), pip=TRUE)
         shell: Rscript {0}
 
       - if: runner.os == 'macOS'
