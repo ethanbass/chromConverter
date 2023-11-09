@@ -24,8 +24,14 @@ skip_if_missing_thermorawfileparser <- function() {
 }
 
 skip_if_missing_openchrom <- function() {
-  have_openchrom_cli <- switch(configure_openchrom(cli="status"), true = TRUE,
-         false = FALSE)
+  path_openchrom <- readLines(system.file('shell/path_to_openchrom_commandline.txt',
+                        package='chromConverter'))
+  if (file.exists(path_openchrom)){
+    have_openchrom_cli <- switch(configure_openchrom(cli="status"), true = TRUE,
+           false = FALSE)
+  } else{
+    have_openchrom_cli <- FALSE
+  }
   if (!have_openchrom_cli){
     skip("OpenChrom could not be found.")
   }

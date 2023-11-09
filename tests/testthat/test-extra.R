@@ -21,6 +21,7 @@ test_that("read_chroms can read 'Agilent Chemstation' version 30 files", {
 test_that("read_chroms can read 'Agilent Chemstation' 31 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
+  skip_if_not_installed("entab")
   path <- system.file("chemstation_31.uv", package = "chromConverterExtraTests")
   x <- read_chroms(path, progress_bar = FALSE, parser = "chromconverter")[[1]]
   x1 <- read_chroms(path, progress_bar = FALSE, parser = "entab")[[1]]
@@ -211,8 +212,8 @@ test_that("read_chroms can read 'Shimadzu' PDA files", {
                     data_format = "long", format_out = "data.frame")[[1]]
   expect_equal(class(x1)[1], "data.frame")
   expect_equal(dim(x1), c(4689*328, 3))
-  path <- system.file("Anthocyanin.lcd", package = "chromConverterExtraTests")
 
+  path <- system.file("Anthocyanin.lcd", package = "chromConverterExtraTests")
   x2 <- read_chroms(path, progress_bar = FALSE)[[1]]
   expect_equal(dim(x2),c(4689,328))
   expect_equal(x, x2, ignore_attr = TRUE)
