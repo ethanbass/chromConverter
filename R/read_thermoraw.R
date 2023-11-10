@@ -7,10 +7,14 @@
 #' must be manually installed.
 #'
 #' @name read_thermoraw
-#' @param path_in path to file
-#' @param path_out directory to export \code{mzML} files.
+#' @param path_in Path to file.
+#' @param path_out Path to directory to export \code{mzML} files. If
+#' \code{path_out} isn't specified, a temp directory will be used.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
+#' \code{raw}.
+#' @param verbose Logical. Whether to print output from OpenChrom to the console.
 #' @return A chromatogram in the format specified by \code{format_out}.
 #' @section Side effects: Exports chromatograms in \code{mzml format} to the
 #' folder specified by \code{path_out}.
@@ -26,67 +30,60 @@
 #' \doi{10.1021/acs.jproteome.9b00328}.
 #' @export read_thermoraw
 
-read_thermoraw <- function(path_in, path_out, format_out = c("matrix", "data.frame"),
-                           read_metadata = TRUE){
+read_thermoraw <- function(path_in, path_out = NULL,
+                           format_out = c("matrix", "data.frame"),
+                           read_metadata = TRUE,
+                           metadata_format = c("chromconverter", "raw"),
+                           verbose = getOption("verbose")){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format, chromconverter = "thermoraw",
+                             raw = "raw")
   if(!file.exists(path_in)){
     stop("File not found. Check path.")
   }
-  base <- basename(path_in)
-  if (missing(path_out)){
-    path_out <- set_temp_directory()
+  if (is.null(path_out)){
+    path_out <- tempdir()
   }
-  if(!file.exists(path_out)){
-    stop("'path_out' not found. Make sure directory exists.")
+  if(!dir.exists(path_out)){
+    stop("Export directory not found. Please check `path_out` argument and try again.")
   }
   configure_thermo_parser()
+  verbose <- switch(as.character(verbose), "TRUE" = "")
   if (.Platform$OS.type != "windows"){
-    system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
-                              " -o=", path_out, " -a"))
-    new_path <- paste0(path_out, strsplit(base,"\\.")[[1]][1],".mzML")
+    system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
+                                          package='chromConverter'),
+                              " -i=", path_in, " -o=", path_out, " -a"),
+            stdout = verbose)
     if (read_metadata){
-      system2("sh", args=paste0(system.file('shell/thermofileparser.sh', package='chromConverter'), " -i=", path_in,
-                                " -o=", path_out, " -m=1"))
-      meta_path <- paste0(path_out, strsplit(base, "\\.")[[1]][1], "-metadata.txt")
+      system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
+                                              package='chromConverter'),
+                                  " -i=", path_in, " -o=", path_out, " -m=1"),
+              stdout = verbose)
     }
   } else {
-    parser_path <- readLines(system.file('shell/path_parser.txt', package='chromConverter'))
-    shell(paste0(parser_path, " -i=", path_in,
-                              " -o=", path_out, " -a"))
-    new_path <- paste(path_out,
-                      paste0(strsplit(base,"\\.")[[1]][1],".mzML"),
-                      sep="\\")
+      parser_path <- readLines(system.file('shell/path_parser.txt',
+                                           package='chromConverter'))
+      shell(paste0(parser_path, " -i=", path_in,
+                                " -o=", path_out, " -a"))
     if (read_metadata){
       shell(paste0(parser_path, " -i=", path_in,
                                 " -o=", path_out, " -m=1"))
-      meta_path <- paste(path_out,
-                         paste0(strsplit(base, "\\.")[[1]][1], "-metadata.txt"),
-                         sep = "\\")
     }
   }
+  base_name <- basename(path_in)
+  base_name <- strsplit(base_name, "\\.")[[1]][1]
+  new_path <- fs::path(path_out, base_name, ext = "mzML")
   x <- read_mzml(new_path, format_out)
   if (read_metadata){
-    meta <- strsplit(readLines(meta_path), "=",fixed = TRUE)
-    meta <- do.call(rbind,meta)
+    meta_path <- fs::path(path_out, paste0(base_name, "-metadata"), ext = "txt")
+    meta <- strsplit(readLines(meta_path), "=", fixed = TRUE)
+    meta <- do.call(rbind, meta)
     rownames(meta) <- meta[,1]
     meta <- as.list(meta[,-1])
-    x <- structure(x, instrument = c(meta$`Instrument model`, meta$`Instrument name`, meta$`Instrument serial number`),
-                    detector = NA,
-                    software = meta$`Software version`,
-                    method = NA,
-                    batch = NA,
-                    operator = NA,
-                    run_date = meta$`Creation date`,
-                    sample_name = basename(meta$`RAW file path`),
-                    sample_id = meta$`Sample id`,
-                    vial = meta$`Sample vial`,
-                    injection_volume = meta$`Sample injection volume`,
-                    sample_dilution = meta$`Sample dilution factor`,
-                    time_range = meta$`Time range`,
-                    time_interval = meta$`Interval(msec)`,
-                    format = "long",
-                    parser = "chromConverter",
-                    class = format_out)
+    x <- attach_metadata(x, meta, format_in = metadata_format,
+                         format_out = format_out, data_format = "long",
+                         source_file = path_in)
   }
   x
 }

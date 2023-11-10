@@ -2,7 +2,10 @@
 #'
 #' Writes `xml` batch-files and calls OpenChrom file parsers using a
 #' system call to the command-line interface. To use this function
-#' [OpenChrom](https://lablicate.com/platform/openchrom) must be manually installed.
+#' [OpenChrom](https://lablicate.com/platform/openchrom) (version 0.4.0) must be
+#' manually installed. The command line interface is no longer supported in the
+#' latest versions of OpenChrom (starting with version 0.5.0), so the function
+#' will not work with these new versions.
 #'
 #' The \code{call_openchrom} works by creating an \code{xml} batchfile and
 #' feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
@@ -25,8 +28,12 @@
 #' @param files files to parse
 #' @param path_out directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
-#' @param export_format Either \code{csv}, \code{cdf}, \code{mzml},  \code{animl}.
-#' @param return_paths Logical. If TRUE, the function will return a character vector of paths to the newly created files.
+#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param export_format Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
+#' Defaults to \code{mzml}.
+#' @param return_paths Logical. If TRUE, the function will return a character
+#' vector of paths to the newly created files.
+#' @param verbose Logical. Whether to print output from OpenChrom to the console.
 #' @return If \code{return_paths} is TRUE, the function will return a vector of paths to the newly created files.
 #' If \code{return_paths} is FALSE and \code{export_format} is \code{csv}, the function will return a list
 #' of chromatograms in \code{data.frame} format. Otherwise, it will not return anything.
@@ -40,27 +47,30 @@
 #' \doi{10.1186/1471-2105-11-405}.
 #' @export
 
-call_openchrom <- function(files, path_out, format_in,
-                             export_format = c("csv", "cdf", "mzml", "animl"),
-                             return_paths = FALSE){
+call_openchrom <- function(files, path_out = NULL, format_in,
+                             format_out = c("matrix","data.frame"),
+                             export_format = c("mzml", "csv", "cdf", "animl"),
+                             return_paths = FALSE, verbose = getOption("verbose")){
+  format_out <- match.arg(format_out, c("matrix","data.frame"))
   if (length(files) == 0){
     stop("Files not found.")
   }
   if (missing(format_in)){
     stop("Format must be specified. The options are `msd` for mass spectrometry,
     `csd` for flame ionization (FID), or `wsd` for DAD/UV data.")}
-  export_format <- match.arg(export_format, c("csv", "cdf", "mzml", "animl"))
-  if (missing(path_out)){
-    path_out <- set_temp_directory()
+  export_format <- match.arg(export_format, c("mzml", "csv", "cdf", "animl"))
+  if (is.null(path_out)){
+    path_out <- tempdir()
   }
-  if(!file.exists(path_out)){
-    stop("'path_out' not found. Make sure directory exists.")
+  if(!dir.exists(path_out)){
+    stop("Export directory not found. Please check `path_out` argument and try again.")
   }
   openchrom_path <- configure_openchrom()
   path_xml <- write_openchrom_batchfile(files = files, path_out = path_out,
                                         format_in = format_in,
                                         export_format = export_format)
-  system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml))
+  system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml),
+         ignore.stdout = !verbose, ignore.stderr = !verbose)
   new_files <- fs::path(path_out,
                         fs::path_ext_remove(fs::path_file(files)),
                         ext = switch(export_format, "animl" = "animl",
@@ -74,7 +84,13 @@ call_openchrom <- function(files, path_out, format_in,
                           "cdf" = read_cdf,
                           "animl" = warning("An animl parser is not currently available in chromConverter"),
                           "mzml" = read_mzml)
-      lapply(new_files, file_reader)
+      lapply(new_files, function(x){
+        xx <- file_reader(x)
+        if (export_format == "csv" && format_out == "matrix"){
+          xx <- as.matrix(xx)
+        }
+        xx
+      })
   }
 }
 
@@ -153,7 +169,8 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
     if (path_parser == "NULL"){
       path_parser <- switch(.Platform$OS.type,
                             unix = "/Applications/Eclipse.app/Contents/MacOS/openchrom",
-                            windows = fs::path(fs::path_home(), "AppData/Local/Programs/OpenChrom/openchrom.exe"),
+                            windows = fs::path(fs::path_home(),
+                                               "AppData/Local/Programs/OpenChrom/openchrom.exe"),
                             linux = "/snap/bin/openchrom"
       )
     }
@@ -161,11 +178,12 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
     path_parser <- path
   }
   writeLines(path_parser,
-             con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
+             con = system.file('shell/path_to_openchrom_commandline.txt',
+                               package='chromConverter'))
 
   if (!file.exists(path_parser)){
     warning("OpenChrom not found!", immediate. = TRUE)
-    path_parser <- readline(prompt="Please provide path to `OpenChrom` command line):")
+    path_parser <- readline(prompt = "Please provide path to `OpenChrom` command line (v0.4)):")
     if (.Platform$OS.type == "windows"){
       path_parser <- gsub("/","\\\\", path_parser)
     }

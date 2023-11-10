@@ -13,6 +13,16 @@
 chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It currently consists of wrappers around file parsers from various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser), [rainbow](https://rainbow-api.readthedocs.io/), and [OpenChrom](https://lablicate.com/platform/openchrom) as well as some parsers written directly in R for (mostly) text-based formats.
 
 ### Formats
+
+##### ChromConverter
+- Chromeleon UV ascii (`.txt`)
+- mzML (`.mzml`)
+- Shimadzu LabSolutions ascii (`.txt`)
+- Waters ascii (`.arw`)
+- 'Agilent Chemstation' & 'OpenLab' `.ch` files (versions 8, 81, 130, 179, 181)
+- 'Agilent Chemstation' & 'OpenLab' `.uv` files (versions 131, 31)
+- 'Shimadzu' `.lcd` (*provisional support* for PDA stream)
+
 ##### External Libraries
 ###### Aston/Entab (*Entab requires separate installation, see [instructions below](README.md#Installation)*)
 - Agilent ChemStation (`.ch`, `.fid`, `.ms`, .`mwd`, & `.uv`)
@@ -33,13 +43,6 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - MassFinder FID/MSD (`*.mfg`)
 - ABSciex DAD (`.wiff`)
 - and many more (see full list [here](https://lablicate.com/platform/openchrom)).
-
-##### ChromConverter
-- Chromeleon UV ascii (`.txt`)
-- mzML (`.mzml`)
-- Shimadzu LabSolutions ascii (`.txt`)
-- Waters ascii (`.arw`) (*provisional support*)
-- 'Agilent Chemstation' `.ch` files (versions 8, 81, 130, 179, 181)
 
 ### Installation
 
@@ -91,17 +94,17 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 1) Download [OpenChrom](https://lablicate.com/platform/openchrom/download) (**version 1.4.x only**) and place it into a directory of your choice.  
 2) If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.
-3) Call `read_chroms` with `parser = "openchrom"`. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  Alternatively, the command-line option can be activated from R by calling `configure_openchrom(cli = "true")` or following the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to manually activate the CLI. This process can be reversed using the same function: e.g. `configure_openchrom(cli = "false"). To specify an OpenChrom executable in a non-standard location, call `configure_openchrom` with the `path` argument, e.g. `configure_openchrom(cli = "true", path="path_to_openchrom_executable").
+3) Call `read_chroms` with `parser = "openchrom"`. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  Alternatively, the command-line option can be activated from R by calling `configure_openchrom(cli = "true")` or following the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to manually activate the CLI. This process can be reversed using the same function: e.g. `configure_openchrom(cli = "false"). To specify an OpenChrom executable in a non-standard location, call `configure_openchrom` with the `path` argument, e.g. `configure_openchrom(cli = "true", path = "path_to_openchrom_executable").
 
 ### Usage
 
-##### `read_chroms` function
+##### Importing chromatograms
 
 The workhorse of chromConverter is the `read_chroms` function, which functions as a wrapper around all of the supported parsers. To convert files, call `read_chroms`, specifying the `paths` to a vector of directories or files and the appropriate file format (`format_in`). Supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
 
 ```
 library(chromConverter)
-dat <- read_chroms(path, format.in = "chemstation_uv")
+dat <- read_chroms(path, format_in = "chemstation_uv")
 ```
 
 The `read_chroms` function will attempt to determine an appropriate parser to use and whether you've provided a vector of directories or files. However, if you'd like to be more explicit, you can provide arguments to the `parsers` and `find_files` arguments. Setting `find_files = FALSE` will instruct the function that you are providing a vector of files, while `find_files = TRUE` implies that you are providing a vector of directories.
@@ -121,11 +124,19 @@ For formats where multiple parsers are available, you can choose between them us
 
 ###### OpenChrom parsers
 
-Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` argument, the user must specify whether the files come from a mass selective detector (`msd`), a current-selective detector like a flame-ionization detector (`csd`), or a wavelength-selective detector (`wsd`), rather than providing a specific file format. In addition, the user should specify what format they'd like to export (`export_format`). Current options include `csv`, `cdf`, `mzml`, or `animl` (the analytical information markup language). The files will then be converted by calling OpenChrom through the command-line interface. If the files are exported in `csv` format, the chromatograms will be automatically read into R. Otherwise, files will be exported to the specified folder but will not be read into the R workspace.
+Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` argument, the user must specify whether the files come from a mass selective detector (`msd`), a current-selective detector like a flame-ionization detector (`csd`), or a wavelength-selective detector (`wsd`), rather than providing a specific file format. In addition, the user should specify what format they'd like to export (`export_format`). Current options include `csv`, `cdf`, `mzml`, or `animl` (the analytical information markup language). The files will then be converted by calling OpenChrom through the command-line interface. If the files are exported in `csv` or `mzml` format, the chromatograms will be automatically read into R. Otherwise, files will be exported to the specified folder but will not be read into the R workspace.
 
 ###### Extracting metadata
 
-chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as `attributes` of the associated object. The metadata can then be extracted into a data.frame or tibble using the `extract_metadata` function. 
+chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as [attributes](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) of the associated object. The metadata can then be extracted into a data.frame or tibble using the `extract_metadata` function. 
+
+##### Importing peak lists
+
+The `read_peak` list function can be used to import peak lists from 'Chemstation' or 'Shimadzu' ascii files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
+
+```
+pks <- read_chroms(<path_to_directory>, format_in = "chemstation")
+```
 
 ### Further analysis
 

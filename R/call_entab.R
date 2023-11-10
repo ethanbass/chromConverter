@@ -5,45 +5,54 @@
 #' @param format_in Format of input.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
-#' @importFrom tidyr pivot_wider
 #' @export
 
-call_entab <- function(file, data_format = c("wide","long"),
-                       format_in = "",
+call_entab <- function(file, data_format = c("wide", "long"),
+                       format_in = NULL,
                        format_out = c("matrix", "data.frame"),
-                       read_metadata = TRUE){
+                       read_metadata = TRUE,
+                       metadata_format = c("chromconverter", "raw")){
   if (!requireNamespace("entab", quietly = TRUE)){
     stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
          call. = FALSE)
   }
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
-  data_format <- match.arg(data_format, c("wide","long"))
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  data_format <- match.arg(data_format, c("wide", "long"))
+
+  metadata_format <- match.arg(tolower(metadata_format), c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format,
+                            chromconverter = format_in, raw = "raw")
   r <- entab::Reader(file)
   x <- entab::as.data.frame(r)
+  signal.idx <- grep("signal", colnames(x))
+  if (length(signal.idx) == 1){
+    colnames(x)[signal.idx] <- "wavelength"
+  }
   if (data_format == "wide"){
-    times <- unique(x$time)
-    id <- names(x)[2]
-    x <- as.data.frame(pivot_wider(x, id_cols = "time",
-                                   names_from = {{id}},
-                                   values_from = "intensity"),
-                       row.names = "time")
-    rownames(x) <- times
-    x <- x[,-1]
+      x <- reshape_chrom_wide(x, time_var = "time", lambda_var = "wavelength",
+                              value_var = "intensity")
   }
   if (format_out == "matrix"){
     x <- as.matrix(x)
   }
   if (read_metadata){
     meta <- r$metadata()
-    if (format_in == "chemstation_uv"){
+    meta$run_date <- as.POSIXct(eval(meta$run_date))
+    meta <- rename_list(meta, c("detector" = "instrument", "method" = "method",
+                        "operator" = "operator", "date" = "run_date",
+                        "sample_name" = "sample"))
+
+    if (grepl("chemstation", format_in)){
       metadata_from_file <- try(read_chemstation_metadata(file), silent = TRUE)
-      meta <- c(meta, metadata_from_file)
-    }
-    if (format_in == "masshunter_dad"){
+    } else if (format_in == "masshunter_dad"){
       metadata_from_file <- try(read_masshunter_metadata(file), silent = TRUE)
+    }
+    if (exists("metadata_from_file") && !inherits(metadata_from_file, "try-error")){
       meta <- c(meta, metadata_from_file)
     }
     x <- attach_metadata(x, meta, format_in = format_in, format_out = format_out,

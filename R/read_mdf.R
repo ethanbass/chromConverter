@@ -51,10 +51,10 @@ read_mdf <- function(file, format_out = c("matrix","data.frame"),
   }
 
   if (data_format == "long"){
-    data <- reshape_chrom(data)
+    data <- reshape_chrom(data, data_format = data_format)
   }
   if (format_out == "matrix"){
-    as.matrix(format_out)
+    data <- as.matrix(data)
   }
   if (read_metadata){
     data <- attach_metadata(x = data, meta = meta, format_in = "mdf",

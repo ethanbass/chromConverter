@@ -34,16 +34,16 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
   # check_rb_dir(file)
+  if (grepl("chemstation", format_in)){
+    format_in <- "chemstation"
+  }
   converter <- switch(format_in,
                       "agilent_d" = rb_read$read,
                       "waters_raw" = rb_read$read,
                       "masshunter" = rb_read$read,
                       "chemstation" = rb_parse_agilent$chemstation$parse_file,
-                      "chemstation_uv" = rb_parse_agilent$chemstation$parse_file,
-                      "chemstation_fid" = rb_parse_agilent$chemstation$parse_file,
-                      "chemstation_ch" = rb_parse_agilent$chemstation$parse_file,
                       "default" = rb_read$read)
-  if (format_in %in% c("chemstation", "chemstation_uv", "chemstation_fid")){
+  if (format_in %in% c("chemstation")){
     by <- "single"
   }
   x <- converter(file)
@@ -80,23 +80,23 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
 
 #' @noRd
 extract_rb_data <- function(xx, format_out = "matrix",
-                            data_format = c("wide","long"), read_metadata = TRUE){
+                            data_format = c("wide","long"),
+                            read_metadata = TRUE){
   data_format <- match.arg(data_format, c("wide","long"))
   data <- xx$data
-  # rownames(data) <- xx$xlabels[seq_len(nrow(data))]
   try(rownames(data) <- xx$xlabels)
   colnames(data) <- xx$ylabels
+  if (data_format == "long"){
+    data <- reshape_chrom(data, data_format = "long")
+  }
+  if (format_out == "data.frame"){
+    data <- as.data.frame(data)
+  }
   if (read_metadata){
     try(attr(data, "detector") <- xx$detector)
     try(attr(data, "metadata") <- xx$metadata)
     attr(data, "parser") <- "rainbow"
     attr(data, "data_format") <- data_format
-  }
-  if (format_out == "data.frame"){
-    data <- as.data.frame(data)
-  }
-  if (ncol(xx$data) > 1 && data_format == "long"){
-    data <- reshape_chrom(data)
   }
   data
 }

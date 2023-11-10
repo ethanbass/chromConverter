@@ -13,7 +13,15 @@
 
 attach_metadata <- function(x, meta, format_in, format_out, data_format, parser = NULL,
                             source_file){
+  if (grepl("chemstation", format_in)){
+    format_in <- "chemstation"
+  }
+
   switch(format_in,
+    "raw" = {
+      structure(x, metadata = meta, data_format = data_format, parser = parser,
+                source_file = source_file)
+    },
     "waters_arw" = {
       structure(x, instrument = NA,
                 detector = get_metadata_field(meta, "Channel Type"),
@@ -36,8 +44,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
                                         ),
                 detector_unit = get_metadata_field(meta, "Det. Units"),
                 source_file = source_file,
-                data_format = "long",
-                parser = "chromConverter",
+                data_format = data_format,
+                parser = "chromconverter",
                 format_out = format_out)
   }, "shimadzu" = {
     structure(x,
@@ -58,21 +66,21 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               # end_time = meta$`End Time(min)`,
               time_interval = meta$`Interval(msec)`,
               time_interval_unit = get_time_unit(
-                grep("Interval", names(meta), value=TRUE)[1], format_in = "shimadzu"),
+                grep("Interval", names(meta), value = TRUE)[1], format_in = "shimadzu"),
               time_unit = get_time_unit(
                 grep("Start Time", names(meta), value=TRUE)[1], format_in = "shimadzu"),
-              detector_range = c(meta$`Start Wavelength(nm)`,meta$`End Wavelength(nm)`),
+              detector_range = c(meta$`Start Wavelength(nm)`, meta$`End Wavelength(nm)`),
               # detector_end = meta$`End Wavelength(nm)`,
               detector_unit = NA,
               source_file = source_file,
               data_format = data_format,
-              parser = "chromConverter",
+              parser = "chromconverter",
               format_out = format_out)
   }, "chromeleon" = {
-    datetime.idx <- unlist(sapply(c("Date$","Time$"), function(str) grep(str, names(meta))))
+    datetime.idx <- unlist(sapply(c("Date$", "Time$"), function(str) grep(str, names(meta))))
     datetime <- unlist(meta[datetime.idx])
     if (length(datetime > 1)){
-      datetime <- paste(datetime, collapse=" ")
+      datetime <- paste(datetime, collapse = " ")
     }
     datetime <- as.POSIXct(datetime, format = c("%m/%d/%Y %H:%M:%S", "%d.%m.%Y %H:%M:%S",
                                       "%m/%d/%Y %H:%M:%S %p %z"))
@@ -107,8 +115,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               detector_unit = meta$`Signal Unit`,
               source_file = source_file,
               format_out = format_out,
-              data_format = "long",
-              parser = "chromConverter"
+              data_format = data_format,
+              parser = "chromconverter"
               )
   # } else if (format_in == "entab"){
   #   structure(x, instrument = meta$instrument,
@@ -127,18 +135,46 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
   #             format = data_format,
   #             parser = "entab",
   #             format_out = format_out)
-  }, "chemstation_uv" = {
-    structure(x, instrument = meta$AcqInstName,
-              detector = NA,
-              software = meta$Version,
-              method = meta$AcqMeth,
+  }, "chemstation" = {
+    datetime_formats <- c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p", "%d/%m/%Y %I:%M:%S %p")
+    meta$date <- as.POSIXct(meta$date, tz = "UTC", tryFormats = datetime_formats)
+    structure(x, sample_name = iconv(meta$sample_name, sub = ""),
+              sample_id = meta$vial,
+              file_version = meta$version,
+              file_type = meta$file_type,
+              instrument = meta$AcqInstName,
+              detector = meta$`detector`,
+              detector_range = meta$signal,
+              detector_unit = meta$units,
+              software = meta$software,
+              software_version = meta$software_version,
+              software_revision = meta$software_revision,
+              # software = meta$Version,
+              method = meta$method,
               batch = meta$SeqPathAndFile,
-              operator = meta$AcqOp,
-              run_datetime = meta$InjDateTime,
-              sample_name = meta$SampleName,
-              sample_id = NA,
+              operator = meta$operator,
+              run_datetime = meta$date,
               sample_injection_volume = meta$InjVolume,
               sample_amount = meta$InjVolume,
+              time_range = meta$time_range,
+              time_interval = NA,
+              time_unit = "Minutes",
+              source_file = source_file,
+              data_format = data_format,
+              parser = parser,
+              format_out = format_out)
+  }, "chemstation_peaklist" = {
+    structure(x, instrument = meta$`Acq. Instrument`,
+              detector = NA,
+              software = NA,
+              method = meta$Method,
+              batch = NA,
+              operator = meta$`Acq. Operator`,
+              run_datetime = NA,
+              sample_name = meta$`Sample Name`,
+              sample_id = NA,
+              sample_injection_volume = meta$`Inj Volume`,
+              sample_amount = meta$`Inj Volume`,
               time_range = NA,
               time_interval = NA,
               time_unit = NA,
@@ -194,7 +230,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               source_file = ifelse(missing(source_file), NA, source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
-              parser = "chromConverter")
+              parser = "chromconverter")
   }, "mdf" = {
     structure(x, instrument = meta[meta$Property == "Instrument","Value"],
               detector = "Variable Wavelength Detector",
@@ -220,7 +256,28 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               source_file = ifelse(missing(source_file), NA, source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
-              parser = "chromConverter")
+              parser = "chromconverter")
+  }, "thermoraw" = {
+    structure(x, instrument = c(meta$`Instrument model`, meta$`Instrument name`,
+                                meta$`Instrument serial number`),
+              detector = NA,
+              software = meta$`Software version`,
+              method = NA,
+              batch = NA,
+              operator = NA,
+              run_date = meta$`Creation date`,
+              sample_name = basename(meta$`RAW file path`),
+              sample_id = meta$`Sample id`,
+              vial = meta$`Sample vial`,
+              injection_volume = meta$`Sample injection volume`,
+              sample_dilution = meta$`Sample dilution factor`,
+              time_range = meta$`Time range`,
+              time_interval = meta$`Interval(msec)`,
+              source_file = ifelse(missing(source_file), NA, source_file),
+              format_out = ifelse(missing(format_out), NA, format_out),
+              data_format = "long",
+              parser = "ThermoRawFileParser"
+    )
   }, "default" = {
     structure(x, instrument = meta$Instrument,
               detector = NA,
@@ -254,10 +311,14 @@ get_metadata_field <- function(x, field){
 
 #' @noRd
 get_time_unit <- function(string, format_in){
-  if (format_in %in% c("chromeleon","shimadzu")){
-    pattern <- "\\((.*?)\\)"
-    unit <- gsub("\\(|\\)", "", regmatches(string, regexpr(pattern, string))[[1]])
-    switch(unit, "min" = "Minutes", "sec" = "Seconds")
+  if (length(string) == 0 || is.na(string)){
+    NA
+  } else{
+    if (format_in %in% c("chromeleon", "shimadzu")){
+      pattern <- "\\((.*?)\\)"
+      unit <- gsub("\\(|\\)", "", regmatches(string, regexpr(pattern, string))[[1]])
+      switch(unit, "min" = "Minutes", "sec" = "Seconds")
+    } else NA
   }
 }
 
@@ -397,4 +458,15 @@ extract_metadata <- function(chrom_list,
     metadata <- data.frame(name = names(chrom_list), metadata, row.names = names(chrom_list))
   }
   metadata
+}
+
+
+#' Transfer metadata
+#'@noRd
+transfer_metadata <- function (new_object, old_object, exclude = c("names", "row.names",
+                                                                   "class", "dim", "dimnames")){
+  a <- attributes(old_object)
+  a[exclude] <- NULL
+  attributes(new_object) <- c(attributes(new_object), a)
+  new_object
 }

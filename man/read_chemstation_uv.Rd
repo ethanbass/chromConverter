@@ -2,30 +2,34 @@
 % Please edit documentation in R/read_chemstation_uv.R
 \name{read_chemstation_uv}
 \alias{read_chemstation_uv}
-\title{Parser for reading Agilent UV (.uv) files into R}
+\title{Read 'Chemstation' DAD files}
 \usage{
 read_chemstation_uv(
   path,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
-\item{path}{Path to \code{.uv} file}
+\item{path}{Path to \code{.uv} file.}
 
-\item{format_out}{Matrix or data.frame}
+\item{format_out}{Matrix or data.frame.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Parser for reading Agilent UV (.uv) files into R
+Parser for reading Agilent UV (.uv) files into R.
 }
 \note{
 This function was adapted from the parser in the rainbow project

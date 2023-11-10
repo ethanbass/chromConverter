@@ -6,19 +6,27 @@
 \usage{
 read_thermoraw(
   path_in,
-  path_out,
+  path_out = NULL,
   format_out = c("matrix", "data.frame"),
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw"),
+  verbose = getOption("verbose")
 )
 }
 \arguments{
-\item{path_in}{path to file}
+\item{path_in}{Path to file.}
 
-\item{path_out}{directory to export \code{mzML} files.}
+\item{path_out}{Path to directory to export \code{mzML} files. If
+\code{path_out} isn't specified, a temp directory will be used.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
 \item{read_metadata}{Whether to read metadata from file.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
+\code{raw}.}
+
+\item{verbose}{Logical. Whether to print output from OpenChrom to the console.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}.

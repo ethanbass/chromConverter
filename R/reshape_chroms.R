@@ -12,11 +12,11 @@
 #' @return A list of chromatographic matrices in long format.
 #' @author Ethan Bass
 
-reshape_chroms <- function(x, idx, sample_var = "sample", lambdas=NULL,
+reshape_chroms <- function(x, idx, sample_var = "sample", lambdas = NULL,
                            data_format, combine = TRUE, ...){
   if (missing(data_format)){
-    data_format <- switch(attr(x[[1]],"data_format"),
-           long="wide",wide="long")
+    data_format <- switch(attr(x[[1]], "data_format"),
+           long = "wide", wide = "long")
   }
   if (missing(idx)){
     idx <- seq_along(x)
@@ -25,7 +25,7 @@ reshape_chroms <- function(x, idx, sample_var = "sample", lambdas=NULL,
     if (is.null(lambdas)){
       if (data_format == "wide"){
         lambda.idx <- grep("lambda", colnames(x[[i]]))
-        lambdas <- unique(as.data.frame(x[[i]])[,lambda.idx])
+        lambdas <- unique(as.data.frame(x[[i]])[, lambda.idx])
       } else if (data_format == "long"){
         lambdas <- colnames(x[[i]])
       }
@@ -46,10 +46,6 @@ reshape_chroms <- function(x, idx, sample_var = "sample", lambdas=NULL,
 
 #' @noRd
 reshape_chrom <- function(x, data_format, ...){
-  # if (missing(data_format)){
-  #   data_format <- switch(attr(x[[1]],"data_format"),
-  #                         long="wide", wide="long")
-  # }
   fn <- switch(data_format,
                long = reshape_chrom_long,
                wide = reshape_chrom_wide)
@@ -65,25 +61,29 @@ reshape_chrom <- function(x, data_format, ...){
 #' @return A chromatographic matrix in long format.
 #' @author Ethan Bass
 #' @noRd
-reshape_chrom_long <- function(x, lambdas, format_out=c("data.frame","matrix")){
+reshape_chrom_long <- function(x, lambdas, format_out = NULL){
   if (!is.null(attr(x, "data_format")) && attr(x, "data_format") == "long"){
     warning("The data already appear to be in long format!", immediate. = TRUE)
   }
-  if (ncol(x) == 1)
-    stop("The provided data is already in long format!")
-  format_out <- match.arg(format_out,c("data.frame","matrix"))
-  xx <- as.data.frame(x)
-  if (!missing(lambdas)){
-    xx <- xx[,lambdas, drop = FALSE]
+  if (is.null(format_out)){
+    format_out <- class(x)[1]
   }
-  data <- reshape(as.data.frame(rt=rownames(xx), xx), direction = "long",
-                  varying = list(1:ncol(xx)), v.names="absorbance",
-                  times = colnames(xx), timevar = "lambda",
-                  idvar = "rt", ids = rownames(xx))
-  rownames(data) <- NULL
-  data$rt <- as.numeric(data$rt)
-  data$lambda <- as.numeric(data$lambda)
-  data <- data[,c(3,2,1)]
+
+  format_out <- match.arg(format_out, c("data.frame", "matrix"))
+  xx <- as.data.frame(x)
+
+  if (ncol(x) == 1){
+    data <- data.frame(RT = as.numeric(rownames(xx)), Intensity = xx[,1],
+               row.names = NULL)
+  } else {
+    if (!missing(lambdas)){
+      xx <- xx[,lambdas, drop = FALSE]
+    }
+    data <- data.frame(tidyr::pivot_longer(data.frame(rt = rownames(xx), xx, check.names = FALSE),
+                                cols = -c("rt"), names_to = "lambda", values_to = "intensity"))
+    data$rt <- as.numeric(data$rt)
+    data$lambda <- as.numeric(data$lambda)
+  }
   if (format_out == "matrix"){
     data <- as.matrix(data)
   }
@@ -97,11 +97,10 @@ reshape_chrom_long <- function(x, lambdas, format_out=c("data.frame","matrix")){
 reshape_chrom_wide <- function(x, lambdas, lambda_var = "lambda", time_var="rt",
                                value_var = "int", drop){
   if (!is.null(attr(x, "data_format")) && attr(x, "data_format") == "wide"){
-    warning("The data already appear to be in wide format!",immediate. = TRUE)
+    warning("The data already appear to be in wide format!", immediate. = TRUE)
   }
-  x <- as.data.frame(x)
   if (missing(drop)){
-    drop <- colnames(x)[which(sapply(x,is.character))]
+    drop <- colnames(x)[which(sapply(x, is.character))]
   }
   if (missing(value_var)){
     value_var <- colnames(x)[grep("int|abs", colnames(x),ignore.case = TRUE)]
@@ -109,12 +108,12 @@ reshape_chrom_wide <- function(x, lambdas, lambda_var = "lambda", time_var="rt",
   if (!missing(lambdas)){
     x <- x[which(x[,lambda_var] %in% lambdas),]
   }
-  data <- reshape(x, idvar=time_var, timevar=lambda_var, v.names = value_var,
-                  new.row.names = unique(x$rt), direction="wide", drop=drop)
-  colnames(data) <- gsub(paste0(value_var,"."),"", colnames(data))
-  data <- as.matrix(data)
-  rownames(data) <- data[,1]
-  data <- data[,-1]
+  x <- as.data.frame(x)
+  data <- data.frame(tidyr::pivot_wider(x, id_cols = !!time_var,
+                                     names_from = !!lambda_var,
+                                     values_from = !!value_var),
+                  row.names = time_var)
+  colnames(data) <- gsub("X", "", colnames(data))
   data <- transfer_metadata(data, x)
   attr(data, "data_format") <- "wide"
   data
