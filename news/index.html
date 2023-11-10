@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,8 +45,39 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="chromconverter-050">chromConverter 0.5.0<a class="anchor" aria-label="anchor" href="#chromconverter-050"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-5-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0"></a></h3>
+<ul><li>Added support for parallel processing through <code>pbapply</code> package. (<strong>Note</strong>: The <code>pbapply</code> package must be manually installed to enable parallel processing).</li>
+<li>Added internal parser for ‘Agilent Chemstation’ version 31 files (through <code>read_chemstation_uv</code> function).</li>
+<li>Added support for ‘Agilent OpenLab’ version 131 files through internal parser.</li>
+<li>Added preliminary support for reading ‘Agilent’ (<code>.dx</code>) files (through <code>read_agilentdx</code> function).</li>
+<li>Added support for reading ‘Chemstation’ REPORT files.</li>
+<li>Added parser for Shimadzu <code>.lcd</code> files through the <code>read_shimadzu_lcd</code> function. Only the PDA stream (not MS) is currently supported.</li>
+<li>Added <code>read_peaklist</code> function for reading peak lists. Currently ‘Agilent Chemstation’ and ‘Shimadzu ASCII’ formats are supported.</li>
+<li>Added <code>verbose</code> argument to control console output for external parsers (‘OpenChrom’ and ‘ThermoRawFileParser’).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="other-improvements-0-5-0">Other Improvements<a class="anchor" aria-label="anchor" href="#other-improvements-0-5-0"></a></h3>
+<ul><li>Improved automatic filetype detection by <code>read_chroms</code>.</li>
+<li>Refactored <code>read_thermoraw</code> function to simplify paths.</li>
+<li>The <code>thermoraw</code> and <code>openchrom</code> parsers now use a proper temp directory if an export directory is not specified through the <code>path_out</code> argument.</li>
+<li>Re-factored <code>reshape_chroms</code>, speeding up conversion from wide to long format.</li>
+<li>Added additional tests, attaining 82% test coverage.</li>
+<li>Changed default <code>openchrom</code> export format to <code>mzml</code>.</li>
+<li>Minor changes to some metadata fields to better standardize results across different file formats and parsers.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-5-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-0"></a></h3>
+<ul><li>Corrected ‘Shimadzu’ DAD parser so it reads wavelengths from the file instead of inferring them.</li>
+<li>Fixed bug causing failure of ‘Shimadzu’ ascii parser (when <code>what == "peak_table"</code> and <code>read_metadata == TRUE</code>).</li>
+<li>Fixed bug causing ‘MDF’ files to export as data.frames when <code>format_out == "matrix"</code>.</li>
+<li>Fixed misleading <code>data_format</code> attributes in ‘Waters ARW’ and ‘Chromeleon’ parsers.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.3" id="chromconverter-043">chromConverter 0.4.3<a class="anchor" aria-label="anchor" href="#chromconverter-043"></a></h2>
-<ul><li>Fixed bug in <code>chemstation_ch</code> parser (<a href="https://github.com/ethanbass/chromConverter/issues/17" class="external-link">#17</a>)</li>
+<ul><li>Fixed bug in <code>chemstation_ch</code> parser (version 130) (<a href="https://github.com/ethanbass/chromConverter/issues/17" class="external-link">#17</a>)</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.2" id="chromconverter-042">chromConverter 0.4.2<a class="anchor" aria-label="anchor" href="#chromconverter-042"></a></h2>

@@ -12,7 +12,7 @@ command-line."><meta property="og:image" content="https://ethanbass.github.io/ch
     
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,20 +56,23 @@ command-line.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_thermoraw</span><span class="op">(</span></span>
 <span>  <span class="va">path_in</span>,</span>
-<span>  <span class="va">path_out</span>,</span>
+<span>  path_out <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span><span class="op">)</span>,</span>
-<span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"verbose"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>path_in</dt>
-<dd><p>path to file</p></dd>
+<dd><p>Path to file.</p></dd>
 
 
 <dt>path_out</dt>
-<dd><p>directory to export <code>mzML</code> files.</p></dd>
+<dd><p>Path to directory to export <code>mzML</code> files. If
+<code>path_out</code> isn't specified, a temp directory will be used.</p></dd>
 
 
 <dt>format_out</dt>
@@ -78,6 +81,15 @@ command-line.</p>
 
 <dt>read_metadata</dt>
 <dd><p>Whether to read metadata from file.</p></dd>
+
+
+<dt>metadata_format</dt>
+<dd><p>Format to output metadata. Either <code>chromconverter</code> or
+<code>raw</code>.</p></dd>
+
+
+<dt>verbose</dt>
+<dd><p>Logical. Whether to print output from OpenChrom to the console.</p></dd>
 
 </dl></div>
     <div class="section level2">
