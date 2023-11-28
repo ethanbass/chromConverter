@@ -35,7 +35,16 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
   if (version == "179"){
     seek(f, 348)
     filetype <- paste(readBin(f, "character", n = 2), collapse = "")
-    version <- paste(version, filetype, sep = "_")
+    if (filetype == "OL"){
+      bytes = "8b"
+    } else if (filetype == "GC"){
+      seek(f, offsets$software)
+      n <- get_nchar(f)
+      soft <- cc_collapse(readBin(f, "character", n = n))
+      chemstation_version <- strsplit(soft, " ")[[1]][1]
+      bytes <- ifelse(chemstation_version == "Mustang", "8b", "4b")
+    }
+    version <- paste(version, bytes, sep = "_")
   }
   decoder <- switch(version,
                     "8" = decode_delta,
@@ -43,8 +52,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                     "30" = decode_delta,
                     "130" = decode_delta,
                     "181" = decode_double_delta,
-                    "179_GC" = decode_double_array_gc,
-                    "179_OL" = decode_double_array_ol)
+                    "179_4b" = decode_double_array_4byte,
+                    "179_8b" = decode_double_array_8byte)
 
   # Sample Info
   # offsets <- list(sample = 858, description = 1369, method = 2574,
@@ -94,8 +103,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                                     "81" = 10,
                                     "30" = 13,
                                     "130" = 14,
-                                    "179_GC" = 10,
-                                    "179_OL" = 10,
+                                    "179_4b" = 10,
+                                    "179_8b" = 10,
                                     "181" = 10)
 
       meta <- lapply(offsets[seq_len(meta_slots)], function(offset){
@@ -188,7 +197,7 @@ decode_double_delta <- function(file, offset) {
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
-decode_double_array_gc <- function(file, offset) {
+decode_double_array_4byte <- function(file, offset) {
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
   offset <- 6144
@@ -202,7 +211,7 @@ decode_double_array_gc <- function(file, offset) {
 
 #' Decode double array
 #' @noRd
-decode_double_array_ol <- function(file, offset) {
+decode_double_array_8byte <- function(file, offset) {
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
   offset <- 6144
@@ -306,7 +315,7 @@ get_agilent_offsets <- function(version){
               units = 326,
               data_start = 512
             )
-  } else if (version %in% c("179","179_GC", "179_OL", "181")){
+  } else if (version %in% c("179","179_4b", "179_8b", "181")){
     offsets <- list(
       version = 326,
       file_type = 347, #0x15B

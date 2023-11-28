@@ -1,3 +1,7 @@
+## chromConverter 0.5.1
+
+* Fixed `read_chemstation_ch` parser to correctly read "Mustang Chemstation" 179 files with 8-byte encoding.
+
 ## chromConverter 0.5.0
 
 ### New features
