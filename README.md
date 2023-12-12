@@ -144,14 +144,14 @@ For downstream analyses of chromatographic data, you can also check out my packa
 
 ## Contributing
 
-Contributions of source code, ideas, or documentation are very welcome. Please get in touch (preferable by opening a GitHub [issue](https://github.com/ethanbass/chromatographR/issues)) to discuss any suggestions or to file a bug report. Some good reasons to file an issue:
+Contributions of source code, ideas, or documentation are always welcome. Please get in touch (preferable by opening a GitHub [issue](https://github.com/ethanbass/chromatographR/issues)) to discuss any suggestions or to file a bug report. Some good reasons to file an issue:
 
 - You've found an actual bug.  
 - You're getting a cryptic error message that you don't understand.  
 - You have a file format you'd like to read that isn't currently supported by chromatographR.  (If you do this, please make sure to include a link to an example file!)  
 - You have a new feature you'd like to see implemented.  
 
-**Note:** Before filing a bug report, please make sure to install the latest development version of chromConverter from GitHub, in case your bug has already been patched. After installing the latest version, you may also need to refresh your R session to remove the older version from the cache.
+**Note: Before filing a bug report, please make sure to install the latest development version of chromConverter from GitHub**, in case your bug has already been patched. After installing the latest version, you may also need to refresh your R session to remove the older version from the cache.
 
 ### Other related packages
 
@@ -163,4 +163,4 @@ You can cite chromConverter as follows:
 
 Bass, E. (2023). chromConverter: chromatographic file converter. http://doi.org/10.5281/zenodo.6792521.
 
-If you use external libraries to convert your files, please cite them as well in published work.
+If you use external libraries to convert your files, it is suggested to also cite these libraries in published work.
