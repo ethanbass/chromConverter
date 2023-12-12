@@ -20,8 +20,11 @@
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
 #' \code{raw}.
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
+#' @param collapse Whether to collapse lists that only contain a single element.
+#' @return A nested list of elements from the specified \code{file}, where the
+#' top levels are chromatograms, peak tables, and/or mass spectra according to
+#' the value of \code{what}. Chromatograms are returned in the format specified
+#' by \code{format_out} (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
 

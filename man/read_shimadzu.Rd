@@ -39,10 +39,14 @@ read_shimadzu(
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
+
+\item{collapse}{Whether to collapse lists that only contain a single element.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}
-(retention time x wavelength).
+A nested list of elements from the specified \code{file}, where the
+top levels are chromatograms, peak tables, and/or mass spectra according to
+the value of \code{what}. Chromatograms are returned in the format specified
+by \code{format_out} (retention time x wavelength).
 }
 \description{
 Reads 'Shimadzu' ascii files into R. These files are exported from
