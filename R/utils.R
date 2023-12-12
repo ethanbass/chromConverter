@@ -67,8 +67,8 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                                              "chemstation_130", "chemstation_131",
                                              "openlab_131",
                                              "chemstation_179", "chemstation_81",
-                                             "chemstation_181", "mzml", "mdf",
-                                             "shimadzu_fid", "shimadzu_dad",
+                                             "chemstation_181", "mzml", "mzxml",
+                                             "mdf", "shimadzu_fid", "shimadzu_dad",
                                              "shimadzu_lcd", "waters_arw"),
                           aston = c("chemstation", "chemstation_uv",
                                     "chemstation_131",
@@ -128,7 +128,8 @@ extract_filenames <- function(files){
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n){
-                         ifelse(any(grepl("\\.[Dd]", n)), grep("\\.[Dd]", n, value = TRUE), tail(n,1))
+                         ifelse(any(grepl("\\.[Dd]", n)),
+                                grep("\\.[Dd]", n, value = TRUE), tail(n,1))
                        }))
   } else {
     file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
@@ -142,16 +143,20 @@ format_to_extension <- function(format_in){
   switch(format_in,
          "agilent_d" = ".d|.D",
          "chemstation_uv" = ".uv|.UV",
-          "chemstation_ch" = ".ch|.CH",
+         "chemstation_ch" = ".ch|.CH",
          "chemstation_fid" = ".ch|.CH",
-          "chemstation_csv" = ".csv|.CSV",
+         "chemstation_csv" = ".csv|.CSV",
          "masshunter_dad" = ".sp|.SP",
          "shimadzu_fid" = ".txt",
          "shimadzu_dad" = ".txt",
          "chromeleon_uv" = ".txt",
-    "thermoraw" = ".raw", "mzml" = ".mzml", "waters_arw" = ".arw",
-    "waters_raw" = ".raw", "msd" = ".", "csd" =".", "wsd" =".",
-    "mdf" = ".mdf|.MDF", "other"=".")
+         "thermoraw" = ".raw",
+         "mzml" = ".mzml", "mzxml" = ".mzxml",
+         "waters_arw" = ".arw",
+         "waters_raw" = ".raw",
+         "msd" = ".", "csd" =".",
+         "wsd" =".", "mdf" = ".mdf|.MDF",
+         "other"=".")
 }
 
 #' @noRd
@@ -181,24 +186,6 @@ set_temp_directory <- function(){
   } else{
     stop("Must specify directory to export files.")
   }
-}
-
-#' Extract header from Shimadzu ascii files
-#' @noRd
-extract_shimadzu_header <- function(x, chrom.idx, sep){
-  index <- chrom.idx + 1
-  line <- x[index]
-  l <- length(strsplit(x = line, split = sep)[[1]])
-  header <- strsplit(x = line, split = sep)[[1]]
-  while (l > 1) {
-    index <- index + 1
-    line <- strsplit(x = x[index], split = sep)[[1]]
-    l <- length(line)
-    if (l == 1 | suppressWarnings(!is.na(as.numeric(line[1]))))
-      break
-    header <- rbind(header, line)
-  }
-  list(header,index)
 }
 
 #' Check for suggested package

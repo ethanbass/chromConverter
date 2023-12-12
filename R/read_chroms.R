@@ -8,12 +8,13 @@
 #' [rainbow](https://rainbow-api.readthedocs.io/), or internal parsers.
 #'
 #' Provides a general interface to chromConverter parsers. Currently recognizes
-#' 'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'MassHunter' (\code{.dad})
-#' files, 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW'
-#' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
-#' (\code{.txt}). Also, wraps Openchrom parsers, which include many additional
-#' formats. To use 'Entab', 'ThermoRawFileParser', or 'Openchrom' parsers,
-#' they must be manually installed. Please see the instructions in the
+#' 'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent
+#' MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
+#' 'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
+#' (\code{.txt}), and 'Shimadzu LCD' files (preliminary support). Also, wraps
+#' Openchrom parsers, which include many additional formats. To use 'Entab',
+#' 'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
+#' Please see the instructions in the
 #' [README](https://ethanbass.github.io/chromConverter/) for further details.
 #'
 #' @name read_chroms
@@ -26,8 +27,8 @@
 #' \code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
 #' \code{masshunter}, \code{masshunter_dad}, \code{chromeleon_uv},
 #' \code{shimadzu_fid}, \code{shimadzu_dad}, \code{thermoraw},
-#' \code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{cdf}, \code{mdf},
-#' \code{msd}, \code{csd}, \code{wsd}, or \code{other}.
+#' \code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{mzxml},
+#' \code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format_in}.
 #' @param parser What parser to use. Current option are \code{chromconverter},
@@ -81,7 +82,7 @@ read_chroms <- function(paths, find_files,
                                     "masshunter_dad", "chromeleon_uv",
                                     "shimadzu_fid", "shimadzu_dad",
                                     "shimadzu_lcd", "thermoraw", "mzml",
-                                    "waters_arw", "waters_raw",
+                                    "mzxml", "waters_arw", "waters_raw",
                                     "msd", "csd", "wsd", "mdf", "other"),
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
@@ -134,7 +135,7 @@ read_chroms <- function(paths, find_files,
                                       "chemstation_81", "chemstation_181",
                                       "chemstation_fid", "chemstation_csv", "masshunter_dad",
                                       "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
-                                      "chromeleon_uv", "thermoraw", "mzml",
+                                      "chromeleon_uv", "thermoraw", "mzml", "mzxml",
                                       "waters_arw", "waters_raw", "msd", "csd",
                                       "wsd", "mdf", "cdf", "other"))
   if (parser == ""){
@@ -221,13 +222,13 @@ read_chroms <- function(paths, find_files,
                          metadata_format = metadata_format)
   } else if (format_in == "shimadzu_fid"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
-    converter <- partial(read_shimadzu, format_in = "fid",
+    converter <- partial(read_shimadzu, include = "fid",
                          format_out = format_out, data_format = data_format,
                          read_metadata = read_metadata,
                          metadata_format = metadata_format)
   } else if (format_in == "shimadzu_dad"){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
-    converter <- partial(read_shimadzu, format_in = "dad",
+    converter <- partial(read_shimadzu, include = "dad",
                          format_out = format_out, data_format = data_format,
                          read_metadata = read_metadata,
                          metadata_format = metadata_format)

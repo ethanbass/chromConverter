@@ -10,7 +10,7 @@ read_chroms(
   format_in = c("agilent_d", "agilent_dx", "chemstation", "chemstation_fid",
     "chemstation_ch", "chemstation_csv", "chemstation_uv", "masshunter_dad",
     "chromeleon_uv", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd", "thermoraw", "mzml",
-    "waters_arw", "waters_raw", "msd", "csd", "wsd", "mdf", "other"),
+    "mzxml", "waters_arw", "waters_raw", "msd", "csd", "wsd", "mdf", "other"),
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
   format_out = c("matrix", "data.frame"),
@@ -39,8 +39,8 @@ include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
 \code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
 \code{masshunter}, \code{masshunter_dad}, \code{chromeleon_uv},
 \code{shimadzu_fid}, \code{shimadzu_dad}, \code{thermoraw},
-\code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{cdf}, \code{mdf},
-\code{msd}, \code{csd}, \code{wsd}, or \code{other}.}
+\code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{mzxml},
+\code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}
@@ -101,12 +101,13 @@ parsers from \href{https://github.com/bovee/aston}{Aston},
 }
 \details{
 Provides a general interface to chromConverter parsers. Currently recognizes
-'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'MassHunter' (\code{.dad})
-files, 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW'
-(\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
-(\code{.txt}). Also, wraps Openchrom parsers, which include many additional
-formats. To use 'Entab', 'ThermoRawFileParser', or 'Openchrom' parsers,
-they must be manually installed. Please see the instructions in the
+'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent
+MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
+'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
+(\code{.txt}), and 'Shimadzu LCD' files (preliminary support). Also, wraps
+Openchrom parsers, which include many additional formats. To use 'Entab',
+'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
+Please see the instructions in the
 \href{https://ethanbass.github.io/chromConverter/}{README} for further details.
 }
 \section{Side effects}{
