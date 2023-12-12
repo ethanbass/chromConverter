@@ -15,13 +15,14 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 ### Formats
 
 ##### ChromConverter
-- Chromeleon UV ascii (`.txt`)
-- mzML (`.mzml`)
-- Shimadzu LabSolutions ascii (`.txt`)
-- Waters ascii (`.arw`)
-- 'Agilent Chemstation' & 'OpenLab' `.ch` files (versions 8, 81, 130, 179, 181)
 - 'Agilent Chemstation' & 'OpenLab' `.uv` files (versions 131, 31)
-- 'Shimadzu' `.lcd` (*provisional support* for PDA stream)
+- 'Agilent Chemstation' & 'OpenLab' `.ch` files (versions 8, 81, 130, 179, 181)
+- ÅNDI (Analytical Data Interchange) chromatography format (`.cdf`)
+- mzML (`.mzml`)
+- 'Shimadzu LabSolutions' ascii (`.txt`)
+- 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA stream)
+- 'Thermo Scientific Chromeleon' UV ascii (`.txt`)
+- 'Waters' ascii (`.arw`)
 
 ##### External Libraries
 ###### Aston/Entab (*Entab requires separate installation, see [instructions below](README.md#Installation)*)
@@ -161,6 +162,6 @@ Contributions of source code, ideas, or documentation are always welcome. Please
 
 You can cite chromConverter as follows:
 
-Bass, E. (2023). chromConverter: chromatographic file converter. http://doi.org/10.5281/zenodo.6792521.
+Bass, E. (2023). chromConverter: Chromatographic File Converter. http://doi.org/10.5281/zenodo.6792521.
 
 If you use external libraries to convert your files, it is suggested to also cite these libraries in published work.
