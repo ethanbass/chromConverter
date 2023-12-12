@@ -166,17 +166,16 @@ test_that("read_peaklist can read chemstation reports", {
 test_that("read_peaklist can read 'Shimadzu' fid files", {
   path <- "testdata/ladder.txt"
   x <- read_peaklist(path, format_in = "shimadzu_fid", progress_bar = FALSE)
-  expect_equal(class(x[[1]]), "list")
-  expect_equal(class(x[[1]][[1]]), "data.frame")
-  expect_equal(x[[1]][[1]][[1,"sample"]], "ladder")
-  expect_equal(colnames(x[[1]][[1]]),
+  expect_equal(class(x[[1]]), "data.frame")
+  expect_equal(x[[1]][[1,"sample"]], "ladder")
+  expect_equal(colnames(x[[1]]),
                c("sample", "rt", "start", "end", "area", "height"))
+
   x <- read_peaklist(path, format_in = "shimadzu_fid", data_format = "original")
-  expect_equal(class(x[[1]]), "list")
-  expect_equal(class(x[[1]][[1]]), "data.frame")
-  expect_equal(x[[1]][[1]][[1,"sample"]], "ladder")
-  expect_equal(x[[1]][[1]][[1,"sample"]], "ladder")
-  expect_equal(colnames(x[[1]][[1]]),
+  expect_equal(class(x[[1]]), "data.frame")
+  expect_equal(x[[1]][[1,"sample"]], "ladder")
+  expect_equal(x[[1]][[1,"sample"]], "ladder")
+  expect_equal(colnames(x[[1]]),
                c("sample","Peak.","R.Time","I.Time","F.Time","Area","Height",
                  "A.H","Conc.","Mark","ID.","Name", "k.", "Plate..", "Plate.Ht.",
                  "Tailing", "Resolution", "Sep.Factor", "Area.Ratio", "Height.Ratio",
