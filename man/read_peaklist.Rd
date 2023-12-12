@@ -29,8 +29,7 @@ include: \code{chemstation} or \code{shimadzu}.}
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}
 
-\item{data_format}{Whether to output data in wide or long format. Either
-\code{wide} or \code{long}.}
+\item{data_format}{Either \code{chromatographr} or \code{original}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}

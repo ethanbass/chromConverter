@@ -6,19 +6,27 @@
 \usage{
 read_shimadzu(
   file,
-  format_in,
+  what = "chromatogram",
+  format_in = NULL,
+  include = c("fid", "dad", "uv", "tic", "status"),
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   peaktable_format = c("chromatographr", "original"),
-  what = "chromatogram",
   read_metadata = TRUE,
-  metadata_format = c("chromconverter", "raw")
+  metadata_format = c("chromconverter", "raw"),
+  collapse = TRUE
 )
 }
 \arguments{
-\item{file}{path to file}
+\item{file}{Path to file.}
 
-\item{format_in}{Format of files. \code{fid} or \code{dad}.}
+\item{what}{Whether to extract \code{chromatogram}, \code{peak_table}, and/or
+\code{ms_spectra}. Accepts multiple arguments.}
+
+\item{format_in}{This argument is deprecated and is no longer required.}
+
+\item{include}{Which chromatograms to include. Options are \code{fid},
+\code{dad}, \code{uv}, \code{tic}, and \code{status}.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
@@ -26,9 +34,6 @@ read_shimadzu(
 
 \item{peaktable_format}{Whether to return peak tables in \code{chromatographr} or
 \code{original} format.}
-
-\item{what}{Whether to extract \code{chromatogram} and/or \code{peak_table}.
-Accepts multiple arguments.}
 
 \item{read_metadata}{Whether to read metadata from file.}
 
