@@ -205,7 +205,7 @@ decode_shimadzu_block <- function(file) {
   count <- 1
   buffer <- list(0,0,0,0)
 
-  for (i in c(1:2)){
+  for (i in seq_len(2)){
     n_bytes <- readBin(file, "integer", n = 1, size = 2)
     start <- seek(file, NA, "current")
 
