@@ -1,4 +1,4 @@
-#' Read 'Waters' raw
+#' Read 'Waters' RAW
 #'
 #' Parser for reading Waters (.raw) files into R.
 #'

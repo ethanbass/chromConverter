@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_uv.R
 \name{read_chemstation_uv}
 \alias{read_chemstation_uv}
-\title{Read 'Chemstation' DAD files}
+\title{Read 'ChemStation' DAD files}
 \usage{
 read_chemstation_uv(
   path,
@@ -25,16 +25,24 @@ read_chemstation_uv(
 or \code{raw}.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}
-(retention time x wavelength).
+A 3D chromatogram in the format specified by \code{data_format} and
+\code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
+be returned with retention times as rows and wavelengths as columns. If
+\code{long} format is requested, three columns will be returned: one for the
+retention time, one for the wavelength and one for the intensity. The
+\code{format_out} argument determines whether the chromatogram is returned as
+a \code{matrix} or \code{data.frame}. Metadata can be attached to the
+chromatogram as \code{\link{attributes}} if \code{read_metadata} is {TRUE}.
 }
 \description{
-Parser for reading Agilent UV (.uv) files into R.
+Agilent \code{.uv} files come in several different varieties. This parser can
+automatically detect and read several versions of these files from
+'Agilent ChemStation' and 'OpenLab', including versions \code{31} and \code{131}.
 }
 \note{
 This function was adapted from the parser in the rainbow project
 licensed under GPL 3 by Evan Shi
-(https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html).
+\url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
 }
 \author{
 Ethan Bass

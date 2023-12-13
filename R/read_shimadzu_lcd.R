@@ -1,6 +1,6 @@
 #' Shimadzu LCD parser
 #'
-#' Read 3D PDA data stream from 'Shimadzu' LCD files.
+#' Reads 3D PDA data stream from 'Shimadzu' LCD files.
 #'
 #' A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are
 #' encoded as 'Microsoft' OLE documents. The parser relies on the

@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_waters_raw.R
 \name{read_waters_raw}
 \alias{read_waters_raw}
-\title{Read 'Waters' raw}
+\title{Read 'Waters' RAW}
 \usage{
 read_waters_raw(
   path,

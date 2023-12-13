@@ -1,4 +1,12 @@
-#' Parser for reading Agilent ('.ch') files into R
+#' Read 'ChemStation' CH files
+#'
+#' Agilent \code{.ch} files come in several different varieties. This parser
+#' can automatically detect and read several versions of these files from
+#' 'Agilent ChemStation' and 'OpenLab', including versions \code{30} and \code{130},
+#' which are generally produced by ultraviolet detectors, as well as \code{81},
+#' \code{179}, and \code{181} which are generally produced by flame ionization
+#' detectors.
+#'
 #' @importFrom bitops bitAnd bitShiftL
 #' @param path Path to \code{.ch} file
 #' @param format_out Matrix or data.frame.
@@ -7,8 +15,14 @@
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @author Ethan Bass
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
+#' @return A 2D chromatogram in the format specified by \code{data_format} and
+#' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
+#' be returned with retention times as rows and wavelengths as columns. If
+#' \code{long} format is requested, three columns will be returned: one for the
+#' retention time, one for the wavelength and one for the intensity. The
+#' \code{format_out} argument determines whether the chromatogram is returned as
+#' a \code{matrix} or \code{data.frame}. Metadata can be attached to the
+#' chromatogram as \code{\link{attributes}} if \code{read_metadata} is {TRUE}.
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
