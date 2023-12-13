@@ -1,9 +1,12 @@
-## chromConverter 0.5.1
+## chromConverter 0.6.0
 
 * Fixed `read_chemstation_ch` parser to correctly read "Mustang Chemstation" 179 files with 8-byte encoding.
 * Added alias to `read_chroms` for reading `mzxml` files with `RaMS`.
-* Refactored `read_shimadzu` function and added support for new types of chromatograms (e.g. status, uv and total ion chromatograms). Added support for reading multiple types of chromatograms at once.
+* Added internal parser for 1D 'Waters RAW' chromatograms.
+* Added `collapse` argument to call_rainbow to collapse superfluous lists. 
+* Re-factored `read_shimadzu` function and added support for new types of chromatograms (e.g. status, uv and total ion chromatograms). Added support for reading multiple types of chromatograms at once.
 * Added support for reading MS spectra from 'Shimadzu' ascii files using `read_shimadzu`.
+* Added `...` argument to `read_chroms` for supplying additional arguments to parsers.
 
 ## chromConverter 0.5.0
 
