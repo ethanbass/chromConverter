@@ -58,7 +58,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
 
 #' Check parser
 #' @noRd
-check_parser <- function(format_in, parser=NULL, find = FALSE){
+check_parser <- function(format_in, parser = NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
                           chromconverter = c("agilent_dx", "cdf", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
@@ -69,7 +69,8 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                                              "chemstation_179", "chemstation_81",
                                              "chemstation_181", "mzml", "mzxml",
                                              "mdf", "shimadzu_fid", "shimadzu_dad",
-                                             "shimadzu_lcd", "waters_arw"),
+                                             "shimadzu_lcd", "waters_arw",
+                                             "waters_raw", "waters_chro"),
                           aston = c("chemstation", "chemstation_uv",
                                     "chemstation_131",
                                     "masshunter_dad", "other"),
@@ -97,15 +98,19 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
     }
     possible_parsers <- names(allowed_formats)[grep(format_in, allowed_formats)]
     if (length(possible_parsers) > 1){
-      possible_parsers <- possible_parsers[match(
-        c("thermoraw", "entab", "chromconverter", "rainbow", "aston"), possible_parsers)]
-      if (any(is.na(possible_parsers))){
-        possible_parsers <- possible_parsers[-which(is.na(possible_parsers))]
+      if (format_in == "waters_raw"){
+        possible_parsers <- c("rainbow")
+      } else{
+        possible_parsers <- possible_parsers[match(
+          c("thermoraw", "entab", "chromconverter", "rainbow", "aston"), possible_parsers)]
+        if (any(is.na(possible_parsers))){
+          possible_parsers <- possible_parsers[-which(is.na(possible_parsers))]
+        }
       }
     }
     possible_parsers[1]
   } else{
-    if (!(format_in %in% allowed_formats[[parser]])){
+    if (!(format_in %in% allowed_formats[[tolower(parser)]])){
       stop("Mismatched arguments!", "\n\n", "The ", paste0(sQuote(format_in), " format can be converted using the following parsers: ",
         paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]), collapse = ", "), ". \n \n",
         "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
@@ -141,22 +146,36 @@ extract_filenames <- function(files){
 #' @noRd
 format_to_extension <- function(format_in){
   switch(format_in,
-         "agilent_d" = ".d|.D",
-         "chemstation_uv" = ".uv|.UV",
-         "chemstation_ch" = ".ch|.CH",
-         "chemstation_fid" = ".ch|.CH",
-         "chemstation_csv" = ".csv|.CSV",
-         "masshunter_dad" = ".sp|.SP",
-         "shimadzu_fid" = ".txt",
-         "shimadzu_dad" = ".txt",
-         "chromeleon_uv" = ".txt",
-         "thermoraw" = ".raw",
-         "mzml" = ".mzml", "mzxml" = ".mzxml",
-         "waters_arw" = ".arw",
-         "waters_raw" = ".raw",
-         "msd" = ".", "csd" =".",
-         "wsd" =".", "mdf" = ".mdf|.MDF",
-         "other"=".")
+         "agilent_d" = "\\.d$",
+         "agilent_dx" = "\\.dx$",
+         "chemstation_uv" = "\\.uv$",
+         "chemstation_31" = "\\.uv$",
+         "chemstation_131" = "\\.uv$",
+         "chemstation_ch" = "\\.ch$",
+         "chemstation_fid" = "\\.ch$",
+         "chemstation_179" = "\\.ch$",
+         "chemstation_181" = "\\.ch$",
+         "chemstation_81" = "\\.ch$",
+         "chemstation_30" = "\\.ch$",
+         "chemstation_130" = "\\.ch$",
+         "chemstation_csv" = "\\.csv$",
+         "masshunter_dad" = "\\.sp$",
+         "shimadzu_txt" = "\\.txt$",
+         "shimadzu_fid" = "\\.txt$",
+         "shimadzu_dad" = "\\.txt$",
+         "shimadzu_lcd" = "\\.lcd$",
+         "chromeleon_uv" = "\\.txt$",
+         "thermoraw" = "\\.raw$",
+         "cdf" = "\\.cdf$",
+         "mzml" = "\\.mzml$",
+         "mzxml" = "\\.mzxml$",
+         "waters_arw" = "\\.arw$",
+         "waters_raw" = "\\.raw$",
+         "msd" = "\\.",
+         "csd" ="\\.",
+         "wsd" ="\\.",
+         "mdf" = "\\.mdf$",
+         "other" = "\\.")
 }
 
 #' @noRd
