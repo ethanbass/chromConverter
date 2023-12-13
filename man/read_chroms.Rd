@@ -24,7 +24,8 @@ read_chroms(
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = NULL,
-  dat = NULL
+  dat = NULL,
+  ...
 )
 }
 \arguments{
@@ -86,6 +87,8 @@ sample names default to the basename of the specified files.}
 
 \item{dat}{Existing list of chromatograms to append results.
 (Defaults to NULL).}
+
+\item{...}{Additional arguments to parser.}
 }
 \value{
 A list of chromatograms in \code{matrix} or \code{data.frame} format,
