@@ -40,7 +40,8 @@ read_shimadzu(
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
 
-\item{collapse}{Whether to collapse lists that only contain a single element.}
+\item{collapse}{Logical. Whether to collapse lists that only contain a single
+element.}
 }
 \value{
 A nested list of elements from the specified \code{file}, where the

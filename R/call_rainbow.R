@@ -17,6 +17,8 @@
 #' @param by How to order the list that is returned. Either \code{detector}
 #' (default) or \code{name}.
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to TRUE.
+#' @param collapse Logical. Whether to collapse lists that only contain a single
+#' element.
 #' @author Ethan Bass
 #' @return Returns a (nested) list of \code{matrices} or \code{data.frames} according to
 #' the value of \code{format_out}. Data is ordered according to the value of
@@ -28,7 +30,7 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
                          format_out = c("matrix", "data.frame"),
                          data_format = c("wide", "long"),
                          by = c("detector","name"), what = NULL,
-                         read_metadata = TRUE){
+                         read_metadata = TRUE, collapse = TRUE){
   check_rb_configuration()
   by <- match.arg(by, c("detector","name"))
   format_out <- match.arg(format_out, c("matrix","data.frame"))
@@ -63,6 +65,7 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
                         read_metadata = read_metadata)
       })
       names(dtr_dat) <- extract_rb_names(dtr)
+      if (collapse) dtr_dat <- collapse_list(dtr_dat)
       dtr_dat
     })
   } else if (by == "name"){
