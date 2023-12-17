@@ -37,6 +37,7 @@ read_shimadzu <- function(file, what = "chromatogram",
                           peaktable_format = c("chromatographr", "original"),
                           read_metadata = TRUE,
                           metadata_format = c("chromconverter", "raw"),
+                          ms_format = c("data.frame", "list"),
                           collapse = TRUE){
   if (!is.null(format_in)){
     warning("The `format_in` argument is deprecated, since the `read_shimadzu`
@@ -51,6 +52,7 @@ read_shimadzu <- function(file, what = "chromatogram",
   data_format <- match.arg(data_format, c("wide", "long"))
   peaktable_format <- match.arg(peaktable_format, c("chromatographr","original"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  ms_format <- match.arg(ms_format, c("data.frame", "list"))
 
   x <- readLines(file)
   sep <- substr(x[grep("Type", x)[1]], 5, 5)
@@ -123,8 +125,15 @@ read_shimadzu <- function(file, what = "chromatogram",
       }
     }
     ms_spectra <- lapply(spectra.idx, function(idx){
-      read_shimadzu_spectrum(x, idx = idx, sep = sep)
+      read_shimadzu_spectrum(file, x, idx = idx, sep = sep)
     })
+    if (exists("peak_table") && "MC Peak Table" %in% names(peak_table)){
+      rt.idx <- grep("^Ret.Time$|^rt$", colnames(peak_table$`MC Peak Table`))
+      names(ms_spectra) <- peak_table$`MC Peak Table`[, rt.idx]
+    }
+    if (ms_format == "data.frame"){
+      ms_spectra <- ms_list_to_dataframe(ms_spectra)
+    }
   }
 
   xx <- mget(what)
@@ -133,13 +142,18 @@ read_shimadzu <- function(file, what = "chromatogram",
 }
 
 #' @noRd
-collapse_list <- function(x){
-  while(is.list(x) && length(x) == 1){
-    x <- x[[1]]
+ms_list_to_dataframe <- function(x){
+  if (!is.null(names(x))){
+    ms <- lapply(seq_along(x), function(i){
+      cbind(rt = as.numeric(names(x)[i]), x[[i]])
+    })
+  } else {
+    ms <- lapply(seq_along(x), function(i){
+      cbind(idx = as.numeric(i), x[[i]])
+    })
   }
-  x
+  as.data.frame(do.call(rbind, ms))
 }
-
 #' Read Shimadzu Metadata
 #' @noRd
 read_shimadzu_metadata <- function(x, met = NULL, sep){
@@ -268,9 +282,9 @@ read_shimadzu_peaktable <- function(file, x, idx, sep, format_in, format_out){
 
 #' Read Shimadzu MS Spectrum
 #' @noRd
-read_shimadzu_spectrum <- function(x, idx, sep){
+read_shimadzu_spectrum <- function(file, x, idx, sep){
   nrows <- as.numeric(strsplit(x = x[idx + 1], split = sep)[[1]][2])
-  table_start <- grep("Intensity", x[idx:(idx + nrows)]) + idx
+  table_start <- grep("Intensity", x[idx:(idx + nrows)]) + idx - 1
   decimal_separator <- ifelse(grepl(".", strsplit(x[table_start + 4], split = sep)[[1]][1]), ".", ",")
 
   spectrum <- read.csv(file, skip = table_start-1, sep = sep, nrows = nrows,
