@@ -1,6 +1,7 @@
 ## chromConverter 0.6.0
 
 * Added parser for reading ANDI MS (`.cdf`) files.
+* Fixed parsing of Agilent MS files with 'entab' reader.
 * Fixed `read_chemstation_ch` parser to correctly read "Mustang Chemstation" 179 files with 8-byte encoding.
 * Added alias to `read_chroms` for reading `mzxml` files with `RaMS`.
 * Added internal parser for 1D 'Waters RAW' chromatograms.
