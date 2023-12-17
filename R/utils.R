@@ -10,7 +10,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
   on.exit(close(f))
 
   magic <- readBin(f, what = "raw", n = 4)
-  magic <- paste(paste0("x",as.character(magic)),collapse="/")
+  magic <- paste(paste0("x",as.character(magic)),collapse = "/")
   # magic
   filetype <- switch(magic,
                      "x01/x32/x00/x00" = "AgilentChemstationMS",
@@ -36,7 +36,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
   if (filetype == "chemstation_131"){
     seek(f, 348)
     magic2 <- readBin(f, what="character", n = 2)
-    magic2 <- paste(magic2, collapse="")
+    magic2 <- paste(magic2, collapse = "")
     filetype <- switch(magic2, "OL" = "openlab_131",
                    "LC" = "chemstation_131")
   }
@@ -252,5 +252,13 @@ rename_list <- function(x, new_names){
     new_names[not_found] <- old_names[not_found]
   }
   names(x) <- new_names
+  x
+}
+
+#' @noRd
+collapse_list <- function(x){
+  while(is.list(x) && length(x) == 1){
+    x <- x[[1]]
+  }
   x
 }
