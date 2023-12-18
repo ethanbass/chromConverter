@@ -1,6 +1,6 @@
 #' Shimadzu LCD parser
 #'
-#' Reads 3D PDA data stream from 'Shimadzu' LCD files.
+#' Read 3D PDA data stream from 'Shimadzu' LCD files.
 #'
 #' A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are
 #' encoded as 'Microsoft' OLE documents. The parser relies on the
@@ -174,9 +174,6 @@ export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
     if (missing(path_out)){
       path_out <- tempfile()
     }
-    if (.Platform$OS.type == "windows"){
-      path_out <- gsub("\\\\", "/", path_out)
-    }
     if (remove_null_bytes){
       reticulate::py_run_string("data = data.replace(b'\\x00', b'')")
     }
@@ -205,7 +202,7 @@ decode_shimadzu_block <- function(file) {
   count <- 1
   buffer <- list(0,0,0,0)
 
-  for (i in seq_len(2)){
+  for (i in c(1:2)){
     n_bytes <- readBin(file, "integer", n = 1, size = 2)
     start <- seek(file, NA, "current")
 
