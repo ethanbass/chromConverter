@@ -12,7 +12,7 @@
 #' @export
 
 call_entab <- function(file, data_format = c("wide", "long"),
-                       format_in = NULL,
+                       format_in = "",
                        format_out = c("matrix", "data.frame"),
                        read_metadata = TRUE,
                        metadata_format = c("chromconverter", "raw")){
