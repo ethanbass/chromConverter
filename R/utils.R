@@ -16,6 +16,10 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                      "x01/x32/x00/x00" = "AgilentChemstationMS",
                      "x02/x02/x00/x00" = "AgilentMasshunterDADHeader",
                      # "x02/x33/x30/x00" = "AgilentChemstationMWD",
+                     "x02/x32/x00/x00" = "AgilentChemstationMWD",
+                     # "x02/x33/x00/x00" = "AgilentChemstationMWD",
+                     # "x03/x31/x00/x00" = "AgilentChemstationMWD2"
+                     # "x01/x32/x00/x00" = "AgilentChemstationMS"
                      "x03/x02/x00/x00" = "AgilentMasshunterDAD",
                      "x02/x33/x30/x00" = "chemstation_30",
                      "x02/x33/x31/x00" = "chemstation_31",
@@ -68,7 +72,8 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                              "openlab_131",
                                              "chemstation_179", "chemstation_81",
                                              "chemstation_181", "mzml", "mzxml",
-                                             "mdf", "shimadzu_fid", "shimadzu_dad",
+                                             "mdf", "shimadzu_ascii",
+                                             "shimadzu_fid", "shimadzu_dad",
                                              "shimadzu_lcd", "waters_arw",
                                              "waters_raw", "waters_chro"),
                           aston = c("chemstation", "chemstation_uv",
