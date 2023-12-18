@@ -267,3 +267,8 @@ collapse_list <- function(x){
   }
   x
 }
+
+#' Split vector by position
+#' @note From https://stackoverflow.com/questions/16357962/r-split-numeric-vector-at-position
+#' @noRd
+split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
