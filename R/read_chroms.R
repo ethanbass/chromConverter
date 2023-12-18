@@ -34,7 +34,7 @@
 #' @param parser What parser to use. Current option are \code{chromconverter},
 #' \code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, or
 #' \code{rainbow}.
-#' @param format_out R object format (i.e. data.frame or matrix).
+#' @param format_out Class of output (i.e. data.frame or matrix).
 #' @param data_format Whether to output data in wide or long format. Either
 #' \code{wide} or \code{long}.
 #' @param export Logical. If TRUE, the program will export files in the format
@@ -81,7 +81,7 @@ read_chroms <- function(paths, find_files,
                                     "chemstation_fid", "chemstation_ch",
                                     "chemstation_csv", "chemstation_uv",
                                     "masshunter_dad", "chromeleon_uv",
-                                    "shimadzu_txt",
+                                    "shimadzu_ascii",
                                     "shimadzu_fid", "shimadzu_dad",
                                     "shimadzu_lcd", "thermoraw", "mzml",
                                     "mzxml", "waters_arw", "waters_raw",
@@ -137,7 +137,7 @@ read_chroms <- function(paths, find_files,
                                       "chemstation_81", "chemstation_181",
                                       "chemstation_fid", "chemstation_csv", "masshunter_dad",
                                       "shimadzu_fid", "shimadzu_dad",
-                                      "shimadzu_txt", "shimadzu_lcd",
+                                      "shimadzu_ascii", "shimadzu_lcd",
                                       "chromeleon_uv", "thermoraw", "mzml", "mzxml",
                                       "waters_arw", "waters_raw", "msd", "csd",
                                       "wsd", "mdf", "cdf", "other"))
@@ -287,7 +287,7 @@ read_chroms <- function(paths, find_files,
     # pattern <- ifelse(is.null(pattern), ".cdf|.CDF", pattern)
     converter <- partial(read_cdf, format_out = format_out,
                          data_format = data_format,
-                         read_metadata = read_metadata)
+                         read_metadata = read_metadata, ...)
   } else {
     converter <- switch(parser,
                         "aston" = partial(trace_converter, format_out = format_out,
