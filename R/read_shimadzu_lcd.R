@@ -46,7 +46,7 @@ read_shimadzu_lcd <- function(path, format_out = c("matrix", "data.frame"),
 
   olefile_installed <- reticulate::py_module_available("olefile")
   if (!olefile_installed){
-    configure_olefile()
+    configure_python_environment(parser = "olefile")
   }
 
   # read wavelengths from "Wavelength Table" stream
@@ -292,41 +292,5 @@ read_shimadzu_wavelengths <- function(path){
     readBin(f, what="integer", size = 4)/100
   })
   lambdas
-}
-
-
-#' Configure olefile
-#'
-#' Configures reticulate to use olefile. Olefile is required to use the 'Shimadzu'
-#' LCD parser.
-#' @name configure_olefile
-#' @param return_boolean Logical. Whether to return a Boolean value indicating
-#' if the chromConverter environment is correctly configured.
-#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
-#' indicating whether the chromConverter environment is configured correctly.
-#' Otherwise, there is no return value.
-#' @author Ethan Bass
-#' @import reticulate
-#' @export
-configure_olefile <- function(return_boolean = FALSE){
-  install <- FALSE
-  if (!dir.exists(miniconda_path())){
-    install <- readline("It is recommended to install miniconda in your R library to use the Shimadzu LCD parser. Install miniconda now? (y/n)")
-    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-      install_miniconda()
-    }
-  }
-  env <- reticulate::configure_environment("chromConverter")
-  if (!env){
-    reqs <- c("olefile")
-    reqs_available <- sapply(reqs, reticulate::py_module_available)
-    if (!all(reqs_available)){
-      conda_install(envname = "chromConverter", reqs[which(!reqs_available)],
-                    pip = TRUE)
-    }
-  }
-  if (return_boolean){
-    return(env)
-  }
 }
 

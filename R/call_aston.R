@@ -131,48 +131,13 @@ trace_converter <- function(file, format_out = c("matrix", "data.frame"),
   x
 }
 
-#' Configure Aston
-#'
-#' Configures reticulate to use Aston file parsers.
-#' @name configure_aston
-#' @param return_boolean Logical. Whether to return a Boolean value indicating
-#' if the chromConverter environment is correctly configured.
-#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
-#' indicating whether the chromConverter environment is configured correctly.
-#' Otherwise, there is no return value.
-#' @author Ethan Bass
-#' @import reticulate
-#' @export
-configure_aston <- function(return_boolean = FALSE){
-  install <- FALSE
-  if (!dir.exists(miniconda_path())){
-    install <- readline("It is recommended to install miniconda in your R library to use Aston parsers. Install miniconda now? (y/n)")
-    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-      install_miniconda()
-    }
-  }
-  env <- reticulate::configure_environment("chromConverter")
-  if (!env){
-    reqs <- c("pandas","scipy","numpy","aston")
-    reqs_available <- sapply(reqs, reticulate::py_module_available)
-    if (!all(reqs_available)){
-      conda_install(envname = "chromConverter", reqs[which(!reqs_available)],
-                    pip = TRUE)
-    }
-  }
-  assign_trace_file()
-  if (return_boolean){
-    return(env)
-  }
-}
-
 #' @noRd
 check_aston_configuration <- function(){
   assign_trace_file()
   if (length(trace_file) == 0){
     ans <- readline("Aston not found. Configure Aston? (y/n)?")
     if (ans %in% c('y', "Y", "YES", "yes", "Yes")){
-      configure_aston()
+      configure_python_environment(parser = "aston")
     }
   }
 }

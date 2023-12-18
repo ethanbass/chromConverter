@@ -111,41 +111,6 @@ extract_rb_names <- function(xx){
   })
 }
 
-
-#' Configure rainbow
-#'
-#' Configures reticulate to use rainbow file parsers.
-#' @name configure_rainbow
-#' @param return_boolean Logical. Whether to return a Boolean value indicating
-#' if the chromConverter environment is correctly configured.
-#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
-#' indicating whether the chromConverter environment is configured correctly.
-#' Otherwise, there is no return value.
-#' @author Ethan Bass
-#' @import reticulate
-#' @export
-configure_rainbow <- function(return_boolean = FALSE){
-  install <- FALSE
-  if (!dir.exists(miniconda_path())){
-    install <- readline("It is recommended to install miniconda in your R library to use rainbow parsers. Install miniconda now? (y/n)")
-    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-      install_miniconda()
-    }
-  }
-  env <- reticulate::configure_environment("chromConverter")
-  if (!env){
-    reqs <- c("numpy","rainbow-api")
-    reqs_available <- sapply(reqs, reticulate::py_module_available)
-    if (!all(reqs_available)){
-      conda_install(envname = "chromConverter", reqs[which(!reqs_available)], pip = TRUE)
-    }
-  }
-  assign_rb_read()
-  if (return_boolean){
-    env
-  }
-}
-
 #' @noRd
 assign_rb_read <- function(){
   pos <- 1
@@ -160,7 +125,7 @@ check_rb_configuration <- function(){
   if (length(rb_read) == 0){
     ans <- readline("rainbow not found. Configure rainbow? (y/n)?")
     if (ans %in% c('y', "Y", "YES", "yes", "Yes")){
-      configure_rainbow()
+      configure_python_environment(parser = "rainbow")
     }
   }
 }

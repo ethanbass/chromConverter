@@ -273,3 +273,50 @@ collapse_list <- function(x){
 #' @note From https://stackoverflow.com/questions/16357962/r-split-numeric-vector-at-position
 #' @noRd
 split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
+
+#' Configure python environment
+#'
+#' Configures reticulate environment for parsers.
+#' @name configure_python_environment
+#' @param parser Either \code{aston}, \code{rainbow}, or \code{olefile} (for
+#' \code{read_shimadzu_lcd}).
+#' @param return_boolean Logical. Whether to return a Boolean value indicating
+#' if the chromConverter environment is correctly configured.
+#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
+#' indicating whether the chromConverter environment is configured correctly.
+#' Otherwise, there is no return value.
+#' @author Ethan Bass
+#' @import reticulate
+#' @export
+configure_python_environment <- function(parser, return_boolean = FALSE){
+  install <- FALSE
+  if (!dir.exists(miniconda_path())){
+    install <- readline("It is recommended to install miniconda in your R library to use rainbow parsers. Install miniconda now? (y/n)")
+    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
+      install_miniconda()
+    }
+  }
+  env <- reticulate::configure_environment("chromConverter")
+  if (!env){
+    reqs <- get_parser_reqs(parser)
+    reqs_available <- sapply(reqs, reticulate::py_module_available)
+    if (!all(reqs_available)){
+      conda_install(envname = "chromConverter", reqs[which(!reqs_available)],
+                    pip = TRUE)
+    }
+  }
+  assign_fn <- switch(parser, aston = assign_trace_file,
+                      rainbow = assign_rb_read,
+                      olefile = function(...){})
+  assign_fn()
+  if (return_boolean){
+    env
+  }
+}
+
+#' @noRd
+get_parser_reqs <- function(parser){
+  switch(parser, "aston" = c("pandas","scipy","numpy","aston"),
+         "olefile" = c("olefile"),
+         "rainbow" = c("numpy", "rainbow-api"))
+}
