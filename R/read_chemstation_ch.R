@@ -35,7 +35,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, chromconverter = "chemstation", raw = "raw")
+  metadata_format <- switch(metadata_format, chromconverter = "chemstation",
+                            raw = "raw")
 
   f <- file(path, "rb")
   on.exit(close(f))
