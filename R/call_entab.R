@@ -28,11 +28,9 @@ call_entab <- function(file, data_format = c("wide", "long"),
   metadata_format <- switch(metadata_format,
                             chromconverter = format_in, raw = "raw")
   r <- entab::Reader(file)
-  if (is.null(format_in)){
-    format_in <- r$parser()
-  }
+  file_format <- r$parser()
   x <- entab::as.data.frame(r)
-  if (format_in == "chemstation_uv"){
+  if (grepl("dad$|uv$", file_format)){
     signal.idx <- grep("signal", colnames(x))
     if (length(signal.idx) == 1){
       colnames(x)[signal.idx] <- "wavelength"
@@ -44,7 +42,14 @@ call_entab <- function(file, data_format = c("wide", "long"),
         x <- as.matrix(x)
       }
     }
-  } else if (format_in == "chemstation_ms"){
+  } else if (grepl("fid$", file_format)){
+    if (data_format == "wide"){
+      x <- data.frame(row.names = x$time, intensity = x$intensity)
+    }
+    if (format_out == "matrix"){
+      x <- as.matrix(x)
+    }
+  } else if (grepl("ms$", file_format)){
     colnames(x)[1] <- "rt"
   }
   if (read_metadata){
