@@ -130,7 +130,7 @@ read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @param ms_format Whether to return mass spectral data as a (long)
-#' \code{data.frame} or a list.
+#' \code{data.frame} or a \code{list}.
 #' @return A chromatogram in the format specified by the \code{format_out} and
 #' \code{data_format} arguments (retention time x wavelength).
 #' @author Ethan Bass

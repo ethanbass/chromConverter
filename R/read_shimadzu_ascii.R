@@ -20,6 +20,8 @@
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
 #' \code{raw}.
+#' @param ms_format Whether to return mass spectral data as a (long)
+#' \code{data.frame} or a \code{list}.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
 #' element.
 #' @return A nested list of elements from the specified \code{file}, where the

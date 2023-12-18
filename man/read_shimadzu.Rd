@@ -41,6 +41,9 @@ read_shimadzu(
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
 
+\item{ms_format}{Whether to return mass spectral data as a (long)
+\code{data.frame} or a \code{list}.}
+
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element.}
 }
