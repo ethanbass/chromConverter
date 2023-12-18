@@ -9,7 +9,7 @@ read_chroms(
   find_files,
   format_in = c("agilent_d", "agilent_dx", "chemstation", "chemstation_fid",
     "chemstation_ch", "chemstation_csv", "chemstation_uv", "masshunter_dad",
-    "chromeleon_uv", "shimadzu_txt", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
+    "chromeleon_uv", "shimadzu_ascii", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
     "thermoraw", "mzml", "mzxml", "waters_arw", "waters_raw", "msd", "csd", "wsd", "mdf",
     "other"),
   pattern = NULL,
@@ -51,7 +51,7 @@ case file extension will be deduced from \code{format_in}.}
 \code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, or
 \code{rainbow}.}
 
-\item{format_out}{R object format (i.e. data.frame or matrix).}
+\item{format_out}{Class of output (i.e. data.frame or matrix).}
 
 \item{data_format}{Whether to output data in wide or long format. Either
 \code{wide} or \code{long}.}

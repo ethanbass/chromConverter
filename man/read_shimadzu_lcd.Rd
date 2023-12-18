@@ -21,7 +21,7 @@ read_shimadzu_lcd(
 \item{read_metadata}{Logical. Whether to attach metadata.}
 }
 \description{
-Reads 3D PDA data stream from 'Shimadzu' LCD files.
+Read 3D PDA data stream from 'Shimadzu' LCD files.
 }
 \details{
 A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are

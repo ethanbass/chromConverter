@@ -14,6 +14,7 @@ read_shimadzu(
   peaktable_format = c("chromatographr", "original"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
+  ms_format = c("data.frame", "list"),
   collapse = TRUE
 )
 }
