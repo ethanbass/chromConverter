@@ -9,6 +9,8 @@
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
+#' @param collapse Logical. Whether to collapse lists that only contain a single
+#' element.
 #' @return A chromatogram in the format specified by the \code{format_out} and
 #' \code{data_format} arguments (retention time x wavelength).
 #' @author Ethan Bass
@@ -17,7 +19,8 @@
 read_cdf <- function(file, format_out = c("matrix", "data.frame"),
                      data_format = c("wide","long"),
                      what = "chromatogram", read_metadata = TRUE,
-                     metadata_format = c("chromconverter", "raw")){
+                     metadata_format = c("chromconverter", "raw"),
+                     collapse = TRUE){
   check_for_pkg("ncdf4")
   nc <- ncdf4::nc_open(file)
   if ("ordinate_values" %in% names(nc$var)){
@@ -34,7 +37,8 @@ read_cdf <- function(file, format_out = c("matrix", "data.frame"),
                  stop("The format of the provided cdf file could not be recognized.")
                })
   fn(file = file, data_format = data_format, format_out = format_out,
-     what = what, read_metadata = read_metadata, metadata_format = metadata_format)
+     what = what, read_metadata = read_metadata,
+     metadata_format = metadata_format, collapse = collapse)
 }
 
 #' Read ANDI chrom file
@@ -55,7 +59,8 @@ read_cdf <- function(file, format_out = c("matrix", "data.frame"),
 read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
                             data_format = c("wide", "long"),
                             what = "chromatogram", read_metadata = TRUE,
-                            metadata_format = c("chromconverter", "raw")){
+                            metadata_format = c("chromconverter", "raw"),
+                            collapse = TRUE){
   data_format <- match.arg(data_format, c("wide","long"))
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
@@ -94,14 +99,9 @@ read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
   #   what <- "both"
   # }
   data <- mget(what)
-  data <- switch(what, "chromatogram" = data,
-               "peak_table" = peak_tab,
-               "both" = list(chromatogram=data, peak_table = peak_tab))
+  if (collapse) data <- collapse_list(data)
   if (read_metadata){
     meta <- ncdf4::ncatt_get(nc, varid = 0)
-    # data <- attach_metadata(data, meta = meta, format_in = format_in,
-    #                 format_out = format_out, data_format = data_format,
-    #                 parser = "chromconverter", source_file = file)
     if (inherits(data, "list")){
       data <- lapply(data, function(xx){
         attach_metadata(xx, meta = meta, format_in = "cdf",

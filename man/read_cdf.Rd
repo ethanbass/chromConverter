@@ -9,11 +9,13 @@ read_cdf(
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   what = "chromatogram",
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw"),
+  collapse = TRUE
 )
 }
 \arguments{
-\item{file}{path to file}
+\item{file}{Path to file.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
@@ -25,6 +27,12 @@ rownames of the object.}
 \item{what}{Whether to extract \code{chromatogram} and/or \code{peak_table}.}
 
 \item{read_metadata}{Whether to read metadata from file.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
+
+\item{collapse}{Logical. Whether to collapse lists that only contain a single
+element.}
 }
 \value{
 A chromatogram in the format specified by the \code{format_out} and
