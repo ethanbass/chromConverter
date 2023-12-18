@@ -1,6 +1,6 @@
 #' Read 'Waters' RAW
 #'
-#' Parser for reading Waters (.raw) files into R.
+#' Parser for reading 'Waters MassLynx (.raw) files into R.
 #'
 #' @param path Path to \code{.raw} file.
 #' @param format_out Matrix or data.frame.
@@ -43,7 +43,7 @@ read_waters_raw <- function(path, format_out = c("matrix", "data.frame"),
 
 #' Read 'Waters' chromatograms
 #'
-#' Parser for reading Waters CHRO (.dat) files into R.
+#' Parser for reading 'Waters MassLynx' CHRO (.dat) files into R.
 #'
 #' @importFrom utils head tail
 #' @param path Path to \code{.dat} file.

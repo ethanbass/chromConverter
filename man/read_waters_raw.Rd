@@ -29,7 +29,7 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Parser for reading Waters (.raw) files into R.
+Parser for reading 'Waters MassLynx (.raw) files into R.
 }
 \note{
 For now this parser only reads 1D chromatograms (not mass spectra or
