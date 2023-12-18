@@ -180,7 +180,8 @@ format_to_extension <- function(format_in){
          "csd" ="\\.",
          "wsd" ="\\.",
          "mdf" = "\\.mdf$",
-         "other" = "\\.")
+         "other" = "\\.",
+         "\\.")
 }
 
 #' @noRd

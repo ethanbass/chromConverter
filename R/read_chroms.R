@@ -227,12 +227,12 @@ read_chroms <- function(paths, find_files,
     converter <- partial(read_shimadzu, include = "dad",
                          format_out = format_out, data_format = data_format,
                          read_metadata = read_metadata,
-                         metadata_format = metadata_format)
+                         metadata_format = metadata_format, ...)
   }  else if (format_in == "shimadzu_ascii"){
-    converter <- partial(read_shimadzu, include = "dad",
-                         format_out = format_out, data_format = data_format,
+    converter <- partial(read_shimadzu, format_out = format_out,
+                         data_format = data_format,
                          read_metadata = read_metadata,
-                         metadata_format = metadata_format)
+                         metadata_format = metadata_format, ...)
   } else if (format_in == "shimadzu_lcd"){
     converter <- partial(read_shimadzu_lcd, format_out = format_out,
                          data_format = data_format,
