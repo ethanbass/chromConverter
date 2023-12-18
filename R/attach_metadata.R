@@ -144,23 +144,6 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               data_format = data_format,
               parser = "chromconverter"
               )
-  # } else if (format_in == "entab"){
-  #   structure(x, instrument = meta$instrument,
-  #             detector = NA,
-  #             software = meta$Version,
-  #             method = meta$method,
-  #             batch = meta$SeqPathAndFile,
-  #             operator = meta$operator,
-  #             run_datetime = meta$run_date,
-  #             sample_name = meta$sample,
-  #             sample_id = NA,
-  #             injection_volume = meta$InjVolume,
-  #             time_range = NA,
-  #             time_interval = NA,
-  #             detector_range = NA,
-  #             format = data_format,
-  #             parser = "entab",
-  #             format_out = format_out)
   }, "chemstation" = {
     datetime_formats <- c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p", "%d/%m/%Y %I:%M:%S %p")
     meta$date <- as.POSIXct(meta$date, tz = "UTC", tryFormats = datetime_formats)

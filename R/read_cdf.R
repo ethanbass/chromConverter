@@ -95,9 +95,6 @@ read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
       peak_table <- as.data.frame(peak_table)
     }
   }
-  # if ("peak_table" %in% what & "chromatogram" %in% what){
-  #   what <- "both"
-  # }
   data <- mget(what)
   if (collapse) data <- collapse_list(data)
   if (read_metadata){
