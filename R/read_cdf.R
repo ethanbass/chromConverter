@@ -11,8 +11,11 @@
 #' or \code{raw}.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
 #' element.
+#' @param ... Additional arguments to parser. The \code{ms_format} argument
+#' can be used here to specify whether to return mass spectra in \code{list}
+#' format or as a \code{data.frame}.
 #' @return A chromatogram in the format specified by the \code{format_out} and
-#' \code{data_format} arguments (retention time x wavelength).
+#' \code{data_format} arguments.
 #' @author Ethan Bass
 #' @export
 
@@ -20,7 +23,7 @@ read_cdf <- function(file, format_out = c("matrix", "data.frame"),
                      data_format = c("wide","long"),
                      what = "chromatogram", read_metadata = TRUE,
                      metadata_format = c("chromconverter", "raw"),
-                     collapse = TRUE){
+                     collapse = TRUE, ...){
   check_for_pkg("ncdf4")
   nc <- ncdf4::nc_open(file)
   if ("ordinate_values" %in% names(nc$var)){
@@ -38,7 +41,7 @@ read_cdf <- function(file, format_out = c("matrix", "data.frame"),
                })
   fn(file = file, data_format = data_format, format_out = format_out,
      what = what, read_metadata = read_metadata,
-     metadata_format = metadata_format, collapse = collapse)
+     metadata_format = metadata_format, collapse = collapse, ...)
 }
 
 #' Read ANDI chrom file
@@ -129,13 +132,16 @@ read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
 #' @param ms_format Whether to return mass spectral data as a (long)
 #' \code{data.frame} or a \code{list}.
 #' @return A chromatogram in the format specified by the \code{format_out} and
-#' \code{data_format} arguments (retention time x wavelength).
+#' \code{data_format} arguments and MS spectra as either a long-format
+#' \code{data.frame} or a \code{list} of spectra, according to the value of
+#' \code{ms_format}.
 #' @author Ethan Bass
 #' @noRd
 
 read_andi_ms <- function(file, format_out = c("matrix", "data.frame"),
                          data_format = c("wide", "long"),
-                         what = "chromatogram", ms_format = c("data.frame", "list"),
+                         what = "chromatogram",
+                         ms_format = c("data.frame", "list"),
                          read_metadata = TRUE,
                          metadata_format = c("chromconverter", "raw"),
                          collapse = TRUE){

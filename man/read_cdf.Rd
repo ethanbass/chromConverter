@@ -11,7 +11,8 @@ read_cdf(
   what = "chromatogram",
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  collapse = TRUE
+  collapse = TRUE,
+  ...
 )
 }
 \arguments{
@@ -33,10 +34,14 @@ or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element.}
+
+\item{...}{Additional arguments to parser. The \code{ms_format} argument
+can be used here to specify whether to return mass spectra in \code{list}
+format or as a \code{data.frame}.}
 }
 \value{
 A chromatogram in the format specified by the \code{format_out} and
-\code{data_format} arguments (retention time x wavelength).
+\code{data_format} arguments.
 }
 \description{
 Read CDF file
