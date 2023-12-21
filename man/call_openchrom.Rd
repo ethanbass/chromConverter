@@ -42,7 +42,7 @@ system call to the command-line interface. To use this function
 \href{https://lablicate.com/platform/openchrom}{OpenChrom} (version 0.4.0) must be
 manually installed. The command line interface is no longer supported in the
 latest versions of OpenChrom (starting with version 0.5.0), so the function
-will not work with these new versions.
+will not work with these newer versions.
 }
 \details{
 The \code{call_openchrom} works by creating an \code{xml} batchfile and

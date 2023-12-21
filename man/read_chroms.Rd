@@ -113,8 +113,8 @@ Provides a unified interface to all chromConverter parsers. Currently recognizes
 MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
 'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
 (\code{.txt}), and 'Shimadzu LCD' files (preliminary support). Also, wraps
-Openchrom parsers, which include many additional formats. To use 'Entab',
-'ThermoRawFileParser', or 'Openchrom' parsers, they must be manually installed.
+'OpenChrom' parsers, which include many additional formats. To use 'Entab',
+'ThermoRawFileParser', or 'OpenChrom' parsers, they must be manually installed.
 Please see the instructions in the
 \href{https://ethanbass.github.io/chromConverter/}{README} for further details.
 
@@ -127,7 +127,7 @@ providing paths to directories, the file format must be specified using the
  If \code{export} is TRUE, chromatograms will be
 exported in the format specified by \code{export_format} in the folder
 specified by \code{path_out}. Currently, the most versatile option for
-exporting files is code{csv}. However, one-dimensional chromatograms can
+exporting files is \code{csv}. However, unidimensional chromatograms can
 also be exported in ANDI Chromatography (netCDF) format by selecting
 \code{cdf}. If an \code{openchrom} parser is selected, ANIML and mzML are
 available as additional options.

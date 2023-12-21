@@ -15,8 +15,8 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 ### Formats
 
 ##### ChromConverter
-- 'Agilent Chemstation' & 'OpenLab' `.uv` files (versions 131, 31)
-- 'Agilent Chemstation' & 'OpenLab' `.ch` files (versions 8, 81, 130, 179, 181)
+- 'Agilent ChemStation' & 'OpenLab' `.uv` files (versions 131, 31)
+- 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 8, 81, 130, 179, 181)
 - ÅNDI (Analytical Data Interchange) chromatography format (`.cdf`)
 - mzML (`.mzml`)
 - 'Shimadzu LabSolutions' ascii (`.txt`)
@@ -104,7 +104,7 @@ chromConverter includes some options to extract metadata from the provided files
 
 ##### Importing peak lists
 
-The `read_peak` list function can be used to import peak lists from 'Chemstation' REPORT files or 'Shimadzu' ascii files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
+The `read_peak` list function can be used to import peak lists from 'ChemStation' REPORT files or 'Shimadzu' ascii files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
 
 ```
 pks <- read_chroms(<path_to_directory>, format_in = "chemstation")
@@ -133,7 +133,7 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 ##### **OpenChrom** 
 ###### (**Note:** Support for the commmand line interface has been removed from OpenChrom (as of `version 1.5.0`). Older versions (e.g. `1.4.x`) should still work for now).
 
-[OpenChrom](https://lablicate.com/platform/openchrom) is opensource chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
+[OpenChrom](https://lablicate.com/platform/openchrom) is open source chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
 
 1) Download [OpenChrom](https://lablicate.com/platform/openchrom/download) (**version 1.4.x only**) and place it into a directory of your choice.  
 2) If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.

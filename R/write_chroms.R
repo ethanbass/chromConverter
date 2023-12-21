@@ -20,9 +20,9 @@ export_cdfs <- function(data, path_out){
 #' Write CDF file from chromatogram
 #'
 #' Exports a chromatogram in ANDI (Analytical Data Interchange) chromatography
-#' format (ASTM E1947-98). This format can only accomodate unidimensional data.
+#' format (ASTM E1947-98). This format can only accommodate unidimensional data.
 #' For two-dimensional chromatograms, the column to export can be specified
-#' using the \code{lambda} argument. Othewise, a warning will be generated and
+#' using the \code{lambda} argument. Otherwise, a warning will be generated and
 #' the first column of the chromatogram will be exported.
 #'
 #' @author Ethan Bass
