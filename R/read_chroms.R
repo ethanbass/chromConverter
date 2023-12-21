@@ -1,13 +1,14 @@
 #' Read Chromatograms
 #'
-#' Reads chromatograms from specified folders or vector of paths using file
-#' parsers from [Aston](https://github.com/bovee/aston),
+#' Reads chromatograms from specified folders or vector of paths using either an
+#' internal parser or bindings to an external library, such as
+#' [Aston](https://github.com/bovee/aston),
 #' [Entab](https://github.com/bovee/entab),
 #' [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser),
 #' [OpenChrom](https://lablicate.com/platform/openchrom),
-#' [rainbow](https://rainbow-api.readthedocs.io/), or internal parsers.
+#' [rainbow](https://rainbow-api.readthedocs.io/).
 #'
-#' Provides a general interface to chromConverter parsers. Currently recognizes
+#' Provides a unified interface to all chromConverter parsers. Currently recognizes
 #' 'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent
 #' MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
 #' 'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
@@ -17,8 +18,13 @@
 #' Please see the instructions in the
 #' [README](https://ethanbass.github.io/chromConverter/) for further details.
 #'
+#' If paths to individual files are provided, \code{read_chroms} will try to
+#' infer the file format and select an appropriate parser. However, when
+#' providing paths to directories, the file format must be specified using the
+#' \code{format_in} argument.
+#'
 #' @name read_chroms
-#' @param paths paths to files or folders containing files
+#' @param paths Paths to data files or directories containing the files.
 #' @param find_files Logical. Set to \code{TRUE} (default) if you are providing
 #' the function with a folder or vector of folders containing the files.
 #' Otherwise, set to\code{FALSE}.
@@ -26,14 +32,15 @@
 #' include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
 #' \code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
 #' \code{masshunter}, \code{masshunter_dad}, \code{chromeleon_uv},
-#' \code{shimadzu_fid}, \code{shimadzu_dad}, \code{thermoraw},
-#' \code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{mzxml},
-#' \code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.
+#' \code{shimadzu_ascii}, \code{shimadzu_fid}, \code{shimadzu_dad},
+#' \code{thermoraw}, \code{waters_arw}, \code{waters_raw}, \code{mzml},
+#' \code{mzxml}, \code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd},
+#' or \code{other}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format_in}.
-#' @param parser What parser to use. Current option are \code{chromconverter},
-#' \code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, or
-#' \code{rainbow}.
+#' @param parser What parser to use (optional). Current option are
+#' \code{chromconverter}, \code{aston}, \code{entab}, \code{thermoraw},
+#' \code{openchrom}, or \code{rainbow}.
 #' @param format_out Class of output (i.e. data.frame or matrix).
 #' @param data_format Whether to output data in wide or long format. Either
 #' \code{wide} or \code{long}.
@@ -57,16 +64,21 @@
 #' @param verbose Logical. Whether to print output from external parsers to the
 #' R console.
 #' @param sample_names An optional character vector of sample names. Otherwise
-#' sample names default to the basename of the specified files.
+#' sample names default to the \code{\link{basename}} of the specified files.
 #' @param dat Existing list of chromatograms to append results.
 #' (Defaults to NULL).
 #' @param ... Additional arguments to parser.
 #' @return A list of chromatograms in \code{matrix} or \code{data.frame} format,
-#' according to the value of \code{format_out}.
+#' according to the value of \code{format_out}. Chromatograms may be returned
+#' in either \code{wide} or \code{long} format according to the value of
+#' \code{data_format}.
 #' @section Side effects: If \code{export} is TRUE, chromatograms will be
 #' exported in the format specified by \code{export_format} in the folder
-#' specified by \code{path_out}. Currently, the only option for export is
-#' \code{csv} unless the \code{parser} is \code{openchrom}.
+#' specified by \code{path_out}. Currently, the most versatile option for
+#' exporting files is code{csv}. However, one-dimensional chromatograms can
+#' also be exported in ANDI Chromatography (netCDF) format by selecting
+#' \code{cdf}. If an \code{openchrom} parser is selected, ANIML and mzML are
+#' available as additional options.
 #' @import reticulate
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial
@@ -279,12 +291,10 @@ read_chroms <- function(paths, find_files,
                          format_in = format_in, export_format = export_format,
                          return_paths = return_paths, verbose = verbose)
   } else if (format_in == "mdf"){
-    # pattern <- ifelse(is.null(pattern), ".mdf|.MDF", pattern)
     converter <- partial(read_mdf, format_out = format_out,
                          data_format = data_format,
                          read_metadata = read_metadata)
   } else if (format_in == "cdf"){
-    # pattern <- ifelse(is.null(pattern), ".cdf|.CDF", pattern)
     converter <- partial(read_cdf, format_out = format_out,
                          data_format = data_format,
                          read_metadata = read_metadata, ...)
