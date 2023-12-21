@@ -65,6 +65,7 @@ read_mdf <- function(file, format_out = c("matrix","data.frame"),
 }
 
 #' Extract MDF metadata
+#' @author Ethan Bass
 #' @noRd
 extract_mdf_metadata <- function(x){
   x <- stringr::str_replace_all(x, "\xb5", "micro")

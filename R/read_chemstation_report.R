@@ -1,9 +1,11 @@
-#' Read Agilent Chemstation Reports
-#' @param files Paths to Chemstation report files.
+#' Read 'Agilent ChemStation' Reports
+#' @param files Paths to 'ChemStation' report files.
 #' @param data_format Format to output data. Either \code{chromatographr} or
 #' \code{chemstation}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
 #' \code{raw}.
+#' @return A data.frame containing the information from the specified
+#' 'ChemStation' report.
 #' @author Ethan Bass
 #' @export
 

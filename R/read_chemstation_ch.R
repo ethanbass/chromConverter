@@ -17,12 +17,12 @@
 #' @author Ethan Bass
 #' @return A 2D chromatogram in the format specified by \code{data_format} and
 #' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
-#' be returned with retention times as rows and wavelengths as columns. If
-#' \code{long} format is requested, three columns will be returned: one for the
-#' retention time, one for the wavelength and one for the intensity. The
-#' \code{format_out} argument determines whether the chromatogram is returned as
-#' a \code{matrix} or \code{data.frame}. Metadata can be attached to the
-#' chromatogram as \code{\link{attributes}} if \code{read_metadata} is {TRUE}.
+#' be returned with retention times as rows and a single column for the intensity.
+#' If \code{long} format is requested, two columns will be returned: one for the
+#' retention time and one for the intensity. The \code{format_out} argument
+#' determines whether the chromatogram is returned as a \code{matrix} or
+#' \code{data.frame}. Metadata can be attached to the chromatogram as
+#' \code{\link{attributes}} if \code{read_metadata} is {TRUE}.
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
