@@ -32,9 +32,12 @@ vector of paths to the newly created files.}
 \item{verbose}{Logical. Whether to print output from OpenChrom to the console.}
 }
 \value{
-If \code{return_paths} is TRUE, the function will return a vector of paths to the newly created files.
-If \code{return_paths} is FALSE and \code{export_format} is \code{csv}, the function will return a list
-of chromatograms in \code{data.frame} format. Otherwise, it will not return anything.
+If \code{return_paths} is \code{FALSE}, the function will return a list of
+chromatograms (if an appropriate parser is available in chromConverter). The
+chromatograms will be returned in \code{matrix} or \code{data.frame} format
+according to the value of {data_class}. If \code{return_paths} is \code{TRUE},
+the function will return a character vector of paths to the newly created
+files.
 }
 \description{
 Writes \code{xml} batch-files and calls OpenChrom file parsers using a

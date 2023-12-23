@@ -34,9 +34,12 @@
 #' @param return_paths Logical. If TRUE, the function will return a character
 #' vector of paths to the newly created files.
 #' @param verbose Logical. Whether to print output from OpenChrom to the console.
-#' @return If \code{return_paths} is TRUE, the function will return a vector of paths to the newly created files.
-#' If \code{return_paths} is FALSE and \code{export_format} is \code{csv}, the function will return a list
-#' of chromatograms in \code{data.frame} format. Otherwise, it will not return anything.
+#' @return If \code{return_paths} is \code{FALSE}, the function will return a list of
+#' chromatograms (if an appropriate parser is available in chromConverter). The
+#' chromatograms will be returned in \code{matrix} or \code{data.frame} format
+#' according to the value of {data_class}. If \code{return_paths} is \code{TRUE},
+#' the function will return a character vector of paths to the newly created
+#' files.
 #' @section Side effects: Chromatograms will be exported in the format specified
 #' by \code{export_format} in the folder specified by \code{path_out}.
 #' @author Ethan Bass
@@ -176,6 +179,9 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
     }
   } else{
     path_parser <- path
+  }
+  if (grepl("app/?$", path_parser)){
+    path_parser <- fs::path(path_parser, "Contents/MacOS/openchrom")
   }
   writeLines(path_parser,
              con = system.file('shell/path_to_openchrom_commandline.txt',
