@@ -13,7 +13,8 @@ call_rainbow(
   by = c("detector", "name"),
   what = NULL,
   read_metadata = TRUE,
-  collapse = TRUE
+  collapse = TRUE,
+  precision = 1
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ call_rainbow(
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element.}
+
+\item{precision}{Number of decimals to round mz values. Defaults to 1.}
 }
 \value{
 Returns a (nested) list of \code{matrices} or \code{data.frames} according to

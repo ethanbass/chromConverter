@@ -19,18 +19,22 @@
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to TRUE.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
 #' element.
+#' @param precision Number of decimals to round mz values. Defaults to 1.
 #' @author Ethan Bass
 #' @return Returns a (nested) list of \code{matrices} or \code{data.frames} according to
 #' the value of \code{format_out}. Data is ordered according to the value of
 #' \code{by}.
 #' @export
 
-call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshunter",
-                                             "chemstation", "chemstation_uv", "chemstation_fid"),
+call_rainbow <- function(file,
+                         format_in = c("agilent_d", "waters_raw", "masshunter",
+                                       "chemstation", "chemstation_uv",
+                                       "chemstation_fid"),
                          format_out = c("matrix", "data.frame"),
                          data_format = c("wide", "long"),
                          by = c("detector","name"), what = NULL,
-                         read_metadata = TRUE, collapse = TRUE){
+                         read_metadata = TRUE, collapse = TRUE,
+                         precision = 1){
   check_rb_configuration()
   by <- match.arg(by, c("detector","name"))
   format_out <- match.arg(format_out, c("matrix","data.frame"))
@@ -48,7 +52,7 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
   if (format_in %in% c("chemstation")){
     by <- "single"
   }
-  x <- converter(file)
+  x <- converter(file, prec = as.integer(precision))
   if (by == "detector"){
     if (!is.null(what)){
       what_not_present <- which(!(what %in% names(x$by_detector)))
@@ -83,14 +87,17 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
 
 #' @noRd
 extract_rb_data <- function(xx, format_out = "matrix",
-                            data_format = c("wide","long"),
+                            data_format = c("wide", "long"),
                             read_metadata = TRUE){
-  data_format <- match.arg(data_format, c("wide","long"))
+  data_format <- match.arg(data_format, c("wide", "long"))
   data <- xx$data
   try(rownames(data) <- xx$xlabels)
   colnames(data) <- xx$ylabels
   if (data_format == "long"){
-    data <- reshape_chrom(data, data_format = "long")
+    names_to <- switch(xx$detector, "MS" = "mz",
+                       "UV" = "lambda",
+                              "lambda")
+    data <- reshape_chrom(data, data_format = "long", names_to = names_to)
   }
   if (format_out == "data.frame"){
     data <- as.data.frame(data)

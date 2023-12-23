@@ -1,4 +1,4 @@
-#' Export chromatograms as csvs
+#' Export chromatograms as CSVs
 #' @author Ethan Bass
 #' @noRd
 export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE){
