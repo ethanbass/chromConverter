@@ -10,18 +10,18 @@
 
 ### Overview
 
-chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It includes a number of parsers written directly in R as well as bindings to various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), [rainbow](https://rainbow-api.readthedocs.io/), the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser), and [OpenChrom](https://lablicate.com/platform/openchrom).
+chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It includes a number of parsers written directly in R as well as bindings to various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), [rainbow](https://rainbow-api.readthedocs.io/), the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser), [OpenChrom](https://lablicate.com/platform/openchrom) and [RaMS](https://github.com/wkumler/RaMS/).
 
 ### Formats
 
 ##### ChromConverter
 - 'Agilent ChemStation' & 'OpenLab' `.uv` files (versions 131, 31)
-- 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 8, 81, 130, 179, 181)
-- ÅNDI (Analytical Data Interchange) chromatography format (`.cdf`)
-- mzML (`.mzml`)
+- 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 30, 130, 8, 81, 179, 181)
+- ÅNDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
+- mzML (`.mzml`) & mzXML (.`mzxml`) (via RaMS).
 - 'Shimadzu LabSolutions' ascii (`.txt`)
 - 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA stream)
-- 'Thermo Scientific Chromeleon' UV ascii (`.txt`)
+- 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Waters' ascii (`.arw`)
 
 ##### External Libraries
