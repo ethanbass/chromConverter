@@ -6,6 +6,7 @@ test_that("read_chroms can read 'Agilent MS' files", {
 
   path <- system.file("chemstation_MSD.MS",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, parser = "entab", progress_bar = FALSE)[[1]]
   expect_equal(class(x), "data.frame")
@@ -32,6 +33,7 @@ test_that("read_chroms can read 'Agilent Chemstation' version 30 files", {
 
   path <- system.file("chemstation_30.ch",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, parser="chromconverter", progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
@@ -49,7 +51,10 @@ test_that("read_chroms can read 'Agilent Chemstation' 31 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
   skip_if_not_installed("entab")
+
   path <- system.file("chemstation_31.uv", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
   x <- read_chroms(path, progress_bar = FALSE, parser = "chromconverter")[[1]]
   x1 <- read_chroms(path, progress_bar = FALSE, parser = "entab")[[1]]
 
@@ -69,6 +74,7 @@ test_that("read_chroms can read 'Agilent Chemstation' version 81 files", {
 
   path <- system.file("chemstation_81.ch",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
@@ -89,6 +95,8 @@ test_that("read_chroms can read 'Agilent Chemstation' version 130 files", {
 
   path <- system.file("chemstation_130.ch",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
   x <- read_chroms(path, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(12750, 1))
@@ -105,6 +113,7 @@ test_that("read_chroms can read 'Agilent OpenLab' 179 files", {
 
   path <- system.file("openlab_179.ch",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
@@ -124,6 +133,7 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)"
 
   path <- system.file("chemstation_179_mustang.ch",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
@@ -137,6 +147,7 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
 
   path <- system.file("chemstation_179_asterix.ch",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
@@ -151,6 +162,7 @@ test_that("read_chroms can read 'Agilent Masshunter' dad files", {
 
   path <- system.file("masshunter.d/AcqData/DAD1.sp",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, format_in = "masshunter_dad", parser = "entab",
                    progress_bar = FALSE)
@@ -181,6 +193,7 @@ test_that("read_chroms can read 'Waters ARW' PDA files", {
   skip_if_not_installed("chromConverterExtraTests")
 
   path <- system.file("waters_pda.arw", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, format_in = "waters_arw", progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
@@ -200,6 +213,7 @@ test_that("read_chroms can read 'Waters RAW' files", {
   skip_if_not_installed("chromConverterExtraTests")
 
   path <- system.file("waters_blue.raw", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
                    precision = 0)[[1]]
@@ -228,6 +242,7 @@ test_that("read_chroms can read 'Chromeleon' comma-separated files", {
 
   path <- system.file("chromeleon_comma.txt",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, format_in = "chromeleon_uv", progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
@@ -249,6 +264,7 @@ test_that("read_chroms can read 'Chromeleon' period-separated files", {
 
   path <- system.file("chromeleon_period.txt",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE)
   expect_equal(class(x[[1]])[1], "matrix")
@@ -266,8 +282,10 @@ test_that("read_peaklist can read `Shimadzu` ascii (PDA) files", {
   skip_on_cran()
   skip_if_missing_dependecies()
   skip_if_not_installed("chromConverterExtraTests")
+
   path <- system.file("shimadzuDAD_Anthocyanin.txt",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_peaklist(path, format_in="shimadzu_dad", progress_bar = FALSE)[[1]]
   expect_equal(class(x), "list")
@@ -283,6 +301,7 @@ test_that("read_chroms can read 'Shimadzu' ascii (PDA) files", {
 
   path <- system.file("shimadzuDAD_Anthocyanin.txt",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
@@ -306,6 +325,7 @@ test_that("read_chroms can read 'Agilent' dx files", {
   skip_if_not_installed("chromConverterExtraTests")
 
   path <- system.file("agilent.dx", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, format_in = "agilent_dx", progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
@@ -334,8 +354,8 @@ test_that("read_chroms can read 'Thermo' RAW files", {
 
 # test_that("thermoraw parser works",{
 #   skip_if_not(configure_thermo_parser(check = TRUE))
-  file <- "/Users/ethanbass/Library/CloudStorage/Box-Box/chromatography_test_files/thermo_files/small.RAW"
-  x <- read_chroms(file, format_in = "thermoraw", find_files = FALSE)
+  # file <- "/Users/ethanbass/Library/CloudStorage/Box-Box/chromatography_test_files/thermo_files/small.RAW"
+  # x <- read_chroms(file, format_in = "thermoraw", find_files = FALSE)
 #   expect_equal(class(x[[1]])[1], "matrix")
 #   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 # })
@@ -347,6 +367,7 @@ test_that("read_chroms can use 'OpenChrom' parsers", {
   skip_if_missing_openchrom()
 
   path <- system.file("DCM1.SMS", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, format_in = "msd", progress_bar = FALSE,
                    verbose = FALSE, export_format = "csv")[[1]]
@@ -363,8 +384,11 @@ test_that("read_chroms can use 'OpenChrom' parsers", {
 test_that("read_varian_peaklist function works", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
+
   path <- system.file("varian_peaklist.csv",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
   x <- read_varian_peaklist(path)
   expect_s3_class(x, "data.frame")
   expect_equal(dim(x), c(46476, 15))
@@ -374,7 +398,10 @@ test_that("read_cdf function can read peak tables", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")
   skip_if_not_installed("chromConverterExtraTests")
+
   path <- system.file("VARIAN1.CDF", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
   x <- read_cdf(path, what = "peak_table")
   # what about chromatograms
   expect_s3_class(x, "data.frame")
@@ -387,6 +414,7 @@ test_that("read_chroms can read ANDI MS files", {
   skip_if_not_installed("chromConverterExtraTests")
 
   path <- system.file("HP_MS.CDF", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
 
   x <- read_chroms(path, what=c("chromatogram","ms_spectra"), progress_bar = FALSE)[[1]]
   expect_equal(names(x), c("chromatogram", "ms_spectra"))
