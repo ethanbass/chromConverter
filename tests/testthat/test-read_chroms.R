@@ -43,9 +43,11 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   skip_on_cran()
   skip_if_not_installed("entab")
   file <- "testdata/dad1.uv"
+
   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE,
                     read_metadata = TRUE, progress_bar = FALSE)
+
   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
@@ -55,8 +57,10 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
 
 test_that("Shimadzu ascii parser works", {
   file <- "testdata/ladder.txt"
+
   x <- read_chroms(file, format_in = "shimadzu_fid", find_files = FALSE,
                    progress_bar = FALSE)
+
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 })
@@ -87,15 +91,28 @@ test_that("Rainbow parser can read chemstation 131 files", {
   skip_if_missing_dependecies()
   skip_on_cran()
   skip_on_ci()
+
   x1 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "rainbow",
                     find_files = FALSE,
                     read_metadata = TRUE,
                     progress_bar = FALSE)
+
   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
   expect_equal(attr(x1[[1]], "parser"), "rainbow")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
+  expect_equal(attr(x1$dad1, "metadata")$unit, "mAU")
+
+  x2 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "rainbow",
+                    find_files = FALSE, data_format = "long",
+                    read_metadata = TRUE,
+                    progress_bar = FALSE)
+  expect_equal(nrow(x2$dad1), nrow(x1$dad1)*ncol(x1$dad1))
+  expect_equal(colnames(x2$dad1), c("rt", "lambda", "intensity"))
+  expect_equal(attr(x2$dad1, "metadata")$unit, "mAU")
+  expect_equal(attr(x2[[1]], "data_format"), "long")
+  expect_equal(attr(x2[[1]], "parser"), "rainbow")
 })
 
 test_that("chromconverter parser can read chemstation 130 files", {
