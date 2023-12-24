@@ -11,6 +11,7 @@
 * Added `...` argument to `read_chroms` for supplying additional arguments to parsers.
 * Added alias to `read_chroms` for reading `mzxml` files with `RaMS`.
 * Added `precision` argument to `call_rainbow` to control number of digits "mz" values are rounded to. (Also changed default behavior so values are rounded to one decimal by default).
+* Fixed bug in `read_shimadzu_lcd` on Windows due to issue with passing escaped paths to Python.
 * Updated documentation of various functions.
 
 ## chromConverter 0.5.0

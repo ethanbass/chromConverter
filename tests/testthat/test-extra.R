@@ -295,27 +295,30 @@ test_that("read_peaklist can read `Shimadzu` ascii (PDA) files", {
   expect_equal(colnames(x[[1]]), c("sample", "rt", "start", "end", "area", "height"))
 })
 
-test_that("read_chroms can read 'Shimadzu' ascii (PDA) files", {
+test_that("read_chroms can read 'Shimadzu' PDA files (ascii and LCD)", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
-  path <- system.file("shimadzuDAD_Anthocyanin.txt",
+  path_ascii <- system.file("shimadzuDAD_Anthocyanin.txt",
                       package = "chromConverterExtraTests")
-  skip_if_not(file.exists(path))
+  skip_if_not(file.exists(path_ascii))
 
-  x <- read_chroms(path, format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
+  path_lcd <- system.file("Anthocyanin.lcd", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lcd))
+
+  x <- read_chroms(path_ascii, format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(4689, 328))
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "data_format"), "wide")
 
-  x1 <- read_chroms(path, format_in="shimadzu_dad", progress_bar = FALSE,
+  x1 <- read_chroms(path_ascii, format_in="shimadzu_dad", progress_bar = FALSE,
                     data_format = "long", format_out = "data.frame")[[1]]
   expect_equal(class(x1)[1], "data.frame")
   expect_equal(dim(x1), c(4689*328, 3))
 
-  path <- system.file("Anthocyanin.lcd", package = "chromConverterExtraTests")
-  x2 <- read_chroms(path, progress_bar = FALSE)[[1]]
+
+  x2 <- read_chroms(path_lcd, progress_bar = FALSE)[[1]]
   expect_equal(dim(x2),c(4689,328))
   expect_equal(x, x2, ignore_attr = TRUE)
 })

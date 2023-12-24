@@ -172,7 +172,7 @@ export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
     reticulate::py_run_string('data = st.read()')
 
     if (missing(path_out)){
-      path_out <- tempfile()
+      path_out <- fs::file_temp()
     }
     if (remove_null_bytes){
       reticulate::py_run_string("data = data.replace(b'\\x00', b'')")
