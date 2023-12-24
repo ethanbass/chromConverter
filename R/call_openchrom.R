@@ -34,12 +34,12 @@
 #' @param return_paths Logical. If TRUE, the function will return a character
 #' vector of paths to the newly created files.
 #' @param verbose Logical. Whether to print output from OpenChrom to the console.
-#' @return If \code{return_paths} is \code{FALSE}, the function will return a list of
-#' chromatograms (if an appropriate parser is available in chromConverter). The
-#' chromatograms will be returned in \code{matrix} or \code{data.frame} format
-#' according to the value of {data_class}. If \code{return_paths} is \code{TRUE},
-#' the function will return a character vector of paths to the newly created
-#' files.
+#' @return If \code{return_paths} is \code{FALSE}, the function will return a
+#' list of chromatograms (if an appropriate parser is available to import the
+#' files into R). The chromatograms will be returned in \code{matrix} or
+#' \code{data.frame} format according to the value of {format_out}. If
+#' \code{return_paths} is \code{TRUE}, the function will return a character
+#' vector of paths to the newly created files.
 #' @section Side effects: Chromatograms will be exported in the format specified
 #' by \code{export_format} in the folder specified by \code{path_out}.
 #' @author Ethan Bass
@@ -98,6 +98,7 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 }
 
 #' Writes OpenChrom XML batch file
+#' This function is called internally by \code{call_openchrom}.
 #' @import xml2
 #' @import magrittr
 #' @param files Paths to files for conversion

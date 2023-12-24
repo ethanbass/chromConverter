@@ -34,6 +34,10 @@
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
+#' @return A 3D chromatogram from the PDA stream in \code{matrix} or
+#' \code{data.frame} format, according to the value of \code{format_out}.
+#' The chromatograms will be returned in \code{wide} or \code{long} format
+#' according to the value of \code{data_format}.
 #' @note This parser is experimental and may still
 #' need some work. It is not yet able to interpret much metadata from the files.
 #' @export
@@ -75,6 +79,7 @@ read_shimadzu_lcd <- function(path, format_out = c("matrix", "data.frame"),
 }
 
 #' Read Shimadzu "Method" stream
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
 read_sz_method <- function(path){
@@ -110,6 +115,7 @@ read_sz_method <- function(path){
 }
 
 #' Infer times from 'Shimadzu' Method stream
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
 get_sz_times <- function(sz_method, nval){
@@ -151,6 +157,7 @@ read_shimadzu_raw <- function(path, n_lambdas = NULL){
 }
 
 #' Export OLE stream
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' Use olefile to export te specified stream.
 #' @param file Path to ole file.
 #' @author Ethan Bass
@@ -183,7 +190,25 @@ export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
   }
 }
 
+#' Extract wavelengths from Shimadzu LCD
+#' This function is called internally by \code{read_shimadzu_lcd}.
+#' @author Ethan Bass
+#' @noRd
+read_shimadzu_wavelengths <- function(path){
+  path_wavtab <- export_stream(path, stream =  c("PDA 3D Raw Data", "Wavelength Table"))
+  f <- file(path_wavtab, "rb")
+  on.exit(close(f))
+  n_lambda <- readBin(f, what="integer", size = 4)
+  count <- 1
+  # lambdas <- numeric(n_lambda)
+  lambdas <- sapply(seq_len(n_lambda), function(i){
+    readBin(f, what="integer", size = 4)/100
+  })
+  lambdas
+}
+
 #' Read 'Shimadzu' LCD data block
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
 decode_shimadzu_block <- function(file) {
@@ -236,6 +261,7 @@ decode_shimadzu_block <- function(file) {
 }
 
 #' Return twos complement from binary string
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' @noRd
 twos_complement <- function(bin, exp){
   if (missing(exp)){
@@ -277,20 +303,3 @@ integer_to_binary <- function(x, n) {
   # Return
   x
 }
-
-#' Extract wavelengths from Shimadzu LCD
-#' @author Ethan Bass
-#' @noRd
-read_shimadzu_wavelengths <- function(path){
-  path_wavtab <- export_stream(path, stream =  c("PDA 3D Raw Data", "Wavelength Table"))
-  f <- file(path_wavtab, "rb")
-  on.exit(close(f))
-  n_lambda <- readBin(f, what="integer", size = 4)
-  count <- 1
-  # lambdas <- numeric(n_lambda)
-  lambdas <- sapply(seq_len(n_lambda), function(i){
-    readBin(f, what="integer", size = 4)/100
-  })
-  lambdas
-}
-

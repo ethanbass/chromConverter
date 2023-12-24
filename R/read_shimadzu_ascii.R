@@ -143,6 +143,9 @@ read_shimadzu <- function(file, what = "chromatogram",
   xx
 }
 
+#' Convert list of mass spectra to data.frame
+#' This function is called internally by \code{read_shimadzu}.
+#' @author Ethan Bass
 #' @noRd
 ms_list_to_dataframe <- function(x){
   if (!is.null(names(x))){
@@ -156,7 +159,10 @@ ms_list_to_dataframe <- function(x){
   }
   as.data.frame(do.call(rbind, ms))
 }
-#' Read Shimadzu Metadata
+
+#' Read 'Shimadzu' Metadata
+#' This function is called internally by \code{read_shimadzu}.
+#' @author Ethan Bass
 #' @noRd
 read_shimadzu_metadata <- function(x, met = NULL, sep){
 
@@ -181,6 +187,8 @@ read_shimadzu_metadata <- function(x, met = NULL, sep){
 }
 
 #' Read Shimadzu Chromatogram
+#' This function is called internally by \code{read_shimadzu}.
+#' @author Ethan Bass
 #' @noRd
 read_shimadzu_chromatogram <- function(file, x, chrom.idx, sep, data_format,
                                        read_metadata, format_out){
@@ -221,6 +229,8 @@ read_shimadzu_chromatogram <- function(file, x, chrom.idx, sep, data_format,
 }
 
 #' Read Shimadzu DAD Array
+#' This function is called internally by \code{read_shimadzu}.
+#' @author Ethan Bass
 #' @noRd
 read_shimadzu_dad <- function(file, x, chrom.idx, sep, data_format,
                               read_metadata, format_out){
@@ -258,6 +268,8 @@ read_shimadzu_dad <- function(file, x, chrom.idx, sep, data_format,
 }
 
 #' Read Shimadzu Peak Table
+#' This function is called internally by \code{read_shimadzu}.
+#' @author Ethan Bass
 #' @noRd
 read_shimadzu_peaktable <- function(file, x, idx, sep, format_in, format_out){
   nrows <- as.numeric(strsplit(x = x[idx + 1], split = sep)[[1]][2])
@@ -283,6 +295,8 @@ read_shimadzu_peaktable <- function(file, x, idx, sep, format_in, format_out){
 }
 
 #' Read Shimadzu MS Spectrum
+#' This function is called internally by \code{read_shimadzu}.
+#' @author Ethan Bass
 #' @noRd
 read_shimadzu_spectrum <- function(file, x, idx, sep){
   nrows <- as.numeric(strsplit(x = x[idx + 1], split = sep)[[1]][2])
@@ -295,6 +309,8 @@ read_shimadzu_spectrum <- function(file, x, idx, sep){
 }
 
 #' Extract Header from Shimadzu ASCII Files
+#' This function is called internally by \code{read_shimadzu}.
+#' @author Ethan Bass
 #' @noRd
 extract_shimadzu_header <- function(x, chrom.idx, sep){
   index <- chrom.idx + 1

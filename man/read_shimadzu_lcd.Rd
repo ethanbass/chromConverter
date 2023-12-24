@@ -20,6 +20,12 @@ read_shimadzu_lcd(
 
 \item{read_metadata}{Logical. Whether to attach metadata.}
 }
+\value{
+A 3D chromatogram from the PDA stream in \code{matrix} or
+\code{data.frame} format, according to the value of \code{format_out}.
+The chromatograms will be returned in \code{wide} or \code{long} format
+according to the value of \code{data_format}.
+}
 \description{
 Read 3D PDA data stream from 'Shimadzu' LCD files.
 }

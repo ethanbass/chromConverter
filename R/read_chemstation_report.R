@@ -136,6 +136,7 @@ convert_chemstation_peaklist <- function(table, data_format =
 }
 
 #' Remove blank lines
+#' This function is called internally by \code{read_chemstation_reports}.
 #' @noRd
 remove_blank_lines <- function(x){
   x[which(x != "")]

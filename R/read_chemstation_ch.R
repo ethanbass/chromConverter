@@ -163,16 +163,18 @@ get_chemstation_dir_name <- function(path){
   grep("\\.D|\\.d$", sp, ignore.case = TRUE, value = TRUE)
 }
 
+#' Get number of characters for Agilent segment
 #' @noRd
 get_nchar <- function(f){
   as.numeric(readBin(f, what = "raw", n = 1))
 }
 
 #' Decode double delta array
-#' @noRd
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
+#' @noRd
+
 decode_double_delta <- function(file, offset) {
 
   seek(file, 0, 'end')
@@ -208,10 +210,11 @@ decode_double_delta <- function(file, offset) {
 }
 
 #' Decode double array
-#' @noRd
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
+#' @noRd
+
 decode_double_array_4byte <- function(file, offset) {
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
@@ -238,10 +241,11 @@ decode_double_array_8byte <- function(file, offset) {
 }
 
 #' Decode delta array
-#' @noRd
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
+#' @noRd
+
 decode_delta <- function(file, offset) {
     seek(file, 0, 'end')
     fsize <- seek(file, NA, "current")

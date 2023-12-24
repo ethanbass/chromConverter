@@ -65,6 +65,7 @@ read_mdf <- function(file, format_out = c("matrix","data.frame"),
 }
 
 #' Extract MDF metadata
+#' This function is called internally by \code{read_mdf}.
 #' @author Ethan Bass
 #' @noRd
 extract_mdf_metadata <- function(x){

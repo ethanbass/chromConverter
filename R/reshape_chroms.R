@@ -1,4 +1,3 @@
-
 #' Reshapes list of chromatograms from wide to long format
 #' @name reshape_chroms
 #' @param x A list of chromatographic matrices in wide format.
@@ -92,7 +91,7 @@ reshape_chrom_long <- function(x, lambdas, format_out = NULL, names_to = "lambda
   data
 }
 
-
+#' Reshapes a single chromatogram from long to wide format
 #' @noRd
 reshape_chrom_wide <- function(x, lambdas, lambda_var = "lambda", time_var="rt",
                                value_var = "int", drop){

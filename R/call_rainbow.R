@@ -85,6 +85,9 @@ call_rainbow <- function(file,
   xx
 }
 
+#' Extract data with rainbow
+#' This function is called internally by \code{call_rainbow}.
+#' @author Ethan Bass
 #' @noRd
 extract_rb_data <- function(xx, format_out = "matrix",
                             data_format = c("wide", "long"),
@@ -111,6 +114,8 @@ extract_rb_data <- function(xx, format_out = "matrix",
   data
 }
 
+#' Extract 'rainbow' element names.
+#' This function is called internally by \code{call_rainbow}.
 #' @noRd
 extract_rb_names <- function(xx){
   sapply(xx, function(xxx){
@@ -118,6 +123,8 @@ extract_rb_names <- function(xx){
   })
 }
 
+#' Assign 'rainbow' read
+#' This function is called internally by \code{call_rainbow}.
 #' @noRd
 assign_rb_read <- function(){
   pos <- 1
@@ -126,6 +133,8 @@ assign_rb_read <- function(){
   assign("rb_parse_agilent", reticulate::import("rainbow.agilent"), envir = envir)
 }
 
+#' Check 'rainbow' configuration
+#' This function is called internally by \code{call_rainbow}.
 #' @noRd
 check_rb_configuration <- function(){
   assign_rb_read()

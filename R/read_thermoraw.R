@@ -96,6 +96,7 @@ read_thermoraw <- function(path_in, path_out = NULL,
 #' @return No return value.
 #' @author Ethan Bass
 #' @noRd
+
 configure_thermo_parser <- function(reconfigure = FALSE, check = FALSE){
   if (.Platform$OS.type == "windows"){
     path_parser <- readLines(system.file("shell/path_parser.txt", package = 'chromConverter'))
