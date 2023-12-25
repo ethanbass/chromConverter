@@ -1,4 +1,4 @@
-#' Export chromatograms as csvs
+#' Export chromatograms as CSVs
 #' @author Ethan Bass
 #' @noRd
 export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE){
@@ -13,33 +13,61 @@ export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE)
 #' @noRd
 export_cdfs <- function(data, path_out){
   sapply(seq_along(data), function(i){
-    write_cdf(data[[i]], sample_name = names(data)[i],
-              path_out = path_out)
+    write_cdf(data[[i]], path_out = path_out, sample_name = names(data)[i])
   })
 }
 
 #' Write CDF file from chromatogram
+#'
+#' Exports a chromatogram in ANDI (Analytical Data Interchange) chromatography
+#' format (ASTM E1947-98). This format can only accommodate unidimensional data.
+#' For two-dimensional chromatograms, the column to export can be specified
+#' using the \code{lambda} argument. Otherwise, a warning will be generated and
+#' the first column of the chromatogram will be exported.
+#'
 #' @author Ethan Bass
-#' @noRd
-write_cdf <- function(x, sample_name, path_out){
+#' @param x A chromatogram in (wide) format.
+#' @param path_out The path to write the file.
+#' @param sample_name The name of the file.
+#' @param lambda The wavelength to export (for 2-dimensional chromatograms).
+#' Must be a string matching one the columns in \code{x} or the index of the
+#' column to export.
+#' @param force Whether to overwrite existing files at the specified path.
+#' Defaults to \code{FALSE}.
+#' @return No return value. The function is called for its side effects.
+#' @section Side effects:
+#' Exports a chromatogram in ANDI chromatography format (netCDF) in the directory
+#' specified by \code{path_out}. The file will be named according to the value
+#' of \code{sample_name}. If no \code{sample_name} is provided, the
+#' \code{sample_name} attribute will be used if it exists.
+#' @export
+write_cdf <- function(x, path_out, sample_name, lambda = NULL, force = FALSE){
   check_for_pkg("ncdf4")
-  if (ncol(x) + as.numeric(attr(x, "data_format") == "wide") > 2){
-    warning("The supplies chromatogram contains more than two dimensions. Only
+  if (missing(sample_name)){
+    sample_name <- attr(x,"sample_name")
+    if (is.null(sample_name)){
+      stop("Sample name must be provided.")
+    }
+  }
+  if (is.null(lambda) && ncol(x) + as.numeric(attr(x, "data_format") == "wide") > 2){
+    warning("The supplied chromatogram contains more than two dimensions. Only
             the first two dimensions will be written to the ANDI chrom file.",
             immediate. = TRUE)
   }
+  lambda <- ifelse(is.null(lambda), 1, lambda)
   if (attr(x, "data_format") == "wide"){
-    x1 <- data.frame(RT = as.numeric(rownames(x)), Intensity = x[,1])
+    x1 <- data.frame(RT = as.numeric(rownames(x)), Intensity = x[, lambda])
     x <- transfer_metadata(x1, x)
   }
-  # if (!missing(column)){
-  #   x1 <- x[,column,drop = FALSE]
-  #   x <- transfer_metadata(x1,x)
-  # }
   filename <- fs::path_ext_remove(fs::path_file(sample_name))
   file_out <- fs::path(path_out, filename, ext = "cdf")
   if (fs::file_exists(file_out)){
-    warning(paste("File", sQuote(basename(file_out)), "already exists and will not be overwritten."), immediate. = TRUE)
+    if (!force){
+    stop(paste("File", sQuote(basename(file_out)),
+                  "already exists and will not be overwritten."))
+    } else{
+      fs::file_delete(file_out)
+    }
   }
   # define dimensions
   point_number <- ncdf4::ncdim_def("point_number", "",
@@ -49,9 +77,11 @@ write_cdf <- function(x, sample_name, path_out){
   # define variables
   nc_time <- ncdf4::ncvar_def("raw_data_retention", "", dim = point_number)
   nc_intensity <- ncdf4::ncvar_def("ordinate_values", "", dim = point_number)
-  other_vars <- c("actual_delay_time", "actual_run_time_length", "actual_sampling_interval",
-                  "detector_maximum_value", "detector_minimum_value")
-  other_vars <- lapply(other_vars, function(x) ncdf4::ncvar_def(x, "",list()))
+  other_vars <- c("actual_delay_time", "actual_run_time_length",
+                  "actual_sampling_interval", "detector_maximum_value",
+                  "detector_minimum_value")
+
+  other_vars <- lapply(other_vars, function(x) ncdf4::ncvar_def(x, "", list()))
 
   # write netcdf file
   ncdf4::nc_create(file_out, c(list(nc_time, nc_intensity), other_vars))
@@ -73,6 +103,7 @@ write_cdf <- function(x, sample_name, path_out){
   # write metadata as global attributes
   meta <- format_metadata_for_cdf(x)
   nc_add_global_attributes(nc = nc, meta = meta, sample_name = sample_name)
+
   # finish writing file
   ncdf4::nc_close(nc)
 }
@@ -83,7 +114,9 @@ nc_add_global_attributes <- function(nc, meta, sample_name){
   sapply(seq_along(meta), function(i){
     ncdf4::ncatt_put(nc = nc, varid = 0,
                      attname = names(meta)[i], attval = meta[[i]],
-                     prec = ifelse(names(meta)[i] %in% c("sample_amount", "sample_injection_volume"),
+                     prec = ifelse(names(meta)[i] %in%
+                                     c("sample_amount",
+                                       "sample_injection_volume"),
                                    "float","text"))
   })
   if (!is.null(sample_name)){

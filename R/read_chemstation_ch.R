@@ -1,4 +1,12 @@
-#' Parser for reading Agilent ('.ch') files into R
+#' Read 'ChemStation' CH files
+#'
+#' Agilent \code{.ch} files come in several different varieties. This parser
+#' can automatically detect and read several versions of these files from
+#' 'Agilent ChemStation' and 'OpenLab', including versions \code{30} and \code{130},
+#' which are generally produced by ultraviolet detectors, as well as \code{81},
+#' \code{179}, and \code{181} which are generally produced by flame ionization
+#' detectors.
+#'
 #' @importFrom bitops bitAnd bitShiftL
 #' @param path Path to \code{.ch} file
 #' @param format_out Matrix or data.frame.
@@ -7,8 +15,14 @@
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @author Ethan Bass
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
+#' @return A 2D chromatogram in the format specified by \code{data_format} and
+#' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
+#' be returned with retention times as rows and a single column for the intensity.
+#' If \code{long} format is requested, two columns will be returned: one for the
+#' retention time and one for the intensity. The \code{format_out} argument
+#' determines whether the chromatogram is returned as a \code{matrix} or
+#' \code{data.frame}. Metadata can be attached to the chromatogram as
+#' \code{\link{attributes}} if \code{read_metadata} is {TRUE}.
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
@@ -21,7 +35,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, chromconverter = "chemstation", raw = "raw")
+  metadata_format <- switch(metadata_format, chromconverter = "chemstation",
+                            raw = "raw")
 
   f <- file(path, "rb")
   on.exit(close(f))
@@ -35,7 +50,16 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
   if (version == "179"){
     seek(f, 348)
     filetype <- paste(readBin(f, "character", n = 2), collapse = "")
-    version <- paste(version, filetype, sep = "_")
+    if (filetype == "OL"){
+      bytes = "8b"
+    } else if (filetype == "GC"){
+      seek(f, offsets$software)
+      n <- get_nchar(f)
+      soft <- cc_collapse(readBin(f, "character", n = n))
+      chemstation_version <- strsplit(soft, " ")[[1]][1]
+      bytes <- ifelse(chemstation_version == "Mustang", "8b", "4b")
+    }
+    version <- paste(version, bytes, sep = "_")
   }
   decoder <- switch(version,
                     "8" = decode_delta,
@@ -43,8 +67,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                     "30" = decode_delta,
                     "130" = decode_delta,
                     "181" = decode_double_delta,
-                    "179_GC" = decode_double_array_gc,
-                    "179_OL" = decode_double_array_ol)
+                    "179_4b" = decode_double_array_4byte,
+                    "179_8b" = decode_double_array_8byte)
 
   # Sample Info
   # offsets <- list(sample = 858, description = 1369, method = 2574,
@@ -94,8 +118,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                                     "81" = 10,
                                     "30" = 13,
                                     "130" = 14,
-                                    "179_GC" = 10,
-                                    "179_OL" = 10,
+                                    "179_4b" = 10,
+                                    "179_8b" = 10,
                                     "181" = 10)
 
       meta <- lapply(offsets[seq_len(meta_slots)], function(offset){
@@ -139,16 +163,18 @@ get_chemstation_dir_name <- function(path){
   grep("\\.D|\\.d$", sp, ignore.case = TRUE, value = TRUE)
 }
 
+#' Get number of characters for Agilent segment
 #' @noRd
 get_nchar <- function(f){
   as.numeric(readBin(f, what = "raw", n = 1))
 }
 
 #' Decode double delta array
-#' @noRd
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
+#' @noRd
+
 decode_double_delta <- function(file, offset) {
 
   seek(file, 0, 'end')
@@ -184,11 +210,12 @@ decode_double_delta <- function(file, offset) {
 }
 
 #' Decode double array
-#' @noRd
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
-decode_double_array_gc <- function(file, offset) {
+#' @noRd
+
+decode_double_array_4byte <- function(file, offset) {
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
   offset <- 6144
@@ -202,7 +229,7 @@ decode_double_array_gc <- function(file, offset) {
 
 #' Decode double array
 #' @noRd
-decode_double_array_ol <- function(file, offset) {
+decode_double_array_8byte <- function(file, offset) {
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
   offset <- 6144
@@ -214,10 +241,11 @@ decode_double_array_ol <- function(file, offset) {
 }
 
 #' Decode delta array
-#' @noRd
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
+#' @noRd
+
 decode_delta <- function(file, offset) {
     seek(file, 0, 'end')
     fsize <- seek(file, NA, "current")
@@ -306,7 +334,7 @@ get_agilent_offsets <- function(version){
               units = 326,
               data_start = 512
             )
-  } else if (version %in% c("179","179_GC", "179_OL", "181")){
+  } else if (version %in% c("179","179_4b", "179_8b", "181")){
     offsets <- list(
       version = 326,
       file_type = 347, #0x15B

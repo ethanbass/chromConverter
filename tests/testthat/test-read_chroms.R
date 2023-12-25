@@ -43,9 +43,11 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   skip_on_cran()
   skip_if_not_installed("entab")
   file <- "testdata/dad1.uv"
+
   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE,
                     read_metadata = TRUE, progress_bar = FALSE)
+
   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
@@ -55,19 +57,23 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
 
 test_that("Shimadzu ascii parser works", {
   file <- "testdata/ladder.txt"
+
   x <- read_chroms(file, format_in = "shimadzu_fid", find_files = FALSE,
                    progress_bar = FALSE)
+
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 })
 
 test_that("read_mzml works", {
+  skip_on_cran()
   ext_filepath <- system.file("extdata", package = "RaMS")
   DAD_filepath <- list.files(ext_filepath, full.names = TRUE,
-                             pattern = "uv_test_mini.mzML")
+                             pattern = "uv_test_mini.mzML.gz")
   dad_long <- read_mzml(DAD_filepath, what = "DAD", verbose = FALSE)
   expect_equal(dad_long,
-               RaMS::grabMSdata(files = DAD_filepath, grab_what = "DAD", verbosity = FALSE)
+               RaMS::grabMSdata(files = DAD_filepath, grab_what = "DAD",
+                                verbosity = FALSE)
   )
   dad_wide <- read_mzml(DAD_filepath, what = "DAD", verbose = FALSE,
                         data_format = "wide")
@@ -85,15 +91,28 @@ test_that("Rainbow parser can read chemstation 131 files", {
   skip_if_missing_dependecies()
   skip_on_cran()
   skip_on_ci()
+
   x1 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "rainbow",
                     find_files = FALSE,
                     read_metadata = TRUE,
                     progress_bar = FALSE)
+
   expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
   expect_equal(attr(x1[[1]], "parser"), "rainbow")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
+  expect_equal(attr(x1$dad1, "metadata")$unit, "mAU")
+
+  x2 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "rainbow",
+                    find_files = FALSE, data_format = "long",
+                    read_metadata = TRUE,
+                    progress_bar = FALSE)
+  expect_equal(nrow(x2$dad1), nrow(x1$dad1)*ncol(x1$dad1))
+  expect_equal(colnames(x2$dad1), c("rt", "lambda", "intensity"))
+  expect_equal(attr(x2$dad1, "metadata")$unit, "mAU")
+  expect_equal(attr(x2[[1]], "data_format"), "long")
+  expect_equal(attr(x2[[1]], "parser"), "rainbow")
 })
 
 test_that("chromconverter parser can read chemstation 130 files", {
@@ -132,14 +151,15 @@ test_that("read_chroms exports cdf files correctly", {
   path_out <-  tempdir(check = TRUE)
   on.exit(unlink(c(fs::path(path_out, "ladder", ext = "cdf"), path_out)))
   file <- "testdata/ladder.txt"
-  x1 <- read_chroms(paths = file, format_in = "shimadzu_fid", export = TRUE, path_out = path_out,
-                    export_format = "cdf", progress_bar = FALSE)
+  x1 <- read_chroms(paths = file, format_in = "shimadzu_fid", export = TRUE,
+                    path_out = path_out, export_format = "cdf",
+                    progress_bar = FALSE)
   x1_out <- read_cdf(fs::path(path_out, "ladder", ext = "cdf"))
   expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
 })
 
 test_that("read_peaklist can read chemstation reports", {
-  path <- "testdata/RUTIN2.D/Report.TXT"
+  path <- "testdata/RUTIN2.D/"
   x <- read_peaklist(path, format_in = "chemstation")
   expect_equal(class(x[[1]]), "list")
   expect_equal(class(x[[1]][[1]]), "data.frame")
@@ -166,17 +186,16 @@ test_that("read_peaklist can read chemstation reports", {
 test_that("read_peaklist can read 'Shimadzu' fid files", {
   path <- "testdata/ladder.txt"
   x <- read_peaklist(path, format_in = "shimadzu_fid", progress_bar = FALSE)
-  expect_equal(class(x[[1]]), "list")
-  expect_equal(class(x[[1]][[1]]), "data.frame")
-  expect_equal(x[[1]][[1]][[1,"sample"]], "ladder")
-  expect_equal(colnames(x[[1]][[1]]),
+  expect_equal(class(x[[1]]), "data.frame")
+  expect_equal(x[[1]][[1,"sample"]], "ladder")
+  expect_equal(colnames(x[[1]]),
                c("sample", "rt", "start", "end", "area", "height"))
+
   x <- read_peaklist(path, format_in = "shimadzu_fid", data_format = "original")
-  expect_equal(class(x[[1]]), "list")
-  expect_equal(class(x[[1]][[1]]), "data.frame")
-  expect_equal(x[[1]][[1]][[1,"sample"]], "ladder")
-  expect_equal(x[[1]][[1]][[1,"sample"]], "ladder")
-  expect_equal(colnames(x[[1]][[1]]),
+  expect_equal(class(x[[1]]), "data.frame")
+  expect_equal(x[[1]][[1,"sample"]], "ladder")
+  expect_equal(x[[1]][[1,"sample"]], "ladder")
+  expect_equal(colnames(x[[1]]),
                c("sample","Peak.","R.Time","I.Time","F.Time","Area","Height",
                  "A.H","Conc.","Mark","ID.","Name", "k.", "Plate..", "Plate.Ht.",
                  "Tailing", "Resolution", "Sep.Factor", "Area.Ratio", "Height.Ratio",

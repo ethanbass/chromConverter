@@ -10,12 +10,16 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
   on.exit(close(f))
 
   magic <- readBin(f, what = "raw", n = 4)
-  magic <- paste(paste0("x",as.character(magic)),collapse="/")
+  magic <- paste(paste0("x",as.character(magic)),collapse = "/")
   # magic
   filetype <- switch(magic,
                      "x01/x32/x00/x00" = "AgilentChemstationMS",
                      "x02/x02/x00/x00" = "AgilentMasshunterDADHeader",
                      # "x02/x33/x30/x00" = "AgilentChemstationMWD",
+                     "x02/x32/x00/x00" = "AgilentChemstationMWD",
+                     # "x02/x33/x00/x00" = "AgilentChemstationMWD",
+                     # "x03/x31/x00/x00" = "AgilentChemstationMWD2"
+                     # "x01/x32/x00/x00" = "AgilentChemstationMS"
                      "x03/x02/x00/x00" = "AgilentMasshunterDAD",
                      "x02/x33/x30/x00" = "chemstation_30",
                      "x02/x33/x31/x00" = "chemstation_31",
@@ -36,7 +40,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
   if (filetype == "chemstation_131"){
     seek(f, 348)
     magic2 <- readBin(f, what="character", n = 2)
-    magic2 <- paste(magic2, collapse="")
+    magic2 <- paste(magic2, collapse = "")
     filetype <- switch(magic2, "OL" = "openlab_131",
                    "LC" = "chemstation_131")
   }
@@ -58,7 +62,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
 
 #' Check parser
 #' @noRd
-check_parser <- function(format_in, parser=NULL, find = FALSE){
+check_parser <- function(format_in, parser = NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd","csd","wsd"),
                           chromconverter = c("agilent_dx", "cdf", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
@@ -67,9 +71,11 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
                                              "chemstation_130", "chemstation_131",
                                              "openlab_131",
                                              "chemstation_179", "chemstation_81",
-                                             "chemstation_181", "mzml", "mdf",
+                                             "chemstation_181", "mzml", "mzxml",
+                                             "mdf", "shimadzu_ascii",
                                              "shimadzu_fid", "shimadzu_dad",
-                                             "shimadzu_lcd", "waters_arw"),
+                                             "shimadzu_lcd", "waters_arw",
+                                             "waters_raw", "waters_chro"),
                           aston = c("chemstation", "chemstation_uv",
                                     "chemstation_131",
                                     "masshunter_dad", "other"),
@@ -97,15 +103,19 @@ check_parser <- function(format_in, parser=NULL, find = FALSE){
     }
     possible_parsers <- names(allowed_formats)[grep(format_in, allowed_formats)]
     if (length(possible_parsers) > 1){
-      possible_parsers <- possible_parsers[match(
-        c("thermoraw", "entab", "chromconverter", "rainbow", "aston"), possible_parsers)]
-      if (any(is.na(possible_parsers))){
-        possible_parsers <- possible_parsers[-which(is.na(possible_parsers))]
+      if (format_in == "waters_raw"){
+        possible_parsers <- c("rainbow")
+      } else{
+        possible_parsers <- possible_parsers[match(
+          c("thermoraw", "entab", "chromconverter", "rainbow", "aston"), possible_parsers)]
+        if (any(is.na(possible_parsers))){
+          possible_parsers <- possible_parsers[-which(is.na(possible_parsers))]
+        }
       }
     }
     possible_parsers[1]
   } else{
-    if (!(format_in %in% allowed_formats[[parser]])){
+    if (!(format_in %in% allowed_formats[[tolower(parser)]])){
       stop("Mismatched arguments!", "\n\n", "The ", paste0(sQuote(format_in), " format can be converted using the following parsers: ",
         paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]), collapse = ", "), ". \n \n",
         "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
@@ -128,7 +138,8 @@ extract_filenames <- function(files){
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n){
-                         ifelse(any(grepl("\\.[Dd]", n)), grep("\\.[Dd]", n, value = TRUE), tail(n,1))
+                         ifelse(any(grepl("\\.[Dd]", n)),
+                                grep("\\.[Dd]", n, value = TRUE), tail(n,1))
                        }))
   } else {
     file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
@@ -140,18 +151,37 @@ extract_filenames <- function(files){
 #' @noRd
 format_to_extension <- function(format_in){
   switch(format_in,
-         "agilent_d" = ".d|.D",
-         "chemstation_uv" = ".uv|.UV",
-          "chemstation_ch" = ".ch|.CH",
-         "chemstation_fid" = ".ch|.CH",
-          "chemstation_csv" = ".csv|.CSV",
-         "masshunter_dad" = ".sp|.SP",
-         "shimadzu_fid" = ".txt",
-         "shimadzu_dad" = ".txt",
-         "chromeleon_uv" = ".txt",
-    "thermoraw" = ".raw", "mzml" = ".mzml", "waters_arw" = ".arw",
-    "waters_raw" = ".raw", "msd" = ".", "csd" =".", "wsd" =".",
-    "mdf" = ".mdf|.MDF", "other"=".")
+         "agilent_d" = "\\.d$",
+         "agilent_dx" = "\\.dx$",
+         "chemstation_uv" = "\\.uv$",
+         "chemstation_31" = "\\.uv$",
+         "chemstation_131" = "\\.uv$",
+         "chemstation_ch" = "\\.ch$",
+         "chemstation_fid" = "\\.ch$",
+         "chemstation_179" = "\\.ch$",
+         "chemstation_181" = "\\.ch$",
+         "chemstation_81" = "\\.ch$",
+         "chemstation_30" = "\\.ch$",
+         "chemstation_130" = "\\.ch$",
+         "chemstation_csv" = "\\.csv$",
+         "masshunter_dad" = "\\.sp$",
+         "shimadzu_txt" = "\\.txt$",
+         "shimadzu_fid" = "\\.txt$",
+         "shimadzu_dad" = "\\.txt$",
+         "shimadzu_lcd" = "\\.lcd$",
+         "chromeleon_uv" = "\\.txt$",
+         "thermoraw" = "\\.raw$",
+         "cdf" = "\\.cdf$",
+         "mzml" = "\\.mzml$",
+         "mzxml" = "\\.mzxml$",
+         "waters_arw" = "\\.arw$",
+         "waters_raw" = "\\.raw$",
+         "msd" = "\\.",
+         "csd" ="\\.",
+         "wsd" ="\\.",
+         "mdf" = "\\.mdf$",
+         "other" = "\\.",
+         "\\.")
 }
 
 #' @noRd
@@ -181,24 +211,6 @@ set_temp_directory <- function(){
   } else{
     stop("Must specify directory to export files.")
   }
-}
-
-#' Extract header from Shimadzu ascii files
-#' @noRd
-extract_shimadzu_header <- function(x, chrom.idx, sep){
-  index <- chrom.idx + 1
-  line <- x[index]
-  l <- length(strsplit(x = line, split = sep)[[1]])
-  header <- strsplit(x = line, split = sep)[[1]]
-  while (l > 1) {
-    index <- index + 1
-    line <- strsplit(x = x[index], split = sep)[[1]]
-    l <- length(line)
-    if (l == 1 | suppressWarnings(!is.na(as.numeric(line[1]))))
-      break
-    header <- rbind(header, line)
-  }
-  list(header,index)
 }
 
 #' Check for suggested package
@@ -247,4 +259,64 @@ rename_list <- function(x, new_names){
   }
   names(x) <- new_names
   x
+}
+
+#' @noRd
+collapse_list <- function(x){
+  while(is.list(x) && length(x) == 1){
+    x <- x[[1]]
+  }
+  x
+}
+
+#' Split vector by position
+#' @note From https://stackoverflow.com/questions/16357962/r-split-numeric-vector-at-position
+#' @noRd
+split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
+
+#' Configure python environment
+#'
+#' Configures reticulate environment for parsers.
+#' @name configure_python_environment
+#' @param parser Either \code{aston}, \code{rainbow}, or \code{olefile} (for
+#' \code{read_shimadzu_lcd}).
+#' @param return_boolean Logical. Whether to return a Boolean value indicating
+#' if the chromConverter environment is correctly configured.
+#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
+#' indicating whether the chromConverter environment is configured correctly.
+#' Otherwise, there is no return value.
+#' @author Ethan Bass
+#' @import reticulate
+#' @export
+configure_python_environment <- function(parser, return_boolean = FALSE){
+  install <- FALSE
+  if (!dir.exists(miniconda_path())){
+    install <- readline("It is recommended to install miniconda in your R library to use rainbow parsers. Install miniconda now? (y/n)")
+    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
+      install_miniconda()
+    }
+  }
+  env <- reticulate::configure_environment("chromConverter")
+  if (!env){
+    reqs <- get_parser_reqs(parser)
+    reqs_available <- sapply(reqs, reticulate::py_module_available)
+    if (!all(reqs_available)){
+      conda_install(envname = "chromConverter", reqs[which(!reqs_available)],
+                    pip = TRUE)
+    }
+  }
+  assign_fn <- switch(parser, aston = assign_trace_file,
+                      rainbow = assign_rb_read,
+                      olefile = function(...){})
+  assign_fn()
+  if (return_boolean){
+    env
+  }
+}
+
+#' @noRd
+get_parser_reqs <- function(parser){
+  switch(parser, "aston" = c("pandas","scipy","numpy","aston"),
+         "olefile" = c("olefile"),
+         "rainbow" = c("numpy", "rainbow-api"))
 }

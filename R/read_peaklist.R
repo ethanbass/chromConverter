@@ -10,8 +10,7 @@
 #' include: \code{chemstation} or \code{shimadzu}.
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format_in}.
-#' @param data_format Whether to output data in wide or long format. Either
-#' \code{wide} or \code{long}.
+#' @param data_format Either \code{chromatographr} or \code{original}.
 #' @param read_metadata Logical, whether to attach metadata (if it's available).
 #' Defaults to TRUE.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
@@ -63,19 +62,12 @@ read_peaklist <- function(paths, find_files,
     parser <- purrr::partial(read_chemstation_reports,
                              data_format = data_format,
                              metadata_format = metadata_format)
-  } else if (format_in == "shimadzu_fid"){
+  } else if (grepl("shimadzu", format_in)){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
-    parser <- partial(read_shimadzu, format_in = "fid", what = "peak_table",
-                         # format_out = format_out,
+    parser <- partial(read_shimadzu, what = "peak_table",
                          data_format = "wide",
                          read_metadata = read_metadata,
                          peaktable_format = data_format)
-  } else if (format_in == "shimadzu_dad"){
-    pattern <- ifelse(is.null(pattern), ".txt", pattern)
-    parser <- partial(read_shimadzu, format_in = "dad", what = "peak_table",
-                      # format_out = format_out,
-                      data_format = "wide",
-                      read_metadata = read_metadata)
   }
 
   if (find_files){
@@ -103,9 +95,13 @@ read_peaklist <- function(paths, find_files,
       try(parser(file), silent = TRUE)
     })
     data <- lapply(seq_along(data), function(i){
-      lapply(data[[i]], function(xx){
-        cbind(sample = file_names[i], xx)
-      })
+      if (inherits(data[[i]], "list")){
+        lapply(data[[i]], function(xx){
+          cbind(sample = file_names[i], xx)
+        })
+      } else {
+        cbind(sample = file_names[i], data[[i]])
+      }
     })
     class(data) <- "peak_list"
     names(data) <- file_names

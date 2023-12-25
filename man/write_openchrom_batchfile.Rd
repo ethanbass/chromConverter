@@ -2,7 +2,8 @@
 % Please edit documentation in R/call_openchrom.R
 \name{write_openchrom_batchfile}
 \alias{write_openchrom_batchfile}
-\title{Writes OpenChrom XML batch file}
+\title{Writes OpenChrom XML batch file
+This function is called internally by \code{call_openchrom}.}
 \usage{
 write_openchrom_batchfile(
   files,
@@ -26,6 +27,7 @@ Returns path to newly created xml batch file.
 }
 \description{
 Writes OpenChrom XML batch file
+This function is called internally by \code{call_openchrom}.
 }
 \author{
 Ethan Bass

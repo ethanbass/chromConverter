@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_ch.R
 \name{read_chemstation_ch}
 \alias{read_chemstation_ch}
-\title{Parser for reading Agilent ('.ch') files into R}
+\title{Read 'ChemStation' CH files}
 \usage{
 read_chemstation_ch(
   path,
@@ -25,11 +25,22 @@ read_chemstation_ch(
 or \code{raw}.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}
-(retention time x wavelength).
+A 2D chromatogram in the format specified by \code{data_format} and
+\code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
+be returned with retention times as rows and a single column for the intensity.
+If \code{long} format is requested, two columns will be returned: one for the
+retention time and one for the intensity. The \code{format_out} argument
+determines whether the chromatogram is returned as a \code{matrix} or
+\code{data.frame}. Metadata can be attached to the chromatogram as
+\code{\link{attributes}} if \code{read_metadata} is {TRUE}.
 }
 \description{
-Parser for reading Agilent ('.ch') files into R
+Agilent \code{.ch} files come in several different varieties. This parser
+can automatically detect and read several versions of these files from
+'Agilent ChemStation' and 'OpenLab', including versions \code{30} and \code{130},
+which are generally produced by ultraviolet detectors, as well as \code{81},
+\code{179}, and \code{181} which are generally produced by flame ionization
+detectors.
 }
 \note{
 This function was adapted from the

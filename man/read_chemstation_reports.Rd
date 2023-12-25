@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_report.R
 \name{read_chemstation_reports}
 \alias{read_chemstation_reports}
-\title{Read Agilent Chemstation Reports}
+\title{Read 'Agilent ChemStation' Reports}
 \usage{
 read_chemstation_reports(
   files,
@@ -11,7 +11,7 @@ read_chemstation_reports(
 )
 }
 \arguments{
-\item{files}{Paths to Chemstation report files.}
+\item{files}{Paths to 'ChemStation' report files.}
 
 \item{data_format}{Format to output data. Either \code{chromatographr} or
 \code{chemstation}.}
@@ -19,8 +19,12 @@ read_chemstation_reports(
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
 }
+\value{
+A data.frame containing the information from the specified
+'ChemStation' report.
+}
 \description{
-Read Agilent Chemstation Reports
+Read 'Agilent ChemStation' Reports
 }
 \author{
 Ethan Bass

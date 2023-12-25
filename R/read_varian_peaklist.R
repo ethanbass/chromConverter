@@ -3,6 +3,7 @@
 #' @param file Path to Varian peak list file.
 #' @importFrom utils read.csv
 #' @author Ethan Bass
+#' @return A data.frame containing the information from the specified report.
 #' @export
 
 read_varian_peaklist <- function(file){
@@ -14,11 +15,11 @@ read_varian_peaklist <- function(file){
   column_names[1] <- "compound"
   colnames(x) <- column_names
 
-  x <- x[-which(x$`Line#` == ""), ]
+  x <- x[-which(x$`Line#` == ""),]
   x <- x[-which(x$`Line#` == "Line#"),]
 
   x$Area <- as.numeric(x$Area)
   x$Height <- as.numeric(x$Height)
-  x <- x[,-16]
+  x <- x[, -16]
   x
 }

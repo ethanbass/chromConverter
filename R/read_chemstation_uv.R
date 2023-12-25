@@ -1,6 +1,8 @@
-#' Read 'Chemstation' DAD files
+#' Read 'ChemStation' DAD files
 #'
-#' Parser for reading Agilent UV (.uv) files into R.
+#' Agilent \code{.uv} files come in several different varieties. This parser can
+#' automatically detect and read several versions of these files from
+#' 'Agilent ChemStation' and 'OpenLab', including versions \code{31} and \code{131}.
 #'
 #' @importFrom utils head tail
 #' @param path Path to \code{.uv} file.
@@ -9,12 +11,18 @@
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
+#' @return A 3D chromatogram in the format specified by \code{data_format} and
+#' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
+#' be returned with retention times as rows and wavelengths as columns. If
+#' \code{long} format is requested, three columns will be returned: one for the
+#' retention time, one for the wavelength and one for the intensity. The
+#' \code{format_out} argument determines whether the chromatogram is returned as
+#' a \code{matrix} or \code{data.frame}. Metadata can be attached to the
+#' chromatogram as \code{\link{attributes}} if \code{read_metadata} is {TRUE}.
 #' @author Ethan Bass
 #' @note This function was adapted from the parser in the rainbow project
 #' licensed under GPL 3 by Evan Shi
-#' (https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html).
+#' \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
 #' @export
 
 read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),

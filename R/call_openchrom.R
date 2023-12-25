@@ -5,7 +5,7 @@
 #' [OpenChrom](https://lablicate.com/platform/openchrom) (version 0.4.0) must be
 #' manually installed. The command line interface is no longer supported in the
 #' latest versions of OpenChrom (starting with version 0.5.0), so the function
-#' will not work with these new versions.
+#' will not work with these newer versions.
 #'
 #' The \code{call_openchrom} works by creating an \code{xml} batchfile and
 #' feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
@@ -34,9 +34,12 @@
 #' @param return_paths Logical. If TRUE, the function will return a character
 #' vector of paths to the newly created files.
 #' @param verbose Logical. Whether to print output from OpenChrom to the console.
-#' @return If \code{return_paths} is TRUE, the function will return a vector of paths to the newly created files.
-#' If \code{return_paths} is FALSE and \code{export_format} is \code{csv}, the function will return a list
-#' of chromatograms in \code{data.frame} format. Otherwise, it will not return anything.
+#' @return If \code{return_paths} is \code{FALSE}, the function will return a
+#' list of chromatograms (if an appropriate parser is available to import the
+#' files into R). The chromatograms will be returned in \code{matrix} or
+#' \code{data.frame} format according to the value of {format_out}. If
+#' \code{return_paths} is \code{TRUE}, the function will return a character
+#' vector of paths to the newly created files.
 #' @section Side effects: Chromatograms will be exported in the format specified
 #' by \code{export_format} in the folder specified by \code{path_out}.
 #' @author Ethan Bass
@@ -95,6 +98,7 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 }
 
 #' Writes OpenChrom XML batch file
+#' This function is called internally by \code{call_openchrom}.
 #' @import xml2
 #' @import magrittr
 #' @param files Paths to files for conversion
@@ -176,6 +180,9 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
     }
   } else{
     path_parser <- path
+  }
+  if (grepl("app/?$", path_parser)){
+    path_parser <- fs::path(path_parser, "Contents/MacOS/openchrom")
   }
   writeLines(path_parser,
              con = system.file('shell/path_to_openchrom_commandline.txt',

@@ -12,7 +12,9 @@ call_rainbow(
   data_format = c("wide", "long"),
   by = c("detector", "name"),
   what = NULL,
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  collapse = TRUE,
+  precision = 1
 )
 }
 \arguments{
@@ -32,6 +34,11 @@ call_rainbow(
 \code{ELSD}). This argument only applies if \code{by == "detector"}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to TRUE.}
+
+\item{collapse}{Logical. Whether to collapse lists that only contain a single
+element.}
+
+\item{precision}{Number of decimals to round mz values. Defaults to 1.}
 }
 \value{
 Returns a (nested) list of \code{matrices} or \code{data.frames} according to

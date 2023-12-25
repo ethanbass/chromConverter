@@ -17,18 +17,24 @@
 #' @param by How to order the list that is returned. Either \code{detector}
 #' (default) or \code{name}.
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to TRUE.
+#' @param collapse Logical. Whether to collapse lists that only contain a single
+#' element.
+#' @param precision Number of decimals to round mz values. Defaults to 1.
 #' @author Ethan Bass
 #' @return Returns a (nested) list of \code{matrices} or \code{data.frames} according to
 #' the value of \code{format_out}. Data is ordered according to the value of
 #' \code{by}.
 #' @export
 
-call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshunter",
-                                             "chemstation", "chemstation_uv", "chemstation_fid"),
+call_rainbow <- function(file,
+                         format_in = c("agilent_d", "waters_raw", "masshunter",
+                                       "chemstation", "chemstation_uv",
+                                       "chemstation_fid"),
                          format_out = c("matrix", "data.frame"),
                          data_format = c("wide", "long"),
                          by = c("detector","name"), what = NULL,
-                         read_metadata = TRUE){
+                         read_metadata = TRUE, collapse = TRUE,
+                         precision = 1){
   check_rb_configuration()
   by <- match.arg(by, c("detector","name"))
   format_out <- match.arg(format_out, c("matrix","data.frame"))
@@ -46,7 +52,7 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
   if (format_in %in% c("chemstation")){
     by <- "single"
   }
-  x <- converter(file)
+  x <- converter(file, prec = as.integer(precision))
   if (by == "detector"){
     if (!is.null(what)){
       what_not_present <- which(!(what %in% names(x$by_detector)))
@@ -63,6 +69,7 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
                         read_metadata = read_metadata)
       })
       names(dtr_dat) <- extract_rb_names(dtr)
+      if (collapse) dtr_dat <- collapse_list(dtr_dat)
       dtr_dat
     })
   } else if (by == "name"){
@@ -78,16 +85,22 @@ call_rainbow <- function(file, format_in = c("agilent_d", "waters_raw", "masshun
   xx
 }
 
+#' Extract data with rainbow
+#' This function is called internally by \code{call_rainbow}.
+#' @author Ethan Bass
 #' @noRd
 extract_rb_data <- function(xx, format_out = "matrix",
-                            data_format = c("wide","long"),
+                            data_format = c("wide", "long"),
                             read_metadata = TRUE){
-  data_format <- match.arg(data_format, c("wide","long"))
+  data_format <- match.arg(data_format, c("wide", "long"))
   data <- xx$data
   try(rownames(data) <- xx$xlabels)
   colnames(data) <- xx$ylabels
   if (data_format == "long"){
-    data <- reshape_chrom(data, data_format = "long")
+    names_to <- switch(xx$detector, "MS" = "mz",
+                       "UV" = "lambda",
+                              "lambda")
+    data <- reshape_chrom(data, data_format = "long", names_to = names_to)
   }
   if (format_out == "data.frame"){
     data <- as.data.frame(data)
@@ -101,6 +114,8 @@ extract_rb_data <- function(xx, format_out = "matrix",
   data
 }
 
+#' Extract 'rainbow' element names.
+#' This function is called internally by \code{call_rainbow}.
 #' @noRd
 extract_rb_names <- function(xx){
   sapply(xx, function(xxx){
@@ -108,41 +123,8 @@ extract_rb_names <- function(xx){
   })
 }
 
-
-#' Configure rainbow
-#'
-#' Configures reticulate to use rainbow file parsers.
-#' @name configure_rainbow
-#' @param return_boolean Logical. Whether to return a Boolean value indicating
-#' if the chromConverter environment is correctly configured.
-#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
-#' indicating whether the chromConverter environment is configured correctly.
-#' Otherwise, there is no return value.
-#' @author Ethan Bass
-#' @import reticulate
-#' @export
-configure_rainbow <- function(return_boolean = FALSE){
-  install <- FALSE
-  if (!dir.exists(miniconda_path())){
-    install <- readline("It is recommended to install miniconda in your R library to use rainbow parsers. Install miniconda now? (y/n)")
-    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-      install_miniconda()
-    }
-  }
-  env <- reticulate::configure_environment("chromConverter")
-  if (!env){
-    reqs <- c("numpy","rainbow-api")
-    reqs_available <- sapply(reqs, reticulate::py_module_available)
-    if (!all(reqs_available)){
-      conda_install(envname = "chromConverter", reqs[which(!reqs_available)], pip = TRUE)
-    }
-  }
-  assign_rb_read()
-  if (return_boolean){
-    env
-  }
-}
-
+#' Assign 'rainbow' read
+#' This function is called internally by \code{call_rainbow}.
 #' @noRd
 assign_rb_read <- function(){
   pos <- 1
@@ -151,13 +133,15 @@ assign_rb_read <- function(){
   assign("rb_parse_agilent", reticulate::import("rainbow.agilent"), envir = envir)
 }
 
+#' Check 'rainbow' configuration
+#' This function is called internally by \code{call_rainbow}.
 #' @noRd
 check_rb_configuration <- function(){
   assign_rb_read()
   if (length(rb_read) == 0){
     ans <- readline("rainbow not found. Configure rainbow? (y/n)?")
     if (ans %in% c('y', "Y", "YES", "yes", "Yes")){
-      configure_rainbow()
+      configure_python_environment(parser = "rainbow")
     }
   }
 }

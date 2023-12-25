@@ -12,7 +12,7 @@
 #' @export
 
 call_entab <- function(file, data_format = c("wide", "long"),
-                       format_in = NULL,
+                       format_in = "",
                        format_out = c("matrix", "data.frame"),
                        read_metadata = TRUE,
                        metadata_format = c("chromconverter", "raw")){
@@ -28,17 +28,29 @@ call_entab <- function(file, data_format = c("wide", "long"),
   metadata_format <- switch(metadata_format,
                             chromconverter = format_in, raw = "raw")
   r <- entab::Reader(file)
+  file_format <- r$parser()
   x <- entab::as.data.frame(r)
-  signal.idx <- grep("signal", colnames(x))
-  if (length(signal.idx) == 1){
-    colnames(x)[signal.idx] <- "wavelength"
-  }
-  if (data_format == "wide"){
+  if (grepl("dad$|uv$", file_format)){
+    signal.idx <- grep("signal", colnames(x))
+    if (length(signal.idx) == 1){
+      colnames(x)[signal.idx] <- "wavelength"
+    }
+    if (data_format == "wide"){
       x <- reshape_chrom_wide(x, time_var = "time", lambda_var = "wavelength",
                               value_var = "intensity")
-  }
-  if (format_out == "matrix"){
-    x <- as.matrix(x)
+      if (format_out == "matrix"){
+        x <- as.matrix(x)
+      }
+    }
+  } else if (grepl("fid$", file_format)){
+    if (data_format == "wide"){
+      x <- data.frame(row.names = x$time, intensity = x$intensity)
+    }
+    if (format_out == "matrix"){
+      x <- as.matrix(x)
+    }
+  } else if (grepl("ms$", file_format)){
+    colnames(x)[1] <- "rt"
   }
   if (read_metadata){
     meta <- r$metadata()

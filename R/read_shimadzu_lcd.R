@@ -34,6 +34,10 @@
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
+#' @return A 3D chromatogram from the PDA stream in \code{matrix} or
+#' \code{data.frame} format, according to the value of \code{format_out}.
+#' The chromatograms will be returned in \code{wide} or \code{long} format
+#' according to the value of \code{data_format}.
 #' @note This parser is experimental and may still
 #' need some work. It is not yet able to interpret much metadata from the files.
 #' @export
@@ -46,7 +50,7 @@ read_shimadzu_lcd <- function(path, format_out = c("matrix", "data.frame"),
 
   olefile_installed <- reticulate::py_module_available("olefile")
   if (!olefile_installed){
-    configure_olefile()
+    configure_python_environment(parser = "olefile")
   }
 
   # read wavelengths from "Wavelength Table" stream
@@ -75,6 +79,7 @@ read_shimadzu_lcd <- function(path, format_out = c("matrix", "data.frame"),
 }
 
 #' Read Shimadzu "Method" stream
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
 read_sz_method <- function(path){
@@ -110,6 +115,7 @@ read_sz_method <- function(path){
 }
 
 #' Infer times from 'Shimadzu' Method stream
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
 get_sz_times <- function(sz_method, nval){
@@ -151,6 +157,7 @@ read_shimadzu_raw <- function(path, n_lambdas = NULL){
 }
 
 #' Export OLE stream
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' Use olefile to export te specified stream.
 #' @param file Path to ole file.
 #' @author Ethan Bass
@@ -172,10 +179,7 @@ export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
     reticulate::py_run_string('data = st.read()')
 
     if (missing(path_out)){
-      path_out <- tempfile()
-    }
-    if (.Platform$OS.type == "windows"){
-      path_out <- gsub("\\\\", "/", path_out)
+      path_out <- fs::file_temp()
     }
     if (remove_null_bytes){
       reticulate::py_run_string("data = data.replace(b'\\x00', b'')")
@@ -186,7 +190,25 @@ export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
   }
 }
 
+#' Extract wavelengths from Shimadzu LCD
+#' This function is called internally by \code{read_shimadzu_lcd}.
+#' @author Ethan Bass
+#' @noRd
+read_shimadzu_wavelengths <- function(path){
+  path_wavtab <- export_stream(path, stream =  c("PDA 3D Raw Data", "Wavelength Table"))
+  f <- file(path_wavtab, "rb")
+  on.exit(close(f))
+  n_lambda <- readBin(f, what="integer", size = 4)
+  count <- 1
+  # lambdas <- numeric(n_lambda)
+  lambdas <- sapply(seq_len(n_lambda), function(i){
+    readBin(f, what="integer", size = 4)/100
+  })
+  lambdas
+}
+
 #' Read 'Shimadzu' LCD data block
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
 decode_shimadzu_block <- function(file) {
@@ -239,6 +261,7 @@ decode_shimadzu_block <- function(file) {
 }
 
 #' Return twos complement from binary string
+#' This function is called internally by \code{read_shimadzu_lcd}.
 #' @noRd
 twos_complement <- function(bin, exp){
   if (missing(exp)){
@@ -280,56 +303,3 @@ integer_to_binary <- function(x, n) {
   # Return
   x
 }
-
-#' Extract wavelengths from Shimadzu LCD
-#' @author Ethan Bass
-#' @noRd
-read_shimadzu_wavelengths <- function(path){
-  path_wavtab <- export_stream(path, stream =  c("PDA 3D Raw Data", "Wavelength Table"))
-  f <- file(path_wavtab, "rb")
-  on.exit(close(f))
-  n_lambda <- readBin(f, what="integer", size = 4)
-  count <- 1
-  # lambdas <- numeric(n_lambda)
-  lambdas <- sapply(seq_len(n_lambda), function(i){
-    readBin(f, what="integer", size = 4)/100
-  })
-  lambdas
-}
-
-
-#' Configure olefile
-#'
-#' Configures reticulate to use olefile. Olefile is required to use the 'Shimadzu'
-#' LCD parser.
-#' @name configure_olefile
-#' @param return_boolean Logical. Whether to return a Boolean value indicating
-#' if the chromConverter environment is correctly configured.
-#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
-#' indicating whether the chromConverter environment is configured correctly.
-#' Otherwise, there is no return value.
-#' @author Ethan Bass
-#' @import reticulate
-#' @export
-configure_olefile <- function(return_boolean = FALSE){
-  install <- FALSE
-  if (!dir.exists(miniconda_path())){
-    install <- readline("It is recommended to install miniconda in your R library to use the Shimadzu LCD parser. Install miniconda now? (y/n)")
-    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-      install_miniconda()
-    }
-  }
-  env <- reticulate::configure_environment("chromConverter")
-  if (!env){
-    reqs <- c("olefile")
-    reqs_available <- sapply(reqs, reticulate::py_module_available)
-    if (!all(reqs_available)){
-      conda_install(envname = "chromConverter", reqs[which(!reqs_available)],
-                    pip = TRUE)
-    }
-  }
-  if (return_boolean){
-    return(env)
-  }
-}
-

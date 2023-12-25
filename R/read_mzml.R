@@ -26,8 +26,8 @@
 
 read_mzml <- function(path, format_out = c("matrix", "data.frame"),
                       data_format = c("long","wide"),
-                      parser=c("RaMS","mzR"),
-                      what=c("MS1","MS2", "BPC", "TIC", "DAD",
+                      parser = c("RaMS","mzR"),
+                      what = c("MS1","MS2", "BPC", "TIC", "DAD",
                              "chroms", "metadata", "everything"),
                       verbose = FALSE,
                       ...){
@@ -35,10 +35,11 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame"),
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("long","wide"))
   what <- match.arg(what, c("MS1","MS2", "BPC", "TIC", "DAD",
-                            "chroms", "metadata", "everything"), several.ok = TRUE)
+                            "chroms", "metadata", "everything"),
+                              several.ok = TRUE)
   if (all(c("MS1","MS2", "BPC", "TIC", "DAD",
             "chroms", "metadata", "everything") %in% what)){
-    what <- grep("everything",what, invert = TRUE,value = TRUE)
+    what <- grep("everything", what, invert = TRUE, value = TRUE)
   }
   if (parser == "RaMS"){
     data <- RaMS::grabMSdata(path, grab_what = what, verbosity = verbose, ...)

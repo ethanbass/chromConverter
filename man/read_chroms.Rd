@@ -9,8 +9,9 @@ read_chroms(
   find_files,
   format_in = c("agilent_d", "agilent_dx", "chemstation", "chemstation_fid",
     "chemstation_ch", "chemstation_csv", "chemstation_uv", "masshunter_dad",
-    "chromeleon_uv", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd", "thermoraw", "mzml",
-    "waters_arw", "waters_raw", "msd", "csd", "wsd", "mdf", "other"),
+    "chromeleon_uv", "shimadzu_ascii", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
+    "thermoraw", "mzml", "mzxml", "waters_arw", "waters_raw", "msd", "csd", "wsd", "mdf",
+    "other"),
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
   format_out = c("matrix", "data.frame"),
@@ -24,11 +25,12 @@ read_chroms(
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = NULL,
-  dat = NULL
+  dat = NULL,
+  ...
 )
 }
 \arguments{
-\item{paths}{paths to files or folders containing files}
+\item{paths}{Paths to data files or directories containing the files.}
 
 \item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
 the function with a folder or vector of folders containing the files.
@@ -38,18 +40,19 @@ Otherwise, set to\code{FALSE}.}
 include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
 \code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
 \code{masshunter}, \code{masshunter_dad}, \code{chromeleon_uv},
-\code{shimadzu_fid}, \code{shimadzu_dad}, \code{thermoraw},
-\code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{cdf}, \code{mdf},
-\code{msd}, \code{csd}, \code{wsd}, or \code{other}.}
+\code{shimadzu_ascii}, \code{shimadzu_fid}, \code{shimadzu_dad},
+\code{thermoraw}, \code{waters_arw}, \code{waters_raw}, \code{mzml},
+\code{mzxml}, \code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd},
+or \code{other}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}
 
-\item{parser}{What parser to use. Current option are \code{chromconverter},
-\code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, or
-\code{rainbow}.}
+\item{parser}{What parser to use (optional). Current option are
+\code{chromconverter}, \code{aston}, \code{entab}, \code{thermoraw},
+\code{openchrom}, or \code{rainbow}.}
 
-\item{format_out}{R object format (i.e. data.frame or matrix).}
+\item{format_out}{Class of output (i.e. data.frame or matrix).}
 
 \item{data_format}{Whether to output data in wide or long format. Either
 \code{wide} or \code{long}.}
@@ -82,38 +85,52 @@ of clusters to use or a cluster object created by
 R console.}
 
 \item{sample_names}{An optional character vector of sample names. Otherwise
-sample names default to the basename of the specified files.}
+sample names default to the \code{\link{basename}} of the specified files.}
 
 \item{dat}{Existing list of chromatograms to append results.
 (Defaults to NULL).}
+
+\item{...}{Additional arguments to parser.}
 }
 \value{
 A list of chromatograms in \code{matrix} or \code{data.frame} format,
-according to the value of \code{format_out}.
+according to the value of \code{format_out}. Chromatograms may be returned
+in either \code{wide} or \code{long} format according to the value of
+\code{data_format}.
 }
 \description{
-Reads chromatograms from specified folders or vector of paths using file
-parsers from \href{https://github.com/bovee/aston}{Aston},
+Reads chromatograms from specified folders or vector of paths using either an
+internal parser or bindings to an external library, such as
+\href{https://github.com/bovee/aston}{Aston},
 \href{https://github.com/bovee/entab}{Entab},
 \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser},
 \href{https://lablicate.com/platform/openchrom}{OpenChrom},
-\href{https://rainbow-api.readthedocs.io/}{rainbow}, or internal parsers.
+\href{https://rainbow-api.readthedocs.io/}{rainbow}.
 }
 \details{
-Provides a general interface to chromConverter parsers. Currently recognizes
-'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'MassHunter' (\code{.dad})
-files, 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW'
-(\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
-(\code{.txt}). Also, wraps Openchrom parsers, which include many additional
-formats. To use 'Entab', 'ThermoRawFileParser', or 'Openchrom' parsers,
-they must be manually installed. Please see the instructions in the
+Provides a unified interface to all chromConverter parsers. Currently recognizes
+'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent
+MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
+'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
+(\code{.txt}), and 'Shimadzu LCD' files (preliminary support). Also, wraps
+'OpenChrom' parsers, which include many additional formats. To use 'Entab',
+'ThermoRawFileParser', or 'OpenChrom' parsers, they must be manually installed.
+Please see the instructions in the
 \href{https://ethanbass.github.io/chromConverter/}{README} for further details.
+
+If paths to individual files are provided, \code{read_chroms} will try to
+infer the file format and select an appropriate parser. However, when
+providing paths to directories, the file format must be specified using the
+\code{format_in} argument.
 }
 \section{Side effects}{
  If \code{export} is TRUE, chromatograms will be
 exported in the format specified by \code{export_format} in the folder
-specified by \code{path_out}. Currently, the only option for export is
-\code{csv} unless the \code{parser} is \code{openchrom}.
+specified by \code{path_out}. Currently, the most versatile option for
+exporting files is \code{csv}. However, unidimensional chromatograms can
+also be exported in ANDI Chromatography (netCDF) format by selecting
+\code{cdf}. If an \code{openchrom} parser is selected, ANIML and mzML are
+available as additional options.
 }
 
 \examples{

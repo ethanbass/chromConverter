@@ -1,14 +1,30 @@
+## chromConverter 0.6.0
+
+* Added parser for reading ANDI MS (`.cdf`) files.
+* Fixed parsing of Agilent MS files with 'entab' reader.
+* Fixed `read_chemstation_ch` parser to correctly read "Mustang Chemstation" 179 files with 8-byte encoding.
+* Re-factored `read_shimadzu` function and added support for new types of chromatograms (e.g. status, uv and total ion chromatograms). Added support for reading multiple types of chromatograms at once.
+* Added support for reading MS spectra from 'Shimadzu' ascii files using `read_shimadzu`.
+* Exported `write_cdf` and added additional arguments (`lambda` and `force`) for greater control by users.
+* Added internal parser for 1D 'Waters RAW' chromatograms (`read_waters_raw`).
+* Added `collapse` argument to `call_rainbow` and  to collapse superfluous lists. 
+* Added `...` argument to `read_chroms` for supplying additional arguments to parsers.
+* Added alias to `read_chroms` for reading `mzxml` files with `RaMS`.
+* Added `precision` argument to `call_rainbow` to control number of digits "mz" values are rounded to. (Also changed default behavior so values are rounded to one decimal by default).
+* Fixed bug in `read_shimadzu_lcd` on Windows due to issue with passing escaped paths to Python.
+* Updated documentation of various functions.
+
 ## chromConverter 0.5.0
 
 ### New features
 
 * Added support for parallel processing through `pbapply` package. (**Note**: The `pbapply` package must be manually installed to enable parallel processing). 
-* Added internal parser for 'Agilent Chemstation' version 31 files (through `read_chemstation_uv` function).
+* Added internal parser for 'Agilent ChemStation' version 31 files (through `read_chemstation_uv` function).
 * Added support for 'Agilent OpenLab' version 131 files through internal parser. 
 * Added preliminary support for reading 'Agilent' (`.dx`) files (through `read_agilentdx` function).
-* Added support for reading 'Chemstation' REPORT files.
+* Added support for reading 'ChemStation' REPORT files.
 * Added parser for Shimadzu `.lcd` files through the `read_shimadzu_lcd` function. Only the PDA stream (not MS) is currently supported.
-* Added `read_peaklist` function for reading peak lists. Currently 'Agilent Chemstation' and 'Shimadzu ASCII' formats are supported.
+* Added `read_peaklist` function for reading peak lists. Currently 'Agilent ChemStation' and 'Shimadzu ASCII' formats are supported.
 * Added `verbose` argument to control console output for external parsers ('OpenChrom' and 'ThermoRawFileParser').
 
 ### Other Improvements
@@ -40,7 +56,7 @@
 
 ### New features 
 
-* Added support for "Chemstation" UV (`.ch`) files (version 30).
+* Added support for "ChemStation" UV (`.ch`) files (version 30).
 
 ### Minor improvements
 
@@ -52,7 +68,7 @@
 ### Bug fixes
 
 * Fixed bug preventing compilation of PDF manual.
-* Fixed new bug causing failure to correctly read names of chemstation files from .D directory.
+* Fixed new bug causing failure to correctly read names of 'ChemStation' files from .D directory.
 
 ## chromConverter 0.4.0
 
@@ -73,13 +89,13 @@
 data origin.
 * Standardized datetime stamps so they are always converted to POSIXct format.
 * Now use `fs` package for parsing paths, eliminating buggy `check_paths` function.
-* Fixed bug causing sloppy 'Chemstation' FID metadata.
-* Fixed bug that caused padding of 'Chemstation 130' files with extra zeros.
+* Fixed bug causing sloppy 'ChemStation' FID metadata.
+* Fixed bug that caused padding of 'ChemStation 130' files with extra zeros.
 * Added additional tests.
 
 ## chromConverter 0.3.3
 
-* Added R-based parser for "Chemstation" UV (`.uv`) files (version 131) through
+* Added R-based parser for "ChemStation" UV (`.uv`) files (version 131) through
 the `read_chemstation_uv` function.
 * Added `extract_metadata` function for extracting metadata from a list of chromatograms
 and returning it as a `data.frame` or `tibble`.
@@ -98,8 +114,8 @@ and returning it as a `data.frame` or `tibble`.
 
 ## chromConverter 0.3.1
 
-* Added support for "Chemstation" UV (`.ch`) files (version 130).
-* Added provisional support for "Chemstation" FID (version 8).
+* Added support for "ChemStation" UV (`.ch`) files (version 130).
+* Added provisional support for "ChemStation" FID (version 8).
 * Changed name of `read_chemstation_fid` function to `read_chemstation_ch`.
 * Ignore case when matching file extensions in `read_chroms`.
 * Added note to README about configuring RStudio correctly for accessing python parsers.
@@ -107,12 +123,12 @@ and returning it as a `data.frame` or `tibble`.
 ## chromConverter 0.3.0
 
 * Fixed bug causing "Chromeleon" metadata parser to fail.
-* Fixed bug in "Chemstation" metadata parser.
+* Fixed bug in "ChemStation" metadata parser.
 * Changed `format_data` argument to `data_format` to select wide or long format.
 * Added support for parsing `mzML` files with `RaMS`.
 * Added support for parsing "Agilent" (`.D`) and "Waters" (`.raw`) files with [rainbow](https://rainbow-api.readthedocs.io/).
 * Made `data_format` option available consistently for choosing `wide` or `long` format.
-* Added parser in R for "Chemstation" FID (`.ch`) data (versions 81, 179 & 181).
+* Added parser in R for "ChemStation" FID (`.ch`) data (versions 81, 179 & 181).
 * Improved error handling when loading python modules.
 * Improved error-handling for parsing metadata so small problems no longer error out the whole program.
 

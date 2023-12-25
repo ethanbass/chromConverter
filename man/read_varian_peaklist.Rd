@@ -10,6 +10,9 @@ read_varian_peaklist(file)
 \arguments{
 \item{file}{Path to Varian peak list file.}
 }
+\value{
+A data.frame containing the information from the specified report.
+}
 \description{
 Read 'Varian' peaklist.
 Read peak list(s) from 'Varian MS Workstation'.
