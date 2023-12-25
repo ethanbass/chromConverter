@@ -28,16 +28,10 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/call_rainbow.html</loc>
   </url>
   <url>
-    <loc>https://ethanbass.github.io/chromConverter/reference/configure_aston.html</loc>
-  </url>
-  <url>
-    <loc>https://ethanbass.github.io/chromConverter/reference/configure_olefile.html</loc>
-  </url>
-  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/configure_openchrom.html</loc>
   </url>
   <url>
-    <loc>https://ethanbass.github.io/chromConverter/reference/configure_rainbow.html</loc>
+    <loc>https://ethanbass.github.io/chromConverter/reference/configure_python_environment.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/extract_metadata.html</loc>
@@ -94,6 +88,9 @@
     <loc>https://ethanbass.github.io/chromConverter/reference/read_waters_arw.html</loc>
   </url>
   <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/read_waters_raw.html</loc>
+  </url>
+  <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/reshape_chroms.html</loc>
   </url>
   <url>
@@ -101,6 +98,9 @@
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/uv_converter.html</loc>
+  </url>
+  <url>
+    <loc>https://ethanbass.github.io/chromConverter/reference/write_cdf.html</loc>
   </url>
   <url>
     <loc>https://ethanbass.github.io/chromConverter/reference/write_openchrom_batchfile.html</loc>

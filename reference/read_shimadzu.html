@@ -14,7 +14,7 @@ selecting"><meta property="og:image" content="https://ethanbass.github.io/chromC
     
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,24 +59,37 @@ selecting</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_shimadzu</span><span class="op">(</span></span>
 <span>  <span class="va">file</span>,</span>
-<span>  <span class="va">format_in</span>,</span>
+<span>  what <span class="op">=</span> <span class="st">"chromatogram"</span>,</span>
+<span>  format_in <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  include <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fid"</span>, <span class="st">"dad"</span>, <span class="st">"uv"</span>, <span class="st">"tic"</span>, <span class="st">"status"</span><span class="op">)</span>,</span>
 <span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span><span class="op">)</span>,</span>
 <span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span><span class="op">)</span>,</span>
 <span>  peaktable_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromatographr"</span>, <span class="st">"original"</span><span class="op">)</span>,</span>
-<span>  what <span class="op">=</span> <span class="st">"chromatogram"</span>,</span>
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span></span>
+<span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
+<span>  ms_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data.frame"</span>, <span class="st">"list"</span><span class="op">)</span>,</span>
+<span>  collapse <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>file</dt>
-<dd><p>path to file</p></dd>
+<dd><p>Path to file.</p></dd>
+
+
+<dt>what</dt>
+<dd><p>Whether to extract <code>chromatogram</code>, <code>peak_table</code>, and/or
+<code>ms_spectra</code>. Accepts multiple arguments.</p></dd>
 
 
 <dt>format_in</dt>
-<dd><p>Format of files. <code>fid</code> or <code>dad</code>.</p></dd>
+<dd><p>This argument is deprecated and is no longer required.</p></dd>
+
+
+<dt>include</dt>
+<dd><p>Which chromatograms to include. Options are <code>fid</code>,
+<code>dad</code>, <code>uv</code>, <code>tic</code>, and <code>status</code>.</p></dd>
 
 
 <dt>format_out</dt>
@@ -92,11 +105,6 @@ selecting</p>
 <code>original</code> format.</p></dd>
 
 
-<dt>what</dt>
-<dd><p>Whether to extract <code>chromatogram</code> and/or <code>peak_table</code>.
-Accepts multiple arguments.</p></dd>
-
-
 <dt>read_metadata</dt>
 <dd><p>Whether to read metadata from file.</p></dd>
 
@@ -105,15 +113,25 @@ Accepts multiple arguments.</p></dd>
 <dd><p>Format to output metadata. Either <code>chromconverter</code> or
 <code>raw</code>.</p></dd>
 
+
+<dt>ms_format</dt>
+<dd><p>Whether to return mass spectral data as a (long)
+<code>data.frame</code> or a <code>list</code>.</p></dd>
+
+
+<dt>collapse</dt>
+<dd><p>Logical. Whether to collapse lists that only contain a single
+element.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>A chromatogram in the format specified by <code>format_out</code></p>
-
-
-<p>(retention time x wavelength).</p>
+<p>A nested list of elements from the specified <code>file</code>, where the
+top levels are chromatograms, peak tables, and/or mass spectra according to
+the value of <code>what</code>. Chromatograms are returned in the format specified
+by <code>format_out</code> (retention time x wavelength).</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

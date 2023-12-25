@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,16 +45,32 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="chromconverter-060">chromConverter 0.6.0<a class="anchor" aria-label="anchor" href="#chromconverter-060"></a></h2>
+<ul><li>Added parser for reading ANDI MS (<code>.cdf</code>) files.</li>
+<li>Fixed parsing of Agilent MS files with ‘entab’ reader.</li>
+<li>Fixed <code>read_chemstation_ch</code> parser to correctly read “Mustang Chemstation” 179 files with 8-byte encoding.</li>
+<li>Re-factored <code>read_shimadzu</code> function and added support for new types of chromatograms (e.g. status, uv and total ion chromatograms). Added support for reading multiple types of chromatograms at once.</li>
+<li>Added support for reading MS spectra from ‘Shimadzu’ ascii files using <code>read_shimadzu</code>.</li>
+<li>Exported <code>write_cdf</code> and added additional arguments (<code>lambda</code> and <code>force</code>) for greater control by users.</li>
+<li>Added internal parser for 1D ‘Waters RAW’ chromatograms (<code>read_waters_raw</code>).</li>
+<li>Added <code>collapse</code> argument to <code>call_rainbow</code> and to collapse superfluous lists.</li>
+<li>Added <code>...</code> argument to <code>read_chroms</code> for supplying additional arguments to parsers.</li>
+<li>Added alias to <code>read_chroms</code> for reading <code>mzxml</code> files with <code>RaMS</code>.</li>
+<li>Added <code>precision</code> argument to <code>call_rainbow</code> to control number of digits “mz” values are rounded to. (Also changed default behavior so values are rounded to one decimal by default).</li>
+<li>Fixed bug in <code>read_shimadzu_lcd</code> on Windows due to issue with passing escaped paths to Python.</li>
+<li>Updated documentation of various functions.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0" id="chromconverter-050">chromConverter 0.5.0<a class="anchor" aria-label="anchor" href="#chromconverter-050"></a></h2>
 <div class="section level3">
 <h3 id="new-features-0-5-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0"></a></h3>
 <ul><li>Added support for parallel processing through <code>pbapply</code> package. (<strong>Note</strong>: The <code>pbapply</code> package must be manually installed to enable parallel processing).</li>
-<li>Added internal parser for ‘Agilent Chemstation’ version 31 files (through <code>read_chemstation_uv</code> function).</li>
+<li>Added internal parser for ‘Agilent ChemStation’ version 31 files (through <code>read_chemstation_uv</code> function).</li>
 <li>Added support for ‘Agilent OpenLab’ version 131 files through internal parser.</li>
 <li>Added preliminary support for reading ‘Agilent’ (<code>.dx</code>) files (through <code>read_agilentdx</code> function).</li>
-<li>Added support for reading ‘Chemstation’ REPORT files.</li>
+<li>Added support for reading ‘ChemStation’ REPORT files.</li>
 <li>Added parser for Shimadzu <code>.lcd</code> files through the <code>read_shimadzu_lcd</code> function. Only the PDA stream (not MS) is currently supported.</li>
-<li>Added <code>read_peaklist</code> function for reading peak lists. Currently ‘Agilent Chemstation’ and ‘Shimadzu ASCII’ formats are supported.</li>
+<li>Added <code>read_peaklist</code> function for reading peak lists. Currently ‘Agilent ChemStation’ and ‘Shimadzu ASCII’ formats are supported.</li>
 <li>Added <code>verbose</code> argument to control console output for external parsers (‘OpenChrom’ and ‘ThermoRawFileParser’).</li>
 </ul></div>
 <div class="section level3">
@@ -87,7 +103,7 @@
 <h2 class="pkg-version" data-toc-text="0.4.1" id="chromconverter-041">chromConverter 0.4.1<a class="anchor" aria-label="anchor" href="#chromconverter-041"></a></h2>
 <div class="section level3">
 <h3 id="new-features-0-4-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-4-1"></a></h3>
-<ul><li>Added support for “Chemstation” UV (<code>.ch</code>) files (version 30).</li>
+<ul><li>Added support for “ChemStation” UV (<code>.ch</code>) files (version 30).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-0-4-1">Minor improvements<a class="anchor" aria-label="anchor" href="#minor-improvements-0-4-1"></a></h3>
@@ -99,7 +115,7 @@
 <div class="section level3">
 <h3 id="bug-fixes-0-4-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-4-1"></a></h3>
 <ul><li>Fixed bug preventing compilation of PDF manual.</li>
-<li>Fixed new bug causing failure to correctly read names of chemstation files from .D directory.</li>
+<li>Fixed new bug causing failure to correctly read names of ‘ChemStation’ files from .D directory.</li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -119,14 +135,14 @@
 <li>Slightly restructured metadata fields. Added <code>source_file</code> field to track data origin.</li>
 <li>Standardized datetime stamps so they are always converted to POSIXct format.</li>
 <li>Now use <code>fs</code> package for parsing paths, eliminating buggy <code>check_paths</code> function.</li>
-<li>Fixed bug causing sloppy ‘Chemstation’ FID metadata.</li>
-<li>Fixed bug that caused padding of ‘Chemstation 130’ files with extra zeros.</li>
+<li>Fixed bug causing sloppy ‘ChemStation’ FID metadata.</li>
+<li>Fixed bug that caused padding of ‘ChemStation 130’ files with extra zeros.</li>
 <li>Added additional tests.</li>
 </ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.3" id="chromconverter-033">chromConverter 0.3.3<a class="anchor" aria-label="anchor" href="#chromconverter-033"></a></h2>
-<ul><li>Added R-based parser for “Chemstation” UV (<code>.uv</code>) files (version 131) through the <code>read_chemstation_uv</code> function.</li>
+<ul><li>Added R-based parser for “ChemStation” UV (<code>.uv</code>) files (version 131) through the <code>read_chemstation_uv</code> function.</li>
 <li>Added <code>extract_metadata</code> function for extracting metadata from a list of chromatograms and returning it as a <code>data.frame</code> or <code>tibble</code>.</li>
 <li>Added <code>progress_bar</code> option in <code>read_chroms</code>.</li>
 <li>Updated <code>reshape_chroms</code> and <code>reshape_chrom</code> to allow switching between “wide” and “long” formats.</li>
@@ -143,8 +159,8 @@
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.1" id="chromconverter-031">chromConverter 0.3.1<a class="anchor" aria-label="anchor" href="#chromconverter-031"></a></h2>
-<ul><li>Added support for “Chemstation” UV (<code>.ch</code>) files (version 130).</li>
-<li>Added provisional support for “Chemstation” FID (version 8).</li>
+<ul><li>Added support for “ChemStation” UV (<code>.ch</code>) files (version 130).</li>
+<li>Added provisional support for “ChemStation” FID (version 8).</li>
 <li>Changed name of <code>read_chemstation_fid</code> function to <code>read_chemstation_ch</code>.</li>
 <li>Ignore case when matching file extensions in <code>read_chroms</code>.</li>
 <li>Added note to README about configuring RStudio correctly for accessing python parsers.</li>
@@ -152,12 +168,12 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="chromconverter-030">chromConverter 0.3.0<a class="anchor" aria-label="anchor" href="#chromconverter-030"></a></h2>
 <ul><li>Fixed bug causing “Chromeleon” metadata parser to fail.</li>
-<li>Fixed bug in “Chemstation” metadata parser.</li>
+<li>Fixed bug in “ChemStation” metadata parser.</li>
 <li>Changed <code>format_data</code> argument to <code>data_format</code> to select wide or long format.</li>
 <li>Added support for parsing <code>mzML</code> files with <code>RaMS</code>.</li>
 <li>Added support for parsing “Agilent” (<code>.D</code>) and “Waters” (<code>.raw</code>) files with <a href="https://rainbow-api.readthedocs.io/" class="external-link">rainbow</a>.</li>
 <li>Made <code>data_format</code> option available consistently for choosing <code>wide</code> or <code>long</code> format.</li>
-<li>Added parser in R for “Chemstation” FID (<code>.ch</code>) data (versions 81, 179 &amp; 181).</li>
+<li>Added parser in R for “ChemStation” FID (<code>.ch</code>) data (versions 81, 179 &amp; 181).</li>
 <li>Improved error handling when loading python modules.</li>
 <li>Improved error-handling for parsing metadata so small problems no longer error out the whole program.</li>
 </ul><div class="section level4">
