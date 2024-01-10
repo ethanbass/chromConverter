@@ -194,7 +194,7 @@ read_shimadzu_chromatogram <- function(file, x, chrom.idx, sep, data_format,
                                        read_metadata, format_out){
   header <- try(extract_shimadzu_header(x = x, chrom.idx = chrom.idx, sep = sep))
   met <- header[[1]]
-  first_time <- strsplit(x[header[[2]]+2], "\t")[[1]][1]
+  first_time <- strsplit(x[header[[2]]+2], split = sep)[[1]][1]
   decimal_separator <- ifelse(grepl(",", first_time), ",", ".")
 
   if (decimal_separator == ","){
@@ -236,7 +236,7 @@ read_shimadzu_dad <- function(file, x, chrom.idx, sep, data_format,
                               read_metadata, format_out){
   header <- try(extract_shimadzu_header(x = x, chrom.idx = chrom.idx, sep = sep))
   met <- header[[1]]
-  first_time <- strsplit(x[header[[2]]+3], "\t")[[1]][1]
+  first_time <- strsplit(x[header[[2]]+3], split = sep)[[1]][1]
   decimal_separator <- ifelse(grepl(",", first_time), ",", ".")
 
   if (decimal_separator == ","){
