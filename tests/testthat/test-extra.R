@@ -221,7 +221,7 @@ test_that("read_chroms can read 'Waters RAW' files", {
   expect_equal(dim(x$MS), c(725, 740))
   expect_equal(attr(x$MS, "parser"), "rainbow")
   expect_equal(attr(x$MS, "data_format"), "wide")
-  expect_equal(attr(x$MS, "metadata")$polarity,"+")
+  expect_equal(attr(x$MS, "metadata")$polarity, "+")
 
   x1 <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
                     parser = "chromconverter")[[1]]
@@ -321,6 +321,23 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ascii and LCD)", {
   x2 <- read_chroms(path_lcd, progress_bar = FALSE)[[1]]
   expect_equal(dim(x2),c(4689,328))
   expect_equal(x, x2, ignore_attr = TRUE)
+})
+
+
+test_that("read_chroms can read 'Shimadzu' PDA comma-separated file", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_ascii <- system.file("shimadzuDAD_comma.txt",
+                            package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_ascii))
+
+  x <- read_chroms(path_ascii, format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
+  expect_equal(class(x)[1], "matrix")
+  expect_equal(dim(x), c(6096, 171))
+  expect_equal(attr(x, "parser"), "chromconverter")
+  expect_equal(attr(x, "data_format"), "wide")
+  expect_equal(attr(x, "sample_name"), "Pinoresinol Standard")
 })
 
 test_that("read_chroms can read 'Agilent' dx files", {
