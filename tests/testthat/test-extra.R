@@ -1,3 +1,5 @@
+# these tests rely on files included in the chromConverterExtraTests package,
+# which is available on GitHub (https://github.com/ethanbass/chromConverterExtraTests).
 
 test_that("read_chroms can read 'Agilent MS' files", {
   skip_on_cran()
