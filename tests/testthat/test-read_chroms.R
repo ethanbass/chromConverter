@@ -34,9 +34,15 @@ test_that("read_chemstation_uv parser can read chemstation 131 files", {
 test_that("extract_metadata function works", {
   meta <- extract_metadata(x1)
   expect_equal(class(meta), "data.frame")
-  expect_equal(nrow(meta),1)
+  expect_equal(nrow(meta), 1)
   expect_equal(meta$instrument, attr(x1[[1]],"instrument"))
   expect_equal(meta$parser, attr(x1[[1]],"parser"))
+
+  meta <- extract_metadata(x1, format_out = "tibble")
+  expect_equal(class(meta)[1], "tbl_df")
+  expect_equal(nrow(meta), 1)
+  expect_equal(meta[["instrument"]], attr(x1[[1]],"instrument"))
+  expect_equal(meta[["parser"]], attr(x1[[1]],"parser"))
 })
 
 test_that("entab parser can read `Agilent Chemstation` 131 files", {
