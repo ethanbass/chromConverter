@@ -1,6 +1,4 @@
 utils::globalVariables(names = c('.'))
-# Globals <- list()
-
 
 #' Get filetype
 #' @noRd
@@ -76,8 +74,7 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                              "shimadzu_fid", "shimadzu_dad",
                                              "shimadzu_lcd", "waters_arw",
                                              "waters_raw", "waters_chro"),
-                          aston = c("chemstation", "chemstation_uv",
-                                    "chemstation_131",
+                          aston = c("chemstation_uv", "chemstation_131",
                                     "masshunter_dad", "other"),
                           entab = c("chemstation", "chemstation_ch",
                                     "chemstation_30", "chemstation_31",
@@ -184,6 +181,7 @@ format_to_extension <- function(format_in){
          "\\.")
 }
 
+#' Find files
 #' @noRd
 find_files <- function(paths, pattern){
   files <- unlist(lapply(paths, function(path){
@@ -201,6 +199,7 @@ find_files <- function(paths, pattern){
   }))
 }
 
+#' Set temp directory
 #' @noRd
 set_temp_directory <- function(){
   ans <- readline("Export directory not specified! Export files to `temp` directory (y/n)?")
@@ -261,6 +260,7 @@ rename_list <- function(x, new_names){
   x
 }
 
+#' Collapse list
 #' @noRd
 collapse_list <- function(x){
   while(is.list(x) && length(x) == 1){
@@ -287,7 +287,9 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 #' Otherwise, there is no return value.
 #' @author Ethan Bass
 #' @import reticulate
+#' @keywords internal
 #' @export
+
 configure_python_environment <- function(parser, return_boolean = FALSE){
   install <- FALSE
   if (!dir.exists(miniconda_path())){
@@ -314,9 +316,10 @@ configure_python_environment <- function(parser, return_boolean = FALSE){
   }
 }
 
+#' Get required python packages for a parser
 #' @noRd
 get_parser_reqs <- function(parser){
-  switch(parser, "aston" = c("pandas","scipy","numpy","aston"),
+  switch(parser, "aston" = c("pandas", "scipy", "numpy", "aston"),
          "olefile" = c("olefile"),
          "rainbow" = c("numpy", "rainbow-api"))
 }
