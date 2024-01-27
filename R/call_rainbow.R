@@ -98,8 +98,8 @@ extract_rb_data <- function(xx, format_out = "matrix",
   colnames(data) <- xx$ylabels
   if (data_format == "long"){
     names_to <- switch(xx$detector, "MS" = "mz",
-                       "UV" = "lambda",
-                              "lambda")
+                                    "UV" = "lambda",
+                                           "lambda")
     data <- reshape_chrom(data, data_format = "long", names_to = names_to)
   }
   if (format_out == "data.frame"){
