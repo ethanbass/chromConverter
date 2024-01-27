@@ -1,7 +1,7 @@
 library(testthat)
 
-path_csv <- "testdata/dad1.csv"
-path_uv <- "testdata/dad1.uv" #chemstation 131
+path_csv <- test_path("testdata/dad1.csv")
+path_uv <- test_path("testdata/dad1.uv") #chemstation 131
 
 x <- read_chroms(path_csv, format_in = "chemstation_csv", progress_bar = FALSE)
 
@@ -48,7 +48,7 @@ test_that("extract_metadata function works", {
 test_that("entab parser can read `Agilent Chemstation` 131 files", {
   skip_on_cran()
   skip_if_not_installed("entab")
-  file <- "testdata/dad1.uv"
+  file <- test_path("testdata/dad1.uv")
 
   x1 <- read_chroms(file, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE,
@@ -62,7 +62,7 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
 })
 
 test_that("Shimadzu ascii parser works", {
-  file <- "testdata/ladder.txt"
+  file <- test_path("testdata/ladder.txt")
 
   x <- read_chroms(file, format_in = "shimadzu_fid", find_files = FALSE,
                    progress_bar = FALSE)
@@ -124,7 +124,7 @@ test_that("Rainbow parser can read chemstation 131 files", {
 test_that("chromconverter parser can read chemstation 130 files", {
   skip_if_missing_dependecies()
   skip_on_cran()
-  x1 <- read_chroms("testdata/chemstation_130.ch", progress_bar = FALSE)
+  x1 <- read_chroms(test_path("testdata/chemstation_130.ch"), progress_bar = FALSE)
   # expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   # expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
@@ -133,7 +133,7 @@ test_that("chromconverter parser can read chemstation 130 files", {
   expect_equal(attr(x1[[1]], "detector_unit"), "mAU")
   expect_equal(attr(x1[[1]], "file_version"), "130")
   expect_equal(ncol(x1[[1]]), 1)
-  x2 <- read_chroms("testdata/chemstation_130.ch", progress_bar = FALSE,
+  x2 <- read_chroms(test_path("testdata/chemstation_130.ch"), progress_bar = FALSE,
                     data_format = "long", format_out = "data.frame")[[1]]
   expect_equal(ncol(x2), 2)
   expect_equal(class(x2), "data.frame")
@@ -156,7 +156,7 @@ test_that("read_chroms exports cdf files correctly", {
   skip_if_not_installed("ncdf4")
   path_out <-  tempdir(check = TRUE)
   on.exit(unlink(c(fs::path(path_out, "ladder", ext = "cdf"), path_out)))
-  file <- "testdata/ladder.txt"
+  file <- test_path("testdata/ladder.txt")
   x1 <- read_chroms(paths = file, format_in = "shimadzu_fid", export = TRUE,
                     path_out = path_out, export_format = "cdf",
                     progress_bar = FALSE)
@@ -165,7 +165,7 @@ test_that("read_chroms exports cdf files correctly", {
 })
 
 test_that("read_peaklist can read chemstation reports", {
-  path <- "testdata/RUTIN2.D/"
+  path <- test_path("testdata/RUTIN2.D/")
   x <- read_peaklist(path, format_in = "chemstation")
   expect_equal(class(x[[1]]), "list")
   expect_equal(class(x[[1]][[1]]), "data.frame")
@@ -190,7 +190,7 @@ test_that("read_peaklist can read chemstation reports", {
 })
 
 test_that("read_peaklist can read 'Shimadzu' fid files", {
-  path <- "testdata/ladder.txt"
+  path <- test_path("testdata/ladder.txt")
   x <- read_peaklist(path, format_in = "shimadzu_fid", progress_bar = FALSE)
   expect_equal(class(x[[1]]), "data.frame")
   expect_equal(x[[1]][[1,"sample"]], "ladder")
