@@ -92,7 +92,7 @@ dat <- read_chroms(path, find_files = FALSE, path_out="temp", export=TRUE)
 
 ###### Choosing between multiple parsers
 
-For formats where multiple parsers are available, you can choose between them using the `parser` argument. For example, Agilent files can now be read using parsers from a number of external libraries, including Aston, Entab, OpenChrom, and rainbow. Some of these parsers must be installed manually as described in the [installation instructions](README.md#Installation) further up the page. It is recommended to use the newer Entab or rainbow parsers, since Aston is no longer actively supported. 
+For formats where multiple parsers are available, you can choose between them using the `parser` argument. For example, 'Agilent' files can now be read using parsers from a number of external libraries, including Aston, Entab, OpenChrom, and rainbow. Some of these parsers must be installed manually as described in the [installation instructions](README.md#Installation) further up the page. It is recommended to use the newer Entab or rainbow parsers, since Aston is no longer actively supported. 
 
 ###### OpenChrom parsers
 
@@ -104,10 +104,10 @@ chromConverter includes some options to extract metadata from the provided files
 
 ##### Importing peak lists
 
-The `read_peak` list function can be used to import peak lists from 'ChemStation' REPORT files or 'Shimadzu' ascii files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
+The `read_peaklist` function can be used to import peak lists from 'Agilent ChemStation' REPORT files or 'Shimadzu' ascii files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
 
 ```
-pks <- read_chroms(<path_to_directory>, format_in = "chemstation")
+pks <- read_peaklist(<path_to_directory>, format_in = "chemstation")
 ```
 
 #### Optional additional dependencies
