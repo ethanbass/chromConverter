@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -170,7 +170,7 @@
 <div class="section level6">
 <h6 id="choosing-between-multiple-parsers">Choosing between multiple parsers<a class="anchor" aria-label="anchor" href="#choosing-between-multiple-parsers"></a>
 </h6>
-<p>For formats where multiple parsers are available, you can choose between them using the <code>parser</code> argument. For example, Agilent files can now be read using parsers from a number of external libraries, including Aston, Entab, OpenChrom, and rainbow. Some of these parsers must be installed manually as described in the <a href="README.md#Installation">installation instructions</a> further up the page. It is recommended to use the newer Entab or rainbow parsers, since Aston is no longer actively supported.</p>
+<p>For formats where multiple parsers are available, you can choose between them using the <code>parser</code> argument. For example, ‘Agilent’ files can now be read using parsers from a number of external libraries, including Aston, Entab, OpenChrom, and rainbow. Some of these parsers must be installed manually as described in the <a href="README.md#Installation">installation instructions</a> further up the page. It is recommended to use the newer Entab or rainbow parsers, since Aston is no longer actively supported.</p>
 </div>
 <div class="section level6">
 <h6 id="openchrom-parsers">OpenChrom parsers<a class="anchor" aria-label="anchor" href="#openchrom-parsers"></a>
@@ -186,8 +186,8 @@
 <div class="section level5">
 <h5 id="importing-peak-lists">Importing peak lists<a class="anchor" aria-label="anchor" href="#importing-peak-lists"></a>
 </h5>
-<p>The <code>read_peak</code> list function can be used to import peak lists from ‘ChemStation’ REPORT files or ‘Shimadzu’ ascii files. The syntax is similar to <code>read_chroms</code>. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (<code>format_in</code>), e.g.</p>
-<pre><code>pks &lt;- read_chroms(&lt;path_to_directory&gt;, format_in = "chemstation")</code></pre>
+<p>The <code>read_peaklist</code> function can be used to import peak lists from ‘Agilent ChemStation’ REPORT files or ‘Shimadzu’ ascii files. The syntax is similar to <code>read_chroms</code>. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (<code>format_in</code>), e.g.</p>
+<pre><code>pks &lt;- read_peaklist(&lt;path_to_directory&gt;, format_in = "chemstation")</code></pre>
 </div>
 <div class="section level4">
 <h4 id="optional-additional-dependencies">Optional additional dependencies<a class="anchor" aria-label="anchor" href="#optional-additional-dependencies"></a>
