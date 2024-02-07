@@ -1,7 +1,7 @@
 #' Shimadzu ascii reader
 #'
-#' Reads 'Shimadzu' ascii files into R. These files are exported from
-#' 'Lab Solutions' by right clicking on samples in the sample list and
+#' Reads 'Shimadzu' ascii files into R. These files can be exported from
+#' 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
 #' selecting
 #'
 #' @name read_shimadzu
@@ -15,11 +15,11 @@
 #' @param format_in This argument is deprecated and is no longer required.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param peaktable_format Whether to return peak tables in \code{chromatographr} or
-#' \code{original} format.
+#' @param peaktable_format Whether to return peak tables in \code{chromatographr}
+#' or \code{original} format.
 #' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
-#' \code{raw}.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
 #' @param ms_format Whether to return mass spectral data as a (long)
 #' \code{data.frame} or a \code{list}.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
@@ -33,7 +33,7 @@
 
 read_shimadzu <- function(file, what = "chromatogram",
                           format_in = NULL,
-                          include =  c("fid", "dad", "uv", "tic", "status"),
+                          include =  c("fid", "lc", "dad", "uv", "tic"),
                           format_out = c("matrix", "data.frame"),
                           data_format = c("wide", "long"),
                           peaktable_format = c("chromatographr", "original"),
@@ -48,11 +48,11 @@ read_shimadzu <- function(file, what = "chromatogram",
   }
   what <- match.arg(what, c("chromatogram", "peak_table", "ms_spectra"),
                     several.ok = TRUE)
-  include <- match.arg(include, c("fid", "dad", "uv", "tic", "status"),
+  include <- match.arg(include, c("fid", "lc", "dad", "uv", "tic", "status"),
                        several.ok = TRUE)
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
-  peaktable_format <- match.arg(peaktable_format, c("chromatographr","original"))
+  peaktable_format <- match.arg(peaktable_format, c("chromatographr", "original"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   ms_format <- match.arg(ms_format, c("data.frame", "list"))
 
@@ -63,6 +63,7 @@ read_shimadzu <- function(file, what = "chromatogram",
   if (any(what == "chromatogram")){
 
     regex <- c("fid" = "\\[Chromatogram .*]",
+               "lc" = "\\[LC Chromatogram\\(.+\\)]",
                "dad" = "\\[PDA 3D]",
                "uv" = "\\[PDA Multi Chromatogram\\(Ch\\d+\\)]",
                "status" = "\\[LC Status Trace\\(.+\\)]",
@@ -85,7 +86,7 @@ read_shimadzu <- function(file, what = "chromatogram",
       xx <- lapply(chrom.idx[[i]], function(idx){
         read_shimadzu_chrom(file = file, x = x, chrom.idx = idx,
                             sep = sep, data_format = data_format,
-                            read_metadata = TRUE, format_out = format_out)
+                            read_metadata = read_metadata, format_out = format_out)
       })
       names(xx) <- x[chrom.idx[[i]]]
       if (collapse) xx <- collapse_list(xx)
@@ -137,7 +138,6 @@ read_shimadzu <- function(file, what = "chromatogram",
       ms_spectra <- ms_list_to_dataframe(ms_spectra)
     }
   }
-
   xx <- mget(what)
   if (collapse) xx <- collapse_list(xx)
   xx
@@ -198,23 +198,24 @@ read_shimadzu_chromatogram <- function(file, x, chrom.idx, sep, data_format,
   decimal_separator <- ifelse(grepl(",", first_time), ",", ".")
 
   if (decimal_separator == ","){
-    times.idx <- grep("Time|Intensity Multiplier", met[,1])
+    times.idx <- grep("Time|Intensity Multiplier", met[, 1])
     met[times.idx, 2] <- gsub(",", ".", met[times.idx, 2])
   }
 
   xx <- read.csv(file, skip = header[[2]], sep = sep, colClasses = "numeric",
                  # na.strings = c("[FractionCollectionReport]", "#ofFractions", "\\["),
                  dec = decimal_separator,
-                 nrows = as.numeric(met[grep("# of Points", met),2]))
-  xx <- as.matrix(xx[!is.na(xx[,1]),])
+                 nrows = as.numeric(met[grep("# of Points", met), 2]))
+  mult.idx <- grep("Intensity Multiplier", met[,1])
+  if (length(mult.idx) == 1){
+    xx[,2] <- xx[,2]*as.numeric(met[mult.idx,2])
+  }
+  xx <- as.matrix(xx[!is.na(xx[, 1]), ])
   if (data_format == "wide"){
     rownames(xx) <- xx[, 1]
     xx <- xx[, 2, drop = FALSE]
     colnames(xx) <- "Intensity"
   }
-  # if (data_format == "long"){
-  #   xx <- cbind(RT = as.numeric(rownames(xx)), Intensity = as.numeric(xx[,1]))
-  # }
   if (format_out == "data.frame"){
     xx <- as.data.frame(xx)
   }
@@ -236,7 +237,7 @@ read_shimadzu_dad <- function(file, x, chrom.idx, sep, data_format,
                               read_metadata, format_out){
   header <- try(extract_shimadzu_header(x = x, chrom.idx = chrom.idx, sep = sep))
   met <- header[[1]]
-  first_time <- strsplit(x[header[[2]]+3], split = sep)[[1]][1]
+  first_time <- strsplit(x[header[[2]] + 3], split = sep)[[1]][1]
   decimal_separator <- ifelse(grepl(",", first_time), ",", ".")
 
   if (decimal_separator == ","){

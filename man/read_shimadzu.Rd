@@ -8,7 +8,7 @@ read_shimadzu(
   file,
   what = "chromatogram",
   format_in = NULL,
-  include = c("fid", "dad", "uv", "tic", "status"),
+  include = c("fid", "lc", "dad", "uv", "tic"),
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   peaktable_format = c("chromatographr", "original"),
@@ -33,13 +33,13 @@ read_shimadzu(
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
-\item{peaktable_format}{Whether to return peak tables in \code{chromatographr} or
-\code{original} format.}
+\item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
+or \code{original} format.}
 
 \item{read_metadata}{Whether to read metadata from file.}
 
-\item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
-\code{raw}.}
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
 
 \item{ms_format}{Whether to return mass spectral data as a (long)
 \code{data.frame} or a \code{list}.}
@@ -54,8 +54,8 @@ the value of \code{what}. Chromatograms are returned in the format specified
 by \code{format_out} (retention time x wavelength).
 }
 \description{
-Reads 'Shimadzu' ascii files into R. These files are exported from
-'Lab Solutions' by right clicking on samples in the sample list and
+Reads 'Shimadzu' ascii files into R. These files can be exported from
+'Shimadzu LabSolutions' by right clicking on samples in the sample list and
 selecting
 }
 \author{

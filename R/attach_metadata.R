@@ -68,7 +68,6 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               time_unit = get_time_unit(
                 grep("Start Time", names(meta), value=TRUE)[1], format_in = "shimadzu"),
               detector_range = c(meta$`Start Wavelength(nm)`, meta$`End Wavelength(nm)`),
-              # detector_end = meta$`End Wavelength(nm)`,
               detector_unit = NA,
               source_file = source_file,
               data_format = data_format,
@@ -96,8 +95,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
                 grep("Start Time", names(meta), value=TRUE)[1], format_in = "shimadzu"),
               wavelength = get_metadata_field(meta, "Wavelength(nm)"),
               bandwidth = get_metadata_field(meta, "Bandwidth(nm)"),
-              # detector_end = meta$`End Wavelength(nm)`,
               detector_unit = get_metadata_field(meta, "Intensity Units"),
+              intensity_multiplier = as.numeric(get_metadata_field(meta, "Intensity Multiplier")),
               source_file = source_file,
               data_format = data_format,
               parser = "chromconverter",
