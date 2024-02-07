@@ -40,9 +40,10 @@ chromatogram in \code{matrix} or \code{data.frame} format according to the
 value of \code{format_out}.
 }
 \description{
-Extracts data from mzML files using parsers from either RaMS or mzR. The RaMS
-parser (default) will only return data in tidy (long) format. mzR will return
-data in wide format. Currently the mzR-based parser only returns DAD data.
+Extracts data from \code{mzML} files using parsers from either RaMS or mzR.
+The RaMS parser (default) will only return data in tidy (long) format. The
+mzR parser will return data in wide format. Currently the mzR-based parser
+only returns DAD data.
 }
 \author{
 Ethan Bass

@@ -16,7 +16,10 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Read Chemstation CSV
+Reads 'Agilent Chemstation' CSV files into R.
+}
+\details{
+'Agilent Chemstation' CSV files are encoded in UTF-16.
 }
 \author{
 Ethan Bass

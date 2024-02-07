@@ -2,7 +2,8 @@
 % Please edit documentation in R/call_entab.R
 \name{call_entab}
 \alias{call_entab}
-\title{Entab parsers}
+\title{Call Entab
+Converts files using Entab parsers}
 \usage{
 call_entab(
   file,
@@ -32,5 +33,6 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Entab parsers
+Call Entab
+Converts files using Entab parsers
 }

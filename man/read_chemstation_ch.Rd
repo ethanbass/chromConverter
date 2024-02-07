@@ -37,15 +37,15 @@ determines whether the chromatogram is returned as a \code{matrix} or
 \description{
 Agilent \code{.ch} files come in several different varieties. This parser
 can automatically detect and read several versions of these files from
-'Agilent ChemStation' and 'OpenLab', including versions \code{30} and \code{130},
-which are generally produced by ultraviolet detectors, as well as \code{81},
-\code{179}, and \code{181} which are generally produced by flame ionization
-detectors.
+'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
+\code{130}, which are generally produced by ultraviolet detectors, as well as
+\code{81}, \code{179}, and \code{181} which are generally produced by flame
+ionization (FID) detectors.
 }
 \note{
 This function was adapted from the
 \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
-((c) James Dillon 2014).
+(&copy James Dillon 2014).
 }
 \author{
 Ethan Bass

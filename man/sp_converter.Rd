@@ -2,7 +2,7 @@
 % Please edit documentation in R/call_aston.R
 \name{sp_converter}
 \alias{sp_converter}
-\title{Converter for Agilent MassHunter UV files}
+\title{Converter for 'Agilent MassHunter' UV files}
 \usage{
 sp_converter(
   file,

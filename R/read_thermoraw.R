@@ -1,10 +1,9 @@
 #' Read ThermoRaw files into R using ThermoRawFileParser
 #'
-#' Converts ThermoRawFiles to mzmL by calling the ThermoRawFileParser from the
-#' command-line.
+#' Converts ThermoRawFiles to \code{mzML} by calling the [ThermoRawFileParser](
+#' https://github.com/compomics/ThermoRawFileParser) from the command-line.
 #'
-#' To use this function, the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)
-#' must be manually installed.
+#' To use this function, the ThermoRawFileParser must be manually installed.
 #'
 #' @name read_thermoraw
 #' @param path_in Path to file.
@@ -16,7 +15,7 @@
 #' \code{raw}.
 #' @param verbose Logical. Whether to print output from OpenChrom to the console.
 #' @return A chromatogram in the format specified by \code{format_out}.
-#' @section Side effects: Exports chromatograms in \code{mzml format} to the
+#' @section Side effects: Exports chromatograms in \code{mzML} format to the
 #' folder specified by \code{path_out}.
 #' @author Ethan Bass
 #' @examples \dontrun{

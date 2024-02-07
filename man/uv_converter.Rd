@@ -2,7 +2,7 @@
 % Please edit documentation in R/call_aston.R
 \name{uv_converter}
 \alias{uv_converter}
-\title{Converter for Agilent ChemStation UV files}
+\title{Converter for 'Agilent ChemStation' UV files}
 \usage{
 uv_converter(
   file,

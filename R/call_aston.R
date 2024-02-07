@@ -1,4 +1,4 @@
-#' Converter for Agilent MassHunter UV files
+#' Converter for 'Agilent MassHunter' UV files
 #'
 #' Converts a single chromatogram from MassHunter \code{.sp} format to R
 #' \code{data.frame}.
@@ -46,7 +46,7 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
   x
 }
 
-#' Converter for Agilent ChemStation UV files
+#' Converter for 'Agilent ChemStation' UV files
 #'
 #' Converts a single chromatogram from ChemStation \code{.uv} format to R
 #' \code{data.frame}.
@@ -131,6 +131,7 @@ trace_converter <- function(file, format_out = c("matrix", "data.frame"),
   x
 }
 
+#' Check aston configuration
 #' @noRd
 check_aston_configuration <- function(){
   assign_trace_file()

@@ -1,5 +1,5 @@
-#' @name call_entab
-#' @title Entab parsers
+#' Call Entab
+#' Converts files using Entab parsers
 #' @param file path to file
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param format_in Format of input.

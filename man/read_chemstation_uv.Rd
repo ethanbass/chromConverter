@@ -37,7 +37,8 @@ chromatogram as \code{\link{attributes}} if \code{read_metadata} is {TRUE}.
 \description{
 Agilent \code{.uv} files come in several different varieties. This parser can
 automatically detect and read several versions of these files from
-'Agilent ChemStation' and 'OpenLab', including versions \code{31} and \code{131}.
+'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{31} and
+\code{131}.
 }
 \note{
 This function was adapted from the parser in the rainbow project

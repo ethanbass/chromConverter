@@ -2,7 +2,8 @@
 #'
 #' Agilent \code{.uv} files come in several different varieties. This parser can
 #' automatically detect and read several versions of these files from
-#' 'Agilent ChemStation' and 'OpenLab', including versions \code{31} and \code{131}.
+#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{31} and
+#' \code{131}.
 #'
 #' @importFrom utils head tail
 #' @param path Path to \code{.uv} file.

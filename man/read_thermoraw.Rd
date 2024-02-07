@@ -32,15 +32,13 @@ read_thermoraw(
 A chromatogram in the format specified by \code{format_out}.
 }
 \description{
-Converts ThermoRawFiles to mzmL by calling the ThermoRawFileParser from the
-command-line.
+Converts ThermoRawFiles to \code{mzML} by calling the \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser} from the command-line.
 }
 \details{
-To use this function, the \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser}
-must be manually installed.
+To use this function, the ThermoRawFileParser must be manually installed.
 }
 \section{Side effects}{
- Exports chromatograms in \code{mzml format} to the
+ Exports chromatograms in \code{mzML} format to the
 folder specified by \code{path_out}.
 }
 

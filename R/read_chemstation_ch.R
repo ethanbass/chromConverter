@@ -2,10 +2,10 @@
 #'
 #' Agilent \code{.ch} files come in several different varieties. This parser
 #' can automatically detect and read several versions of these files from
-#' 'Agilent ChemStation' and 'OpenLab', including versions \code{30} and \code{130},
-#' which are generally produced by ultraviolet detectors, as well as \code{81},
-#' \code{179}, and \code{181} which are generally produced by flame ionization
-#' detectors.
+#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
+#' \code{130}, which are generally produced by ultraviolet detectors, as well as
+#' \code{81}, \code{179}, and \code{181} which are generally produced by flame
+#' ionization (FID) detectors.
 #'
 #' @importFrom bitops bitAnd bitShiftL
 #' @param path Path to \code{.ch} file
@@ -25,8 +25,9 @@
 #' \code{\link{attributes}} if \code{read_metadata} is {TRUE}.
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
-#' ((c) James Dillon 2014).
+#' (&copy James Dillon 2014).
 #' @export
+#' @md
 
 read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                                 data_format = c("wide", "long"),
