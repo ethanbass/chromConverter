@@ -29,7 +29,7 @@ A chromatogram in the format specified by \code{format_out}.
 (retention time x wavelength).
 }
 \description{
-Chromeleon ASCII reader
+Reads 'Thermo Fisher Chromeleon™ CDS' files into R.
 }
 \author{
 Ethan Bass
