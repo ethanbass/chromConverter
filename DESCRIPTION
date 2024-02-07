@@ -1,6 +1,6 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.6.0
+Version: 0.6.1
 Authors@R: c(
     person(given = "Ethan", family = "Bass", email = "ethanbass@gmail.com",
                   role = c("aut", "cre"),

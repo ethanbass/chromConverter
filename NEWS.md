@@ -1,3 +1,9 @@
+## chromConverter 0.6.1
+
+* Added support for 'Shimadzu ascii' files with '[LC Chromatogram...]' sub-header.
+* Correct 'Shimadzu ascii' chromatograms by 'Intensity Multiplier' if it is provided.
+* Minor, cosmetic changes to documentation.
+
 ## chromConverter 0.6.0
 
 * Added parser for reading ANDI MS (`.cdf`) files.
