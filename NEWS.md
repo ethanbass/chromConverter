@@ -3,6 +3,7 @@
 * Added support for 'Shimadzu ascii' files with '[LC Chromatogram...]' sub-header.
 * Correct 'Shimadzu ascii' chromatograms by 'Intensity Multiplier' if it is provided.
 * Minor, cosmetic changes to documentation.
+* Fixed bug in logic in `export_cdfs` function to permit conversion of files lacking metadata.
 
 ## chromConverter 0.6.0
 

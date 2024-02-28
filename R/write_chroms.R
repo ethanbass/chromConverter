@@ -49,9 +49,14 @@ write_cdf <- function(x, path_out, sample_name, lambda = NULL, force = FALSE){
       stop("Sample name must be provided.")
     }
   }
-  if (is.null(lambda) && ncol(x) + as.numeric(attr(x, "data_format") == "wide") > 2){
+  if (is.null(attr(x,"data_format"))){
+    is_long <- is.null(rownames(x)) || all(rownames(x) == seq_len(nrow(x)))
+    attr(x, "data_format") <- ifelse(is_long, "long", "wide")
+  }
+  if (is.null(lambda) && ncol(x) > 1 && attr(x, "data_format") ==  "wide") {
     warning("The supplied chromatogram contains more than two dimensions. Only
-            the first two dimensions will be written to the ANDI chrom file.",
+            the retention times and the first column of data will be written to
+            the ANDI chrom file.",
             immediate. = TRUE)
   }
   lambda <- ifelse(is.null(lambda), 1, lambda)
@@ -135,7 +140,9 @@ format_metadata_for_cdf <- function(x){
   # datetime_standard <- as.POSIXct(datetime_str, format = "%d.%m.%Y %H:%M:%S")
   datetime <- format(attr(x, "run_datetime"), "%Y%m%d%H%M%S%z")
   # rt_units <- x[which(x$Group=="Interval Time" & x$Property == "Units"), "Value"]
-  rt_units <- switch(tolower(attr(x, "time_unit")),
+  rt_units <- attr(x, "time_unit")
+  rt_units <- ifelse(!is.null(rt_units), tolower(rt_units), NA)
+  rt_units <- switch(tolower(rt_units),
                      "sec" = "Seconds", "seconds" = "Seconds",
                      "min" = "Minutes", "minutes" = "Minutes",
                      "default" = "Minutes")
