@@ -5,7 +5,7 @@
 #' A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are
 #' encoded as 'Microsoft' OLE documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
-#' files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Data Item}.
+#' files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Raw Data}.
 #' The PDA data stream contains a segment for each retention time, beginning
 #' with a 24-byte header.
 #'
@@ -126,10 +126,25 @@ get_sz_times <- function(sz_method, nval){
     } else NA
 }
 
-#' Read 'Shimadzu' LCD 3D raw data
+#' Get number of rows from LCD 3D Data item
 #' @author Ethan Bass
 #' @noRd
 
+get_shimadzu_rows <- function(path){
+  metadata_path <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Data Item"))
+  if (is.na(metadata_path)){
+    warning("3D Data Item stream could not be found -- unable to infer number of rows in stream.")
+    return(NA)
+  } else {
+    meta <- xml2::read_xml(metadata_path)
+    cn_node <- xml2::xml_find_first(meta, "//CN")
+    as.numeric(xml2::xml_text(cn_node))
+  }
+}
+
+#' Read 'Shimadzu' LCD 3D Raw Data
+#' @author Ethan Bass
+#' @noRd
 read_shimadzu_raw <- function(path, n_lambdas = NULL){
   path_raw <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Raw Data"),
                             verbose = TRUE)
@@ -144,7 +159,10 @@ read_shimadzu_raw <- function(path, n_lambdas = NULL){
   seek(f, 0, "start")
   seek(f, 0, "start")
 
-  mat <- matrix(NA, nrow = fsize/(n_lambdas*1.5), ncol = n_lambdas)
+  nrows <- get_shimadzu_rows(path)
+  nrows <- ifelse(is.na(nrows), fsize/(n_lambdas*1.5), nrows)
+
+  mat <- matrix(NA, nrow = nrows, ncol = n_lambdas)
   i <- 1
   while (seek(f, NA, "current") < fsize) {
     mat[i,] <- decode_shimadzu_block(f)
@@ -214,8 +232,8 @@ read_shimadzu_wavelengths <- function(path){
 decode_shimadzu_block <- function(file) {
   block_start <- seek(file, NA, "current")
 
-  readBin(file, what = "integer", n = 6, size=1) #skip
-  readBin(file, what = "integer", n = 1, size=2)
+  readBin(file, what = "integer", n = 6, size = 1) #skip
+  readBin(file, what = "integer", n = 1, size = 2)
 
   n_lambda <- readBin(file, what = "integer", n = 1, size = 2, endian = "little")
 
