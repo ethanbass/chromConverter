@@ -20,7 +20,8 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - ÅNDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
 - mzML (`.mzml`) & mzXML (.`mzxml`) (via RaMS).
 - 'Shimadzu LabSolutions' ascii (`.txt`)
-- 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA stream)
+- 'Shimadzu LabSolutions'`.gcd`
+- 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA and chromatogram streams)
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Waters' ascii (`.arw`)
 
