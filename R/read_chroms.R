@@ -12,8 +12,8 @@
 #' 'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent
 #' MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
 #' 'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
-#' (\code{.txt}), and 'Shimadzu LCD' files (preliminary support). Also, wraps
-#' 'OpenChrom' parsers, which include many additional formats. To use 'Entab',
+#' (\code{.txt}), 'Shimadzu GCD', and 'Shimadzu LCD' files (preliminary support).
+#' Also, wraps 'OpenChrom' parsers, which include many additional formats. To use 'Entab',
 #' 'ThermoRawFileParser', or 'OpenChrom' parsers, they must be manually installed.
 #' Please see the instructions in the
 #' [README](https://ethanbass.github.io/chromConverter/) for further details.
@@ -89,12 +89,12 @@
 #' @export read_chroms
 
 read_chroms <- function(paths, find_files,
-                        format_in=c("agilent_d", "agilent_dx", "chemstation",
+                        format_in = c("agilent_d", "agilent_dx", "chemstation",
                                     "chemstation_fid", "chemstation_ch",
                                     "chemstation_csv", "chemstation_uv",
                                     "masshunter_dad", "chromeleon_uv",
-                                    "shimadzu_ascii",
-                                    "shimadzu_fid", "shimadzu_dad",
+                                    "shimadzu_ascii", "shimadzu_dad",
+                                    "shimadzu_fid", "shimadzu_gcd",
                                     "shimadzu_lcd", "thermoraw", "mzml",
                                     "mzxml", "waters_arw", "waters_raw",
                                     "msd", "csd", "wsd", "mdf", "other"),
@@ -147,9 +147,10 @@ read_chroms <- function(paths, find_files,
                                       "chemstation_130", "chemstation_131",
                                       "openlab_131", "chemstation_179",
                                       "chemstation_81", "chemstation_181",
-                                      "chemstation_fid", "chemstation_csv", "masshunter_dad",
-                                      "shimadzu_fid", "shimadzu_dad",
-                                      "shimadzu_ascii", "shimadzu_lcd",
+                                      "chemstation_fid", "chemstation_csv",
+                                      "masshunter_dad", "shimadzu_ascii",
+                                      "shimadzu_dad", "shimadzu_fid",
+                                      "shimadzu_gcd", "shimadzu_lcd",
                                       "chromeleon_uv", "thermoraw", "mzml", "mzxml",
                                       "waters_arw", "waters_raw", "msd", "csd",
                                       "wsd", "mdf", "cdf", "other"))
@@ -245,10 +246,15 @@ read_chroms <- function(paths, find_files,
                          data_format = data_format,
                          read_metadata = read_metadata,
                          metadata_format = metadata_format, ...)
+  } else if (format_in == "shimadzu_gcd"){
+    converter <- partial(read_shimadzu_gcd, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata,
+                         metadata_format = metadata_format, ...)
   } else if (format_in == "shimadzu_lcd"){
     converter <- partial(read_shimadzu_lcd, format_out = format_out,
                          data_format = data_format,
-                         read_metadata = read_metadata)
+                         read_metadata = read_metadata, ...)
   } else if (format_in == "thermoraw"){
     converter <- switch(parser,
                         "thermoraw" = partial(read_thermoraw, path_out = path_out,

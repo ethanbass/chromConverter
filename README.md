@@ -149,8 +149,8 @@ Contributions of source code, ideas, or documentation are always welcome. Please
 
 - You've found an actual bug.  
 - You're getting a cryptic error message that you don't understand.  
-- You have a file format you'd like to read that isn't currently supported by chromatographR.  (If you do this, please make sure to include a link to an example file!)  
-- You have a new feature you'd like to see implemented.  
+- You have a file format you'd like to read that isn't currently supported by chromConverter.  (Please make sure to attach example files or a link to the files.)  
+- There's another new feature you'd like to see implemented.  
 
 **Note: Before filing a bug report, please make sure to install the latest development version of chromConverter from GitHub**, in case your bug has already been patched. After installing the latest version, you may also need to refresh your R session to remove the older version from the cache.
 

@@ -5,7 +5,7 @@ citEntry(
   title    = "chromConverter: Chromatographic File Converter",
   author   = "Ethan Bass",
   year     = "2023",
-  version  = "version 0.6.1",
+  version  = "version 0.6.2",
   doi      = "10.5281/zenodo.6792521",
   url      = "https://ethanbass.github.io/chromConverter/",
   textVersion = paste("Bass, E. (2023).",

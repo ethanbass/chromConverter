@@ -282,7 +282,7 @@ test_that("read_chroms can read 'Chromeleon' period-separated files", {
 
 test_that("read_peaklist can read `Shimadzu` ascii (PDA) files", {
   skip_on_cran()
-  skip_if_missing_dependecies()
+  skip_if_missing_dependencies()
   skip_if_not_installed("chromConverterExtraTests")
 
   path <- system.file("shimadzuDAD_Anthocyanin.txt",
@@ -325,6 +325,28 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ascii and LCD)", {
   expect_equal(x, x2, ignore_attr = TRUE)
 })
 
+test_that("read_chroms can read 'Shimadzu' chromatograms from LCD files", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_ascii <- system.file("shimadzuDAD_Anthocyanin.txt",
+                            package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_ascii))
+
+
+  path_lcd <- system.file("Anthocyanin.lcd", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lcd))
+
+  x <- read_chroms(path_ascii, format_in="shimadzu_ascii", progress_bar = FALSE, what="chromatogram")[[1]][["lc"]]
+
+  x1 <- read_chroms(path_lcd, format_in="shimadzu_lcd", what="chromatogram",
+                    progress_bar = FALSE)[[1]]
+  expect_equal(class(x1)[1], "matrix")
+  expect_equal(dim(x1), c(30000, 1))
+
+  #still need to find scaling factor
+  all.equal(x[-1,1], x1[,1]*.001, check.attributes=FALSE)
+})
 
 test_that("read_chroms can read 'Shimadzu' PDA comma-separated file", {
   skip_on_cran()
@@ -453,4 +475,26 @@ test_that("read_chroms can read ANDI MS files", {
                     progress_bar = FALSE)[[1]]
   expect_type(x2, "list")
   expect_equal(length(x2), length(unique(x$ms_spectra$rt)))
+})
+
+
+test_that("Shimadzu GCD parser works", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  file <- system.file("FS19_214.gcd", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(file))
+
+  x <- read_chroms(file, format_in = "shimadzu_gcd", find_files = FALSE,
+                   progress_bar = FALSE)
+
+  expect_equal(class(x[[1]])[1], "matrix")
+
+  file2 <- test_path("testdata/ladder.txt")
+
+  txt <- read_chroms(file2, format_in = "shimadzu_fid", find_files = FALSE,
+                   progress_bar = FALSE)
+  all.equal(x[[1]], txt[[1]], tolerance = .0001, check.attributes = FALSE)
+  # expect_equal(attributes(x[[1]])$instrument, "GC-2014")
 })

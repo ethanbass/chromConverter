@@ -1,3 +1,9 @@
+## chromConverter 0.6.2
+
+* Updated `read_shimadzu_lcd` function to correctly determine the number of blocks in the "Shimadzu" LCD PDA stream (thanks to [kco-hereon](https://github.com/kco-hereon)).
+* Added preliminary support for 2D data streams from "Shimadzu LCD" files.
+* Added parser for 'Shimadzu GCD' files (from GC-FID).
+
 ## chromConverter 0.6.1
 
 * Added support for 'Shimadzu ascii' files with '[LC Chromatogram...]' sub-header.
