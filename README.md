@@ -8,6 +8,9 @@
 [![metacran downloads](https://cranlogs.r-pkg.org/badges/last-month/chromConverter)](https://cran.r-project.org/package=chromConverter)
 <!-- badges: end -->
 
+**Table of contents:** [Overview](.#Overview) -
+[Installation](.#Installation) - [File formats](.#Formats) - [Usage](.#Usage) - [Contributing](.#Contributing) - [Citation](.#Citation)
+
 ### Overview
 
 chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. It includes a number of parsers written directly in R as well as bindings to various external libraries including [Aston](https://github.com/bovee/aston), [Entab](https://github.com/bovee/entab), [rainbow](https://rainbow-api.readthedocs.io/), the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser), [OpenChrom](https://lablicate.com/platform/openchrom) and [RaMS](https://github.com/wkumler/RaMS/).
@@ -144,7 +147,7 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release).
 
-## Contributing
+### Contributing
 
 Contributions of source code, ideas, or documentation are always welcome. Please get in touch (preferable by opening a GitHub [issue](https://github.com/ethanbass/chromatographR/issues)) to discuss any suggestions or to file a bug report. Some good reasons to file an issue:
 
