@@ -26,8 +26,9 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu_gcd.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.html</loc></url>
-<url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd_2D.html</loc></url>
-<url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd_3D.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_sz_tic.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_thermoraw.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_varian_peaklist.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_waters_arw.html</loc></url>

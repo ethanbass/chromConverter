@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -163,16 +163,22 @@
         <dd>Shimadzu LCD parser</dd>
       </dl><dl><dt>
 
-          <code><a href="read_shimadzu_lcd_2D.html">read_shimadzu_lcd_2D()</a></code>
+          <code><a href="read_sz_lcd_2d.html">read_sz_lcd_2d()</a></code>
 
         </dt>
         <dd>Shimadzu LCD 2D parser</dd>
       </dl><dl><dt>
 
-          <code><a href="read_shimadzu_lcd_3D.html">read_shimadzu_lcd_3D()</a></code>
+          <code><a href="read_sz_lcd_3d.html">read_sz_lcd_3d()</a></code>
 
         </dt>
         <dd>Shimadzu LCD 3D parser</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_sz_tic.html">read_sz_tic()</a></code>
+
+        </dt>
+        <dd>A parser to read total ion chromatogram data streams from 'Shimadzu' <code>.lcd</code> files. LCD files are encoded as 'Microsoft' OLE documents. The parser relies on the <a href="https://pypi.org/project/olefile/" class="external-link">olefile</a> package in Python to unpack the files. The TIC data is encoded in a stream called <code>Centroid:3D Raw Data</code>. The PDA data stream contains a segment for each retention time, beginning with a 8-byte header. After the header, the file consists of a series of 4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by a 4-byte spacer (<code>00000000</code>) The first integer is the retention time (scaled by 1000), the second integer is the scan number, and the third integer is the intensity.</dd>
       </dl><dl><dt>
 
           <code><a href="read_thermoraw.html">read_thermoraw()</a></code>

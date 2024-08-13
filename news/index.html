@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,13 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.3" id="chromconverter-063">chromConverter 0.6.3<a class="anchor" aria-label="anchor" href="#chromconverter-063"></a></h2>
+<ul><li>Added parser for total ion chromatogram (TIC) stream in ‘Shimadzu’ LCD files.</li>
+<li>Added additional support for extraction of metadata from ‘Shimadzu’ LCD and GCD files.</li>
+<li>Updated docs for <code>read_shimadzu_lcd_2d</code> to more accurately reflect file structure.</li>
+<li>Added <code>scale</code> argument to <code>read_chemstation_ch</code> and <code>read_shimadzu_lcd</code> to toggle scaling of chromatograms resolving (<a href="https://github.com/ethanbass/chromConverter/issues/30" class="external-link">#30</a>).</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.2" id="chromconverter-062">chromConverter 0.6.2<a class="anchor" aria-label="anchor" href="#chromconverter-062"></a></h2>
 <ul><li>Updated <code>read_shimadzu_lcd</code> function to correctly determine the number of blocks in the “Shimadzu” LCD PDA stream (thanks to <a href="https://github.com/kco-hereon" class="external-link">kco-hereon</a>).</li>
 <li>Added preliminary support for 2D data streams from “Shimadzu LCD” files.</li>
@@ -39,10 +46,10 @@
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.1" id="chromconverter-061">chromConverter 0.6.1<a class="anchor" aria-label="anchor" href="#chromconverter-061"></a></h2>
-<ul><li>Added support for ‘Shimadzu ascii’ files with ‘[LC Chromatogram…]’ sub-header.</li>
-<li>Correct ‘Shimadzu ascii’ chromatograms by ‘Intensity Multiplier’ if it is provided.</li>
-<li>Minor, cosmetic changes to documentation.</li>
+<ul><li>Added support for ‘Shimadzu’ ASCII files with ‘[LC Chromatogram…]’ sub-header.</li>
+<li>Correct ‘Shimadzu’ ASCII chromatograms by ‘Intensity Multiplier’ if it is provided.</li>
 <li>Fixed bug in logic in <code>export_cdfs</code> function to permit conversion of files lacking metadata.</li>
+<li>Minor, cosmetic changes to documentation.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="chromconverter-060">chromConverter 0.6.0<a class="anchor" aria-label="anchor" href="#chromconverter-060"></a></h2>
