@@ -14,6 +14,9 @@
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
+#' @param scale Whether to scale the data by the scaling factor present in the
+#' file. Defaults to \code{TRUE}. 'MassHunter' seems to ignore the scaling
+#' factor in at least some types of 'ChemStation' files.
 #' @author Ethan Bass
 #' @return A 2D chromatogram in the format specified by \code{data_format} and
 #' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
@@ -32,7 +35,8 @@
 read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
-                                metadata_format = c("chromconverter", "raw")){
+                                metadata_format = c("chromconverter", "raw"),
+                                scale = TRUE){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
@@ -104,8 +108,9 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
     seek(f, offsets$scaling_factor, "start")
     scaling_factor <- readBin(f, "double", n = 1, endian = "big", size = 8)
 
-    data <- data * scaling_factor + intercept
-
+    if (scale){
+      data <- data * scaling_factor + intercept
+    }
     if (data_format == "wide"){
       data <- data.frame(Intensity = data, row.names = times)
     } else if (data_format == "long"){
@@ -132,7 +137,7 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
           cc_collapse(readBin(f, "character", n = n))
         }
       })
-
+    meta <- c(meta, intensity_multiplier=scaling_factor)
     metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
     if (!inherits(metadata_from_file, "try-error")){
       meta <- c(meta, metadata_from_file)
@@ -176,7 +181,7 @@ get_nchar <- function(f){
 #' ((c) James Dillon 2014).
 #' @noRd
 
-decode_double_delta <- function(file, offset) {
+decode_double_delta <- function(file, offset){
 
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
@@ -190,7 +195,7 @@ decode_double_delta <- function(file, offset) {
   count <- 1
   buffer <- numeric(3)
 
-  while (seek(file, NA, "current") < fsize) {
+  while (seek(file, NA, "current") < fsize){
     buffer[3] <- readBin(file, "integer", n = 1, endian = "big", size = 2)
 
     if (buffer[3] != 32767) {
@@ -216,7 +221,7 @@ decode_double_delta <- function(file, offset) {
 #' ((c) James Dillon 2014).
 #' @noRd
 
-decode_double_array_4byte <- function(file, offset) {
+decode_double_array_4byte <- function(file, offset){
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
   offset <- 6144
@@ -230,7 +235,7 @@ decode_double_array_4byte <- function(file, offset) {
 
 #' Decode double array
 #' @noRd
-decode_double_array_8byte <- function(file, offset) {
+decode_double_array_8byte <- function(file, offset){
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
   offset <- 6144
@@ -247,7 +252,7 @@ decode_double_array_8byte <- function(file, offset) {
 #' ((c) James Dillon 2014).
 #' @noRd
 
-decode_delta <- function(file, offset) {
+decode_delta <- function(file, offset){
     seek(file, 0, 'end')
     fsize <- seek(file, NA, "current")
 
@@ -258,7 +263,7 @@ decode_delta <- function(file, offset) {
   buffer <- rep(0, 4)
   index <- 1
 
-    while (TRUE) {
+    while (TRUE){
       head <- readBin(file, "integer", n = 1, size = 1, endian = "big")
       if (head != 0x10) {
         break
@@ -429,9 +434,10 @@ get_agilent_offsets <- function(version){
 #' (retention time x wavelength).
 #' @author Ethan Bass
 #' @export
-read_agilent_dx <-  function(path, path_out = NULL, format_out = c("matrix","data.frame"),
-                                  data_format = c("wide","long"),
-                                  read_metadata = TRUE){
+read_agilent_dx <-  function(path, path_out = NULL,
+                             format_out = c("matrix","data.frame"),
+                              data_format = c("wide","long"),
+                              read_metadata = TRUE){
     format_out <- match.arg(format_out, c("matrix","data.frame"))
     data_format <- match.arg(data_format, c("wide","long"))
     files <- unzip(path, list = TRUE)
@@ -447,6 +453,7 @@ read_agilent_dx <-  function(path, path_out = NULL, format_out = c("matrix","dat
     # unzip .dx file
     unzip(path, files = files$Name[files.idx], exdir = path_out)
     # read in `.ch` files
-    read_chemstation_ch(fs::path(path_out, files$Name[files.idx]), format_out = format_out,
-                        data_format = data_format, read_metadata = read_metadata)
+    read_chemstation_ch(fs::path(path_out, files$Name[files.idx]),
+                        format_out = format_out, data_format = data_format,
+                        read_metadata = read_metadata)
 }

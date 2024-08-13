@@ -141,6 +141,10 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)"
   expect_equal(class(x[[1]])[1], "matrix")
   expect_equal(dim(x[[1]]), c(54704, 1))
   expect_equal(attr(x[[1]], "parser"), "chromconverter")
+
+  # test scale argument
+  x1 <- read_chroms(path, progress_bar = FALSE, scale=FALSE)[[1]]
+  expect_equal(x[[1]], x1*attr(x1,"intensity_multiplier"))
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
@@ -314,7 +318,7 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ascii and LCD)", {
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "data_format"), "wide")
 
-  x1 <- read_chroms(path_ascii, format_in="shimadzu_dad", progress_bar = FALSE,
+  x1 <- read_chroms(path_ascii, format_in = "shimadzu_dad", progress_bar = FALSE,
                     data_format = "long", format_out = "data.frame")[[1]]
   expect_equal(class(x1)[1], "data.frame")
   expect_equal(dim(x1), c(4689*328, 3))
@@ -323,6 +327,16 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ascii and LCD)", {
   x2 <- read_chroms(path_lcd, progress_bar = FALSE)[[1]]
   expect_equal(dim(x2),c(4689,328))
   expect_equal(x, x2, ignore_attr = TRUE)
+
+  # check metadata equivalence
+  expect_equal(attr(x, "software_version"), attr(x2, "software_version"))
+  expect_equal(attr(x, "method"), attr(x2, "method"))
+  expect_equal(attr(x, "batch"), attr(x2, "batch"))
+  expect_equal(attr(x, "operator"), attr(x2, "operator"))
+  expect_equal(attr(x, "sample_name"), attr(x2, "sample_name"))
+  expect_equal(attr(x, "sample_id"), attr(x2, "sample_id"))
+  expect_equal(attr(x, "sample_injection_volume"), attr(x2, "sample_injection_volume"))
+  expect_equal(as.numeric(attr(x, "time_range")), round(attr(x2, "time_range"), 3))
 })
 
 test_that("read_chroms can read 'Shimadzu' chromatograms from LCD files", {
@@ -341,11 +355,27 @@ test_that("read_chroms can read 'Shimadzu' chromatograms from LCD files", {
 
   x1 <- read_chroms(path_lcd, format_in="shimadzu_lcd", what="chromatogram",
                     progress_bar = FALSE)[[1]]
+
   expect_equal(class(x1)[1], "matrix")
   expect_equal(dim(x1), c(30000, 1))
+  all.equal(x[-1,1], x1[,1], check.attributes = FALSE)
 
-  #still need to find scaling factor
-  all.equal(x[-1,1], x1[,1]*.001, check.attributes=FALSE)
+  # unscaled
+  x2 <- read_chroms(path_lcd, format_in="shimadzu_lcd", what="chromatogram",
+                    progress_bar = FALSE, scale = FALSE)[[1]]
+  all.equal(x[-1,1], x2[,1]*attr(x2, "intensity_multiplier"), check.attributes = FALSE)
+
+  # check metadata equivalence
+  expect_equal(attr(x, "software_version"), attr(x1, "software_version"))
+  expect_equal(attr(x, "method"), attr(x1, "method"))
+  expect_equal(attr(x, "batch"), attr(x1, "batch"))
+  expect_equal(attr(x, "operator"), attr(x1, "operator"))
+  expect_equal(attr(x, "sample_name"), attr(x1, "sample_name"))
+  expect_equal(attr(x, "sample_id"), attr(x1, "sample_id"))
+  expect_equal(attr(x, "sample_injection_volume"), attr(x1, "sample_injection_volume"))
+  expect_equal(as.numeric(attr(x, "time_range")), round(attr(x1, "time_range"), 3))
+  expect_equal(attr(x, "detector_unit"), attr(x1, "detector_unit"))
+  expect_equal(attr(x, "intensity_multiplier"), attr(x1, "intensity_multiplier"))
 })
 
 test_that("read_chroms can read 'Shimadzu' PDA comma-separated file", {
@@ -393,16 +423,9 @@ test_that("read_chroms can read 'Thermo' RAW files", {
                       package = "chromConverterExtraTests")
   x <- read_chroms(path, progress_bar = FALSE)[[1]]
   expect_equal(class(x), "list")
-  expect_equal(names(x), c("MS1", "MS2", "DAD", "BPC", "TIC", "chroms", "metadata"))
+  expect_equal(names(x), c("MS1", "MS2", "DAD", "BPC",
+                           "TIC", "chroms", "metadata"))
 })
-
-# test_that("thermoraw parser works",{
-#   skip_if_not(configure_thermo_parser(check = TRUE))
-  # file <- "/Users/ethanbass/Library/CloudStorage/Box-Box/chromatography_test_files/thermo_files/small.RAW"
-  # x <- read_chroms(file, format_in = "thermoraw", find_files = FALSE)
-#   expect_equal(class(x[[1]])[1], "matrix")
-#   expect_equal(attributes(x[[1]])$instrument, "GC-2014")
-# })
 
 test_that("read_chroms can use 'OpenChrom' parsers", {
   skip_on_cran()
@@ -477,24 +500,32 @@ test_that("read_chroms can read ANDI MS files", {
   expect_equal(length(x2), length(unique(x$ms_spectra$rt)))
 })
 
-
 test_that("Shimadzu GCD parser works", {
   skip_on_cran()
   skip_if_missing_dependencies()
   skip_if_not_installed("chromConverterExtraTests")
 
-  file <- system.file("FS19_214.gcd", package = "chromConverterExtraTests")
-  skip_if_not(file.exists(file))
+  path_gcd <- system.file("FS19_214.gcd", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_gcd))
 
-  x <- read_chroms(file, format_in = "shimadzu_gcd", find_files = FALSE,
-                   progress_bar = FALSE)
+  x <- read_chroms(path_gcd, format_in = "shimadzu_gcd", find_files = FALSE,
+                   progress_bar = FALSE)[[1]]
 
-  expect_equal(class(x[[1]])[1], "matrix")
+  expect_equal(class(x)[1], "matrix")
 
-  file2 <- test_path("testdata/ladder.txt")
+  path_ascii <- test_path("testdata/ladder.txt")
 
-  txt <- read_chroms(file2, format_in = "shimadzu_fid", find_files = FALSE,
-                   progress_bar = FALSE)
-  all.equal(x[[1]], txt[[1]], tolerance = .0001, check.attributes = FALSE)
-  # expect_equal(attributes(x[[1]])$instrument, "GC-2014")
+  txt <- read_chroms(path_ascii, format_in = "shimadzu_fid", find_files = FALSE,
+                   progress_bar = FALSE)[[1]]
+
+  all.equal(x, txt, tolerance = .0001, check.attributes = FALSE)
+
+  # check metadata equivalence
+  expect_equal(attr(x, "software_version"), attr(txt, "software_version"))
+  expect_equal(attr(x, "method"), attr(txt, "method"))
+  expect_equal(attr(x, "operator"), attr(txt, "operator"))
+  expect_equal(attr(x, "sample_name"), attr(txt, "sample_name"))
+  expect_equal(attr(x, "sample_id"), attr(txt, "sample_id"))
+  expect_equal(attr(x, "sample_injection_volume"), attr(txt, "sample_injection_volume"))
+  expect_equal(as.numeric(attr(txt, "time_range")), round(attr(x, "time_range"), 3))
 })

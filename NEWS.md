@@ -1,3 +1,11 @@
+## chromConverter 0.6.3
+
+* Added parser for total ion chromatogram (TIC) stream in 'Shimadzu' LCD files.
+* Added additional support for extraction of metadata from 'Shimadzu' LCD and GCD files.
+* Updated docs for `read_shimadzu_lcd_2d` to more accurately reflect file structure.
+* Added `scale` argument to `read_chemstation_ch` and `read_shimadzu_lcd` to 
+toggle scaling of chromatograms resolving ([#30](https://github.com/ethanbass/chromConverter/issues/30)).
+
 ## chromConverter 0.6.2
 
 * Updated `read_shimadzu_lcd` function to correctly determine the number of blocks in the "Shimadzu" LCD PDA stream (thanks to [kco-hereon](https://github.com/kco-hereon)).
@@ -6,10 +14,10 @@
 
 ## chromConverter 0.6.1
 
-* Added support for 'Shimadzu ascii' files with '[LC Chromatogram...]' sub-header.
-* Correct 'Shimadzu ascii' chromatograms by 'Intensity Multiplier' if it is provided.
-* Minor, cosmetic changes to documentation.
+* Added support for 'Shimadzu' ASCII files with '[LC Chromatogram...]' sub-header.
+* Correct 'Shimadzu' ASCII chromatograms by 'Intensity Multiplier' if it is provided.
 * Fixed bug in logic in `export_cdfs` function to permit conversion of files lacking metadata.
+* Minor, cosmetic changes to documentation.
 
 ## chromConverter 0.6.0
 

@@ -9,7 +9,8 @@ read_chemstation_ch(
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
-  metadata_format = c("chromconverter", "raw")
+  metadata_format = c("chromconverter", "raw"),
+  scale = TRUE
 )
 }
 \arguments{
@@ -23,6 +24,10 @@ read_chemstation_ch(
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
+
+\item{scale}{Whether to scale the data by the scaling factor present in the
+file. Defaults to \code{TRUE}. 'MassHunter' seems to ignore the scaling
+factor in at least some types of 'ChemStation' files.}
 }
 \value{
 A 2D chromatogram in the format specified by \code{data_format} and

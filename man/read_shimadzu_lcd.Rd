@@ -9,20 +9,28 @@ read_shimadzu_lcd(
   what,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
-  read_metadata = TRUE
+  read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw"),
+  scale = TRUE
 )
 }
 \arguments{
 \item{path}{Path to LCD file.}
 
-\item{what}{What stream to get. Either \code{pda} or \code{chromatogram}. If
-stream is not specified, will default to \code{pda} if PDA stream is present.}
+\item{what}{What stream to get: current options are \code{pda},
+\code{chromatogram}, or \code{tic}. If a stream is not specified,
+the function will default to \code{pda} if the PDA stream is present.}
 
 \item{format_out}{Matrix or data.frame.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
+
+\item{scale}{Whether to scale the data by the value factor.}
 }
 \value{
 A 3D chromatogram from the PDA stream in \code{matrix} or
@@ -44,28 +52,30 @@ with a 24-byte header.
 The 24 byte header consists of the following fields:
 \itemize{
 \item 4 bytes: segment label (\code{17234}).
-\item 4 bytes: ???
-\item 4 bytes: Little-endian integer specifying the number of wavelength values
-in the segment.
+\item 4 bytes: Little-endian integer specifying the sampling rate along the time
+axis for 2D streams or along the spectral axis (?) for PDA streams.
+\item 4 bytes: Little-endian integer specifying the number of values in the file
+(for 2D data) or the number of wavelength values in each segment (for 3D data).
 \item 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
-\item 8 bytes of \code{00}s
+\item 8 bytes of \code{00}.
 }
 
-Each segment is divided into two sub-segments, which begin and end with an
-integer specifying the length of the sub-segment in bytes. All known values
-in this data stream are little-endian and the data are delta-encoded. The
-first hexadecimal digit of each value is a sign digit
-specifying the number of bytes in the delta and whether the value is positive
+For 3D data, Each time point is divided into two sub-segments, which begin and
+end with an integer specifying the length of the sub-segment in bytes. 2D data
+are structured similarly but with more segments. All known values
+in this the LCD data streams are little-endian and the data are delta-encoded.
+The first hexadecimal digit of each value is a sign digit specifying the
+number of bytes in the delta and whether the value is positive
 or negative. The sign digit represents the number of hexadecimal digits used
 to encode each value. Even numbered sign digits correspond to positive deltas,
 whereas odd numbers indicate negative deltas. Positive values are encoded as
 little-endian integers, while negative values are encoded as two's
 complements. The value at each position is derived by subtracting the delta
-from the previous value.
+at each position from the previous value.
 }
 \note{
-This parser is experimental and may still need some work. It is not
-yet able to interpret much metadata from the files.
+My parsing of the date-time format seems to be a little off, since
+the acquisition times diverge slightly from the ASCII file.
 }
 \author{
 Ethan Bass

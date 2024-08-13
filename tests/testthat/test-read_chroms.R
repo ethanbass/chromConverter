@@ -5,13 +5,13 @@ path_uv <- test_path("testdata/dad1.uv") #chemstation 131
 
 x <- read_chroms(path_csv, format_in = "chemstation_csv", progress_bar = FALSE)
 
-test_that("aston parser can read `Agilent Chemstation` 131 files", {
+test_that("Aston parser can read `Agilent Chemstation` 131 files", {
   skip_if_missing_dependencies()
   paths <- rep(path_uv, 2)
   x1 <- read_chroms(paths, format_in = "chemstation_uv", parser = "aston",
                     find_files = FALSE,
                     read_metadata = TRUE, progress_bar = FALSE)
-  expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][, "220.0"]))
+  expect_equal(x[[1]][,1], x1[[1]][,"220.0"], ignore_attr=TRUE)
   expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(length(x1), length(paths))
   expect_equal(class(x1[[1]])[1], "matrix")

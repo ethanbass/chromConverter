@@ -284,7 +284,8 @@ read_chroms <- function(paths, find_files,
                                                    format_out = format_out,
                                                    data_format = data_format,
                                                    read_metadata = read_metadata,
-                                                   metadata_format = metadata_format),
+                                                   metadata_format = metadata_format,
+                                                   ...),
                         "rainbow" = rainbow_parser,
                         "entab" = entab_parser)
   } else if (format_in %in% c("msd", "csd", "wsd")){

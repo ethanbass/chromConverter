@@ -111,6 +111,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
     }
     meta$signal <- as.numeric(c(lambda_start, lambda_end))
     meta$time_range = as.numeric(c(head(rownames(data), 1), tail(rownames(data), 1)))
+    meta$intensity_multiplier <- scaling_value
     data <- attach_metadata(data, meta, format_in = metadata_format,
                     data_format = data_format, format_out = format_out,
                     parser = "chromconverter", source_file = path)

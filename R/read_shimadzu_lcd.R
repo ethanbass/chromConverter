@@ -11,57 +11,74 @@
 #'
 #' The 24 byte header consists of the following fields:
 #' * 4 bytes: segment label (\code{17234}).
-#' * 4 bytes: ???
-#' * 4 bytes: Little-endian integer specifying the number of wavelength values
-#' in the segment.
+#' * 4 bytes: Little-endian integer specifying the sampling rate along the time
+#' axis for 2D streams or along the spectral axis (?) for PDA streams.
+#' * 4 bytes: Little-endian integer specifying the number of values in the file
+#' (for 2D data) or the number of wavelength values in each segment (for 3D data).
 #' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
-#' * 8 bytes of \code{00}s
+#' * 8 bytes of \code{00}.
 #'
-#' Each segment is divided into two sub-segments, which begin and end with an
-#' integer specifying the length of the sub-segment in bytes. All known values
-#' in this data stream are little-endian and the data are delta-encoded. The
-#' first hexadecimal digit of each value is a sign digit
-#' specifying the number of bytes in the delta and whether the value is positive
+#' For 3D data, Each time point is divided into two sub-segments, which begin and
+#' end with an integer specifying the length of the sub-segment in bytes. 2D data
+#' are structured similarly but with more segments. All known values
+#' in this the LCD data streams are little-endian and the data are delta-encoded.
+#' The first hexadecimal digit of each value is a sign digit specifying the
+#' number of bytes in the delta and whether the value is positive
 #' or negative. The sign digit represents the number of hexadecimal digits used
 #' to encode each value. Even numbered sign digits correspond to positive deltas,
 #' whereas odd numbers indicate negative deltas. Positive values are encoded as
 #' little-endian integers, while negative values are encoded as two's
 #' complements. The value at each position is derived by subtracting the delta
-#' from the previous value.
+#' at each position from the previous value.
 #'
 #' @param path Path to LCD file.
-#' @param what What stream to get. Either \code{pda} or \code{chromatogram}. If
-#' stream is not specified, will default to \code{pda} if PDA stream is present.
+#' @param what What stream to get: current options are \code{pda},
+#' \code{chromatogram}, or \code{tic}. If a stream is not specified,
+#' the function will default to \code{pda} if the PDA stream is present.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
+#' @param scale Whether to scale the data by the value factor.
 #' @author Ethan Bass
 #' @return A 3D chromatogram from the PDA stream in \code{matrix} or
 #' \code{data.frame} format, according to the value of \code{format_out}.
 #' The chromatograms will be returned in \code{wide} or \code{long} format
 #' according to the value of \code{data_format}.
-#' @note This parser is experimental and may still need some work. It is not
-#' yet able to interpret much metadata from the files.
+#' @note My parsing of the date-time format seems to be a little off, since
+#' the acquisition times diverge slightly from the ASCII file.
 #' @export
 
 read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame"),
-                                 data_format = c("wide", "long"),
-                                 read_metadata = TRUE){
+                                data_format = c("wide", "long"),
+                                read_metadata = TRUE,
+                                metadata_format = c("chromconverter", "raw"),
+                                scale = TRUE){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format,
+                            chromconverter = "shimadzu_lcd", raw = "raw")
+
   if (missing(what)){
-    what <- ifelse(check_streams(path, "pda", boolean=TRUE), "pda", "chromatogram")
+    what <- ifelse(check_streams(path, "pda", boolean = TRUE),
+                   "pda", "chromatogram")
   }
+  what <- match.arg(what, c("pda", "chromatogram", "tic"))
+
   olefile_installed <- reticulate::py_module_available("olefile")
   if (!olefile_installed){
     configure_python_environment(parser = "olefile")
   }
 
-  read_sz <- switch(what, "pda" = read_shimadzu_lcd_3D,
-                "chromatogram" = read_shimadzu_lcd_2D)
+  read_sz <- switch(what, "pda" = read_sz_lcd_3d,
+                          "chromatogram" = read_sz_lcd_2d,
+                          "tic" = read_sz_tic)
 
   read_sz(path, format_out = format_out, data_format = data_format,
-                         read_metadata = read_metadata)
+           read_metadata = read_metadata, metadata_format = metadata_format,
+            scale = scale)
 }
 
 #' Shimadzu LCD 3D parser
@@ -77,7 +94,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame")
 #'
 #' The 24 byte header consists of the following fields:
 #' * 4 bytes: segment label (\code{17234}).
-#' * 4 bytes: ???
+#' * 4 bytes: Little-endian integer specifying the wavelength bandwidth (?).
 #' * 4 bytes: Little-endian integer specifying the number of wavelength values
 #' in the segment.
 #' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
@@ -93,47 +110,60 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame")
 #' whereas odd numbers indicate negative deltas. Positive values are encoded as
 #' little-endian integers, while negative values are encoded as two's
 #' complements. The value at each position is derived by subtracting the delta
-#' from the previous value.
+#' at each position from the previous value.
 #'
 #' @param path Path to LCD file.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
+#' @param scale Whether to scale the data by the value factor.
 #' @author Ethan Bass
 #' @return A 3D chromatogram from the PDA stream in \code{matrix} or
 #' \code{data.frame} format, according to the value of \code{format_out}.
 #' The chromatograms will be returned in \code{wide} or \code{long} format
 #' according to the value of \code{data_format}.
-#' @note This parser is experimental and may still need some work. It is not
-#' yet able to interpret much metadata from the files.
 #' @export
 
-read_shimadzu_lcd_3D <- function(path, format_out = c("matrix", "data.frame"),
-                              data_format = c("wide", "long"),
-                              read_metadata = TRUE){
+read_sz_lcd_3d <- function(path, format_out = "matrix",
+                            data_format = "wide",
+                            read_metadata = TRUE,
+                            metadata_format = "shimadzu_lcd",
+                            scale = TRUE){
   check_streams(path, what = "pda")
 
   # read wavelengths from "Wavelength Table" stream
-  lambdas <- read_shimadzu_wavelengths(path)
+  lambdas <- read_sz_wavelengths(path)
   n_lambdas <- length(lambdas)
 
   # read data from "3D Raw Data" stream
-  dat <- read_shimadzu_pda(path, n_lambdas = n_lambdas)
+  dat <- read_sz_pda(path, n_lambdas = n_lambdas)
   colnames(dat) <- lambdas
 
-  # infer times from "PDA.1.Method" stream
-  method_metadata <- read_sz_method(path)
-  times <- get_sz_times(method_metadata, nval = nrow(dat))
+  DI <- read_sz_3DDI(path)
+  times <- seq(DI$DLT, DI$AT, by = DI$Rate)
+  if (length(times) != nrow(dat)){
+    times <- seq(DI$DLT, DI$AT, length.out = nrow(dat))
+    warning("Length of the inferred time axis does not match the number of rows
+            in the data.")
+  }
   if (inherits(times, "numeric")){
     rownames(dat) <- times
   }
-
   if (data_format == "long"){
     dat <- reshape_chrom(dat, data_format = "wide")
   }
 
   if (format_out == "data.frame"){
-    data <- as.data.frame(data)
+    dat <- as.data.frame(dat)
+  }
+  if (read_metadata){
+    meta <- read_sz_file_properties(path)
+    meta <- c(meta, DI)
+    dat <- attach_metadata(dat,meta, format_in = metadata_format,
+                           source_file = path, data_format = data_format,
+                           format_out = format_out)
   }
   dat
 }
@@ -145,16 +175,17 @@ read_shimadzu_lcd_3D <- function(path, format_out = c("matrix", "data.frame"),
 #' A parser to read chromatogram data streams from 'Shimadzu' \code{.lcd} files.
 #' LCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
-#' files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Raw Data}.
-#' The PDA data stream contains a segment for each retention time, beginning
+#' files. The chromatogram data is encoded in streams titled
+#' \code{LSS Raw Data:Chromatogram Ch<#>}. The chromatogram data streams begin
 #' with a 24-byte header.
 #'
 #' The 24 byte header consists of the following fields:
 #' * 4 bytes: segment label (\code{17234}).
-#' * 4 bytes: ???
-#' * 4 bytes: Little-endian integer specifying the number of wavelength values
-#' in the segment.
-#' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
+#' * 4 bytes: Little-endian integer specifying the sampling rate (in milliseconds).
+#' * 4 bytes: Little-endian integer specifying the number of values
+#' in the file.
+#' * 4 bytes: Little-endian integer specifying the total number of bytes
+#' in the file.
 #' * 8 bytes of \code{00}s
 #'
 #' Each segment is divided into multiple sub-segments, which begin and end with an
@@ -167,15 +198,87 @@ read_shimadzu_lcd_3D <- function(path, format_out = c("matrix", "data.frame"),
 #' whereas odd numbers indicate negative deltas. Positive values are encoded as
 #' little-endian integers, while negative values are encoded as two's
 #' complements. The value at each position is derived by subtracting the delta
-#' from the previous value. Some chromatograms must be multiplied by a scaling
-#' factor which I have not yet been able to locate in the file.
+#' at each position from the previous value.
+#'
+#' @param path Path to LCD file.
+#' @param format_out Matrix or data.frame.
+#' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param read_metadata Logical. Whether to attach metadata.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
+#' @param scale Whether to scale the data by the value factor.
+#' @author Ethan Bass
+#' @return One or more 2D chromatograms from the chromatogram streams in
+#' \code{matrix} or \code{data.frame} format, according to the value of
+#' \code{format_out}. If multiple chromatograms are found, they will be returned
+#' as a list of matrices or data.frames. The chromatograms will be returned in
+#' \code{wide} or \code{long} format according to the value of \code{data_format}.
+#' @export
+
+read_sz_lcd_2d <- function(path, format_out = "matrix",
+                            data_format = "wide",
+                            read_metadata = TRUE,
+                            metadata_format = "shimadzu_lcd",
+                            scale = TRUE){
+
+  existing_streams <- check_streams(path, what = "chromatogram")
+  if (length(existing_streams) == 0){
+    stop("Chromatogram streams not detected.")
+  }
+
+  if (read_metadata){
+    meta <- read_sz_file_properties(path)
+  }
+
+  dat <- lapply(existing_streams, function(stream){
+    dat <- read_sz_chrom(path, stream = stream)
+
+    idx <- as.numeric(gsub("\\D", "", stream[2]))
+    DI <- read_sz_2DDI(path, idx = idx)
+
+    times <- seq(0, DI$AT, length.out = nrow(dat))
+    rownames(dat) <- times
+
+    if (scale){
+      dat <- dat*DI$detector.vf
+    }
+    if (data_format == "long"){
+      cbind(rt = times, int = dat$int)
+    }
+    if (format_out == "matrix"){
+      dat <- as.matrix(dat)
+    }
+    if (read_metadata){
+      dat <- attach_metadata(dat, c(meta, DI), format_in = metadata_format,
+                             source_file = path, data_format = data_format,
+                             format_out = format_out, scale = scale)
+    }
+    dat
+  })
+  if (length(dat) == 1){
+    dat <- dat[[1]]
+  }
+  dat
+}
+
+#' A parser to read total ion chromatogram data streams from 'Shimadzu'
+#' \code{.lcd} files. LCD files are encoded as 'Microsoft' OLE documents. The
+#' parser relies on the [olefile](https://pypi.org/project/olefile/) package in
+#' Python to unpack the files. The TIC data is encoded in a stream called
+#' \code{Centroid:3D Raw Data}.
+#' The PDA data stream contains a segment for each retention time, beginning
+#' with a 8-byte header. After the header, the file consists of a series of
+#' 4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
+#' a 4-byte spacer (\code{00000000}) The first integer is the retention time
+#' (scaled by 1000), the second integer is the scan number, and the third integer
+#' is the intensity.
 #'
 #' @param path Path to LCD file.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
-#' @return A 2D chromatogram from the PDA stream in \code{matrix} or
+#' @return A 2D chromatogram from the SumTIC stream in \code{matrix} or
 #' \code{data.frame} format, according to the value of \code{format_out}.
 #' The chromatograms will be returned in \code{wide} or \code{long} format
 #' according to the value of \code{data_format}.
@@ -183,50 +286,53 @@ read_shimadzu_lcd_3D <- function(path, format_out = c("matrix", "data.frame"),
 #' yet able to interpret much metadata from the files.
 #' @export
 
-read_shimadzu_lcd_2D <- function(path, format_out = c("matrix", "data.frame"),
-                                 data_format = c("wide", "long"),
-                                 read_metadata = TRUE){
-
-  existing_streams <- check_streams(path, what="chromatogram")
-
-  dat <- lapply(existing_streams, function(stream){
-    read_shimadzu_chrom(path, stream = stream)
-  })
-
-  # infer times from "PDA.1.Method" stream
-  method_metadata <- read_sz_method(path, stream = c("GUMM_Information", "ShimadzuLC.1",
-                                                     "GUC.1.METHOD"))
-  times <- get_sz_times(method_metadata, what="chromatogram", nval = nrow(dat[[1]]))
-
-  if (inherits(times, "numeric")){
-    if (data_format == "wide"){
-      dat <- lapply(dat, function(x){
-        rownames(x) <- times
-        x
-      })
-    } else if (data_format == "long"){
-      dat <- lapply(dat, function(x){
-        cbind(rt=times,x)
-      })
-    }
+read_sz_tic <- function(path, format_out = c("matrix", "data.frame"),
+                              data_format = c("wide", "long"),
+                              read_metadata = TRUE){
+  path_tic <- check_streams(path, what = "tic")
+  path_tic <- export_stream(path, c("QTFL RawData", "Centroid SumTIC"))
+  f <- file(path_tic, "rb")
+  on.exit(close(f))
+  dat <- decode_sz_tic(f)
+  if (data_format == "wide"){
+    row.names(dat) <- dat[,"rt"]
+    dat <- dat[,"int", drop=FALSE]
   }
-
-  if (format_out == "matrix"){
-    dat <- lapply(dat, function(x){
-      as.matrix(x)
-    })
-  }
-  if (length(dat) == 1){
-    dat <- dat[[1]]
+  if (format_out == "data.frame"){
+    dat <- as.data.frame(dat)
   }
   dat
 }
 
-read_shimadzu_chrom <- function(path, stream){
+#' Decode 'Shimadzu' total ion chromatogram
+#' @noRd
+decode_sz_tic <- function(f){
+  seek(f, where = 0, origin = "end")
+  bytes <- seek(f, where = 0, origin = "end")
+
+  nval <- (bytes-8)/16
+  seek(f, 0, "start")
+  seek(f, 0, "start")
+
+  mat <- matrix(nrow = nval, ncol=3)
+  count <- 1
+  readBin(f, what = "integer", size = 4, n = 2) # skip 2
+  while(count < nval){
+    mat[count,] <- readBin(f, what = "integer", size=4, n=3)
+    readBin(f, what = "integer", size = 4, n = 1) # skip 1
+    count <- count + 1
+  }
+  mat[,1] <- mat[,1]/1000
+  colnames(mat) <- c("rt","index","int")
+  mat
+}
+
+#' @noRd
+read_sz_chrom <- function(path, stream){
   path_raw <- export_stream(path, stream = stream)
   f <- file(path_raw, "rb")
   on.exit(close(f))
-  data.frame(int = decode_shimadzu_block(f))
+  data.frame(int = decode_sz_block(f))
 }
 
 #' Read Shimadzu "Method" stream
@@ -266,11 +372,13 @@ read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
 
 #' Infer times from 'Shimadzu' Method stream
 #' This function is called internally by \code{read_shimadzu_lcd}.
+#' @note This function is no longer needed because the times can be inferred
+#' (more reliably?) from the 2D Data Item.
 #' @author Ethan Bass
 #' @noRd
 get_sz_times <- function(sz_method, what = c("pda","chromatogram"), nval){
   what <- match.arg(what, c("pda","chromatogram"))
-  fields <- switch(what, "pda" = c("StTm","EdTm"),
+  fields <- switch(what, "pda" = c("StTm", "EdTm"),
                          "chromatogram" = c("ACQ$StartTm#1","ACQ$EndTm#1"))
   start_time <- try(get_metadata_field(sz_method, fields[1])/60000, silent = TRUE)
   end_time <- try(get_metadata_field(sz_method, fields[2])/60000, silent = TRUE)
@@ -298,7 +406,7 @@ get_shimadzu_rows <- function(path){
 #' Read 'Shimadzu' LCD 3D Raw Data
 #' @author Ethan Bass
 #' @noRd
-read_shimadzu_pda <- function(path, n_lambdas = NULL){
+read_sz_pda <- function(path, n_lambdas = NULL){
   path_raw <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Raw Data"),
                             verbose = TRUE)
   f <- file(path_raw, "rb")
@@ -318,7 +426,7 @@ read_shimadzu_pda <- function(path, n_lambdas = NULL){
   mat <- matrix(NA, nrow = nrows, ncol = n_lambdas)
   i <- 1
   while (seek(f, NA, "current") < fsize) {
-    mat[i,] <- decode_shimadzu_block(f)
+    mat[i,] <- decode_sz_block(f)
     i <- i + 1
   }
   if (any(is.na(mat[,1]))){
@@ -329,8 +437,9 @@ read_shimadzu_pda <- function(path, n_lambdas = NULL){
 
 #' Check OLE stream size
 #' @noRd
-check_streams <- function(path, what = c("pda","chromatogram"), boolean=FALSE){
-  what <- match.arg(what, c("pda","chromatogram"))
+check_streams <- function(path, what = c("pda", "chromatogram", "tic"),
+                          boolean=FALSE){
+  what <- match.arg(what, c("pda", "chromatogram", "tic"))
   trace_file <- reticulate::import("olefile")
   ole <- olefile$OleFileIO(path)
   if (what == "pda"){
@@ -342,8 +451,11 @@ check_streams <- function(path, what = c("pda","chromatogram"), boolean=FALSE){
     }
   } else {
     streams <- ole$listdir()
-    chrom_streams <- streams[grep("Chromatogram Ch", streams)]
-    sizes <- sapply(chrom_streams, function(x) ole$get_size(paste0(x, collapse="/")))
+    what <- switch(what, "chromatogram" = "Chromatogram Ch",
+                   "tic" = "Centroid SumTIC")
+    chrom_streams <- streams[grep(what, streams)]
+    sizes <- sapply(chrom_streams, function(x){
+      ole$get_size(paste0(x, collapse = "/"))})
     if (boolean){
       return(any(sizes > 0))
     } else{
@@ -390,13 +502,13 @@ export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
 #' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
-read_shimadzu_wavelengths <- function(path){
-  path_wavtab <- export_stream(path, stream =  c("PDA 3D Raw Data", "Wavelength Table"))
+read_sz_wavelengths <- function(path){
+  path_wavtab <- export_stream(path, stream =  c("PDA 3D Raw Data",
+                                                 "Wavelength Table"))
   f <- file(path_wavtab, "rb")
   on.exit(close(f))
   n_lambda <- readBin(f, what="integer", size = 4)
   count <- 1
-  # lambdas <- numeric(n_lambda)
   lambdas <- sapply(seq_len(n_lambda), function(i){
     readBin(f, what = "integer", size = 4)/100
   })
@@ -407,13 +519,14 @@ read_shimadzu_wavelengths <- function(path){
 #' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
-decode_shimadzu_block <- function(file) {
+decode_sz_block <- function(file) {
   block_start <- seek(file, NA, "current")
 
   readBin(file, what = "integer", n = 6, size = 1) #skip
   readBin(file, what = "integer", n = 1, size = 2)
 
-  n_lambda <- readBin(file, what = "integer", n = 1, size = 2, endian = "little")
+  n_lambda <- readBin(file, what = "integer", n = 1,
+                        size = 2, endian = "little")
 
   readBin(file, what = "integer", n = 1, size = 2)
   block_length <- readBin(file, what = "integer", n = 1, size = 2)
@@ -438,13 +551,15 @@ decode_shimadzu_block <- function(file) {
         buffer[[2]] <- strtoi(buffer[[3]], base = 16)
       } else if (hex1 == 1){
         bin <- as_binary(strtoi(buffer[[3]], base = 16), n = 8)
-        buffer[[2]] <- twos_complement(substr(bin, start = 5, stop = nchar(bin)))
+        buffer[[2]] <- twos_complement(substr(bin, start = 5,
+                                              stop = nchar(bin)))
       } else if (hex1 > 1){
         buffer[[4]] <- readBin(file, "raw", n = (hex1 %/% 2), size = 1)
-        bin <- paste(as_binary(strtoi(c(buffer[[3]], buffer[[4]]), base = 16), n = 8),
-                     collapse = "")
+        bin <- paste(as_binary(strtoi(c(buffer[[3]], buffer[[4]]), base = 16),
+                               n = 8), collapse = "")
         if (hex1 %% 2 == 0){
-          buffer[[2]] <- strtoi(substr(bin, start = 5, stop = nchar(bin)), base = 2)
+          buffer[[2]] <- strtoi(substr(bin, start = 5, stop = nchar(bin)),
+                                base = 2)
         } else {
           buffer[[2]] <- twos_complement(substr(bin, start = 5, stop = nchar(bin)))
         }
@@ -502,4 +617,171 @@ integer_to_binary <- function(x, n) {
   x <- stringr::str_c(x, collapse = "")
   # Return
   x
+}
+
+#' Convert hexadecimal string to raw format
+#' @param x A hexadecimal string
+#' @noRd
+char_to_raw <- function(x){
+  hex <- strsplit(x, "")[[1]]
+  hex <- paste(hex[c(TRUE, FALSE)], hex[c(FALSE, TRUE)], sep = "")
+  as.raw(strtoi(hex, 16L))
+}
+
+#' Read float from 'Shimadzu' metadata
+#' @noRd
+sz_float <- function(x, size = 8, endian = "little"){
+  readBin(char_to_raw(x), "double", n = 1, size = size, endian = endian)
+}
+
+#' Decode 'Shimadzu' metadata 'FtoX' floats
+#' @noRd
+sz_decode_fto <- Vectorize(
+  function(x){
+    x <- gsub("@FtoX@", "", x)
+    if (x == "1"){
+      return(1)
+    } else{
+      return(sz_float(x, size = 4, endian = "big"))
+    }
+  }
+)
+
+#' Decode 'Shimadzu' metadata 'StoX' strings
+#' @noRd
+sz_decode_sto <- Vectorize(
+  function(x){
+    x <- gsub("@StoX@", "", x)
+    tryCatch({raw_bytes <- as.raw(strtoi(substring(x, seq(1, nchar(x), 2),
+                                                   seq(2, nchar(x), 2)), 16L))
+    rawToChar(raw_bytes)
+    }, error=function(err) NA)
+  }
+)
+
+
+#' Convert 'Shimadzu' time to Unix time
+#' 'Shimadzu' LCD files seem to store times in 'Windows FILETIME' structure,
+#' where the "low" time and "high" times must be combined into a 64-bit integer
+#' representing the number of 100-nanosecond intervals since 1601-01-01.
+#' Assuming that this interpretation is correct, there seems to be something
+#' wrong with my conversion, since the times don't quite match the ones from the
+#' ASCII files exported from 'Lab Solutions'.
+#' @importFrom bit64 as.integer64
+#' @noRd
+sztime_to_unixtime <- function(low, high, tz = "UTC") {
+  if (tz!="UTC"){
+    tz <- -as.numeric(gsub("'00'", "", tz))
+    if (tz > 0){
+      tz <- paste0("+",tz)
+    }
+    tz <- paste0("Etc/GMT", tz)
+  }
+  filetime <- bit64::as.integer64(high) * 2^32 + bit64::as.integer64(low)
+  unix_time <- (filetime / 10000000) - 11644473600
+  as.POSIXct(unix_time, origin="1970-01-01", tz=tz)
+}
+
+#' Read 'Shimadzu' file properties
+#' @noRd
+read_sz_file_properties <- function(path){
+  path_prop <- export_stream(path, "File Property")
+  raw_xml <- readLines(path_prop, skipNul = TRUE)
+  raw_xml <- sub("^\037\004|^o\004", "", raw_xml)
+  xml_headers <- grep("xml version", raw_xml)
+
+  # Combine lines and parse
+  props <- lapply(seq_along(xml_headers[-1]), function(i){
+    xml_content <- paste(raw_xml[xml_headers[[i]]:(xml_headers[[i+1]] - 1)],
+                         collapse = "\n")
+    xml_doc <- xml2::read_xml(xml_content)
+  })
+  names(props) <- sapply(props, xml_name)
+  meta <- suppressWarnings(unlist(lapply(props, sz_decode_props),
+                                  recursive = FALSE))
+  meta
+}
+
+#' Decode 'Shimadzu' file properties
+#' @noRd
+sz_decode_props <- function(x){
+  nodes <- xml2::xml_children(x)
+  meta <- xml2::xml_text(nodes)
+  names(meta) <- xml2::xml_name(nodes)
+  fto.idx <- grep("@FtoX@", meta)
+  meta[fto.idx] <- sz_decode_fto(meta[fto.idx])
+  sto.idx <- grep("@StoX@", meta)
+  meta[sto.idx] <- sz_decode_sto(meta[sto.idx])
+  as.list(meta)
+}
+
+#' Read 'Shimadzu' 3D Data Item
+#' @noRd
+read_sz_3DDI <- function(path){
+  path_meta <- export_stream(path, c('PDA 3D Raw Data', '3D Data Item'))
+  doc <- xml2::read_xml(path_meta)
+
+  nodes <- xml2::xml_children(doc)
+  rm <- which(xml2::xml_name(nodes) %in% c("ELE","GUD","DataItem","SPR"))
+  meta <- as.list(xml2::xml_text(nodes[-rm]))
+  names(meta) <- xml2::xml_name(nodes[-rm])
+
+  meta[c("WVB","WVE","WLS")] <- lapply(meta[c("WVB","WVE","WLS")], function(x){
+    sz_float(x)/100
+  })
+  meta <- c(meta, read_sz_2DDI(xml2::xml_find_all(doc, ".//GUD[@Type='2DDataItem']"),
+                               read_file = FALSE))
+  meta
+}
+
+#' Read 'Shimadzu' 2D Data Item
+#' @noRd
+read_sz_2DDI <- function(path, read_file = TRUE, idx = 1){
+  if(read_file){
+    path_meta <- export_stream(path, c('LSS Data Processing', '2D Data Item'))
+    doc <- xml2::read_xml(path_meta)
+  } else{
+    doc <- path
+  }
+
+  nodes <- xml2::xml_child(doc, search = idx) |> xml2::xml_children()
+  ddi_idx <- which(xml2::xml_name(nodes) == "DDI")
+
+  meta <- xml2::xml_text(nodes[-ddi_idx])
+  names(meta) <- xml2::xml_name(nodes[-ddi_idx])
+
+  meta[c("CF","GF","AT","DLT")] <-
+    lapply(meta[c("CF","GF","AT","DLT")], function(x) sz_float(x))
+
+  meta <- c(meta, extract_axis_metadata(nodes))
+
+  meta$time.vf <- ifelse(is.na(meta$time.vf), 60000, meta$time.vf)
+  meta$detector.vf <- 1/meta$detector.vf
+
+  meta[c("AT","DLT","Rate")] <-
+    lapply(meta[c("AT","DLT","Rate")], function(x) as.numeric(x)/meta$time.vf)
+
+  meta
+}
+
+#' Extract axis metadata
+#' @noRd
+extract_axis_metadata <- function(x){
+  idx <- c(0, 1)
+  ax <- lapply(idx, function(i){
+    ax <- xml2::xml_find_all(x, paste0(".//Axis[@ID='", i, "']"))
+    dus <- as.numeric(xml2::xml_attr(ax, "DUS"))
+    if (dus != 0){
+      xml2::xml_find_all(ax, "US")[[dus]]
+    } else NA
+
+  })
+  names(ax) <- c("detector","time")
+  unlist(lapply(ax, function(x){
+    if (inherits(x, "xml_node")){
+      list(vf = xml2::xml_find_all(x, "VF") |> xml2::xml_text() |> sz_float(),
+           unit = xml2::xml_find_all(x, "Unit") |> xml2::xml_text()
+           )
+    } else list(vf = NA, unit = NA)
+  }), recursive = FALSE)
 }

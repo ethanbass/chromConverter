@@ -8,11 +8,12 @@
 #' @param data_format Whether data is in wide or long format.
 #' @param parser What parser was used to decode the data.
 #' @param source_file The path to the source file.
+#' @param scale Whether the data has been scaled.
 #' @return A chromatogram with attached metadata.
 #' @author Ethan Bass
 
-attach_metadata <- function(x, meta, format_in, format_out, data_format, parser = NULL,
-                            source_file){
+attach_metadata <- function(x, meta, format_in, format_out, data_format,
+                            parser = NULL, source_file, scale = NULL){
   if (grepl("chemstation", format_in)){
     format_in <- "chemstation"
   }
@@ -56,7 +57,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               method = get_metadata_field(meta, "Method File"),
               batch = get_metadata_field(meta, "Batch File"),
               operator = get_metadata_field(meta, "Operator Name"),
-              run_datetime = as.POSIXct(meta$Acquired, format = "%m/%d/%Y %I:%M:%S %p"),
+              run_datetime = as.POSIXct(meta$Acquired,
+                                        format = "%m/%d/%Y %I:%M:%S %p"),
               sample_name = get_metadata_field(meta, "Sample Name"),
               sample_id = get_metadata_field(meta, "Sample ID"),
               sample_injection_volume = get_metadata_field(meta, "Injection Volume"),
@@ -64,10 +66,13 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
               time_interval = meta$`Interval(msec)`,
               time_interval_unit = get_time_unit(
-                grep("Interval", names(meta), value = TRUE)[1], format_in = "shimadzu"),
+                grep("Interval", names(meta), value = TRUE)[1],
+                                          format_in = "shimadzu"),
               time_unit = get_time_unit(
-                grep("Start Time", names(meta), value=TRUE)[1], format_in = "shimadzu"),
-              detector_range = c(meta$`Start Wavelength(nm)`, meta$`End Wavelength(nm)`),
+                grep("Start Time", names(meta), value=TRUE)[1],
+                                          format_in = "shimadzu"),
+              detector_range = c(meta$`Start Wavelength(nm)`,
+                                 meta$`End Wavelength(nm)`),
               detector_unit = NA,
               source_file = source_file,
               data_format = data_format,
@@ -82,7 +87,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               method = get_metadata_field(meta, "Method File"),
               batch = get_metadata_field(meta, "Batch File"),
               operator = get_metadata_field(meta, "Operator Name"),
-              run_datetime = as.POSIXct(meta$Acquired, format = "%m/%d/%Y %I:%M:%S %p"),
+              run_datetime = as.POSIXct(meta$Acquired,
+                                        format = "%m/%d/%Y %I:%M:%S %p"),
               sample_name = get_metadata_field(meta, "Sample Name"),
               sample_id = get_metadata_field(meta, "Sample ID"),
               sample_injection_volume = get_metadata_field(meta, "Injection Volume"),
@@ -90,9 +96,11 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
               time_interval = meta$`Interval(msec)`,
               time_interval_unit = get_time_unit(
-                grep("Interval", names(meta), value = TRUE)[1], format_in = "shimadzu"),
+                grep("Interval", names(meta), value = TRUE)[1],
+                                          format_in = "shimadzu"),
               time_unit = get_time_unit(
-                grep("Start Time", names(meta), value=TRUE)[1], format_in = "shimadzu"),
+                grep("Start Time", names(meta), value=TRUE)[1],
+                                          format_in = "shimadzu"),
               wavelength = get_metadata_field(meta, "Wavelength(nm)"),
               bandwidth = get_metadata_field(meta, "Bandwidth(nm)"),
               detector_unit = get_metadata_field(meta, "Intensity Units"),
@@ -101,21 +109,57 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               data_format = data_format,
               parser = "chromconverter",
               format_out = format_out)
-  }, "chromeleon" = {
-    datetime.idx <- unlist(sapply(c("Date$", "Time$"), function(str) grep(str, names(meta))))
+  },  "shimadzu_lcd" = {
+    meta$Acquired <- sztime_to_unixtime(meta$SampleInfo.dwLowDateTime,
+                                        meta$SampleInfo.dwHighDateTime,
+                                        tz = meta$FileProperty.szLocGMTDiffGenDateTime)
+    structure(x,
+              instrument = get_metadata_field(meta, "DETN"),
+              detector = get_metadata_field(meta, "DSN"),
+              detector_id = get_metadata_field(meta,"DSID"),
+              # software_name = get_metadata_field(meta, "Application Name"),
+              software_version = get_metadata_field(meta, "DataFileProperty.szVersion"),
+              method = get_metadata_field(meta, "SampleInfoFile.methodfile"),
+              batch = get_metadata_field(meta, "SampleInfoFile.batchfile"),
+              operator = get_metadata_field(meta, "SampleInfo.operator_name"),
+              run_datetime = as.POSIXct(meta$Acquired),
+              sample_name = get_metadata_field(meta, "SampleInfo.smpl_name"),
+              sample_id = get_metadata_field(meta, "SampleInfo.smpl_id"),
+              sample_injection_volume = get_metadata_field(meta, "SampleInfo.inj_vol"),
+              sample_amount = get_metadata_field(meta, "SampleInfo.smpl_amount"),
+              time_range = c(get_metadata_field(meta, "DLT"),
+                             get_metadata_field(meta, "AT")),
+              time_interval = get_metadata_field(meta, "Rate"),
+              time_interval_unit = get_metadata_field(meta, "time.unit"),
+              time_unit = get_metadata_field(meta, "time.unit"),
+              time_multiplier = get_metadata_field(meta, "time.vf"),
+              wavelength = get_sz_wv(meta),
+             detector_unit = get_metadata_field(meta, "detector.unit"),
+             intensity_multiplier = get_metadata_field(meta, "detector.vf"),
+             scaled = scale,
+             source_file = source_file,
+             data_format = data_format,
+             parser = "chromconverter",
+             format_out = format_out)
+    }, "chromeleon" = {
+    datetime.idx <- unlist(sapply(c("Date$", "Time$"), function(str){
+        grep(str, names(meta))
+      })
+    )
     datetime <- unlist(meta[datetime.idx])
     if (length(datetime > 1)){
       datetime <- paste(datetime, collapse = " ")
     }
-    datetime <- as.POSIXct(datetime, format = c("%m/%d/%Y %H:%M:%S", "%d.%m.%Y %H:%M:%S",
-                                      "%m/%d/%Y %H:%M:%S %p %z"))
+    datetime <- as.POSIXct(datetime, format = c("%m/%d/%Y %H:%M:%S",
+                                                "%d.%m.%Y %H:%M:%S",
+                                                "%m/%d/%Y %H:%M:%S %p %z"))
     datetime <- datetime[!is.na(datetime)]
     time_interval_unit <- tryCatch({
       get_time_unit(grep("Average Step", names(meta), value = TRUE)[1],
                     format_in = "chromeleon")}, error = function(err) NA)
     time_unit <- tryCatch({
       get_time_unit(grep("Time Min.", names(meta), value = TRUE)[1],
-                    format_in="chromeleon")}, error = function(err) NA)
+                    format_in = "chromeleon")}, error = function(err) NA)
     structure(x, instrument = NA,
               detector = meta$Detector,
               software = meta$`Generating Data System`,
@@ -144,7 +188,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               parser = "chromconverter"
               )
   }, "chemstation" = {
-    datetime_formats <- c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p", "%d/%m/%Y %I:%M:%S %p")
+    datetime_formats <- c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p",
+                          "%d/%m/%Y %I:%M:%S %p")
     meta$date <- as.POSIXct(meta$date, tz = "UTC", tryFormats = datetime_formats)
     structure(x, sample_name = iconv(meta$sample_name, sub = ""),
               sample_id = meta$vial,
@@ -167,6 +212,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               time_range = meta$time_range,
               time_interval = NA,
               time_unit = "Minutes",
+              intensity_multiplier = meta$intensity_multiplier,
               source_file = source_file,
               data_format = data_format,
               parser = parser,
@@ -254,13 +300,18 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format, parser 
               sample_type = "unknown",
               sample_injection_volume = 1,
               sample_amount = 1,
-              time_start = meta[meta$Group=="Interval Time" & meta$Property == "From", "Value"],
-              time_end = meta[meta$Group=="Interval Time" & meta$Property == "To", "Value"],
-              time_interval = meta[meta$Group=="Interval Time" & meta$Property == "Step", "Value"],
-              time_unit = meta[meta$Group=="Interval Time" & meta$Property == "Units", "Value"],
+              time_start = meta[meta$Group=="Interval Time" &
+                                  meta$Property == "From", "Value"],
+              time_end = meta[meta$Group=="Interval Time" &
+                                meta$Property == "To", "Value"],
+              time_interval = meta[meta$Group=="Interval Time" &
+                                     meta$Property == "Step", "Value"],
+              time_unit = meta[meta$Group=="Interval Time" &
+                                 meta$Property == "Units", "Value"],
               detector_range = meta[meta$Property == "Wave", "Value"],
               # detector_end = meta[meta$Property == "Wave", "Value"],
-              detector_unit = meta[meta$Group=="Array photometric" & meta$Property == "Units", "Value"],
+              detector_unit = meta[meta$Group=="Array photometric" &
+                                     meta$Property == "Units", "Value"],
               source_file = ifelse(missing(source_file), NA, source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
@@ -337,24 +388,24 @@ get_time_unit <- function(string, format_in){
 #' @return A list containing extracted metadata.
 #' @author Ethan Bass
 #' @noRd
-read_chemstation_metadata <- function(file, what=c("metadata", "peaktable")){
+read_chemstation_metadata <- function(file, what = c("metadata", "peaktable")){
   what <- match.arg(what, c("metadata", "peaktable"))
   # find xls csv files
   folder <- gsub(basename(file), "", file)
   # check for .D folder
-  if (grepl("\\.D/$", folder,ignore.case = TRUE)){
+  if (grepl("\\.D/$", folder, ignore.case = TRUE)){
     # find xls/csv
     reps <- list.files(folder, pattern = '.xls',
                       ignore.case = TRUE, full.names = TRUE)
     if (length(reps) > 0){
       if (what == "metadata"){
-        meta <- as.data.frame(readxl::read_xls(reps[1], sheet=1, skip=1))
+        meta <- as.data.frame(readxl::read_xls(reps[1], sheet = 1, skip = 1))
         meta2<-as.list(meta$Results)
         names(meta2) <- meta$Title
         meta2
       } else if (what == "peaktable"){
         pktab <- as.data.frame(readxl::read_xls(rep, sheet = "Peak"))
-        pktab <- pktab[,-c(1:2)]
+        pktab <- pktab[, -c(1:2)]
         pktab
       }
     }
@@ -376,8 +427,8 @@ read_masshunter_metadata <- function(file){
     rep <- list.files(folder, pattern = '.xml',
                       ignore.case = TRUE, full.names = TRUE)
     if (length(rep) > 0){
-      path_devices <- rep[basename(rep)=="Devices.xml"]
-      path_sample <- rep[basename(rep)=="sample_info.xml"]
+      path_devices <- rep[basename(rep) == "Devices.xml"]
+      path_sample <- rep[basename(rep) == "sample_info.xml"]
       if (length(path_sample) == 1){
         meta_sample <- xml2::read_xml(path_sample)
         name <- xml_text(xml_find_all(meta_sample, xpath = "//Name"))
@@ -406,9 +457,9 @@ read_masshunter_metadata <- function(file){
 #' @noRd
 read_chromeleon_metadata <- function(x){
   meta_fields <- grep("Information:", x)
-  meta <- do.call(rbind, strsplit(x[(meta_fields[1]+1):(meta_fields[length(meta_fields)]-1)],"\t"))
-  rownames(meta) <- meta[,1]
-  meta <- as.list(meta[,-1])
+  meta <- do.call(rbind, strsplit(x[(meta_fields[1] + 1):(meta_fields[length(meta_fields)] - 1)], "\t"))
+  rownames(meta) <- meta[, 1]
+  meta <- as.list(meta[, -1])
   meta
 }
 
@@ -420,11 +471,11 @@ read_chromeleon_metadata <- function(x){
 #' @author Ethan Bass
 #' @noRd
 read_waters_metadata <- function(file){
-  ll <- readLines(file, n=2)
+  ll <- readLines(file, n = 2)
   ll <- iconv(ll,from = "ISO-8859-1", to = "UTF-8")
-  meta <- gsub("\\\"", "", do.call(cbind, strsplit(ll,"\t")))
-  rownames(meta) <- meta[,1]
-  meta <- as.list(meta[,-1])
+  meta <- gsub("\\\"", "", do.call(cbind, strsplit(ll, "\t")))
+  rownames(meta) <- meta[, 1]
+  meta <- as.list(meta[, -1])
 }
 
 
@@ -463,7 +514,8 @@ extract_metadata <- function(chrom_list,
                                    data.frame(name = names(chrom_list)),
                                    .before=TRUE)
   } else if (format_out == "data.frame"){
-    metadata <- data.frame(name = names(chrom_list), metadata, row.names = names(chrom_list))
+    metadata <- data.frame(name = names(chrom_list), metadata,
+                           row.names = names(chrom_list))
   }
   metadata
 }
@@ -471,10 +523,23 @@ extract_metadata <- function(chrom_list,
 
 #' Transfer metadata
 #'@noRd
-transfer_metadata <- function (new_object, old_object, exclude = c("names", "row.names",
-                                                                   "class", "dim", "dimnames")){
+transfer_metadata <- function (new_object, old_object,
+                               exclude = c("names", "row.names",
+                                           "class", "dim", "dimnames")){
   a <- attributes(old_object)
   a[exclude] <- NULL
   attributes(new_object) <- c(attributes(new_object), a)
   new_object
+}
+
+#' Get 'Shimadzu' Wavelength
+#' @noRd
+get_sz_wv <- function(meta){
+  if ("WVB" %in% names(meta)){
+    c(get_metadata_field(meta, "WVB"),
+      get_metadata_field(meta, "WVE"))
+  } else{
+    get_metadata_field(meta, "ADN")
+  }
+
 }

@@ -11,7 +11,8 @@ attach_metadata(
   format_out,
   data_format,
   parser = NULL,
-  source_file
+  source_file,
+  scale = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ attach_metadata(
 \item{parser}{What parser was used to decode the data.}
 
 \item{source_file}{The path to the source file.}
+
+\item{scale}{Whether the data has been scaled.}
 }
 \value{
 A chromatogram with attached metadata.
