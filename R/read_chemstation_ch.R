@@ -350,7 +350,7 @@ get_agilent_offsets <- function(version){
       instrument = 2492, # 0x9BC
       method = 2574, # 0xA0E
       software = 3089, # 0xC11
-      unit = 4172, # 0x104C
+      units = 4172, # 0x104C
       signal = 4213, # 0x1075
       num_times = 278, # 0x116
       rt_first = 282, # 0x11A
@@ -411,7 +411,7 @@ get_agilent_offsets <- function(version){
                     detector = 208,
                     instrument = 218,
                     method = 228,
-                    unit = 580,
+                    units = 580,
                     num_times = 0x116,
                     rt_first = 0x11A,
                     rt_last = 0x11E,
