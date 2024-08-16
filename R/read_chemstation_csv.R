@@ -16,7 +16,7 @@
 read_chemstation_csv <- function(file, format_out = c("matrix","data.frame")){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   x <- read.csv(file, row.names = 1, header = TRUE,
-                fileEncoding = "utf-16", check.names = FALSE)
+                fileEncoding = "utf-16LE", check.names = FALSE)
   if (format_out == "matrix"){
     x <- as.matrix(x)
   }
