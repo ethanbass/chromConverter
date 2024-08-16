@@ -36,6 +36,7 @@
 <ul><li>Added support for Agilent ChemStation’ version 8 (<code>.ch</code>) files through <code>read_chemstation_ch</code>.</li>
 <li>Fixed failure to return units in some <code>Agilent Chemstation</code> files due to typo.</li>
 <li>Fixed bug causing “spill-over” of Agilent metadata fields.</li>
+<li>Fixed bug causing failure to read <code>ChemStation</code> CSV files on (some) mac machines by specifying little-endian format in call to <code>read.csv</code>.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.3" id="chromconverter-063">chromConverter 0.6.3<a class="anchor" aria-label="anchor" href="#chromconverter-063"></a></h2>
