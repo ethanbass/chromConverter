@@ -1,7 +1,7 @@
 # these tests rely on files included in the chromConverterExtraTests package,
 # which is available on GitHub (https://github.com/ethanbass/chromConverterExtraTests).
 
-test_that("read_chroms can read 'Agilent MS' files", {
+test_that("read_chroms can read 'Agilent' MS files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
   skip_if_not_installed("entab")
@@ -30,7 +30,7 @@ test_that("read_chroms can read 'Agilent MS' files", {
   expect_equal(colnames(x2), c("rt", "mz", "intensity"))
 })
 
-test_that("read_chroms can read 'Agilent Chemstation' version 30 files", {
+test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -55,7 +55,7 @@ test_that("read_chroms can read 'Agilent Chemstation' version 30 files", {
   expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
 })
 
-test_that("read_chroms can read 'Agilent Chemstation' 31 files", {
+test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
   skip_if_not_installed("entab")
@@ -82,7 +82,7 @@ test_that("read_chroms can read 'Agilent Chemstation' 31 files", {
   expect_equal(attr(x, "time_unit"), "Minutes")
 })
 
-test_that("read_chroms can read 'Agilent Chemstation' version 81 files", {
+test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -107,7 +107,7 @@ test_that("read_chroms can read 'Agilent Chemstation' version 81 files", {
   expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
 })
 
-test_that("read_chroms can read 'Agilent Chemstation' version 130 files", {
+test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -196,7 +196,7 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
   expect_equal(attr(x, "time_unit"), "Minutes")
 })
 
-test_that("read_chroms can read 'Agilent Masshunter' dad files", {
+test_that("read_chroms can read 'Agilent MassHunter' dad files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
   skip_if_not_installed("entab")
@@ -318,7 +318,7 @@ test_that("read_chroms can read 'Chromeleon' period-separated files", {
   expect_equal(x[[1]][,1], x1[[1]][,2], ignore_attr = TRUE)
 })
 
-test_that("read_peaklist can read `Shimadzu` ascii (PDA) files", {
+test_that("read_peaklist can read `Shimadzu` ASCII (PDA) files", {
   skip_on_cran()
   skip_if_missing_dependencies()
   skip_if_not_installed("chromConverterExtraTests")
@@ -327,15 +327,17 @@ test_that("read_peaklist can read `Shimadzu` ascii (PDA) files", {
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_peaklist(path, format_in="shimadzu_dad", progress_bar = FALSE)[[1]]
+  x <- read_peaklist(path, format_in = "shimadzu_dad",
+                     progress_bar = FALSE)[[1]]
   expect_equal(class(x), "list")
   expect_equal(length(x), 5)
   expect_equal(class(x[[1]]), "data.frame")
   expect_equal(dim(x[[1]]), c(133, 6))
-  expect_equal(colnames(x[[1]]), c("sample", "rt", "start", "end", "area", "height"))
+  expect_equal(colnames(x[[1]]), c("sample", "rt", "start",
+                                   "end", "area", "height"))
 })
 
-test_that("read_chroms can read 'Shimadzu' PDA files (ascii and LCD)", {
+test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -343,23 +345,26 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ascii and LCD)", {
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path_ascii))
 
-  path_lcd <- system.file("Anthocyanin.lcd", package = "chromConverterExtraTests")
+  path_lcd <- system.file("Anthocyanin.lcd",
+                          package = "chromConverterExtraTests")
   skip_if_not(file.exists(path_lcd))
 
-  x <- read_chroms(path_ascii, format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
+  x <- read_chroms(path_ascii, format_in = "shimadzu_dad",
+                   progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(4689, 328))
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "data_format"), "wide")
 
-  x1 <- read_chroms(path_ascii, format_in = "shimadzu_dad", progress_bar = FALSE,
-                    data_format = "long", format_out = "data.frame")[[1]]
+  x1 <- read_chroms(path_ascii, format_in = "shimadzu_dad",
+                    progress_bar = FALSE, data_format = "long",
+                    format_out = "data.frame")[[1]]
   expect_equal(class(x1)[1], "data.frame")
   expect_equal(dim(x1), c(4689*328, 3))
 
 
   x2 <- read_chroms(path_lcd, progress_bar = FALSE)[[1]]
-  expect_equal(dim(x2),c(4689,328))
+  expect_equal(dim(x2),c(4689, 328))
   expect_equal(x, x2, ignore_attr = TRUE)
 
   # check metadata equivalence
@@ -369,8 +374,10 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ascii and LCD)", {
   expect_equal(attr(x, "operator"), attr(x2, "operator"))
   expect_equal(attr(x, "sample_name"), attr(x2, "sample_name"))
   expect_equal(attr(x, "sample_id"), attr(x2, "sample_id"))
-  expect_equal(attr(x, "sample_injection_volume"), attr(x2, "sample_injection_volume"))
-  expect_equal(as.numeric(attr(x, "time_range")), round(attr(x2, "time_range"), 3))
+  expect_equal(attr(x, "sample_injection_volume"),
+               attr(x2, "sample_injection_volume"))
+  expect_equal(as.numeric(attr(x, "time_range")),
+               round(attr(x2, "time_range"), 3))
 })
 
 test_that("read_chroms can read 'Shimadzu' chromatograms from LCD files", {
@@ -426,7 +433,8 @@ test_that("read_chroms can read 'Shimadzu' PDA comma-separated file", {
                             package = "chromConverterExtraTests")
   skip_if_not(file.exists(path_ascii))
 
-  x <- read_chroms(path_ascii, format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
+  x <- read_chroms(path_ascii, format_in = "shimadzu_dad",
+                   progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(6096, 171))
   expect_equal(attr(x, "parser"), "chromconverter")
@@ -434,7 +442,7 @@ test_that("read_chroms can read 'Shimadzu' PDA comma-separated file", {
   expect_equal(attr(x, "sample_name"), "Pinoresinol Standard")
 })
 
-test_that("read_chroms can read 'Agilent' dx files", {
+test_that("read_chroms can read 'Agilent' .dx files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -523,7 +531,8 @@ test_that("read_chroms can read ANDI MS files", {
   path <- system.file("HP_MS.CDF", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, what=c("chromatogram","ms_spectra"), progress_bar = FALSE)[[1]]
+  x <- read_chroms(path, what=c("chromatogram","ms_spectra"),
+                   progress_bar = FALSE)[[1]]
   expect_equal(names(x), c("chromatogram", "ms_spectra"))
   expect_s3_class(x$ms_spectra, "data.frame")
   expect_equal(class(x$chromatogram)[1], "matrix")
