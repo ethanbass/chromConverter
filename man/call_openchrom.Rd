@@ -35,7 +35,7 @@ vector of paths to the newly created files.}
 If \code{return_paths} is \code{FALSE}, the function will return a
 list of chromatograms (if an appropriate parser is available to import the
 files into R). The chromatograms will be returned in \code{matrix} or
-\code{data.frame} format according to the value of {format_out}. If
+\code{data.frame} format according to the value of \code{format_out}. If
 \code{return_paths} is \code{TRUE}, the function will return a character
 vector of paths to the newly created files.
 }

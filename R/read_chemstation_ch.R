@@ -47,25 +47,25 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
   on.exit(close(f))
 
   # HEADER
-  seek(f, 1, "start")
-  version <- readBin(f, "character", n = 1)
+  seek(f, 0, "start")
+  version <- read_cs_string(f)
   version <- match.arg(version,
                        choices = c("8", "81", "30", "130", "179", "181"))
   offsets <- get_agilent_offsets(version)
   if (version == "179"){
-    seek(f, 348)
-    filetype <- paste(readBin(f, "character", n = 2), collapse = "")
+    seek(f, 347)
+    filetype <- substr(read_cs_string(f, type = 2),1,2)
     if (filetype == "OL"){
       bytes = "8b"
     } else if (filetype == "GC"){
       seek(f, offsets$software)
-      n <- get_nchar(f)
-      soft <- cc_collapse(readBin(f, "character", n = n))
+      soft <- read_cs_string(f, type=2)
       chemstation_version <- strsplit(soft, " ")[[1]][1]
       bytes <- ifelse(chemstation_version == "Mustang", "8b", "4b")
     }
     version <- paste(version, bytes, sep = "_")
   }
+
   decoder <- switch(version,
                     "8" = decode_delta,
                     "81" = decode_double_delta,
@@ -108,9 +108,16 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
     seek(f, offsets$scaling_factor, "start")
     scaling_factor <- readBin(f, "double", n = 1, endian = "big", size = 8)
 
+    if (version == "8"){
+      seek(f, offsets$scaling_toggle, "start")
+      st <- readBin(f, "integer", n = 1, size = 4, endian = "big")
+      scaling_factor <- ifelse(st %in% c(1,2,3), 1.33321110047553, scaling_factor)
+    }
+
     if (scale){
       data <- data * scaling_factor + intercept
     }
+
     if (data_format == "wide"){
       data <- data.frame(Intensity = data, row.names = times)
     } else if (data_format == "long"){
@@ -130,14 +137,13 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
 
       meta <- lapply(offsets[seq_len(meta_slots)], function(offset){
         seek(f, where = offset, origin = "start")
-        n <- get_nchar(f)
-        if (version == "30"){
-          readBin(f, what = "character")
+        if (version %in% c("8", "30", "81")){
+          read_cs_string(f, type = 1)
         } else{
-          cc_collapse(readBin(f, "character", n = n))
+          read_cs_string(f, type = 2)
         }
       })
-    meta <- c(meta, intensity_multiplier=scaling_factor)
+    meta <- c(meta, intensity_multiplier = scaling_factor)
     metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
     if (!inherits(metadata_from_file, "try-error")){
       meta <- c(meta, metadata_from_file)
@@ -149,6 +155,17 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                             parser = "chromconverter", source_file = path)
   }
   data
+}
+
+#' Read ChemStation string
+#' @noRd
+read_cs_string <- function(f, type = 1){
+  n <- get_nchar(f)
+  if (type == 1){
+    rawToChar(readBin(f, what = "raw", n = n))
+  } else if (type == 2){
+    rawToChar(readBin(f, what = "raw", n = n*2)[c(TRUE, FALSE)])
+  }
 }
 
 #' @noRd
@@ -401,7 +418,7 @@ get_agilent_offsets <- function(version){
       scaling_factor = 644,
       data_start = 1024 #ENDIAN + 'd'
     )
-  } else if (version %in% c("8","81")){
+  } else if (version %in% c("8", "81")){
     offsets <- list(version = 0,
                     file_type = 4,
                     sample_name = 24,
@@ -412,12 +429,14 @@ get_agilent_offsets <- function(version){
                     instrument = 218,
                     method = 228,
                     units = 580,
-                    num_times = 0x116,
-                    rt_first = 0x11A,
-                    rt_last = 0x11E,
+                    num_times = 278,
+                    rt_first = 282,
+                    rt_last = 286,
+                    scaling_toggle = 542,
                     scaling_factor = 644,
                     intercept = 636,
-                    data_start = 4096)
+                    data_start = switch(version, "8" = 1024, "81" = 4096)
+    )
   }
   offsets
 }

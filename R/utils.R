@@ -25,6 +25,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                      "x03/x31/x33/x31" = "chemstation_131", #131
                      "x03/x31/x37/x39" = "chemstation_179", #179
                      "x02/x38/x31/x00" = "chemstation_81", #81
+                     "x01/x38/x00/x00" = "chemstation_8", #81
                      "x03/x31/x38/x31" = "chemstation_181", #181
                      "x01/xa1/x46/x00" = "ThermoRAW",
                      "xd0/xcf/x11/xe0" = "ShimadzuLCD",
@@ -158,6 +159,7 @@ format_to_extension <- function(format_in){
          "chemstation_179" = "\\.ch$",
          "chemstation_181" = "\\.ch$",
          "chemstation_81" = "\\.ch$",
+         "chemstation_8" = "\\.ch$",
          "chemstation_30" = "\\.ch$",
          "chemstation_130" = "\\.ch$",
          "chemstation_csv" = "\\.csv$",

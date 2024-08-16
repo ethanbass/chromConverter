@@ -1,3 +1,9 @@
+## chromConverter 0.6.4
+
+* Added support for Agilent ChemStation' version 8 (`.ch`) files through `read_chemstation_ch`.
+* Fixed failure to return units in some `Agilent Chemstation` files due to typo.
+* Fixed bug causing "spill-over" of Agilent metadata fields.
+
 ## chromConverter 0.6.3
 
 * Added parser for total ion chromatogram (TIC) stream in 'Shimadzu' LCD files.

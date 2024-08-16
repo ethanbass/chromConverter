@@ -37,7 +37,7 @@ If \code{long} format is requested, two columns will be returned: one for the
 retention time and one for the intensity. The \code{format_out} argument
 determines whether the chromatogram is returned as a \code{matrix} or
 \code{data.frame}. Metadata can be attached to the chromatogram as
-\code{\link{attributes}} if \code{read_metadata} is {TRUE}.
+\code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Agilent \code{.ch} files come in several different varieties. This parser

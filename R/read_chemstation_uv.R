@@ -39,12 +39,12 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   f <- file(path, "rb")
   on.exit(close(f))
 
-  seek(f, 1, "start")
-  version <- readBin(f, "character", n = 1)
+  version <- read_cs_string(f)
   seek(f, 348, "start")
   file_type_code <- paste(file_type_name = readBin(f, "character", n = 2),
                           collapse = "")
   version <- match.arg(version, choices = c("31", "131"))
+
   if (version == "131"){
     version <- paste(version, file_type_code, sep = "_")
   }
@@ -56,9 +56,9 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
                                        "31" = 8)
 
   meta <- lapply(offsets[seq_len(n_metadata_fields)], function(offset){
+    type <- switch(version, "31" = 1, 2)
     seek(f, where = offset, origin = "start")
-    n_char <- get_nchar(f)
-    cc_collapse(readBin(f, "character", n = n_char))
+    read_cs_string(f, type = type)
   })
 
   # Number of data values
