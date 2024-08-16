@@ -3,6 +3,7 @@
 * Added support for Agilent ChemStation' version 8 (`.ch`) files through `read_chemstation_ch`.
 * Fixed failure to return units in some `Agilent Chemstation` files due to typo.
 * Fixed bug causing "spill-over" of Agilent metadata fields.
+* Fixed bug causing failure to read `ChemStation` CSV files on (some) mac machines by specifying little-endian format in call to `read.csv`.
 
 ## chromConverter 0.6.3
 
