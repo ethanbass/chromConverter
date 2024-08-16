@@ -29,8 +29,8 @@ test_that("Aston parser can read `Agilent Chemstation` 131 files", {
   expect_equal(names(x1), c("dad1", "dad1"))
 })
 
-x1 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "chromconverter",
-                  find_files = FALSE,
+x1 <- read_chroms(path_uv, format_in = "chemstation_uv",
+                  parser = "chromconverter", find_files = FALSE,
                   read_metadata = TRUE, progress_bar = FALSE)
 
 test_that("read_chemstation_uv parser can read chemstation 131 files", {
@@ -76,7 +76,7 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   expect_equal(attr(x1, "data_format"), "wide")
 })
 
-test_that("Shimadzu ascii parser works", {
+test_that("`Shimadzu` ASCII parser works", {
   path <- test_path("testdata/ladder.txt")
 
   x <- read_chroms(path, format_in = "shimadzu_fid", find_files = FALSE,
@@ -105,7 +105,7 @@ test_that("read_mzml works", {
   expect_equal(as.numeric(rownames(dad_wide[[1]])), unique(dad_long[[1]]$rt))
 })
 
-test_that("get_filetype works as expected", {
+test_that("get_filetype fnc works as expected", {
   expect_equal(get_filetype(path_uv), "chemstation_131")
 })
 
@@ -137,7 +137,7 @@ test_that("Rainbow parser can read chemstation 131 files", {
   expect_equal(attr(x2[[1]], "parser"), "rainbow")
 })
 
-test_that("chromConverter parser can read chemstation 130 files", {
+test_that("chromConverter parser can read `ChemStation` 130 files", {
   skip_if_missing_dependencies()
   skip_on_cran()
   x1 <- read_chroms(test_path("testdata/chemstation_130.ch"), progress_bar = FALSE)
@@ -168,7 +168,7 @@ test_that("read_chroms exports CSVs correctly", {
   expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
 })
 
-test_that("read_chroms exports cdf files correctly", {
+test_that("read_chroms exports `.cdf` files correctly", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")
   path_out <-  tempdir(check = TRUE)
@@ -181,7 +181,7 @@ test_that("read_chroms exports cdf files correctly", {
   expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
 })
 
-test_that("read_peaklist can read chemstation reports", {
+test_that("read_peaklist can read `ChemStation` report files", {
   path <- test_path("testdata/RUTIN2.D/")
 
   x <- read_peaklist(path, format_in = "chemstation")
@@ -208,7 +208,7 @@ test_that("read_peaklist can read chemstation reports", {
   expect_equal(attr(x, "class"), "peak_list")
 })
 
-test_that("read_peaklist can read 'Shimadzu' fid files", {
+test_that("read_peaklist can read `Shimadzu` fid files", {
   path <- test_path("testdata/ladder.txt")
   x <- read_peaklist(path, format_in = "shimadzu_fid", progress_bar = FALSE)
   expect_equal(class(x[[1]]), "data.frame")
