@@ -1,9 +1,17 @@
 library(testthat)
 
 path_csv <- test_path("testdata/dad1.csv")
-path_uv <- test_path("testdata/dad1.uv") #chemstation 131
+path_uv <- test_path("testdata/dad1.uv") #chemstation v131
 
 x <- read_chroms(path_csv, format_in = "chemstation_csv", progress_bar = FALSE)[[1]]
+
+test_that("chromConverter can read `Agilent Chemstation` .csv file", {
+  expect_equal(dim(x), c(1944, 1))
+  expect_equal(head(x[,1], n = 3), c(-4.086018, -4.113674, -4.142761),
+               tolerance = .0001, ignore_attr = TRUE)
+  expect_equal(head(rownames(x), n = 3), c("0.002", "0.0086666666667",
+                                           "0.0153333333333"))
+})
 
 test_that("Aston parser can read `Agilent Chemstation` 131 files", {
   skip_if_missing_dependencies()
