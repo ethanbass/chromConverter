@@ -43,6 +43,8 @@ read_thermoraw <- function(path_in, path_out = NULL,
   }
   if (is.null(path_out)){
     path_out <- tempdir()
+  } else{
+    path_out <- fs::path_expand(path_out)
   }
   if(!dir.exists(path_out)){
     stop("Export directory not found. Please check `path_out` argument and try again.")

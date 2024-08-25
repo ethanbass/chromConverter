@@ -3,6 +3,7 @@
 * Added preliminary support for Varian Worktation (`.sms`) format through `read_varian_sms` function.
 * Fixed bug affecting some `mdf` files lacking null bytes after the file header.
 * Sped up `read_shimadzu_lcd` by dealing with twos-complements more sensibly.
+* Allow relative paths for `path_out` when using 'ThermoRawFileParser' and 'OpenChrom' parsers.
 
 ## chromConverter 0.6.4
 

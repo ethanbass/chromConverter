@@ -64,6 +64,8 @@ call_openchrom <- function(files, path_out = NULL, format_in,
   export_format <- match.arg(export_format, c("mzml", "csv", "cdf", "animl"))
   if (is.null(path_out)){
     path_out <- tempdir()
+  } else{
+    path_out <- fs::path_expand(path_out)
   }
   if(!dir.exists(path_out)){
     stop("Export directory not found. Please check `path_out` argument and try again.")
