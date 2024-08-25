@@ -579,3 +579,25 @@ test_that("Shimadzu GCD parser works", {
   expect_equal(as.numeric(attr(txt, "time_range")), round(attr(x, "time_range"), 3))
 })
 
+test_that("read_chroms can read 'Varian' SMS", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_sms <- "/Users/ethanbass/R_packages/chromConverterExtraTests/inst/varianMS.SMS"
+  path_mzml <- "/Users/ethanbass/R_packages/chromConverterExtraTests/inst/varianMS.mzml"
+
+  x <- read_chroms(path_sms, progress_bar = FALSE)[[1]]
+  x1 <- read_chroms(path_mzml, format_in = "mzml", progress_bar = FALSE)[[1]]
+
+  ms1_mzml <- x1$MS1[,-4]
+  ms1_mzml$rt <- ms1_mzml$rt/1000
+  expect_equal(x$MS1, as.matrix(ms1_mzml))
+
+  # check equality of TIC
+  expect_equal(x$chroms[, "rt"], x1$TIC$rt/1000, tolerance = .000001)
+  expect_equal(x$chroms[, "tic"], x1$TIC$int)
+
+  # check equality of BPC
+  expect_equal(x$chroms[, "rt"], x1$BPC$rt/1000, tolerance = .000001)
+  expect_equal(x$chroms[, "bpc"], x1$BPC$int)
+})

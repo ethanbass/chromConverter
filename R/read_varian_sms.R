@@ -81,6 +81,7 @@ read_varian_chromatograms <- function(f){
   offsets <- list(scan_no = 3268, ms_start = 3422)
   seek(f, offsets$scan_no)
   n_time <- readBin(f, "integer", size = 4)
+
   seek(f, offsets$ms_start)
   mat <- matrix(NA, nrow = n_time, ncol = 5)
   colnames(mat) <- c("scan", "rt", "tic", "bpc", "unk")
@@ -111,7 +112,7 @@ read_varian_ms_stream <- function(f, n_scans){
 #' @author Ethan Bass
 #' @noRd
 read_varian_ms_block <- function(f){
-  buffer <- list(0, 0, 0, 0)
+  buffer <- list(0,0,0,0)
   mat <- matrix(nrow = 1000, ncol = 2)
   i=1
   buffer[[3]] <- readBin(f, "raw", n = 1)
@@ -124,7 +125,12 @@ read_varian_ms_block <- function(f){
         buffer[[4]] <- readBin(f, "raw", n = 1)
         buffer[[2]] <- strtoi(paste0(substr(buffer[[3]], 2, 2), buffer[[4]]),
                               base = 16)
-        if (hex1 >= 5) buffer[[2]] <- buffer[[2]] + (hex1-4)*4096
+        if (hex1 >= 5 & hex1 < 8){
+          buffer[[2]] <- buffer[[2]] + (hex1 - 4)*4096
+        } else if (hex1 >= 8){
+          buffer[[2]] <- buffer[[2]]*256 +
+            as.integer(readBin(f,what = "raw", size=1))
+        }
       }
       if (j == 1){
         buffer[[1]] <- buffer[[1]] + buffer[[2]]
