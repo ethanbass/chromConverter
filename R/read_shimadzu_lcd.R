@@ -335,7 +335,7 @@ read_sz_chrom <- function(path, stream){
   data.frame(int = decode_sz_block(f))
 }
 
-#' Read Shimadzu "Method" stream
+#' Read 'Shimadzu' "Method" stream
 #' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
@@ -421,7 +421,7 @@ read_sz_pda <- function(path, n_lambdas = NULL){
   seek(f, 0, "start")
 
   nrows <- get_shimadzu_rows(path)
-  nrows <- ifelse(is.na(nrows), fsize/(n_lambdas*1.5), nrows)
+  nrows <- ifelse(is.na(nrows), fsize/(n_lambdas * 1.5), nrows)
 
   mat <- matrix(NA, nrow = nrows, ncol = n_lambdas)
   i <- 1
@@ -438,7 +438,7 @@ read_sz_pda <- function(path, n_lambdas = NULL){
 #' Check OLE stream size
 #' @noRd
 check_streams <- function(path, what = c("pda", "chromatogram", "tic"),
-                          boolean=FALSE){
+                          boolean = FALSE){
   what <- match.arg(what, c("pda", "chromatogram", "tic"))
   trace_file <- reticulate::import("olefile")
   ole <- olefile$OleFileIO(path)
@@ -519,56 +519,49 @@ read_sz_wavelengths <- function(path){
 #' This function is called internally by \code{read_shimadzu_lcd}.
 #' @author Ethan Bass
 #' @noRd
-decode_sz_block <- function(file) {
-  block_start <- seek(file, NA, "current")
+decode_sz_block <- function(f) {
+  block_start <- seek(f, NA, "current")
 
-  readBin(file, what = "integer", n = 6, size = 1) #skip
-  readBin(file, what = "integer", n = 1, size = 2)
+  readBin(f, what = "integer", n = 6, size = 1) #skip
+  readBin(f, what = "integer", n = 1, size = 2)
 
-  n_lambda <- readBin(file, what = "integer", n = 1,
+  n_lambda <- readBin(f, what = "integer", n = 1,
                         size = 2, endian = "little")
 
-  readBin(file, what = "integer", n = 1, size = 2)
-  block_length <- readBin(file, what = "integer", n = 1, size = 2)
-  readBin(file, what = "integer", n = 5, size = 2)
+  readBin(f, what = "integer", n = 1, size = 2)
+  block_length <- readBin(f, what = "integer", n = 1, size = 2)
+  readBin(f, what = "integer", n = 5, size = 2)
 
   signal <- numeric(n_lambda)
   count <- 1
   buffer <- list(0,0,0,0)
 
   while (count < length(signal)){
-    n_bytes <- readBin(file, "integer", n = 1, size = 2)
-    start <- seek(file, NA, "current")
+    n_bytes <- readBin(f, "integer", n = 1, size = 2)
+    start <- seek(f, NA, "current")
     if (length(n_bytes) == 0) break
-    while(seek(file, NA, "current") < start + n_bytes){
-      buffer[[3]] <- readBin(file, "raw", n = 1, size = 1)
+
+    while(seek(f, NA, "current") < start + n_bytes){
+      buffer[[3]] <- readBin(f, "raw", n = 1, size = 1)
       hex1 <- as.numeric(substr(buffer[[3]], start = 1, stop = 1))
+      hex1
       if (buffer[[3]] == "82"){
         next
       } else if (buffer[[3]] == "00"){
         buffer[[2]] <- 0
       } else if (hex1 == 0){
-        buffer[[2]] <- strtoi(buffer[[3]], base = 16)
+        buffer[[2]] <- as.integer(buffer[[3]])
       } else if (hex1 == 1){
-        bin <- as_binary(strtoi(buffer[[3]], base = 16), n = 8)
-        buffer[[2]] <- twos_complement(substr(bin, start = 5,
-                                              stop = nchar(bin)))
+        buffer[[2]] <- decode_sz_val(buffer[[3]])
       } else if (hex1 > 1){
-        buffer[[4]] <- readBin(file, "raw", n = (hex1 %/% 2), size = 1)
-        bin <- paste(as_binary(strtoi(c(buffer[[3]], buffer[[4]]), base = 16),
-                               n = 8), collapse = "")
-        if (hex1 %% 2 == 0){
-          buffer[[2]] <- strtoi(substr(bin, start = 5, stop = nchar(bin)),
-                                base = 2)
-        } else {
-          buffer[[2]] <- twos_complement(substr(bin, start = 5, stop = nchar(bin)))
-        }
-      }
+        buffer[[4]] <- readBin(f, "raw", n = (hex1 %/% 2), size = 1)
+        buffer[[2]] <- decode_sz_val(c(buffer[[3]], buffer[[4]]))
+    }
       buffer[[1]] <- buffer[[1]] + buffer[[2]]
       signal[count] <- buffer[[1]]
       count <- count + 1
     }
-    end <- readBin(file, "integer", n = 1, size = 2)
+    end <- readBin(f, "integer", n = 1, size = 2)
     n_bytes == end
     buffer[[1]] <- 0
   }
@@ -679,7 +672,7 @@ sztime_to_unixtime <- function(low, high, tz = "UTC") {
   }
   filetime <- bit64::as.integer64(high) * 2^32 + bit64::as.integer64(low)
   unix_time <- (filetime / 10000000) - 11644473600
-  as.POSIXct(unix_time, origin="1970-01-01", tz=tz)
+  as.POSIXct(unix_time, origin = "1970-01-01", tz = tz)
 }
 
 #' Read 'Shimadzu' file properties
@@ -722,7 +715,7 @@ read_sz_3DDI <- function(path){
   doc <- xml2::read_xml(path_meta)
 
   nodes <- xml2::xml_children(doc)
-  rm <- which(xml2::xml_name(nodes) %in% c("ELE","GUD","DataItem","SPR"))
+  rm <- which(xml2::xml_name(nodes) %in% c("ELE", "GUD", "DataItem", "SPR"))
   meta <- as.list(xml2::xml_text(nodes[-rm]))
   names(meta) <- xml2::xml_name(nodes[-rm])
 
@@ -784,4 +777,31 @@ extract_axis_metadata <- function(x){
            )
     } else list(vf = NA, unit = NA)
   }), recursive = FALSE)
+}
+
+#' Decode 'Shimadzu' values
+#' @noRd
+decode_sz_val <- function(hex) {
+  # Convert raw vector to a single integer
+  total_bits <- 8*length(hex)
+  x <- 0
+  for (i in seq_along(hex)) {
+    x <- bitwOr(bitwShiftL(x, n = 8), as.integer(hex[i]))
+  }
+
+  # Calculate the number of value bits
+  value_bits <- total_bits - 4
+
+  # Extract the sign (leftmost 4 bits)
+  sign <- bitwAnd(bitwShiftR(x, n = value_bits), b = 0xF)
+
+  # Extract the value part
+  value_mask <- bitwShiftL(1, value_bits) - 1
+  value <- bitwAnd(x, b = value_mask)
+
+  if (sign %% 2 == 1) {
+    return(-(bitwShiftL(1, value_bits) - value))
+  } else {
+    return(value)
+  }
 }
