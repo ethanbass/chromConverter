@@ -93,11 +93,13 @@ read_chroms <- function(paths, find_files,
                                     "chemstation_fid", "chemstation_ch",
                                     "chemstation_csv", "chemstation_uv",
                                     "masshunter_dad", "chromeleon_uv",
+                                    "mzml", "mzxml", "mdf",
                                     "shimadzu_ascii", "shimadzu_dad",
                                     "shimadzu_fid", "shimadzu_gcd",
-                                    "shimadzu_lcd", "thermoraw", "mzml",
-                                    "mzxml", "waters_arw", "waters_raw",
-                                    "msd", "csd", "wsd", "mdf", "other"),
+                                    "shimadzu_lcd", "thermoraw",
+                                    "varian_sms",
+                                    "waters_arw", "waters_raw",
+                                    "msd", "csd", "wsd", "other"),
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
                                    "thermoraw", "openchrom", "rainbow"),
@@ -151,6 +153,7 @@ read_chroms <- function(paths, find_files,
                                       "masshunter_dad", "shimadzu_ascii",
                                       "shimadzu_dad", "shimadzu_fid",
                                       "shimadzu_gcd", "shimadzu_lcd",
+                                      "varian_sms",
                                       "chromeleon_uv", "thermoraw", "mzml", "mzxml",
                                       "waters_arw", "waters_raw", "msd", "csd",
                                       "wsd", "mdf", "cdf", "other"))
@@ -265,6 +268,10 @@ read_chroms <- function(paths, find_files,
                         "entab" = entab_parser)
   } else if (format_in %in% c("mzml","mzxml")){
     converter <- partial(read_mzml, format_out = format_out, ...)
+  } else if (format_in == "varian_sms"){
+    converter <- partial(read_varian_sms, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata, ...)
   } else if (format_in == "waters_arw"){
     converter <- partial(read_waters_arw, format_out = format_out,
                          data_format = data_format,

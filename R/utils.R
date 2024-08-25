@@ -8,7 +8,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
   on.exit(close(f))
 
   magic <- readBin(f, what = "raw", n = 4)
-  magic <- paste(paste0("x",as.character(magic)),collapse = "/")
+  magic <- paste(paste0("x", as.character(magic)), collapse = "/")
   # magic
   filetype <- switch(magic,
                      "x01/x32/x00/x00" = "AgilentChemstationMS",
@@ -29,6 +29,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                      "x03/x31/x38/x31" = "chemstation_181", #181
                      "x01/xa1/x46/x00" = "ThermoRAW",
                      "xd0/xcf/x11/xe0" = "ShimadzuLCD",
+                     "x1c/x00/x09/x03" = "VarianSMS",
                      "x80/x00/x01/x00" = "WatersRAW",
                      "x43/x44/x46/x01" = "cdf"
   )
@@ -52,10 +53,10 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                       # "openlab_131" = "chemstation_uv",
                       "ThermoRAW" = "thermoraw",
                       "ShimadzuLCD" = "shimadzu_lcd",
+                      "VarianSMS" = "varian_sms",
                       "WatersRAW" = "waters_raw",
                       filetype
   )
-
   switch(out, "filetype" = filetype, "format_in" = format_in)
 }
 
@@ -73,8 +74,9 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                              "mzml", "mzxml", "mdf",
                                              "shimadzu_ascii", "shimadzu_dad",
                                              "shimadzu_fid", "shimadzu_gcd",
-                                             "shimadzu_lcd", "waters_arw",
-                                             "waters_raw", "waters_chro"),
+                                             "shimadzu_lcd", "varian_sms",
+                                             "waters_arw", "waters_raw",
+                                             "waters_chro"),
                           aston = c("chemstation_uv", "chemstation_131",
                                     "masshunter_dad", "other"),
                           entab = c("chemstation", "chemstation_ch",
@@ -91,13 +93,16 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
   )
   if (find){
     if (!reticulate::py_module_available("aston")){
-      allowed_formats <- allowed_formats[-which(names(allowed_formats) == "aston")]
+      allowed_formats <-
+        allowed_formats[-which(names(allowed_formats) == "aston")]
     }
     if (!reticulate::py_module_available("rainbow")){
-      allowed_formats <- allowed_formats[-which(names(allowed_formats) == "rainbow")]
+      allowed_formats <-
+        allowed_formats[-which(names(allowed_formats) == "rainbow")]
     }
     if (!requireNamespace("entab", quietly = TRUE)){
-      allowed_formats <- allowed_formats[-which(names(allowed_formats) == "entab")]
+      allowed_formats <-
+        allowed_formats[-which(names(allowed_formats) == "entab")]
     }
     possible_parsers <- names(allowed_formats)[grep(format_in, allowed_formats)]
     if (length(possible_parsers) > 1){
@@ -105,7 +110,8 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
         possible_parsers <- c("rainbow")
       } else{
         possible_parsers <- possible_parsers[match(
-          c("thermoraw", "entab", "chromconverter", "rainbow", "aston"), possible_parsers)]
+          c("thermoraw", "entab", "chromconverter", "rainbow", "aston"),
+          possible_parsers)]
         if (any(is.na(possible_parsers))){
           possible_parsers <- possible_parsers[-which(is.na(possible_parsers))]
         }
@@ -114,7 +120,8 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
     possible_parsers[1]
   } else{
     if (!(format_in %in% allowed_formats[[tolower(parser)]])){
-      stop("Mismatched arguments!", "\n\n", "The ", paste0(sQuote(format_in), " format can be converted using the following parsers: ",
+      stop("Mismatched arguments!", "\n\n", "The ",
+           paste0(sQuote(format_in), " format can be converted using the following parsers: ",
         paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]), collapse = ", "), ". \n \n",
         "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
                                     paste(sQuote(allowed_formats[[parser]]), collapse=", "), ". \n \n",
@@ -137,7 +144,7 @@ extract_filenames <- function(files){
     file_names <- gsub("\\.[Dd]", "",
                        sapply(file_names, function(n){
                          ifelse(any(grepl("\\.[Dd]", n)),
-                                grep("\\.[Dd]", n, value = TRUE), tail(n,1))
+                                grep("\\.[Dd]", n, value = TRUE), tail(n, 1))
                        }))
   } else {
     file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])

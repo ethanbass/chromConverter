@@ -26,6 +26,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - 'Shimadzu LabSolutions'`.gcd`
 - 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA and chromatogram streams)
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
+- 'Varian Workstation' (`.SMS`) (preliminary support)
 - 'Waters' ascii (`.arw`)
 
 ##### External Libraries
