@@ -18,16 +18,20 @@
 #' scan is represented by a series of values of variable length separated from
 #' the next scan by two null bytes. Within these segments, values are paired.
 #' The first value in each pair represents the delta-encoded mass-to-charge ratio,
-#' while the second value represents the intensity of the signal. All values in
-#' this section are offset encoded using a base of value of 4096 (16^3) and most
-#' are little-endian. Thus, integers beginning with digits 0-3 are simple 2-byte
-#' integers. However, values with a prefix digit >= 4 are 4-byte integers with
-#' offset encoding, where the offset is (n-4) * 4096. So values with a prefix
-#' digit of 4 have an offset of 0, values with a prefix digit of 5 have an offset
-#' of 8192 (4096 * 2), and so on. However this pattern appears to break down
-#' with sign-digit \code{8} -- values beginning with this digit no longer seem
-#' to use the offset encoding and are encoded as big-endian integers with an
-#' extra byte.
+#' while the second value represents the intensity of the signal. Values in this
+#' section are variable-length, big-endian integers that are encoded using a
+#' selective bit masking based on the leading digit (\code{d}) of each value.
+#' The length of each integer seems to be determined as 1 + (d %/% 4). Integers
+#' beginning with digits 0-3 are simple 2-byte integers. If d >= 4, values are
+#' determined by masking to preserve the lowest \code{n} bits according to the
+#' following scheme:
+#'
+#' * d = 4-5 -> preserve lowest 13 bits
+#' * d = 6-7 -> preserve lowest 14 bits
+#' * d = 8-9 -> preserve lowest 21 bits
+#' * d = 10-11 (A-B) -> preserve lowest 22 bits
+#' * d = 12-13 (C-D) -> preserve lowest 27 bits
+#' * d = 14-15 (E-F) -> preserve lowest 28 bits (?)
 #'
 #' @param path Path to \code{.SMS} files.
 #' @param what Whether to extract chromatograms (\code{chroms}) and/or
@@ -69,7 +73,6 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
     MS1 <- read_varian_ms_stream(f, n_scans = n_scans)
 
     MS1[,1] <- chroms[(MS1[,1] + acq_delay), "rt"]
-    # all.equal(MS1[,1],ms1$rt/1000)
     colnames(MS1) <- c('rt', 'mz', 'int')
   }
 
@@ -91,12 +94,13 @@ read_varian_chromatograms <- function(f){
   mat <- matrix(NA, nrow = n_time, ncol = 5)
   colnames(mat) <- c("scan", "rt", "tic", "bpc", "ion_time")
   for (i in seq_len(n_time)){
-    mat[i,"scan"] <- readBin(f, what="integer", size = 4)
-    mat[i,"rt"] <- readBin(f, what = "double", size = 8)
-    mat[i,"ion_time"] <- readBin(f, what = "integer", size = 2, signed = FALSE)
-    mat[i,"tic"] <- readBin(f, what = "integer", size = 4)
+    mat[i,"scan"] <- readBin(f, what="integer", size = 4, endian = "little")
+    mat[i,"rt"] <- readBin(f, what = "double", size = 8, endian = "little")
+    mat[i,"ion_time"] <- readBin(f, what = "integer", size = 2, signed = FALSE,
+                                 endian = "little")
+    mat[i,"tic"] <- readBin(f, what = "integer", size = 4, endian = "little")
     readBin(f, what = "raw", n = 6) # skip six unidentified bytes
-    mat[i,"bpc"] <- readBin(f, what="integer", size = 4)
+    mat[i,"bpc"] <- readBin(f, what="integer", size = 4, endian = "little")
     readBin(f, what = "raw", n = 11) # skip 11 unidentified bytes
   }
   mat
@@ -129,15 +133,6 @@ read_varian_ms_block <- function(f){
       } else if (hex1 >= 4){
         buffer[[4]] <- readBin(f, "raw", n = hex1 %/% 4)
         buffer[[2]] <- decode_sms_val(c(buffer[[3]], buffer[[4]]))
-        # buffer[[2]] <- strtoi(paste0(substr(buffer[[3]], 2, 2), buffer[[4]]),
-        #                       base = 16)
-        # if (hex1 >= 5 & hex1 < 8){
-        #   # buffer[[2]] <- buffer[[2]] + (hex1 - 4)*4096
-        #   buffer[[2]] <- decode_sms_val(buffer[[2]])
-        # } else if (hex1 >= 8){
-        #   buffer[[2]] <- buffer[[2]]*256 +
-        #     as.integer(readBin(f,what = "raw", size=1))
-        # }
       }
       if (j == 1){
         buffer[[1]] <- buffer[[1]] + buffer[[2]]
@@ -177,9 +172,6 @@ decode_sms_val <- function(hex) {
   mask <- generate_mask(d)
 
   result <- bitwAnd(num, mask)
-  if (d == 10){
-    result <- bitwOr(result, 0x20000000)
-  }
   return(result)
 }
 
@@ -191,7 +183,8 @@ generate_mask <- function(d) {
     '6' = 14, '7' = 14,
     '8' = 21, '9' = 21,
     '10' = 22, '11' = 22,
-    '12' = 27, '13' = 27
+    '12' = 27, '13' = 27,
+    '14' = 28, '15' = 28 # predicted
   )
   n_bits <- bit_map[[as.character(d)]]
   (2^n_bits) - 1
@@ -218,4 +211,3 @@ hex_to_int <- function(hex){
   }
   x
 }
-# decode_sms_val(c(buffer[[3]], buffer[[4]]))

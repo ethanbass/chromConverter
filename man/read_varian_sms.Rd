@@ -8,7 +8,7 @@ read_varian_sms(
   path,
   what = c("chrom", "MS1"),
   format_out = c("matrix", "data.frame"),
-  data_format = c("long", "wide"),
+  data_format = c("wide", "long"),
   read_metadata = TRUE,
   collapse = TRUE
 )
@@ -46,21 +46,30 @@ two sections. The first section (after a short header) contains chromatogram
 data. Some of the information found in this section includes scan numbers,
 retention times, (as 64-bit
 floats), the total ion chromatogram (TIC), the base peak chromatogram (BPC),
-as well as some other unidentified information. The scan numbers and
-intensities for the TIC and BPC are stored at 4-byte little-endian integers.
-Following this section, there is a series of null bytes, followed by a series
-of segments containing the mass spectra.
+ion time (µsec), as well as some other unidentified information. The scan
+numbers and intensities for the TIC and BPC are stored at 4-byte
+little-endian integers. Following this section, there is a series of null
+bytes, followed by a series of segments containing the mass spectra.
 
 The encoding scheme for the mass spectra is somewhat more complicated. Each
 scan is represented by a series of values of variable length separated from
 the next scan by two null bytes. Within these segments, values are paired.
 The first value in each pair represents the delta-encoded mass-to-charge ratio,
-while the second value represents the intensity of the signal. All values in
-this section are offset encoded using a base of value of 4096 (16^3). Thus,
-integers beginning with digits 0-3 are simple 2-byte integers. However, values
-with a prefix digit >= 4 are 4-byte integers with offset encoding, where the
-offset is (n-4) * 4096. So values with a prefix digit of 4 have an offset of 0,
-values with a prefix digit of 5 have an offset of 8192 (4096 * 2), and so on.
+while the second value represents the intensity of the signal. Values in this
+section are variable-length, big-endian integers that are encoded using a
+selective bit masking based on the leading digit (\code{d}) of each value.
+The length of each integer seems to be determined as 1 + (d \%/\% 4). Integers
+beginning with digits 0-3 are simple 2-byte integers. If d >= 4, values are
+determined by masking to preserve the lowest \code{n} bits according to the
+following scheme:
+\itemize{
+\item d = 4-5 -> preserve lowest 13 bits
+\item d = 6-7 -> preserve lowest 14 bits
+\item d = 8-9 -> preserve lowest 21 bits
+\item d = 10-11 (A-B) -> preserve lowest 22 bits
+\item d = 12-13 (C-D) -> preserve lowest 27 bits
+\item d = 14-15 (E-F) -> preserve lowest 28 bits (?)
+}
 }
 \note{
 There is not yet support for the extraction of metadata from this file
