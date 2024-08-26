@@ -1,7 +1,7 @@
 citHeader("To cite chromConverter in publications, please use:")
 
-citEntry(
-  entry    = "manual",
+bibentry(
+  bibtype    = "manual",
   title    = "chromConverter: Chromatographic File Converter",
   author   = "Ethan Bass",
   year     = "2024",
