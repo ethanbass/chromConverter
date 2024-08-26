@@ -9,21 +9,25 @@
 #'  data. Some of the information found in this section includes scan numbers,
 #' retention times, (as 64-bit
 #' floats), the total ion chromatogram (TIC), the base peak chromatogram (BPC),
-#' as well as some other unidentified information. The scan numbers and
-#' intensities for the TIC and BPC are stored at 4-byte little-endian integers.
-#' Following this section, there is a series of null bytes, followed by a series
-#' of segments containing the mass spectra.
+#' ion time (µsec), as well as some other unidentified information. The scan
+#' numbers and intensities for the TIC and BPC are stored at 4-byte
+#' little-endian integers. Following this section, there is a series of null
+#' bytes, followed by a series of segments containing the mass spectra.
 #'
 #' The encoding scheme for the mass spectra is somewhat more complicated. Each
 #' scan is represented by a series of values of variable length separated from
 #' the next scan by two null bytes. Within these segments, values are paired.
 #' The first value in each pair represents the delta-encoded mass-to-charge ratio,
 #' while the second value represents the intensity of the signal. All values in
-#' this section are offset encoded using a base of value of 4096 (16^3). Thus,
-#' integers beginning with digits 0-3 are simple 2-byte integers. However, values
-#' with a prefix digit >= 4 are 4-byte integers with offset encoding, where the
-#' offset is (n-4) * 4096. So values with a prefix digit of 4 have an offset of 0,
-#' values with a prefix digit of 5 have an offset of 8192 (4096 * 2), and so on.
+#' this section are offset encoded using a base of value of 4096 (16^3) and most
+#' are little-endian. Thus, integers beginning with digits 0-3 are simple 2-byte
+#' integers. However, values with a prefix digit >= 4 are 4-byte integers with
+#' offset encoding, where the offset is (n-4) * 4096. So values with a prefix
+#' digit of 4 have an offset of 0, values with a prefix digit of 5 have an offset
+#' of 8192 (4096 * 2), and so on. However this pattern appears to break down
+#' with sign-digit \code{8} -- values beginning with this digit no longer seem
+#' to use the offset encoding and are encoded as big-endian integers with an
+#' extra byte.
 #'
 #' @param path Path to \code{.SMS} files.
 #' @param what Whether to extract chromatograms (\code{chroms}) and/or
@@ -41,10 +45,11 @@
 #' @author Ethan Bass
 #' @note There is not yet support for the extraction of metadata from this file
 #' format.
+#' @export
 
 read_varian_sms <- function(path, what = c("chrom", "MS1"),
                             format_out = c("matrix", "data.frame"),
-                            data_format = c("long", "wide"),
+                            data_format = c("wide", "long"),
                             read_metadata = TRUE, collapse = TRUE){
 
   what <- match.arg(what, c("chroms", "MS1"), several.ok = TRUE)
@@ -84,15 +89,15 @@ read_varian_chromatograms <- function(f){
 
   seek(f, offsets$ms_start)
   mat <- matrix(NA, nrow = n_time, ncol = 5)
-  colnames(mat) <- c("scan", "rt", "tic", "bpc", "unk")
+  colnames(mat) <- c("scan", "rt", "tic", "bpc", "ion_time")
   for (i in seq_len(n_time)){
     mat[i,"scan"] <- readBin(f, what="integer", size = 4)
     mat[i,"rt"] <- readBin(f, what = "double", size = 8)
-    mat[i,"unk"] <- readBin(f, what = "integer",size = 2, signed = FALSE)
+    mat[i,"ion_time"] <- readBin(f, what = "integer", size = 2, signed = FALSE)
     mat[i,"tic"] <- readBin(f, what = "integer", size = 4)
-    readBin(f, what="raw", n = 6) # skip six unidentified bytes
+    readBin(f, what = "raw", n = 6) # skip six unidentified bytes
     mat[i,"bpc"] <- readBin(f, what="integer", size = 4)
-    readBin(f, what="raw", n = 11) # skip 11 unidentified bytes
+    readBin(f, what = "raw", n = 11) # skip 11 unidentified bytes
   }
   mat
 }
@@ -118,19 +123,21 @@ read_varian_ms_block <- function(f){
   buffer[[3]] <- readBin(f, "raw", n = 1)
   while (buffer[[3]] != "00"){
     for (j in c(1:2)){
-      hex1 <- as.numeric(substr(buffer[[3]], start = 1, stop = 1))
+      hex1 <- extract_sign(buffer[[3]])
       if (hex1 < 4){
         buffer[[2]] <- strtoi(buffer[[3]], base = 16)
       } else if (hex1 >= 4){
-        buffer[[4]] <- readBin(f, "raw", n = 1)
-        buffer[[2]] <- strtoi(paste0(substr(buffer[[3]], 2, 2), buffer[[4]]),
-                              base = 16)
-        if (hex1 >= 5 & hex1 < 8){
-          buffer[[2]] <- buffer[[2]] + (hex1 - 4)*4096
-        } else if (hex1 >= 8){
-          buffer[[2]] <- buffer[[2]]*256 +
-            as.integer(readBin(f,what = "raw", size=1))
-        }
+        buffer[[4]] <- readBin(f, "raw", n = hex1 %/% 4)
+        buffer[[2]] <- decode_sms_val(c(buffer[[3]], buffer[[4]]))
+        # buffer[[2]] <- strtoi(paste0(substr(buffer[[3]], 2, 2), buffer[[4]]),
+        #                       base = 16)
+        # if (hex1 >= 5 & hex1 < 8){
+        #   # buffer[[2]] <- buffer[[2]] + (hex1 - 4)*4096
+        #   buffer[[2]] <- decode_sms_val(buffer[[2]])
+        # } else if (hex1 >= 8){
+        #   buffer[[2]] <- buffer[[2]]*256 +
+        #     as.integer(readBin(f,what = "raw", size=1))
+        # }
       }
       if (j == 1){
         buffer[[1]] <- buffer[[1]] + buffer[[2]]
@@ -161,3 +168,54 @@ skip_null_bytes <- function(f){
     }
   }
 }
+
+#' @noRd
+decode_sms_val <- function(hex) {
+  num <- hex_to_int(hex)
+  d <- extract_sign(hex, num)
+
+  mask <- generate_mask(d)
+
+  result <- bitwAnd(num, mask)
+  if (d == 10){
+    result <- bitwOr(result, 0x20000000)
+  }
+  return(result)
+}
+
+#' @noRd
+generate_mask <- function(d) {
+  # Define the mapping from leading digit to the number of bits
+  bit_map <- c(
+    '4' = 13, '5' = 13,
+    '6' = 14, '7' = 14,
+    '8' = 21, '9' = 21,
+    '10' = 22, '11' = 22,
+    '12' = 27, '13' = 27
+  )
+  n_bits <- bit_map[[as.character(d)]]
+  (2^n_bits) - 1
+}
+
+#' @noRd
+extract_sign <- function(hex, num) {
+  if (missing(num)){
+    num <- hex_to_int(hex)
+  }
+  # Calculate the number of value bits
+  value_bits <- 8*length(hex) - 4
+
+  # Extract the sign (leftmost 4 bits)
+  bitwAnd(bitwShiftR(num, n = value_bits), b = 0xF)
+}
+
+
+#' @noRd
+hex_to_int <- function(hex){
+  x <- 0
+  for (i in seq_along(hex)) {
+    x <- bitwOr(bitwShiftL(x, n = 8), as.integer(hex[i]))
+  }
+  x
+}
+# decode_sms_val(c(buffer[[3]], buffer[[4]]))
