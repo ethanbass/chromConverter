@@ -4,6 +4,7 @@
 * Fixed bug affecting some `mdf` files lacking null bytes after the file header.
 * Sped up `read_shimadzu_lcd` by dealing with twos-complements more sensibly.
 * Allow relative paths for `path_out` when using 'ThermoRawFileParser' and 'OpenChrom' parsers.
+* Updated handling of multiple chromatograms by `read_shimadzu_lcd`. The function now returns a list of named chromatograms if `data_format == "wide"` and returns multiple chromatograms in one data.frame if `data_format == "long"`.
 
 ## chromConverter 0.6.4
 

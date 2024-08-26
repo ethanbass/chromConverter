@@ -5,14 +5,14 @@
 \title{Read MDF files into R}
 \usage{
 read_mdf(
-  file,
+  path,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   read_metadata = TRUE
 )
 }
 \arguments{
-\item{file}{The path to a 'Lumex' \code{.mdf} file.}
+\item{path}{The path to a 'Lumex' \code{.mdf} file.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 

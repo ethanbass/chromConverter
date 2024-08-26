@@ -220,7 +220,9 @@ read_sz_lcd_2d <- function(path, format_out = "matrix",
                             read_metadata = TRUE,
                             metadata_format = "shimadzu_lcd",
                             scale = TRUE){
-
+  if (data_format == "long"){
+    format_out <- "data.frame"
+  }
   existing_streams <- check_streams(path, what = "chromatogram")
   if (length(existing_streams) == 0){
     stop("Chromatogram streams not detected.")
@@ -243,7 +245,8 @@ read_sz_lcd_2d <- function(path, format_out = "matrix",
       dat <- dat*DI$detector.vf
     }
     if (data_format == "long"){
-      cbind(rt = times, int = dat$int)
+      dat <- data.frame(rt = times, int = dat$int, detector = DI$DETN,
+                   channel = DI$DSCN, wavelength = DI$ADN)
     }
     if (format_out == "matrix"){
       dat <- as.matrix(dat)
@@ -255,6 +258,16 @@ read_sz_lcd_2d <- function(path, format_out = "matrix",
     }
     dat
   })
+
+  names(dat) <- sapply(dat, function(x){
+    det <- gsub("Detector ", "", attr(x,"detector"))
+    wv <- attr(x, "wavelength")
+    ifelse(wv == "", det, paste(det, wv, sep = ", "))
+  })
+
+  if (data_format == "long"){
+    dat <- do.call(rbind, c(dat, make.row.names = FALSE))
+  }
   if (length(dat) == 1){
     dat <- dat[[1]]
   }
@@ -295,7 +308,7 @@ read_sz_tic <- function(path, format_out = c("matrix", "data.frame"),
   on.exit(close(f))
   dat <- decode_sz_tic(f)
   if (data_format == "wide"){
-    row.names(dat) <- dat[,"rt"]
+    row.names(dat) <- dat[, "rt"]
     dat <- dat[,"int", drop=FALSE]
   }
   if (format_out == "data.frame"){
@@ -323,7 +336,7 @@ decode_sz_tic <- function(f){
     count <- count + 1
   }
   mat[,1] <- mat[,1]/1000
-  colnames(mat) <- c("rt","index","int")
+  colnames(mat) <- c("rt", "index", "int")
   mat
 }
 
@@ -365,7 +378,6 @@ read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
       }
       data
     }
-
     sz_extract_upd_elements(method_stream, xpath = "/GUD/UP/UPD")
   }
 }
@@ -689,7 +701,7 @@ read_sz_file_properties <- function(path){
                          collapse = "\n")
     xml_doc <- xml2::read_xml(xml_content)
   })
-  names(props) <- sapply(props, xml_name)
+  names(props) <- sapply(props, xml2::xml_name)
   meta <- suppressWarnings(unlist(lapply(props, sz_decode_props),
                                   recursive = FALSE))
   meta
@@ -719,8 +731,9 @@ read_sz_3DDI <- function(path){
   meta <- as.list(xml2::xml_text(nodes[-rm]))
   names(meta) <- xml2::xml_name(nodes[-rm])
 
-  meta[c("WVB","WVE","WLS")] <- lapply(meta[c("WVB","WVE","WLS")], function(x){
-    sz_float(x)/100
+  meta[c("WVB","WVE","WLS")] <-
+    lapply(meta[c("WVB","WVE","WLS")], function(x){
+      sz_float(x)/100
   })
   meta <- c(meta, read_sz_2DDI(xml2::xml_find_all(doc, ".//GUD[@Type='2DDataItem']"),
                                read_file = FALSE))
