@@ -238,7 +238,7 @@ read_sz_lcd_2d <- function(path, format_out = "matrix",
     idx <- as.numeric(gsub("\\D", "", stream[2]))
     DI <- read_sz_2DDI(path, idx = idx)
 
-    times <- seq(0, DI$AT, length.out = nrow(dat))
+    times <- seq(DI$DLT, DI$AT, length.out = nrow(dat))
     rownames(dat) <- times
 
     if (scale){

@@ -5,10 +5,11 @@
 * Sped up `read_shimadzu_lcd` by dealing with twos-complements more sensibly.
 * Allow relative paths for `path_out` when using 'ThermoRawFileParser' and 'OpenChrom' parsers.
 * Updated handling of multiple chromatograms by `read_shimadzu_lcd`. The function now returns a list of named chromatograms if `data_format == "wide"` and returns multiple chromatograms in one data.frame if `data_format == "long"`.
+* Start 'Shimadzu LCD' chromatogram retention times at dwell time (DLT).
 
 ## chromConverter 0.6.4
 
-* Added support for Agilent ChemStation' version 8 (`.ch`) files through `read_chemstation_ch`.
+* Added support for 'Agilent ChemStation' version 8 (`.ch`) files through `read_chemstation_ch`.
 * Fixed failure to return units in some `Agilent Chemstation` files due to typo.
 * Fixed bug causing "spill-over" of Agilent metadata fields.
 * Fixed bug causing failure to read `ChemStation` CSV files on (some) mac machines by specifying little-endian format in call to `read.csv`.
