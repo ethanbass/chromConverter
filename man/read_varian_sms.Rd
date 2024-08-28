@@ -72,8 +72,8 @@ following scheme:
 }
 }
 \note{
-There is not yet support for the extraction of metadata from this file
-format.
+There is still only limited support for the extraction of metadata from
+this file format.
 }
 \author{
 Ethan Bass

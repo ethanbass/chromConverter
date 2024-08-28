@@ -47,8 +47,8 @@
 #' the value of \code{what}. Chromatograms are returned in the format specified
 #' by \code{format_out} (retention time x wavelength).
 #' @author Ethan Bass
-#' @note There is not yet support for the extraction of metadata from this file
-#' format.
+#' @note There is still only limited support for the extraction of metadata from
+#' this file format.
 #' @export
 
 read_varian_sms <- function(path, what = c("chrom", "MS1"),
