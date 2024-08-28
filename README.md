@@ -27,7 +27,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA and chromatogram streams)
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Varian Workstation' (`.SMS`) (preliminary support)
-- 'Waters' ascii (`.arw`)
+- 'Waters Empower' ascii (`.arw`)
 
 ##### External Libraries
 ###### Aston/Entab (*Entab requires separate installation, see [instructions below](README.md#Installation)*)
@@ -105,7 +105,7 @@ Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` a
 
 ###### Extracting metadata
 
-chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as [attributes](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) of the associated object. The metadata can then be extracted into a data.frame or tibble using the `extract_metadata` function. 
+chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as [attributes](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) of the associated object. The metadata can then be accessed using the `attributes` or `attr` functions on individual chromatograms, or extracted into a data.frame or tibble from a list of chromatograms using the `extract_metadata` function. 
 
 ##### Importing peak lists
 
