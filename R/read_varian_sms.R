@@ -63,7 +63,9 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
   f <- file(path, "rb")
   on.exit(close(f))
 
-  chroms <- read_varian_chromatograms(f)
+  meta <- read_varian_msdata_header(f)
+
+  chroms <- read_varian_chromatograms(f, n_time = meta$n_scan)
 
   skip_null_bytes(f)
 
@@ -79,18 +81,28 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
   dat <- mget(what)
   if (collapse)
     dat <- collapse_list(dat)
+  if (read_metadata){
+    offsets <- read_varian_offsets(f)
+    prep_offset <- offsets[grep("SamplePrep", offsets$name), "start"]
+    seek(f, prep_offset)
+    meta$sample_name <-  readBin(f,"character")
+    mod_offset <- offsets[grep("ModAttr", offsets$name), "start"]
+    seek(f, mod_offset)
+    readBin(f, "raw", n = 2)
+    meta$software <- readBin(f,"character")
+    skip_null_bytes(f)
+    meta$version <- readBin(f,"character")
+    dat <- attach_metadata(dat, meta, format_in = "varian_sms",
+                           format_out = format_out, data_format = data_format,
+                           source_file = path)
+  }
   dat
 }
 
 #' Read 'Varian Workstation' Chromatograms
 #' @author Ethan Bass
 #' @noRd
-read_varian_chromatograms <- function(f){
-  offsets <- list(scan_no = 3268, ms_start = 3422)
-  seek(f, offsets$scan_no)
-  n_time <- readBin(f, "integer", size = 4)
-
-  seek(f, offsets$ms_start)
+read_varian_chromatograms <- function(f, n_time){
   mat <- matrix(NA, nrow = n_time, ncol = 5)
   colnames(mat) <- c("scan", "rt", "tic", "bpc", "ion_time")
   for (i in seq_len(n_time)){
@@ -123,7 +135,7 @@ read_varian_ms_stream <- function(f, n_scans){
 read_varian_ms_block <- function(f){
   buffer <- list(0,0,0,0)
   mat <- matrix(nrow = 1000, ncol = 2)
-  i=1
+  i = 1
   buffer[[3]] <- readBin(f, "raw", n = 1)
   while (buffer[[3]] != "00"){
     for (j in c(1:2)){
@@ -153,6 +165,7 @@ read_varian_ms_block <- function(f){
 }
 
 #' Skip null bytes
+#' @author Ethan Bass
 #' @noRd
 skip_null_bytes <- function(f){
   while(TRUE){
@@ -164,6 +177,8 @@ skip_null_bytes <- function(f){
   }
 }
 
+#' Decode 'Varian SMS' value
+#' @author Ethan Bass
 #' @noRd
 decode_sms_val <- function(hex) {
   num <- hex_to_int(hex)
@@ -175,6 +190,8 @@ decode_sms_val <- function(hex) {
   return(result)
 }
 
+#' Generate mask for Varian MS values
+#' @author Ethan Bass
 #' @noRd
 generate_mask <- function(d) {
   # Define the mapping from leading digit to the number of bits
@@ -190,6 +207,8 @@ generate_mask <- function(d) {
   (2^n_bits) - 1
 }
 
+#' Extract leading digit from Varian MS values
+#' @author Ethan Bass
 #' @noRd
 extract_sign <- function(hex, num) {
   if (missing(num)){
@@ -202,7 +221,7 @@ extract_sign <- function(hex, num) {
   bitwAnd(bitwShiftR(num, n = value_bits), b = 0xF)
 }
 
-
+#' Translate hex (raw) to integer
 #' @noRd
 hex_to_int <- function(hex){
   x <- 0
@@ -211,3 +230,140 @@ hex_to_int <- function(hex){
   }
   x
 }
+
+#' Read 'Varian SMS' MSdata header
+#' The header contains 66 bytes of general information about the mass spectrum,
+#' followed by 55 byte headers for each MS segment containing information
+#' specific to each segment, such as the start and end times and maximum
+#' ionization time.
+#' @author Ethan Bass
+#' @noRd
+read_varian_msdata_header <- function(f){
+
+  seek(f,3238)
+
+  readBin(f, "raw", n=2)
+  readBin(f, "raw", n=2)
+  readBin(f, "raw", n=2)
+  readBin(f, "raw", n=2)
+  readBin(f, "raw", n=2)
+
+  ion_time <- readBin(f, what = "integer", size = 2, endian = "little",
+                      signed = FALSE)
+
+  emission_current <- readBin(f, what = "integer", size = 2, endian = "little",
+                              signed = FALSE)
+
+  dac <- readBin(f, what = "integer", size = 2, endian = "little",
+                 signed = FALSE)
+
+  u1 <- readBin(f, what = "integer", size = 2, endian = "little",
+                signed = FALSE)
+
+  t2 <- readBin(f, what = "raw", n=4, endian = "little")
+  t2 <- as.POSIXct(strtoi(paste(c(t2[2],t2[1],t2[3:4]), collapse=""), 16))
+
+  t1 <- readBin(f, what = "raw", n=4, endian = "little")
+  t1 <- as.POSIXct(strtoi(paste(c(t1[2],t1[1],t1[3:4]), collapse = ""), 16))
+
+  u2 <- readBin(f, what = "integer", size = 2, endian = "little",
+                signed = FALSE)
+  readBin(f, what = "integer", size=2, endian = "little") #skip
+
+  n_scan <- readBin(f, what = "integer", size = 2, endian = "little",
+                    signed = FALSE)
+  readBin(f, what = "integer", size=2, endian = "little") #skip
+
+  max_ric_scan <- readBin(f, what = "integer", size = 2, endian = "little",
+                          signed = FALSE)
+  readBin(f, what = "integer", size=2, endian = "little", signed = FALSE) #skip
+
+  max_ric_val <- readBin(f, what = "integer", size = 2, endian = "little",
+                         signed = FALSE)
+  readBin(f, what = "integer", size=2, endian = "little", signed = FALSE) #skip
+
+  u3 <- readBin(f, what = "integer", size = 2, endian = "little",
+                signed = FALSE)
+  readBin(f, what = "integer", size = 2, endian = "little", signed = FALSE) #skip
+
+  u4 <- readBin(f, what = "integer", size = 2, endian = "little",
+                signed = FALSE)
+  readBin(f, what = "integer", size = 2, endian = "little") #skip
+
+  u5 <- readBin(f, what = "integer", size = 2, endian = "little",
+                signed = FALSE)
+  readBin(f, what = "integer", size = 2, endian = "little") #skip
+
+  readBin(f, what = "raw", n=12) #skip
+
+  # reader segment headers
+  seg_no <- readBin(f, what="integer", size = 2)
+  segment_metadata <- list()
+  i <- 1
+  while(seg_no == i){
+    start_time <- readBin(f, what = "double", size=8)
+
+    end_time <- readBin(f, what = "double", size=8)
+
+    readBin(f, what = "raw", n = 1) #01
+
+    start_scan <- readBin(f, what = "integer", size = 2, endian = "little",
+                          signed = FALSE)
+    readBin(f, what = "raw", n = 2)
+
+    end_scan <- readBin(f, what = "integer", size = 2, endian = "little",
+                        signed = FALSE)
+    readBin(f, what = "raw", n = 2) # skip
+
+    us1 <- readBin(f, what = "integer", size = 2, endian = "little",
+                   signed = FALSE)
+    readBin(f, what = "raw", n = 2) #skip
+
+    us2 <- readBin(f, what = "integer", size = 2, endian = "little",
+                   signed = FALSE)
+    readBin(f, what = "raw", n = 2) # skip
+
+    max_ionization_time <- readBin(f, what = "integer", size = 2,
+                                   endian = "little", signed = FALSE)
+
+    readBin(f, what="raw", n = 2) # skip
+    readBin(f, what="raw", n = 16) # skip
+
+    segment_metadata[[i]] <- mget(c("start_time", "end_time", "start_scan", "end_scan",
+           "us1", "us2", "max_ionization_time"))
+    seg_no <- readBin(f, what = "integer", size = 2,
+                      endian = "little", signed = FALSE)
+    i <- i + 1
+  }
+  readBin(f, what="raw", n = 6)
+  mget(c("ion_time", "emission_current", "dac", "u1", "t1", "t2", "u2", "n_scan",
+  "max_ric_scan", "max_ric_val", "u3", "u4", "u5", "segment_metadata"))
+}
+
+#' Read 'Varian SMS' offsets from header
+#' @author Ethan Bass
+#' @noRd
+read_varian_offsets <- function(f){
+  seek(f, 28)
+  readBin(f, "raw", n = 10)
+  mat <- matrix(NA, 20, 4)
+  i <- 1
+  name <- ""
+  while (name != "InjectionLog"){
+    mat[i,1] <- readBin(f, "integer", size = 4)
+
+    mat[i,2] <- readBin(f, "integer", size = 4)
+
+    mat[i,3] <- readBin(f, "integer", size = 2)
+
+    readBin(f, "raw", n = 8)
+    name <- readBin(f, "character")
+    mat[i,4] <- name
+    skip_null_bytes(f)
+    i <- i + 1
+  }
+  mat <- mat[!is.na(mat[,1]),]
+  data.frame(start=as.numeric(mat[,1]), end=as.numeric(mat[,2]), number=as.numeric(mat[,3]),
+             name=mat[,4])
+}
+
