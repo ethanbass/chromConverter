@@ -489,6 +489,15 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
   expect_equal(attr(x[[1]], "detector_unit"), attr(x1[[1]], "detector_unit"))
   expect_equal(attr(x[[1]], "intensity_multiplier"),
                attr(x1[[1]], "intensity_multiplier"))
+
+  # check long format
+  x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
+                    data_format = "long", progress_bar = FALSE)[[1]]
+  expect_s3_class(x2, "data.frame")
+  expect_equal(nrow(x2), sum(sapply(x, nrow)))
+  expect_equal(x2[x2$wavelength=="260nm", "int"], x[["A, 260nm"]], ignore_attr=TRUE)
+  expect_equal(x2[x2$wavelength=="210nm", "int"], x[["A, 210nm"]], ignore_attr=TRUE)
+  expect_equal(x2[x2$wavelength=="", "int"], x[["B"]], ignore_attr=TRUE)
 })
 
 test_that("read_chroms can read 'Agilent' .dx files", {
