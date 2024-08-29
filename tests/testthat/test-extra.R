@@ -663,5 +663,9 @@ test_that("read_chroms can read 'Varian' SMS", {
   expect_equal(attr(x, "ms_params")$max_ric_scan, 1445)
   expect_equal(attr(x, "ms_params")$max_ric_val, 39285)
   expect_equal(attr(x, "ms_params")$max_ionization_time, c(0,25000))
+  expect_equal(attr(x, "ms_params")$temp_trap, 150)
+  expect_equal(attr(x, "ms_params")$temp_manifold, 50)
+  expect_equal(attr(x, "ms_params")$temp_transferline, 250)
+  expect_equal(attr(x, "ms_params")$axial_modulation, 4)
 })
 

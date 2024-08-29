@@ -83,20 +83,54 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
     dat <- collapse_list(dat)
   if (read_metadata){
     offsets <- read_varian_offsets(f)
+
     prep_offset <- offsets[grep("SamplePrep", offsets$name), "start"]
     seek(f, prep_offset)
     meta$sample_name <-  readBin(f,"character")
-    mod_offset <- offsets[grep("ModAttr", offsets$name), "start"]
-    seek(f, mod_offset)
-    readBin(f, "raw", n = 2)
-    meta$software <- readBin(f,"character")
-    skip_null_bytes(f)
-    meta$version <- readBin(f,"character")
+
+    meta <- read_mod_metadata(f, offsets, meta)
+
     dat <- attach_metadata(dat, meta, format_in = "varian_sms",
                            format_out = format_out, data_format = data_format,
                            source_file = path)
   }
   dat
+}
+
+#' @noRd
+read_mod_metadata <- function(f, offsets, meta){
+  mod_offset <- offsets[grep("ModAttr", offsets$name), "start"]
+  seek(f, mod_offset)
+  readBin(f, "raw", n = 2)
+  meta$software <- readBin(f,"character")
+  skip_null_bytes(f)
+
+  meta$version <- readBin(f,"character")
+  skip_null_bytes(f)
+
+  readBin(f, "raw", n = 3) # skip
+  skip_null_bytes(f)
+
+  meta$temp_trap <- readBin(f, "integer", size=2,
+                            signed = FALSE, endian = "little")
+
+  meta$temp_manifold <- readBin(f, "integer", size=2,
+                                signed = FALSE, endian = "little")
+
+  meta$temp_transferline <- readBin(f, "integer", size=2,
+                                    signed = FALSE, endian = "little")
+
+  readBin(f, "integer", size=2,
+          signed = FALSE, endian = "little")
+
+  meta$axial_modulation <- readBin(f, "integer", size=2,
+                                   signed = FALSE, endian = "little")/10
+  # unknown date
+  # meta$date <- as.POSIXct(readBin(f, "integer", size=4, endian = "little"))
+
+  # seek(f, 12, origin = "current") # skip 12 bytes
+  # readBin(f, "double", size=8) #air water check
+  meta
 }
 
 #' Read 'Varian Workstation' Chromatograms
@@ -292,9 +326,9 @@ read_varian_msdata_header <- function(f){
 
   u5 <- readBin(f, what = "integer", size = 2, endian = "little",
                 signed = FALSE)
-  readBin(f, what = "integer", size = 2, endian = "little") #skip
 
-  readBin(f, what = "raw", n=12) #skip
+  readBin(f, what = "integer", size = 2, endian = "little") #skip
+  readBin(f, what = "raw", n = 12) #skip
 
   # reader segment headers
   seg_no <- readBin(f, what="integer", size = 2)
