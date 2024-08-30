@@ -40,7 +40,8 @@
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
-#' @param scale Whether to scale the data by the value factor.
+#' @param scale Whether to scale the data by the value factor. Defaults to
+#' \code{TRUE}.
 #' @author Ethan Bass
 #' @return A 3D chromatogram from the PDA stream in \code{matrix} or
 #' \code{data.frame} format, according to the value of \code{format_out}.
@@ -246,7 +247,8 @@ read_sz_lcd_2d <- function(path, format_out = "matrix",
     }
     if (data_format == "long"){
       dat <- data.frame(rt = times, int = dat$int, detector = DI$DETN,
-                   channel = DI$DSCN, wavelength = DI$ADN)
+                   channel = DI$DSCN, wavelength = DI$ADN,
+                   unit = DI$detector.unit)
     }
     if (format_out == "matrix"){
       dat <- as.matrix(dat)
@@ -735,7 +737,8 @@ read_sz_3DDI <- function(path){
     lapply(meta[c("WVB","WVE","WLS")], function(x){
       sz_float(x)/100
   })
-  meta <- c(meta, read_sz_2DDI(xml2::xml_find_all(doc, ".//GUD[@Type='2DDataItem']"),
+  meta <- c(meta, read_sz_2DDI(xml2::xml_find_all(doc,
+                                                  ".//GUD[@Type='2DDataItem']"),
                                read_file = FALSE))
   meta
 }
