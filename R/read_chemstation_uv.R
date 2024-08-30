@@ -12,6 +12,8 @@
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
+#' @param scale Whether to scale the data by the scaling factor present in the
+#' file. Defaults to \code{TRUE}.
 #' @return A 3D chromatogram in the format specified by \code{data_format} and
 #' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
 #' be returned with retention times as rows and wavelengths as columns. If
@@ -29,7 +31,8 @@
 read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
-                                metadata_format = c("chromconverter", "raw")){
+                                metadata_format = c("chromconverter", "raw"),
+                                scale = TRUE){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
@@ -84,7 +87,6 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
 
   # BODY
   seek(f, where = offsets$data_start, origin = "start")
-  seek(f, where = offsets$data_start, origin = "start")
 
   # Read data and populate arrays
   decode_array <- switch(version, "131_OL" = decode_uv_array,
@@ -92,8 +94,9 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
                     "31" = decode_uv_delta)
 
   data <- decode_array(f = f, nval = nval, ncol = n_lambdas)
-
-  data <- data*scaling_value
+  if (scale){
+    data <- data*scaling_value
+  }
   colnames(data) <- lambdas
 
   if (data_format == "long"){
@@ -114,7 +117,8 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
     meta$intensity_multiplier <- scaling_value
     data <- attach_metadata(data, meta, format_in = metadata_format,
                     data_format = data_format, format_out = format_out,
-                    parser = "chromconverter", source_file = path)
+                    parser = "chromconverter", source_file = path,
+                    scale = scale)
   }
   data
 }
@@ -157,7 +161,7 @@ decode_uv_array <- function(f, nval, ncol){
     readBin(f, raw(), n = 14)  # Discard 14 bytes
     data[i,] <- readBin(f, what = "double", size = 8, n = ncol)
   }
-  times <- times/60000
+  times <- times / 60000
   rownames(data) <- times
   data
 }

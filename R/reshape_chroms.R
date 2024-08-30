@@ -29,7 +29,8 @@ reshape_chroms <- function(x, idx, sample_var = "sample", lambdas = NULL,
         lambdas <- colnames(x[[i]])
       }
     }
-    xx <- reshape_chrom(x[[i]], lambdas = lambdas, data_format = data_format, ...)
+    xx <- reshape_chrom(x[[i]], lambdas = lambdas, data_format = data_format,
+                        ...)
     if (data_format == "long"){
       xx[,sample_var] <- names(x)[[i]]
     }
@@ -79,8 +80,10 @@ reshape_chrom_long <- function(x, lambdas, format_out = NULL, names_to = "lambda
     if (!missing(lambdas)){
       xx <- xx[,lambdas, drop = FALSE]
     }
-    data <- data.frame(tidyr::pivot_longer(data.frame(rt = rownames(xx), xx, check.names = FALSE),
-                                cols = -c("rt"), names_to = names_to, values_to = "intensity"))
+    data <- data.frame(tidyr::pivot_longer(data.frame(rt = rownames(xx), xx,
+                                                      check.names = FALSE),
+                                cols = -c("rt"), names_to = names_to,
+                                values_to = "intensity"))
     data <- apply(data, 2, as.numeric)
   }
   if (format_out == "matrix"){

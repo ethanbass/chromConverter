@@ -24,10 +24,10 @@
 #' call from R.
 #'
 #' @import xml2
-#' @import magrittr
 #' @param files files to parse
 #' @param path_out directory to export converted files.
-#' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
+#' @param format_in Either `msd` for mass spectrometry data, `csd` for flame
+#' ionization data, or `wsd` for DAD/UV data.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param export_format Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
 #' Defaults to \code{mzml}.
@@ -53,7 +53,8 @@
 call_openchrom <- function(files, path_out = NULL, format_in,
                              format_out = c("matrix","data.frame"),
                              export_format = c("mzml", "csv", "cdf", "animl"),
-                             return_paths = FALSE, verbose = getOption("verbose")){
+                             return_paths = FALSE,
+                           verbose = getOption("verbose")){
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   if (length(files) == 0){
     stop("Files not found.")
@@ -102,7 +103,6 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 #' Writes OpenChrom XML batch file
 #' This function is called internally by \code{call_openchrom}.
 #' @import xml2
-#' @import magrittr
 #' @param files Paths to files for conversion
 #' @param path_out directory to export converted files.
 #' @param format_in Either \code{msd} for mass spectrometry data, \code{csd} for
@@ -112,16 +112,19 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 #' @author Ethan Bass
 
 write_openchrom_batchfile <- function(files, path_out,
-                                      format_in = c("msd","csd","wsd"),
-                                      export_format = c("csv","cdf","mzml","animl")){
-  path_template <- system.file("openchrom_template.xml", package = "chromConverter")
+                                      format_in = c("msd", "csd", "wsd"),
+                                      export_format = c("csv", "cdf", "mzml",
+                                                        "animl")){
+  path_template <- system.file("openchrom_template.xml",
+                               package = "chromConverter")
   x <- xml2::read_xml(x = path_template)
 
-  ### add files to InputEntries ###
+  input_entries <- xml_find_first(x,"//InputEntries")
   for (file in files){
-    x %>% xml_children %>% .[[3]] %>%
-      xml_add_child(.value = "InputEntry")  %>% xml_add_child(xml_cdata(file))
+    xml_add_child(input_entries, .value = "InputEntry")  |>
+      xml_add_child(xml_cdata(file))
   }
+
 
   ### add appropriate parser to ProcessEntries ###
   msd_mzml_converter <- 'ProcessEntry id="msd.export.org.eclipse.chemclipse.msd.converter.supplier.mzml" name="mzML Chromatogram (*.mzML)" description="Reads mzML Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
@@ -148,8 +151,15 @@ write_openchrom_batchfile <- function(files, path_out,
                      "csv" = wsd_csv_converter,
                      "animl" = wsd_animl_converter)
   }
-  x %>% xml_children %>% .[[4]] %>% xml_add_child(.value=gsub("path_out", path_out, parser))
-  path_xml <- fs::path(path_out, paste0("batchfile_", strftime(Sys.time(),format = "%Y-%m-%d_%H-%M-%S")), ext = "xml")
+  process_entries <- xml_find_first(x,"//ProcessEntries")
+  for (file in files){
+    xml_add_child(input_entries, .value = gsub("path_out", path_out, parser))
+  }
+
+  path_xml <- fs::path(path_out, paste0("batchfile_",
+                                        strftime(Sys.time(),
+                                                 format = "%Y-%m-%d_%H-%M-%S")),
+                       ext = "xml")
   write_xml(x, file = path_xml)
   path_xml
 }
@@ -197,10 +207,12 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
       path_parser <- gsub("/","\\\\", path_parser)
     }
     writeLines(path_parser,
-               con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
+               con = system.file('shell/path_to_openchrom_commandline.txt',
+                                 package='chromConverter'))
   }
   path_ini <- switch(.Platform$OS.type,
-                     "unix" = paste0(gsub("MacOS/openchrom", "", path_parser), "Eclipse/openchrom.ini"),
+                     "unix" = paste0(gsub("MacOS/openchrom", "", path_parser),
+                                     "Eclipse/openchrom.ini"),
                      "linux" = paste0(path_parser, ".uni"),
                      "windows" = paste0(gsub(".exe", "", path_parser), ".ini"))
   ini <- readLines(path_ini)

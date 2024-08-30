@@ -172,6 +172,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               bandwidth = get_metadata_field(meta, "Bandwidth(nm)"),
               detector_unit = get_metadata_field(meta, "Intensity Units"),
               intensity_multiplier = as.numeric(get_metadata_field(meta, "Intensity Multiplier")),
+              scaled = scale,
               source_file = source_file,
               data_format = data_format,
               parser = "chromconverter",
@@ -280,6 +281,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               time_interval = NA,
               time_unit = "Minutes",
               intensity_multiplier = meta$intensity_multiplier,
+              scaled = scale,
               source_file = source_file,
               data_format = data_format,
               parser = parser,
@@ -482,7 +484,6 @@ read_chemstation_metadata <- function(file, what = c("metadata", "peaktable")){
 #' @name read_masshunter_metadata
 #' @param file file
 #' @importFrom xml2 read_xml xml_find_all xml_text
-#' @import magrittr
 #' @return A list containing extracted metadata.
 #' @author Ethan Bass
 #' @noRd
@@ -498,14 +499,18 @@ read_masshunter_metadata <- function(file){
       path_sample <- rep[basename(rep) == "sample_info.xml"]
       if (length(path_sample) == 1){
         meta_sample <- xml2::read_xml(path_sample)
-        name <- xml_text(xml_find_all(meta_sample, xpath = "//Name"))
-        meta_sample <- as.list(xml_text(xml_find_all(meta_sample, xpath = "//Value")))
+        name <- xml2::xml_text(xml2::xml_find_all(meta_sample, xpath = "//Name"))
+        meta_sample <- as.list(xml2::xml_text(
+          xml2::xml_find_all(meta_sample, xpath = "//Value")
+        ))
         names(meta_sample) <- name
       }
       if (length(path_devices) == 1){
         meta_devices <- xml2::read_xml(path_devices)
         name <- xml_text(xml_find_all(meta_devices, xpath = "//Name"))
-        meta_devices <- as.character(xml_text(xml_find_all(meta_devices, xpath = "//ModelNumber")))
+        meta_devices <- as.character(xml_text(
+          xml_find_all(meta_devices, xpath = "//ModelNumber")
+        ))
         names(meta_devices) <- name
       }
       meta_sample$Instrument <- meta_devices
@@ -516,9 +521,6 @@ read_masshunter_metadata <- function(file){
 
 
 #' @name read_chromeleon_metadata
-#' @param file file
-#' @importFrom xml2 read_xml xml_find_all xml_text
-#' @import magrittr
 #' @return A list containing extracted metadata.
 #' @author Ethan Bass
 #' @noRd
@@ -532,8 +534,6 @@ read_chromeleon_metadata <- function(x){
 
 #' @name read_waters_metadata
 #' @param file file
-#' @importFrom xml2 read_xml xml_find_all xml_text
-#' @import magrittr
 #' @return A list containing extracted metadata.
 #' @author Ethan Bass
 #' @noRd

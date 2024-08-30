@@ -75,11 +75,6 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                     "179_4b" = decode_double_array_4byte,
                     "179_8b" = decode_double_array_8byte)
 
-  # Sample Info
-  # offsets <- list(sample = 858, description = 1369, method = 2574,
-  #                 operator = 1880, date = 2391, instrument = 2533,
-  #                inlet = 2492, units = 4172)
-
   seek(f, 264, "start")
   offset <- (readBin(f, "integer", n = 1, endian = "big", size = 4) - 1) * 512
 
@@ -152,7 +147,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
     meta$date <- regmatches(meta$date, gregexpr(datetime_regex, meta$date))[[1]]
     data <- attach_metadata(data, meta, format_in = metadata_format,
                             data_format = data_format, format_out = format_out,
-                            parser = "chromconverter", source_file = path)
+                            parser = "chromconverter", source_file = path,
+                            scale = scale)
   }
   data
 }

@@ -30,7 +30,8 @@ the function will default to \code{pda} if the PDA stream is present.}
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
-\item{scale}{Whether to scale the data by the value factor.}
+\item{scale}{Whether to scale the data by the value factor. Defaults to
+\code{TRUE}.}
 }
 \value{
 A 3D chromatogram from the PDA stream in \code{matrix} or

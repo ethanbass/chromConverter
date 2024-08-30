@@ -19,7 +19,8 @@ call_openchrom(
 
 \item{path_out}{directory to export converted files.}
 
-\item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame ionization data, or \code{wsd} for DAD/UV data.}
+\item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame
+ionization data, or \code{wsd} for DAD/UV data.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
