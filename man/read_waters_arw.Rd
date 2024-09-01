@@ -5,7 +5,7 @@
 \title{Waters ascii (.arw) reader}
 \usage{
 read_waters_arw(
-  file,
+  path,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -13,7 +13,7 @@ read_waters_arw(
 )
 }
 \arguments{
-\item{file}{path to file}
+\item{path}{path to file}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 

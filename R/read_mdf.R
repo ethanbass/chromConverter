@@ -21,11 +21,11 @@ read_mdf <- function(path, format_out = c("matrix", "data.frame"),
   metadata <- readBin(f, "raw", n = 2000)
   metadata_end <- grepRaw(charToRaw("[Begin]"), metadata, fixed = TRUE)
 
-  metadata <- rawToChar(metadata[seq_len(metadata_end+7)])
+  metadata <- rawToChar(metadata[seq_len(metadata_end + 7)])
 
   meta <- extract_mdf_metadata(metadata)
 
-  seek(f, (metadata_end+8))
+  seek(f, (metadata_end + 8))
   array1_len <- as.numeric(meta[which(meta$Group == "Array photometric" &
                                         meta$Property == "Size"), "Value"])
   array2_len <- as.numeric(meta[which(meta$Group == "Array current" &

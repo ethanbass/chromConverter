@@ -1,6 +1,6 @@
 #' Call Entab
 #' Converts files using Entab parsers
-#' @param file path to file
+#' @param path Path to file
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param format_in Format of input.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
@@ -11,7 +11,7 @@
 #' (retention time x wavelength).
 #' @export
 
-call_entab <- function(file, data_format = c("wide", "long"),
+call_entab <- function(path, data_format = c("wide", "long"),
                        format_in = "",
                        format_out = c("matrix", "data.frame"),
                        read_metadata = TRUE,
@@ -27,7 +27,7 @@ call_entab <- function(file, data_format = c("wide", "long"),
   metadata_format <- match.arg(tolower(metadata_format), c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = format_in, raw = "raw")
-  r <- entab::Reader(file)
+  r <- entab::Reader(path)
   file_format <- r$parser()
   x <- entab::as.data.frame(r)
   if (grepl("dad$|uv$", file_format)){
@@ -60,16 +60,16 @@ call_entab <- function(file, data_format = c("wide", "long"),
                         "sample_name" = "sample"))
 
     if (grepl("chemstation", format_in)){
-      metadata_from_file <- try(read_chemstation_metadata(file), silent = TRUE)
+      metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
     } else if (format_in == "masshunter_dad"){
-      metadata_from_file <- try(read_masshunter_metadata(file), silent = TRUE)
+      metadata_from_file <- try(read_masshunter_metadata(path), silent = TRUE)
     }
     if (exists("metadata_from_file") && !inherits(metadata_from_file, "try-error")){
       meta <- c(meta, metadata_from_file)
     }
     x <- attach_metadata(x, meta, format_in = format_in, format_out = format_out,
                          data_format = data_format, parser = "entab",
-                         source_file = file)
+                         source_file = path)
   }
   x
 }

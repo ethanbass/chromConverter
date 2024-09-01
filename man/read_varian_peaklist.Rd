@@ -5,10 +5,10 @@
 \title{Read 'Varian' peaklist.
 Read peak list(s) from 'Varian MS Workstation'.}
 \usage{
-read_varian_peaklist(file)
+read_varian_peaklist(path)
 }
 \arguments{
-\item{file}{Path to Varian peak list file.}
+\item{path}{Path to Varian peak list file.}
 }
 \value{
 A data.frame containing the information from the specified report.

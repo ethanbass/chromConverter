@@ -6,7 +6,7 @@
 #' Uses the [Aston](https://github.com/bovee/aston) file parser.
 #'
 #' @name sp_converter
-#' @param file path to file
+#' @param path Path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Logical. Whether to read metadata and attach it to the
@@ -17,7 +17,7 @@
 #' @import reticulate
 #' @export sp_converter
 
-sp_converter <- function(file, format_out = c("matrix", "data.frame"),
+sp_converter <- function(path, format_out = c("matrix", "data.frame"),
                          data_format = c("wide","long"),
                          read_metadata = TRUE,
                          metadata_format = c("chromconverter", "raw")){
@@ -28,7 +28,7 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
   metadata_format <- switch(metadata_format,
                             chromconverter = "masshunter_dad", raw = "raw")
 
-  x <- trace_file$agilent_uv$AgilentDAD(file)
+  x <- trace_file$agilent_uv$AgilentDAD(path)
   x <- pd$DataFrame(x$data$values, columns = x$data$columns,
                     index = x$data$index)
   if (data_format == "long"){
@@ -38,10 +38,10 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
     x <- as.matrix(x)
   }
   if (read_metadata){
-    meta <- read_masshunter_metadata(file)
+    meta <- read_masshunter_metadata(path)
     x <- attach_metadata(x, meta, format_in = metadata_format,
                          format_out = format_out, data_format = "wide",
-                         parser = "aston", source_file = file)
+                         parser = "aston", source_file = path)
   }
   x
 }
@@ -54,7 +54,7 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
 #' Uses the [Aston](https://github.com/bovee/aston) file parser.
 #'
 #' @name uv_converter
-#' @param file path to file
+#' @param path Path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param correction Logical. Whether to apply empirical correction. Defaults is
@@ -66,7 +66,7 @@ sp_converter <- function(file, format_out = c("matrix", "data.frame"),
 #' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @export uv_converter
-uv_converter <- function(file, format_out = c("matrix","data.frame"),
+uv_converter <- function(path, format_out = c("matrix","data.frame"),
                          data_format = c("wide","long"),
                          correction = TRUE, read_metadata = TRUE,
                          metadata_format = c("chromconverter", "raw")){
@@ -78,7 +78,7 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
                             chromconverter = "chemstation_uv", raw = "raw")
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
-  x <- trace_file$TraceFile(file)
+  x <- trace_file$TraceFile(path)
   x <- pd$DataFrame(x$data$values, columns=x$data$columns,
                     index=x$data$index)
   if (data_format == "long"){
@@ -93,10 +93,10 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
     x <- apply(x,2,function(xx)xx*correction_value)
   }
   if (read_metadata){
-    meta <- read_chemstation_metadata(file)
+    meta <- read_chemstation_metadata(path)
     x <- attach_metadata(x, meta, format_in = metadata_format,
                          format_out = format_out, data_format = "wide",
-                         parser = "Aston", source_file = file)
+                         parser = "Aston", source_file = path)
   }
   x
 }
@@ -106,20 +106,20 @@ uv_converter <- function(file, format_out = c("matrix","data.frame"),
 #' Uses Aston parser to figure out file-type and convert to R \code{data.frame}.
 #' @name trace_converter
 #' @title generic converter for other types of files
-#' @param file path to file
+#' @param path Path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
 #' @noRd
-trace_converter <- function(file, format_out = c("matrix", "data.frame"),
+trace_converter <- function(path, format_out = c("matrix", "data.frame"),
                             data_format = c("wide", "long")){
   check_aston_configuration()
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
-  x <- trace_file$TraceFile(file)
+  x <- trace_file$TraceFile(path)
   x <- pd$DataFrame(x$data$values, columns = x$data$columns,
                     index = x$data$index)
   if (data_format == "long"){

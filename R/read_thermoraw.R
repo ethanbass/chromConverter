@@ -6,7 +6,7 @@
 #' To use this function, the ThermoRawFileParser must be manually installed.
 #'
 #' @name read_thermoraw
-#' @param path_in Path to file.
+#' @param path Path to file.
 #' @param path_out Path to directory to export \code{mzML} files. If
 #' \code{path_out} isn't specified, a temp directory will be used.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
@@ -29,7 +29,7 @@
 #' \doi{10.1021/acs.jproteome.9b00328}.
 #' @export read_thermoraw
 
-read_thermoraw <- function(path_in, path_out = NULL,
+read_thermoraw <- function(path, path_out = NULL,
                            format_out = c("matrix", "data.frame"),
                            read_metadata = TRUE,
                            metadata_format = c("chromconverter", "raw"),
@@ -38,7 +38,7 @@ read_thermoraw <- function(path_in, path_out = NULL,
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, chromconverter = "thermoraw",
                              raw = "raw")
-  if(!file.exists(path_in)){
+  if(!file.exists(path)){
     stop("File not found. Check path.")
   }
   if (is.null(path_out)){
@@ -54,25 +54,25 @@ read_thermoraw <- function(path_in, path_out = NULL,
   if (.Platform$OS.type != "windows"){
     system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
                                           package='chromConverter'),
-                              " -i=", path_in, " -o=", path_out, " -a"),
+                              " -i=", path, " -o=", path_out, " -a"),
             stdout = verbose)
     if (read_metadata){
       system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
                                               package='chromConverter'),
-                                  " -i=", path_in, " -o=", path_out, " -m=1"),
+                                  " -i=", path, " -o=", path_out, " -m=1"),
               stdout = verbose)
     }
   } else {
       parser_path <- readLines(system.file('shell/path_parser.txt',
                                            package='chromConverter'))
-      shell(paste0(parser_path, " -i=", path_in,
+      shell(paste0(parser_path, " -i=", path,
                                 " -o=", path_out, " -a"))
     if (read_metadata){
-      shell(paste0(parser_path, " -i=", path_in,
+      shell(paste0(parser_path, " -i=", path,
                                 " -o=", path_out, " -m=1"))
     }
   }
-  base_name <- basename(path_in)
+  base_name <- basename(path)
   base_name <- strsplit(base_name, "\\.")[[1]][1]
   new_path <- fs::path(path_out, base_name, ext = "mzML")
   x <- read_mzml(new_path, format_out)
@@ -84,7 +84,7 @@ read_thermoraw <- function(path_in, path_out = NULL,
     meta <- as.list(meta[,-1])
     x <- attach_metadata(x, meta, format_in = metadata_format,
                          format_out = format_out, data_format = "long",
-                         source_file = path_in)
+                         source_file = path)
   }
   x
 }

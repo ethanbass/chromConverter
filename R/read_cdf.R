@@ -1,5 +1,5 @@
 #' Read CDF file
-#' @param file Path to file.
+#' @param path Path to file.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' For 2D files, "long" format returns the retention time as the first column of
@@ -19,13 +19,13 @@
 #' @author Ethan Bass
 #' @export
 
-read_cdf <- function(file, format_out = c("matrix", "data.frame"),
+read_cdf <- function(path, format_out = c("matrix", "data.frame"),
                      data_format = c("wide","long"),
                      what = "chromatogram", read_metadata = TRUE,
                      metadata_format = c("chromconverter", "raw"),
                      collapse = TRUE, ...){
   check_for_pkg("ncdf4")
-  nc <- ncdf4::nc_open(file)
+  nc <- ncdf4::nc_open(path)
   if ("ordinate_values" %in% names(nc$var)){
     format <- "chrom"
   } else if (all(c("intensity_values", "mass_values",
@@ -39,13 +39,13 @@ read_cdf <- function(file, format_out = c("matrix", "data.frame"),
                unknown = function(...){
                  stop("The format of the provided cdf file could not be recognized.")
                })
-  fn(file = file, data_format = data_format, format_out = format_out,
+  fn(path = path, data_format = data_format, format_out = format_out,
      what = what, read_metadata = read_metadata,
      metadata_format = metadata_format, collapse = collapse, ...)
 }
 
 #' Read ANDI chrom file
-#' @param file Path to file.
+#' @param path Path to file.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' For 2D files, "long" format returns the retention time as the first column of
@@ -59,7 +59,7 @@ read_cdf <- function(file, format_out = c("matrix", "data.frame"),
 #' \code{data_format} arguments (retention time x wavelength).
 #' @author Ethan Bass
 #' @noRd
-read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
+read_andi_chrom <- function(path, format_out = c("matrix", "data.frame"),
                             data_format = c("wide", "long"),
                             what = "chromatogram", read_metadata = TRUE,
                             metadata_format = c("chromconverter", "raw"),
@@ -70,7 +70,7 @@ read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
   metadata_format <- switch(metadata_format,
                             chromconverter = "cdf", raw = "raw")
   what <- match.arg(what, c("chromatogram", "peak_table"), several.ok = TRUE)
-  nc <- ncdf4::nc_open(file)
+  nc <- ncdf4::nc_open(path)
   if (any(what == "chromatogram")){
     y <- ncdf4::ncvar_get(nc, "ordinate_values")
     nvals <- ncdf4::ncvar_get(nc, "actual_run_time_length")
@@ -106,12 +106,12 @@ read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
       data <- lapply(data, function(xx){
         attach_metadata(xx, meta = meta, format_in = "cdf",
                         format_out = format_out, data_format = data_format,
-                        parser = "chromconverter", source_file = file)
+                        parser = "chromconverter", source_file = path)
       })
     } else{
     data <- attach_metadata(data, meta = meta, format_in = metadata_format,
                             format_out = format_out, data_format = data_format,
-                            parser = "chromconverter", source_file = file)
+                            parser = "chromconverter", source_file = path)
     }
   }
   ncdf4::nc_close(nc)
@@ -119,7 +119,7 @@ read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
 }
 
 #' Read ANDI MS file
-#' @param file Path to file.
+#' @param path Path to file.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return the total ion chromatogram in \code{wide}
 #' or \code{long} format. The "long" format returns the retention time as the
@@ -138,7 +138,7 @@ read_andi_chrom <- function(file, format_out = c("matrix", "data.frame"),
 #' @author Ethan Bass
 #' @noRd
 
-read_andi_ms <- function(file, format_out = c("matrix", "data.frame"),
+read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
                          data_format = c("wide", "long"),
                          what = "chromatogram",
                          ms_format = c("data.frame", "list"),
@@ -152,7 +152,7 @@ read_andi_ms <- function(file, format_out = c("matrix", "data.frame"),
   metadata_format <- switch(metadata_format,
                             chromconverter = "cdf", raw = "raw")
   what <- match.arg(what, c("chromatogram", "ms_spectra"), several.ok = TRUE)
-  nc <- ncdf4::nc_open(file)
+  nc <- ncdf4::nc_open(path)
   if (any(what == "chromatogram")){
     y <- ncdf4::ncvar_get(nc, "total_intensity")
     x <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
@@ -193,12 +193,12 @@ read_andi_ms <- function(file, format_out = c("matrix", "data.frame"),
       data <- lapply(data, function(xx){
         attach_metadata(xx, meta = meta, format_in = "cdf",
                         format_out = format_out, data_format = data_format,
-                        parser = "chromconverter", source_file = file)
+                        parser = "chromconverter", source_file = path)
       })
     } else{
       data <- attach_metadata(data, meta = meta, format_in = metadata_format,
                               format_out = format_out, data_format = data_format,
-                              parser = "chromconverter", source_file = file)
+                              parser = "chromconverter", source_file = path)
     }
   }
   ncdf4::nc_close(nc)

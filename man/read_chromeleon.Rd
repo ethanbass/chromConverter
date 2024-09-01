@@ -5,7 +5,7 @@
 \title{Chromeleon ASCII reader}
 \usage{
 read_chromeleon(
-  file,
+  path,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -13,7 +13,7 @@ read_chromeleon(
 )
 }
 \arguments{
-\item{file}{path to file}
+\item{path}{Path to file}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 

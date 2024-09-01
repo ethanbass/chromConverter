@@ -6,7 +6,7 @@
 Converts files using Entab parsers}
 \usage{
 call_entab(
-  file,
+  path,
   data_format = c("wide", "long"),
   format_in = "",
   format_out = c("matrix", "data.frame"),
@@ -15,7 +15,7 @@ call_entab(
 )
 }
 \arguments{
-\item{file}{path to file}
+\item{path}{Path to file}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 

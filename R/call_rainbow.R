@@ -7,7 +7,7 @@
 #' \code{chemstation_uv} a \code{.uv} file should be provided. Data can be filtered
 #' by detector type using the \code{what} argument.
 #'
-#' @param file Path to file
+#' @param path Path to file
 #' @param format_in Format of the supplied files. Either \code{agilent_d},
 #' \code{waters_raw}, or \code{chemstation}.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
@@ -26,7 +26,7 @@
 #' \code{by}.
 #' @export
 
-call_rainbow <- function(file,
+call_rainbow <- function(path,
                          format_in = c("agilent_d", "waters_raw", "masshunter",
                                        "chemstation", "chemstation_uv",
                                        "chemstation_fid"),
@@ -39,7 +39,7 @@ call_rainbow <- function(file,
   by <- match.arg(by, c("detector","name"))
   format_out <- match.arg(format_out, c("matrix","data.frame"))
   data_format <- match.arg(data_format, c("wide", "long"))
-  # check_rb_dir(file)
+
   if (grepl("chemstation", format_in)){
     format_in <- "chemstation"
   }
@@ -52,7 +52,7 @@ call_rainbow <- function(file,
   if (format_in %in% c("chemstation")){
     by <- "single"
   }
-  x <- converter(file, prec = as.integer(precision))
+  x <- converter(path, prec = as.integer(precision))
   if (by == "detector"){
     if (!is.null(what)){
       what_not_present <- which(!(what %in% names(x$by_detector)))

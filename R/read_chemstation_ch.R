@@ -170,7 +170,7 @@ cc_collapse <- function(x){
 }
 
 #' @noRd
-cc_trim_str <- function(x, len=2){
+cc_trim_str <- function(x, len = 2){
   substr(x, len, nchar(x))
 }
 
@@ -178,7 +178,7 @@ cc_trim_str <- function(x, len=2){
 #' @noRd
 get_chemstation_dir_name <- function(path){
   dir <- gsub(basename(path), "", path)
-  sp <- str_split_fixed(dir, "/", stringr::str_count(dir,"/")+1)[1,]
+  sp <- str_split_fixed(dir, "/", stringr::str_count(dir, "/") + 1)[1,]
   grep("\\.D|\\.d$", sp, ignore.case = TRUE, value = TRUE)
 }
 

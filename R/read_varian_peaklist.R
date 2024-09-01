@@ -1,13 +1,13 @@
 #' Read 'Varian' peaklist.
 #' Read peak list(s) from 'Varian MS Workstation'.
-#' @param file Path to Varian peak list file.
+#' @param path Path to Varian peak list file.
 #' @importFrom utils read.csv
 #' @author Ethan Bass
 #' @return A data.frame containing the information from the specified report.
 #' @export
 
-read_varian_peaklist <- function(file){
-  x <- read.csv(file, skip = 5, header = FALSE)
+read_varian_peaklist <- function(path){
+  x <- read.csv(path, skip = 5, header = FALSE)
   x$V1[x$V1 == ""] <- NA
   x <- tidyr::fill(data = x, "V1", .direction = "down")
 

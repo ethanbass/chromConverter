@@ -3,7 +3,7 @@
 #' Reads 'Thermo Fisher Chromeleon™ CDS' files into R.
 #'
 #' @importFrom utils tail read.csv
-#' @param file path to file
+#' @param path Path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
@@ -14,7 +14,7 @@
 #' @author Ethan Bass
 #' @export
 
-read_chromeleon <- function(file, format_out = c("matrix", "data.frame"),
+read_chromeleon <- function(path, format_out = c("matrix", "data.frame"),
                             data_format = c("wide", "long"),
                             read_metadata = TRUE,
                             metadata_format = c("chromconverter", "raw")){
@@ -23,10 +23,10 @@ read_chromeleon <- function(file, format_out = c("matrix", "data.frame"),
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, chromconverter = "chromeleon",
                            raw = raw)
-  xx <- readLines(file)
+  xx <- readLines(path)
   xx <- remove_unicode_chars(xx)
   start <- tail(grep("Data:", xx), 1)
-  x <- read.csv(file, skip = start, sep = "\t", row.names = NULL)
+  x <- read.csv(path, skip = start, sep = "\t", row.names = NULL)
   x <- x[,-2, drop = FALSE]
   x <- x[,colSums(is.na(x)) < nrow(x)]
   if (any(grepl(",",as.data.frame(x)[-1, 2]))){
@@ -53,7 +53,7 @@ read_chromeleon <- function(file, format_out = c("matrix", "data.frame"),
     if (!inherits(meta, "try-error")){
       x <- attach_metadata(x, meta, format_in = metadata_format,
                            format_out = format_out, data_format = data_format,
-                           parser = "chromConverter", source_file = file)
+                           parser = "chromConverter", source_file = path)
     }
   }
   x

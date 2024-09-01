@@ -5,7 +5,7 @@
 \title{Read CDF file}
 \usage{
 read_cdf(
-  file,
+  path,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   what = "chromatogram",
@@ -16,7 +16,7 @@ read_cdf(
 )
 }
 \arguments{
-\item{file}{Path to file.}
+\item{path}{Path to file.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 

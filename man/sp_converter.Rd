@@ -5,7 +5,7 @@
 \title{Converter for 'Agilent MassHunter' UV files}
 \usage{
 sp_converter(
-  file,
+  path,
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -13,7 +13,7 @@ sp_converter(
 )
 }
 \arguments{
-\item{file}{path to file}
+\item{path}{Path to file}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 

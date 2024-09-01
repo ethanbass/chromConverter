@@ -7,7 +7,7 @@
 #'
 #' @name read_waters_arw
 #' @importFrom utils tail read.csv
-#' @param file path to file
+#' @param path path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
@@ -18,7 +18,7 @@
 #' @author Ethan Bass
 #' @export
 
-read_waters_arw <- function(file, format_out = c("matrix", "data.frame"),
+read_waters_arw <- function(path, format_out = c("matrix", "data.frame"),
                             data_format = c("wide", "long"),
                             read_metadata = TRUE,
                             metadata_format = c("chromconverter", "raw")){
@@ -27,7 +27,7 @@ read_waters_arw <- function(file, format_out = c("matrix", "data.frame"),
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "waters_arw", raw = "raw")
-  x <- read.csv(file, sep = "\t", skip = 2, header = FALSE, row.names = 1)
+  x <- read.csv(path, sep = "\t", skip = 2, header = FALSE, row.names = 1)
   # PDA (3D)
   if (rownames(x)[1] == "Wavelength"){
     colnames(x) <- x[1,]
@@ -49,13 +49,13 @@ read_waters_arw <- function(file, format_out = c("matrix", "data.frame"),
     x <- as.matrix(x)
   }
   if (read_metadata){
-    meta <- try(read_waters_metadata(file))
+    meta <- try(read_waters_metadata(path))
     if (!inherits(meta, "try-error")){
       x <- attach_metadata(x, meta, format_in = metadata_format,
                            format_out = format_out,
                            data_format = data_format,
                            parser = "chromConverter",
-                           source_file = file)
+                           source_file = path)
     }
   }
   x
