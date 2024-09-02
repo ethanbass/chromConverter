@@ -16,7 +16,7 @@ read_cdf(
 )
 }
 \arguments{
-\item{path}{Path to file.}
+\item{path}{Path to ANDI netCDF file.}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 
@@ -44,7 +44,7 @@ A chromatogram in the format specified by the \code{format_out} and
 \code{data_format} arguments.
 }
 \description{
-Read CDF file
+Parser for Analytical Data Interchange (ANDI) netCDF files.
 }
 \author{
 Ethan Bass
