@@ -7,7 +7,7 @@
 #'
 #' @name read_waters_arw
 #' @importFrom utils tail read.csv
-#' @param path path to file
+#' @param path Path to file
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.

@@ -32,7 +32,8 @@ read_waters_raw <- function(path, format_out = c("matrix", "data.frame"),
                 data_format = data_format, read_metadata = read_metadata,
                 metadata_format = metadata_format)
 
-  meta <- readLines(meta_path, skipNul = TRUE, warn = FALSE, encoding = "Latin-1")
+  meta <- readLines(meta_path, skipNul = TRUE, warn = FALSE,
+                    encoding = "Latin-1")
   meta <- iconv(meta, sub="")
   meta <- strsplit(meta,"\\([0-9]\\)")[[1]][-1]
   meta <- gsub("^ |\\$CC\\$","", sapply(strsplit(meta, ","), function(x) x[1]))
@@ -80,8 +81,8 @@ read_waters_chro <- function(path, format_out = c("matrix", "data.frame"),
   start <- seek(f, 128, "start")
 
   x<-readBin(f, "numeric", size = 4, n = (end-start)/4)
-  times <- x[seq(1,length(x), by = 2)]
-  int <- x[seq(2,length(x), by = 2)]
+  times <- x[seq(1, length(x), by = 2)]
+  int <- x[seq(2, length(x), by = 2)]
   if (data_format == "long"){
     dat <- data.frame(times = times, int = int)
   } else {

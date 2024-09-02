@@ -32,7 +32,7 @@ reshape_chroms <- function(x, idx, sample_var = "sample", lambdas = NULL,
     xx <- reshape_chrom(x[[i]], lambdas = lambdas, data_format = data_format,
                         ...)
     if (data_format == "long"){
-      xx[,sample_var] <- names(x)[[i]]
+      xx[, sample_var] <- names(x)[[i]]
     }
     xx
   })

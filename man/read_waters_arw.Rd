@@ -13,7 +13,7 @@ read_waters_arw(
 )
 }
 \arguments{
-\item{path}{path to file}
+\item{path}{Path to file}
 
 \item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
 

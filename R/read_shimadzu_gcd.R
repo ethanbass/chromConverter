@@ -86,6 +86,7 @@ read_shimadzu_gcd <- function(path, format_out = c("matrix", "data.frame"),
     dat
   }
 
+#' Decode 'Shimadzu' GCD data stream
 #' @noRd
 decode_shimadzu_gcd <- function(path, stream){
   path_stream <- export_stream(path, stream = stream)
