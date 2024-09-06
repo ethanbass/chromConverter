@@ -174,7 +174,7 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)"
 
   # test scale argument
   x1 <- read_chroms(path, progress_bar = FALSE, scale=FALSE)[[1]]
-  expect_equal(x, x1*attr(x1,"intensity_multiplier"))
+  expect_equal(x, x1*attr(x1,"intensity_multiplier"), ignore_attr = TRUE)
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
@@ -393,21 +393,22 @@ test_that("read_chroms can read 2D chromatograms from 'Shimadzu' LCD files", {
   path_lcd <- system.file("Anthocyanin.lcd", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path_lcd))
 
-  x <- read_chroms(path_ascii, format_in="shimadzu_ascii", progress_bar = FALSE,
-                   what="chromatogram")[[1]][["lc"]]
+  x <- read_chroms(path_ascii, format_in = "shimadzu_ascii", progress_bar = FALSE,
+                   what = "chromatogram")[[1]][["lc"]]
 
-  x1 <- read_chroms(path_lcd, format_in="shimadzu_lcd", what="chromatogram",
+  x1 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
                     progress_bar = FALSE)[[1]]
 
   expect_equal(class(x1)[1], "matrix")
   expect_equal(dim(x1), c(30000, 1))
   expect_equal(x[-1,1], x1[,1], ignore_attr = TRUE)
-  all.equal(as.numeric(rownames(x)[-1]), as.numeric(rownames(x1)), tolerance = .0001)
+  all.equal(as.numeric(rownames(x)[-1]), as.numeric(rownames(x1)),
+            tolerance = .0001)
 
   # unscaled
   x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
                     progress_bar = FALSE, scale = FALSE)[[1]]
-  all.equal(x[-1,1], x2[,1]*attr(x2, "intensity_multiplier"),
+  all.equal(x[-1, 1], x2[, 1] * attr(x2, "intensity_multiplier"),
             check.attributes = FALSE)
 
   # check metadata equivalence
@@ -447,10 +448,10 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
-  path_ascii <- system.file("multichannel_chrom.txt",
+  path_asc <- system.file("multichannel_chrom.txt",
                             package = "chromConverterExtraTests")
 
-  skip_if_not(file.exists(path_ascii))
+  skip_if_not(file.exists(path_asc))
 
   path_lcd <- system.file("multichannel_chrom.lcd",
                           package = "chromConverterExtraTests")
@@ -458,22 +459,24 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
 
   x <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
                     progress_bar = FALSE)[[1]]
-  x1 <- read_chroms(path_ascii, format_in = "shimadzu_ascii", what = "chromatogram",
+  x1 <- read_chroms(path_asc, format_in = "shimadzu_ascii", what = "chromatogram",
                    progress_bar = FALSE)[[1]]
+
   # check intensities
-  # the shape of the signals approximately match but the scaling is off. The values
-  # in the text file may also be rounded?
   expect_equal(x[[1]],x1[[1]][-1,]*40, ignore_attr = TRUE, tolerance = .1)
   expect_equal(x[[2]],x1[[2]][-1,]*40, ignore_attr = TRUE, tolerance = .1)
   expect_equal(x[[3]],x1[[3]][-1,]*310, ignore_attr = TRUE, tolerance = .1)
 
+  # (the shape of the signals approximately match but the scaling is off. The values
+  # in the text file may also be rounded?)
+
   # check retention times
   expect_equal(as.numeric(rownames(x[[1]])),
-               as.numeric(rownames(x1[[1]]))[-1], tolerance=.001)
+               as.numeric(rownames(x1[[1]]))[-1], tolerance = .001)
   expect_equal(as.numeric(rownames(x[[2]])),
-               as.numeric(rownames(x1[[2]]))[-1], tolerance=.001)
+               as.numeric(rownames(x1[[2]]))[-1], tolerance = .001)
   expect_equal(as.numeric(rownames(x[[3]])),
-               as.numeric(rownames(x1[[3]]))[-1], tolerance=.001)
+               as.numeric(rownames(x1[[3]]))[-1], tolerance = .001)
 
   # check metadata equivalence
   expect_equal(attr(x[[1]], "software_version"), attr(x1[[1]], "software_version"))
@@ -493,11 +496,24 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
   # check long format
   x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
                     data_format = "long", progress_bar = FALSE)[[1]]
+  # x3 <- read_chroms(path_asc, format_in = "shimadzu_ascii", what = "chromatogram",
+  #                   data_format = "long", progress_bar = FALSE)[[1]]
+
   expect_s3_class(x2, "data.frame")
+  # expect_s3_class(x3, "data.frame")
+
   expect_equal(nrow(x2), sum(sapply(x, nrow)))
-  expect_equal(x2[x2$wavelength=="260nm", "int"], x[["A, 260nm"]], ignore_attr=TRUE)
-  expect_equal(x2[x2$wavelength=="210nm", "int"], x[["A, 210nm"]], ignore_attr=TRUE)
-  expect_equal(x2[x2$wavelength=="", "int"], x[["B"]], ignore_attr=TRUE)
+  expect_equal(x2[x2$wavelength == "260nm", "int"], x[["A, 260nm"]],
+               ignore_attr = TRUE)
+  expect_equal(x2[x2$wavelength == "260nm", "rt"],
+               as.numeric(rownames(x[["A, 260nm"]])))
+
+  expect_equal(x2[x2$wavelength == "210nm", "int"], x[["A, 210nm"]],
+               ignore_attr = TRUE)
+  expect_equal(x2[x2$wavelength == "210nm", "rt"],
+               as.numeric(rownames(x[["A, 210nm"]])))
+
+  expect_equal(x2[x2$wavelength == "", "int"], x[["B"]], ignore_attr = TRUE)
 })
 
 test_that("read_chroms can read 'Agilent' .dx files", {
