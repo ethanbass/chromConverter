@@ -74,7 +74,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 end_time = sapply(meta$segment_metadata, function(x){
                   x$end_time}),
                 no_scans = meta$n_scan,
-                ms_params = meta[c("ion_time","emission_current", "max_ric_scan",
+                ms_params = meta[c("ion_time", "emission_current", "max_ric_scan",
                                     "max_ric_val", "max_ionization_time",
                                    "temp_trap", "temp_manifold", "temp_transferline",
                                    "axial_modulation")],
@@ -93,12 +93,12 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
           }, "waters_arw" = {
       structure(x, instrument = NA,
                 detector = get_metadata_field(meta, "Channel Type"),
-                software = get_metadata_field(meta,"Source S/W Info"),
-                method = get_metadata_field(meta,"Instrument Method Name"),
-                batch = get_metadata_field(meta,"Sample Set Name"),
+                software = get_metadata_field(meta, "Source S/W Info"),
+                method = get_metadata_field(meta, "Instrument Method Name"),
+                batch = get_metadata_field(meta, "Sample Set Name"),
                 operator = NA,
                 run_datetime = NA,
-                sample_name = get_metadata_field(meta,"SampleName"),
+                sample_name = get_metadata_field(meta, "SampleName"),
                 sample_id = NA,
                 sample_injection_volume = NA,
                 sample_amount = NA,
@@ -136,7 +136,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 grep("Interval", names(meta), value = TRUE)[1],
                                           format_in = "shimadzu"),
               time_unit = get_time_unit(
-                grep("Start Time", names(meta), value=TRUE)[1],
+                grep("Start Time", names(meta), value = TRUE)[1],
                                           format_in = "shimadzu"),
               detector_range = c(meta$`Start Wavelength(nm)`,
                                  meta$`End Wavelength(nm)`),
@@ -184,7 +184,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
     structure(x,
               instrument = get_metadata_field(meta, "DSN"),
               detector = get_metadata_field(meta, "DETN"),
-              detector_id = get_metadata_field(meta,"DSID"),
+              detector_id = get_metadata_field(meta, "DSID"),
               # software_name = get_metadata_field(meta, "Application Name"),
               software_version = get_metadata_field(meta, "DataFileProperty.szVersion"),
               method = get_metadata_field(meta, "SampleInfoFile.methodfile"),
@@ -355,7 +355,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               data_format = ifelse(missing(data_format), NA, data_format),
               parser = "chromconverter")
   }, "mdf" = {
-    structure(x, instrument = meta[meta$Property == "Instrument","Value"],
+    structure(x, instrument = meta[meta$Property == "Instrument", "Value"],
               detector = "Variable Wavelength Detector",
               software = NA,
               method = NA,
@@ -369,17 +369,17 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               sample_type = "unknown",
               sample_injection_volume = 1,
               sample_amount = 1,
-              time_start = meta[meta$Group=="Interval Time" &
+              time_start = meta[meta$Group == "Interval Time" &
                                   meta$Property == "From", "Value"],
-              time_end = meta[meta$Group=="Interval Time" &
+              time_end = meta[meta$Group == "Interval Time" &
                                 meta$Property == "To", "Value"],
-              time_interval = meta[meta$Group=="Interval Time" &
+              time_interval = meta[meta$Group == "Interval Time" &
                                      meta$Property == "Step", "Value"],
-              time_unit = meta[meta$Group=="Interval Time" &
+              time_unit = meta[meta$Group == "Interval Time" &
                                  meta$Property == "Units", "Value"],
               detector_range = meta[meta$Property == "Wave", "Value"],
               # detector_end = meta[meta$Property == "Wave", "Value"],
-              detector_unit = meta[meta$Group=="Array photometric" &
+              detector_unit = meta[meta$Group == "Array photometric" &
                                      meta$Property == "Units", "Value"],
               source_file = ifelse(missing(source_file), NA, source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
@@ -563,7 +563,7 @@ extract_metadata <- function(chrom_list,
                                       "sample_name", "sample_id",
                                       "injection_volume", "time_range",
                                       "time_interval", "detector_range",
-                                      "data_format", "parser","format_out"),
+                                      "data_format", "parser", "format_out"),
                              format_out = c("data.frame", "tibble")
                                                   ){
   if (is.matrix(chrom_list) | is.data.frame(chrom_list)){

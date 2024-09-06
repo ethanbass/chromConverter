@@ -391,9 +391,9 @@ read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
 #' @author Ethan Bass
 #' @noRd
 get_sz_times <- function(sz_method, what = c("pda","chromatogram"), nval){
-  what <- match.arg(what, c("pda","chromatogram"))
+  what <- match.arg(what, c("pda", "chromatogram"))
   fields <- switch(what, "pda" = c("StTm", "EdTm"),
-                         "chromatogram" = c("ACQ$StartTm#1","ACQ$EndTm#1"))
+                         "chromatogram" = c("ACQ$StartTm#1", "ACQ$EndTm#1"))
   start_time <- try(get_metadata_field(sz_method, fields[1])/60000, silent = TRUE)
   end_time <- try(get_metadata_field(sz_method, fields[2])/60000, silent = TRUE)
   if (inherits(start_time, "numeric") & inherits(end_time, "numeric")){
@@ -481,13 +481,13 @@ check_streams <- function(path, what = c("pda", "chromatogram", "tic"),
 #' Export OLE stream
 #' This function is called internally by \code{read_shimadzu_lcd}.
 #' Use olefile to export te specified stream.
-#' @param file Path to ole file.
+#' @param path Path to ole file.
 #' @author Ethan Bass
 #' @noRd
-export_stream <- function(path_in, stream, path_out, remove_null_bytes = FALSE,
+export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
                           verbose = FALSE){
   reticulate::py_run_string('import olefile')
-  reticulate::py_run_string(paste0('ole = olefile.OleFileIO("', path_in, '")'))
+  reticulate::py_run_string(paste0('ole = olefile.OleFileIO("', path, '")'))
   python_stream <- paste0("[", paste(paste0("'", stream, "'"), collapse = ', '),"]")
   stream_exists <- reticulate::py_eval(paste0("ole.exists(", python_stream, ")"))
   if (!stream_exists){
@@ -662,7 +662,7 @@ sz_decode_sto <- Vectorize(
     tryCatch({raw_bytes <- as.raw(strtoi(substring(x, seq(1, nchar(x), 2),
                                                    seq(2, nchar(x), 2)), 16L))
     rawToChar(raw_bytes)
-    }, error=function(err) NA)
+    }, error = function(err) NA)
   }
 )
 
@@ -798,7 +798,7 @@ extract_axis_metadata <- function(x){
 #' Decode 'Shimadzu' values
 #' @noRd
 decode_sz_val <- function(hex) {
-  # Convert raw vector to a single integer
+  # Convert raw vector to integer
   total_bits <- 8*length(hex)
   x <- 0
   for (i in seq_along(hex)) {

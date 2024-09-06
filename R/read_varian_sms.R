@@ -69,7 +69,7 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
 
   skip_null_bytes(f)
 
-  acq_delay <- max(which(chroms[,"tic"] == 0))
+  acq_delay <- max(which(chroms[, "tic"] == 0))
   n_scans <- nrow(chroms) - acq_delay
   if ("MS1" %in% what){
     MS1 <- read_varian_ms_stream(f, n_scans = n_scans)
@@ -86,7 +86,7 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
 
     prep_offset <- offsets[grep("SamplePrep", offsets$name), "start"]
     seek(f, prep_offset)
-    meta$sample_name <-  readBin(f,"character")
+    meta$sample_name <-  readBin(f, "character")
 
     meta <- read_mod_metadata(f, offsets, meta)
 
@@ -97,33 +97,34 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
   dat
 }
 
+#' Read 'Varian' Mod Attribute metadata
 #' @noRd
 read_mod_metadata <- function(f, offsets, meta){
   mod_offset <- offsets[grep("ModAttr", offsets$name), "start"]
   seek(f, mod_offset)
   readBin(f, "raw", n = 2)
-  meta$software <- readBin(f,"character")
+  meta$software <- readBin(f, "character")
   skip_null_bytes(f)
 
-  meta$version <- readBin(f,"character")
+  meta$version <- readBin(f, "character")
   skip_null_bytes(f)
 
   readBin(f, "raw", n = 3) # skip
   skip_null_bytes(f)
 
-  meta$temp_trap <- readBin(f, "integer", size=2,
+  meta$temp_trap <- readBin(f, "integer", size = 2,
                             signed = FALSE, endian = "little")
 
-  meta$temp_manifold <- readBin(f, "integer", size=2,
+  meta$temp_manifold <- readBin(f, "integer", size = 2,
                                 signed = FALSE, endian = "little")
 
-  meta$temp_transferline <- readBin(f, "integer", size=2,
+  meta$temp_transferline <- readBin(f, "integer", size = 2,
                                     signed = FALSE, endian = "little")
 
-  readBin(f, "integer", size=2,
+  readBin(f, "integer", size = 2,
           signed = FALSE, endian = "little")
 
-  meta$axial_modulation <- readBin(f, "integer", size=2,
+  meta$axial_modulation <- readBin(f, "integer", size = 2,
                                    signed = FALSE, endian = "little")/10
   # unknown date
   # meta$date <- as.POSIXct(readBin(f, "integer", size=4, endian = "little"))
@@ -134,25 +135,29 @@ read_mod_metadata <- function(f, offsets, meta){
 }
 
 #' Read 'Varian Workstation' Chromatograms
+#' @param f Connection to a 'Varian' SMS file opened to the beginning of the
+#' chromatogram.
 #' @author Ethan Bass
 #' @noRd
 read_varian_chromatograms <- function(f, n_time){
   mat <- matrix(NA, nrow = n_time, ncol = 5)
   colnames(mat) <- c("scan", "rt", "tic", "bpc", "ion_time")
   for (i in seq_len(n_time)){
-    mat[i,"scan"] <- readBin(f, what="integer", size = 4, endian = "little")
-    mat[i,"rt"] <- readBin(f, what = "double", size = 8, endian = "little")
-    mat[i,"ion_time"] <- readBin(f, what = "integer", size = 2, signed = FALSE,
+    mat[i, "scan"] <- readBin(f, what="integer", size = 4, endian = "little")
+    mat[i, "rt"] <- readBin(f, what = "double", size = 8, endian = "little")
+    mat[i, "ion_time"] <- readBin(f, what = "integer", size = 2, signed = FALSE,
                                  endian = "little")
-    mat[i,"tic"] <- readBin(f, what = "integer", size = 4, endian = "little")
+    mat[i, "tic"] <- readBin(f, what = "integer", size = 4, endian = "little")
     readBin(f, what = "raw", n = 6) # skip six unidentified bytes
-    mat[i,"bpc"] <- readBin(f, what="integer", size = 4, endian = "little")
+    mat[i, "bpc"] <- readBin(f, what="integer", size = 4, endian = "little")
     readBin(f, what = "raw", n = 11) # skip 11 unidentified bytes
   }
   mat
 }
 
 #' Read 'Varian' MS stream
+#' @param f Connection to a 'Varian' SMS file opened to the beginning of the
+#' mass spectra stream.
 #' @author Ethan Bass
 #' @noRd
 read_varian_ms_stream <- function(f, n_scans){
@@ -190,9 +195,7 @@ read_varian_ms_block <- function(f){
     }
     i <- i + 1
   }
-
   readBin(f, "raw", n = 1) # skip null byte
-
   mat <- mat[!is.na(mat[,1]),]
   mat[,1] <- mat[,1]/10
   mat
@@ -224,7 +227,7 @@ decode_sms_val <- function(hex) {
   return(result)
 }
 
-#' Generate mask for Varian MS values
+#' Generate mask for 'Varian' MS values
 #' @author Ethan Bass
 #' @noRd
 generate_mask <- function(d) {
@@ -241,7 +244,7 @@ generate_mask <- function(d) {
   (2^n_bits) - 1
 }
 
-#' Extract leading digit from Varian MS values
+#' Extract leading digit from 'Varian' MS values
 #' @author Ethan Bass
 #' @noRd
 extract_sign <- function(hex, num) {
@@ -270,17 +273,14 @@ hex_to_int <- function(hex){
 #' followed by 55 byte headers for each MS segment containing information
 #' specific to each segment, such as the start and end times and maximum
 #' ionization time.
+#' @param f Connection to a 'Varian' SMS file.
 #' @author Ethan Bass
 #' @noRd
 read_varian_msdata_header <- function(f){
 
-  seek(f,3238)
+  seek(f, 3238)
 
-  readBin(f, "raw", n=2)
-  readBin(f, "raw", n=2)
-  readBin(f, "raw", n=2)
-  readBin(f, "raw", n=2)
-  readBin(f, "raw", n=2)
+  readBin(f, "raw", n = 10) #skip
 
   ion_time <- readBin(f, what = "integer", size = 2, endian = "little",
                       signed = FALSE)
@@ -295,26 +295,26 @@ read_varian_msdata_header <- function(f){
                 signed = FALSE)
 
   t2 <- readBin(f, what = "raw", n=4, endian = "little")
-  t2 <- as.POSIXct(strtoi(paste(c(t2[2],t2[1],t2[3:4]), collapse=""), 16))
+  t2 <- as.POSIXct(strtoi(paste(c(t2[2],t2[1], t2[3:4]), collapse = ""), 16))
 
   t1 <- readBin(f, what = "raw", n=4, endian = "little")
-  t1 <- as.POSIXct(strtoi(paste(c(t1[2],t1[1],t1[3:4]), collapse = ""), 16))
+  t1 <- as.POSIXct(strtoi(paste(c(t1[2],t1[1], t1[3:4]), collapse = ""), 16))
 
   u2 <- readBin(f, what = "integer", size = 2, endian = "little",
                 signed = FALSE)
-  readBin(f, what = "integer", size=2, endian = "little") #skip
+  readBin(f, what = "integer", size = 2, endian = "little") #skip
 
   n_scan <- readBin(f, what = "integer", size = 2, endian = "little",
                     signed = FALSE)
-  readBin(f, what = "integer", size=2, endian = "little") #skip
+  readBin(f, what = "integer", size = 2, endian = "little") #skip
 
   max_ric_scan <- readBin(f, what = "integer", size = 2, endian = "little",
                           signed = FALSE)
-  readBin(f, what = "integer", size=2, endian = "little", signed = FALSE) #skip
+  readBin(f, what = "integer", size = 2, endian = "little", signed = FALSE) #skip
 
   max_ric_val <- readBin(f, what = "integer", size = 2, endian = "little",
                          signed = FALSE)
-  readBin(f, what = "integer", size=2, endian = "little", signed = FALSE) #skip
+  readBin(f, what = "integer", size = 2, endian = "little", signed = FALSE) #skip
 
   u3 <- readBin(f, what = "integer", size = 2, endian = "little",
                 signed = FALSE)
@@ -335,9 +335,9 @@ read_varian_msdata_header <- function(f){
   segment_metadata <- list()
   i <- 1
   while(seg_no == i){
-    start_time <- readBin(f, what = "double", size=8)
+    start_time <- readBin(f, what = "double", size = 8)
 
-    end_time <- readBin(f, what = "double", size=8)
+    end_time <- readBin(f, what = "double", size = 8)
 
     readBin(f, what = "raw", n = 1) #01
 
@@ -360,8 +360,8 @@ read_varian_msdata_header <- function(f){
     max_ionization_time <- readBin(f, what = "integer", size = 2,
                                    endian = "little", signed = FALSE)
 
-    readBin(f, what="raw", n = 2) # skip
-    readBin(f, what="raw", n = 16) # skip
+    readBin(f, what = "raw", n = 2) # skip
+    readBin(f, what = "raw", n = 16) # skip
 
     segment_metadata[[i]] <- mget(c("start_time", "end_time", "start_scan", "end_scan",
            "us1", "us2", "max_ionization_time"))
@@ -375,6 +375,7 @@ read_varian_msdata_header <- function(f){
 }
 
 #' Read 'Varian SMS' offsets from header
+#' @param f Connection to a 'Varian SMS' file.
 #' @author Ethan Bass
 #' @noRd
 read_varian_offsets <- function(f){
@@ -397,7 +398,7 @@ read_varian_offsets <- function(f){
     i <- i + 1
   }
   mat <- mat[!is.na(mat[,1]),]
-  data.frame(start=as.numeric(mat[,1]), end=as.numeric(mat[,2]), number=as.numeric(mat[,3]),
-             name=mat[,4])
+  data.frame(start = as.numeric(mat[,1]), end = as.numeric(mat[,2]),
+             number = as.numeric(mat[,3]), name = mat[,4])
 }
 
