@@ -170,8 +170,6 @@ read_chroms <- function(paths, find_files,
   check_parser(format_in, parser)
   if (parser != "openchrom" && !(export_format %in% c("csv", "chemstation_csv", "cdf")))
     stop("The selected export format is currently only supported by `openchrom` parsers.")
-  # if (export_format == "cdf" && format_in != "mdf" && parser != "openchrom")
-    # stop("Currently CDF exports are only available for MDF files.")
   if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
     stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
@@ -181,12 +179,18 @@ read_chroms <- function(paths, find_files,
   if (all(!exists)){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
+  if (parser == "openchrom" || format_in == "thermoraw")
+    export <- TRUE
   if (export){
     if (is.null(path_out)){
       path_out <- set_temp_directory()
     }
     if (!dir.exists(path_out)){
-      stop(paste0("The export directory '", path_out, "' could not be found."))
+        ans <- readline("Export directory not found. Create directory (y/n)?")
+        if (ans %in% c("y","Y","yes","Yes","YES")){
+          fs::dir_create(path_out)
+        } else
+          stop(paste0("The export directory '", path_out, "' could not be found."))
     }
   }
   if (is.null(dat)){

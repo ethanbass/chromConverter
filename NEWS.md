@@ -1,11 +1,15 @@
 ## chromConverter 0.6.5
 
 * Added preliminary support for Varian Worktation (`.sms`) format through `read_varian_sms` function.
-* Fixed bug affecting some `mdf` files lacking null bytes after the file header.
-* Sped up `read_shimadzu_lcd` by dealing with twos-complements more sensibly.
+* Improved speed of `read_shimadzu_lcd` by dealing with twos-complements more sensibly.
+* Updated handling of multiple chromatograms by `read_shimadzu_lcd`. The function now returns a list of named chromatograms if `data_format == "wide"` and returns multiple chromatograms in a single `data.frame` if `data_format == "long"`.
+* Added `scale` argument to `read_chemstation_uv` and `read_shimadzu_ascii` to toggle scaling of chromatograms.
 * Allow relative paths for `path_out` when using 'ThermoRawFileParser' and 'OpenChrom' parsers.
-* Updated handling of multiple chromatograms by `read_shimadzu_lcd`. The function now returns a list of named chromatograms if `data_format == "wide"` and returns multiple chromatograms in one data.frame if `data_format == "long"`.
+* Fixed bug affecting some `mdf` files lacking null bytes after the file header.
 * Start 'Shimadzu LCD' chromatogram retention times at dwell time (DLT).
+* Eliminated 'magrittr' dependency (use xpath instead to parse xml in a more straightforward fashion).
+* Harmonized file path arguments across parser functions by changing `file` arguments to `path`.
+* Allow creation of new directories by `read_chroms` if `path_out` does not exist.
 
 ## chromConverter 0.6.4
 
