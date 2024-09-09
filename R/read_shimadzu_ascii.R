@@ -59,7 +59,7 @@ read_shimadzu <- function(path, what = "chromatogram",
   ms_format <- match.arg(ms_format, c("data.frame", "list"))
 
   x <- readLines(path)
-  sep <- substr(x[grep("Type", x)[1]], 5, 5)
+  sep <- substr(x[grep("Output Date", x)[1]], 12, 12)
 
   ### extract chromatograms ###
   if (any(what == "chromatogram")){
