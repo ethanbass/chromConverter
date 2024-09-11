@@ -604,30 +604,7 @@ sz_decode_sto <- Vectorize(
   }
 )
 
-
-#' Convert 'Shimadzu' time to Unix time
-#' 'Shimadzu' LCD files seem to store times in 'Windows FILETIME' structure,
-#' where the "low" time and "high" times must be combined into a 64-bit integer
-#' representing the number of 100-nanosecond intervals since 1601-01-01.
-#' Assuming that this interpretation is correct, there seems to be something
-#' wrong with my conversion, since the times don't quite match the ones from the
-#' ASCII files exported from 'Lab Solutions'.
-#' @importFrom bit64 as.integer64
-#' @noRd
-sztime_to_unixtime <- function(low, high, tz = "UTC") {
-  if (tz!="UTC"){
-    tz <- -as.numeric(gsub("'00'", "", tz))
-    if (tz > 0){
-      tz <- paste0("+",tz)
-    }
-    tz <- paste0("Etc/GMT", tz)
-  }
-  filetime <- bit64::as.integer64(high) * 2^32 + bit64::as.integer64(low)
-  unix_time <- (filetime / 10000000) - 11644473600
-  as.POSIXct(unix_time, origin = "1970-01-01", tz = tz)
-}
-
-#' Read 'Shimadzu' file properties
+#' Read 'Shimadzu' LCD file properties
 #' @noRd
 read_sz_file_properties <- function(path){
   path_prop <- export_stream(path, "File Property")
@@ -644,6 +621,17 @@ read_sz_file_properties <- function(path){
   names(props) <- sapply(props, xml2::xml_name)
   meta <- suppressWarnings(unlist(lapply(props, sz_decode_props),
                                   recursive = FALSE))
+
+  meta$time_gen <- sztime_to_unixtime(meta$FileProperty.dwLowGeneratedDateTime,
+                                      meta$FileProperty.dwHighGeneratedDateTime,
+                                      tz = meta$FileProperty.szLocGMTDiffGenDateTime)
+  meta$time_mod <- sztime_to_unixtime(meta$FileProperty.dwLowModifiedDateTime,
+                                      meta$FileProperty.dwHighModifiedDateTime,
+                                      meta$FileProperty.szLocGMTDiffModDateTime)
+  meta$time_acq <- sztime_to_unixtime(meta$SampleInfo.dwLowDateTime,
+                                      meta$SampleInfo.dwHighDateTime,
+                                      tz = meta$FileProperty.szLocGMTDiffGenDateTime)
+
   meta
 }
 
