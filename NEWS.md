@@ -1,15 +1,25 @@
-## chromConverter 0.6.5
+## chromConverter 0.7.0
 
-* Added preliminary support for Varian Worktation (`.sms`) format through `read_varian_sms` function.
+### New parsers
+
+* Added preliminary support for 'Varian Worktation' (`.sms`) format through `read_varian_sms` function.
+* Added preliminary support for 'Shimadzu QGD' GCMS files through the `read_shimadzu_qgd` function.
+* Added preliminary support for 'Allotrope Simple Model' (ASM) chromatography date files. 
+
+### Other improvements
+
 * Improved speed of `read_shimadzu_lcd` by dealing with twos-complements more sensibly.
 * Updated handling of multiple chromatograms by `read_shimadzu_lcd`. The function now returns a list of named chromatograms if `data_format == "wide"` and returns multiple chromatograms in a single `data.frame` if `data_format == "long"`.
-* Added `scale` argument to `read_chemstation_uv` and `read_shimadzu_ascii` to toggle scaling of chromatograms.
-* Allow relative paths for `path_out` when using 'ThermoRawFileParser' and 'OpenChrom' parsers.
-* Fixed bug affecting some `mdf` files lacking null bytes after the file header.
 * Start 'Shimadzu LCD' chromatogram retention times at dwell time (DLT).
-* Eliminated 'magrittr' dependency (use xpath instead to parse xml in a more straightforward fashion).
+* Give temp files generated from Shimadzu OLE files informative names.
+* Added `scale` argument to `read_chemstation_uv` and `read_shimadzu_ascii` to toggle scaling of chromatograms.
+* Use 'Output Date' field instead of 'Type' to find 'Shimadzu' ASCII delimiter. (This seems to be a more generalizable solution since some files do not contain the 'Type' field).
 * Harmonized file path arguments across parser functions by changing `file` arguments to `path`.
+* Allow relative paths for `path_out` when using 'ThermoRawFileParser' and 'OpenChrom' parsers.
 * Allow creation of new directories by `read_chroms` if `path_out` does not exist.
+* Fixed bug affecting some `mdf` files lacking null bytes after the file header.
+* Eliminated 'magrittr' dependency by using xpath to parse XML in a more straightforward fashion.
+* Fixed bug causing truncation of sample names at the first period by `read_chroms`.
 
 ## chromConverter 0.6.4
 

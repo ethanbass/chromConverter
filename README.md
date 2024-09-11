@@ -23,10 +23,11 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - ÅNDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
 - mzML (`.mzml`) & mzXML (.`mzxml`) (via RaMS).
 - 'Shimadzu LabSolutions' ascii (`.txt`)
-- 'Shimadzu LabSolutions'`.gcd`
+- 'Shimadzu GCsolution' data files (`.gcd`)
+- 'Shimadzu GCMSsolution' data files (`.qgd`) 
 - 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA and chromatogram streams)
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
-- 'Varian Workstation' (`.SMS`) (preliminary support)
+- 'Varian Workstation' (`.SMS`)
 - 'Waters Empower' ascii (`.arw`)
 
 ##### External Libraries
@@ -121,7 +122,7 @@ Some of the parsers rely on external software libraries that must be manually in
 
 ##### **Aston**
 
-To install Aston, call the `configure_aston()` function to install miniconda along with the necessary python dependencies. Running `read_chroms` with the Aston parser selected should also trigger a prompt to install Aston. If you're running Windows, you may need to install the latest version of ['Microsoft Visual C++'](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170) if you don't already have it.
+To install Aston, call the `configure_aston()` function to install miniconda along with the necessary python dependencies. Running `read_chroms` with the Aston parser selected should also trigger a prompt to install Aston. If you're running Windows, you may need to install the latest version of ['Microsoft Visual C++'](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist) if you don't already have it.
 
 ##### **Entab**
 
