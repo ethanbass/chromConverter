@@ -39,52 +39,52 @@ read_shimadzu_gcd <- function(path, format_out = c("matrix", "data.frame"),
                                    data_format = c("wide", "long"),
                                    read_metadata = TRUE,
                                     metadata_format = c("chromconverter","raw")){
-    format_out <- match.arg(format_out, c("matrix", "data.frame"))
-    data_format <- match.arg(data_format, c("wide", "long"))
-    metadata_format <- match.arg(metadata_format, c("chromconverter","raw"))
-    metadata_format <- switch(metadata_format, "chromconverter"="shimadzu_lcd",
-                            "raw")
-    olefile_installed <- reticulate::py_module_available("olefile")
-    if (!olefile_installed){
-      configure_python_environment(parser = "olefile")
-    }
-
-    if (read_metadata){
-      meta <- read_sz_file_properties(path)
-    }
-    existing_streams <- check_streams(path, what = "chromatogram")
-
-    dat <- lapply(existing_streams, function(stream){
-
-      idx <- as.numeric(gsub("\\D", "", stream[2]))
-      DI <- read_sz_2DDI(path, idx = idx)
-
-      x <- decode_shimadzu_gcd(path, stream = stream)
-
-      if (data_format == "wide"){
-        x <- data.frame(int = x$int, row.names = x$rt)
-      }
-
-      if (format_out == "matrix"){
-        x <- as.matrix(x)
-      }
-      if (read_metadata){
-        x <- attach_metadata(x, c(meta,DI), format_in = metadata_format,
-                               source_file = path, data_format = data_format,
-                               format_out = format_out)
-      }
-      x
-    })
-
-    # infer times from "PDA.1.Method" stream
-    # method_metadata <- read_sz_method(path, stream = c("GUMM_Information", "ShimadzuGC.1",
-    #                                                    "GUC.1.METHOD"))
-
-    if (length(dat) == 1){
-      dat <- dat[[1]]
-    }
-    dat
+  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  data_format <- match.arg(data_format, c("wide", "long"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter","raw"))
+  metadata_format <- switch(metadata_format, "chromconverter" = "shimadzu_lcd",
+                          "raw")
+  olefile_installed <- reticulate::py_module_available("olefile")
+  if (!olefile_installed){
+    configure_python_environment(parser = "olefile")
   }
+
+  if (read_metadata){
+    meta <- read_sz_file_properties(path)
+  }
+  existing_streams <- check_streams(path, what = "chromatogram")
+
+  dat <- lapply(existing_streams, function(stream){
+
+    idx <- as.numeric(gsub("\\D", "", stream[2]))
+    DI <- read_sz_2DDI(path, idx = idx)
+
+    x <- decode_shimadzu_gcd(path, stream = stream)
+
+    if (data_format == "wide"){
+      x <- data.frame(int = x$int, row.names = x$rt)
+    }
+
+    if (format_out == "matrix"){
+      x <- as.matrix(x)
+    }
+    if (read_metadata){
+      x <- attach_metadata(x, c(meta,DI), format_in = metadata_format,
+                             source_file = path, data_format = data_format,
+                             format_out = format_out)
+    }
+    x
+  })
+
+  # infer times from "PDA.1.Method" stream
+  # method_metadata <- read_sz_method(path, stream = c("GUMM_Information", "ShimadzuGC.1",
+  #                                                    "GUC.1.METHOD"))
+
+  if (length(dat) == 1){
+    dat <- dat[[1]]
+  }
+  dat
+}
 
 #' Decode 'Shimadzu' GCD data stream
 #' @noRd
