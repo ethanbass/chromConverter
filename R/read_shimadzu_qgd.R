@@ -1,6 +1,24 @@
 #' Read 'Shimadzu' QGD
 #' Parser for 'Shimadzu GCMSsolution' \code{.qgd} files
-#' The MS data is stored in
+#' The MS data is stored in the "GCMS Raw Data" storage, which contains a
+#' \code{MS Raw Data} stream with MS scans, a \code{TIC Data} stream containing
+#' the total ion chromatogram, and a \code{Retention Time} stream containing the
+#' retention times. All known values are little-endian. The retention time
+#' stream is a simple array of 4-byte integers. The TIC stream is a simple array
+#' of 8-byte integers corresponding to retention times stored in the
+#' retention time stream. The MS Raw Data stream is blocked by retention time.
+#' Each block begins with a header consisting of the following elements:
+#' * scan number (4-byte integer)
+#' * retention time (4-byte integer)
+#' * unknown (12-bytes)
+#' * number of bytes in intensity values (2-byte integer)
+#' * unknown (8-bytes)
+#'
+#' After the header, the rest of the block consists of an array of mz values and
+#' intensities. The mz values are encoded as 2-byte integers where each mz value
+#' is scaled by a factor of 20. Intensities are encoded as (unsigned) integers
+#' with variable byte-length defined by the value in the header.
+#'
 #' @param path Path to 'Shimadzu' QGD file.
 #' @param what What stream to get: current options are \code{tic} or
 #' \code{ms}. If a stream is not specified, the function will return both
@@ -58,7 +76,9 @@ read_shimadzu_qgd <- function(path, what = c("tic", "ms"),
 read_qgc_tic <- function(path, format_out = c("matrix", "data.frame"),
                         data_format = c("wide", "long"),
                         read_metadata = TRUE){
+
   path_tic <- export_stream(path, c("GCMS Raw Data", "TIC Data"))
+
   f <- file(path_tic, "rb")
   on.exit(close(f))
 
@@ -69,14 +89,14 @@ read_qgc_tic <- function(path, format_out = c("matrix", "data.frame"),
 
   seek(f, 0, "start")
 
-  int <- readBin(f, "integer", size = 8, n = nval)
+  int <- readBin(f, "integer", size = 8, n = nval, endian = "little")
 
   rts <- read_qgd_retention_times(path)
 
   if (data_format == "wide"){
     dat <- matrix(int, nrow = nval, ncol = 1, dimnames = list(rts, "int"))
   } else if (data_format == "long"){
-    dat <- cbind(rt, int)
+    dat <- cbind(rts, int)
     colnames(dat) <- c("rt", "int")
   }
   if (format_out == "data.frame"){
@@ -140,7 +160,7 @@ read_qgd_retention_times <- function(path){
 
   n_val <- last_byte/4
   seek(f, 0, origin = "start")
-  rts <- readBin(f, what = "integer", size = 4, n = n_val)/60
+  rts <- readBin(f, what = "integer", size = 4, n = n_val, endian = "little")/60
   rts
 }
 
@@ -172,6 +192,8 @@ read_qgd_ms_stream <- function(path, format_out = c("matrix", "data.frame")){
 
 
 #' Read QGD file property stream
+#' The file properties stream is not XML unlike 'Shimadzu LCD' and 'Shimadzu GCD'
+#' files.
 #' @author Ethan Bass
 #' @noRd
 read_qgd_fp <- function(path){
