@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_mdf.R
 \name{read_mdf}
 \alias{read_mdf}
-\title{Read MDF files into R}
+\title{Read 'Lumex' MDF files into R}
 \usage{
 read_mdf(
   path,
@@ -25,7 +25,7 @@ A chromatogram in the format specified by the \code{format_out} and
 \code{data_format} arguments (retention time x wavelength).
 }
 \description{
-Read MDF files into R
+Read 'Lumex' MDF files into R
 }
 \author{
 Ethan Bass

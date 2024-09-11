@@ -3,7 +3,7 @@
 #' Extracts data from \code{mzML} files using parsers from either RaMS or mzR.
 #' The RaMS parser (default) will only return data in tidy (long) format. The
 #' mzR parser will return data in wide format. Currently the mzR-based parser
-#' only returns DAD data.
+#' is configured to return only DAD data.
 #'
 #' @name read_mzml
 #' @importFrom RaMS grabMSdata
