@@ -2,23 +2,7 @@
 % Please edit documentation in R/read_shimadzu_qgd.R
 \name{read_shimadzu_qgd}
 \alias{read_shimadzu_qgd}
-\title{Read 'Shimadzu' QGD
-Parser for 'Shimadzu GCMSsolution' \code{.qgd} files
-The MS data is stored in the "GCMS Raw Data" storage, which contains a
-\code{MS Raw Data} stream with MS scans, a \code{TIC Data} stream containing
-the total ion chromatogram, and a \code{Retention Time} stream containing the
-retention times. All known values are little-endian. The retention time
-stream is a simple array of 4-byte integers. The TIC stream is a simple array
-of 8-byte integers corresponding to retention times stored in the
-retention time stream. The MS Raw Data stream is blocked by retention time.
-Each block begins with a header consisting of the following elements:
-\itemize{
-\item scan number (4-byte integer)
-\item retention time (4-byte integer)
-\item unknown (12-bytes)
-\item number of bytes in intensity values (2-byte integer)
-\item unknown (8-bytes)
-}}
+\title{Read 'Shimadzu' QGD}
 \usage{
 read_shimadzu_qgd(
   path,
@@ -52,6 +36,25 @@ The chromatograms will be returned in \code{wide} or \code{long} format
 according to the value of \code{data_format}.
 }
 \description{
+Parser for 'Shimadzu GCMSsolution' \code{.qgd} files.
+}
+\details{
+The MS data is stored in the "GCMS Raw Data" storage, which contains a
+\code{MS Raw Data} stream with MS scans, a \code{TIC Data} stream containing
+the total ion chromatogram, and a \code{Retention Time} stream containing the
+retention times. All known values are little-endian. The retention time
+stream is a simple array of 4-byte integers. The TIC stream is a simple array
+of 8-byte integers corresponding to retention times stored in the
+retention time stream. The MS Raw Data stream is blocked by retention time.
+Each block begins with a header consisting of the following elements:
+\itemize{
+\item scan number (4-byte integer)
+\item retention time (4-byte integer)
+\item unknown (12-bytes)
+\item number of bytes in intensity values (2-byte integer)
+\item unknown (8-bytes)
+}
+
 After the header, the rest of the block consists of an array of mz values and
 intensities. The mz values are encoded as 2-byte integers where each mz value
 is scaled by a factor of 20. Intensities are encoded as (unsigned) integers

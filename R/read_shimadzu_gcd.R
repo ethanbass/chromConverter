@@ -1,6 +1,6 @@
 #' Shimadzu GCD parser
 #'
-#' Read 2D PDA data stream from 'Shimadzu' GCD files.
+#' Read chromatogram data streams from 'Shimadzu' GCD files.
 #'
 #' A parser to read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
 #' GCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
@@ -87,6 +87,7 @@ read_shimadzu_gcd <- function(path, format_out = c("matrix", "data.frame"),
 }
 
 #' Decode 'Shimadzu' GCD data stream
+#' @author Ethan Bass
 #' @noRd
 decode_shimadzu_gcd <- function(path, stream){
   path_stream <- export_stream(path, stream = stream)

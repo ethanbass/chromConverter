@@ -31,7 +31,7 @@ The chromatograms will be returned in \code{wide} or \code{long} format
 according to the value of \code{data_format}.
 }
 \description{
-Read 2D PDA data stream from 'Shimadzu' GCD files.
+Read chromatogram data streams from 'Shimadzu' GCD files.
 }
 \details{
 A parser to read chromatogram data streams from 'Shimadzu' \code{.gcd} files.

@@ -1,5 +1,7 @@
 #' Read 'Shimadzu' QGD
-#' Parser for 'Shimadzu GCMSsolution' \code{.qgd} files
+#'
+#' Parser for 'Shimadzu GCMSsolution' \code{.qgd} files.
+#'
 #' The MS data is stored in the "GCMS Raw Data" storage, which contains a
 #' \code{MS Raw Data} stream with MS scans, a \code{TIC Data} stream containing
 #' the total ion chromatogram, and a \code{Retention Time} stream containing the

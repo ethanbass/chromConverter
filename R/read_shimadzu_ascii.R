@@ -2,7 +2,7 @@
 #'
 #' Reads 'Shimadzu' ascii files into R. These files can be exported from
 #' 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
-#' selecting
+#' selecting \code{File Conversion:Convert to ASCII}.
 #'
 #' @name read_shimadzu
 #' @importFrom utils tail read.csv
