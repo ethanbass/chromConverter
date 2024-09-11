@@ -166,8 +166,6 @@ read_qgd_retention_times <- function(path){
 
 #' Read 'Shimadzu' QGD MS stream
 #' Read MS data from 'Shimadzu' QGD file
-#' The MS data is stored in the
-#' The
 #' @param path Path to 'Shimadzu' QGD file.
 #' @author Ethan Bass
 #' @noRd
