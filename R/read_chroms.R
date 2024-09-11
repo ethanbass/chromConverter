@@ -96,8 +96,8 @@ read_chroms <- function(paths, find_files,
                                     "mzml", "mzxml", "mdf",
                                     "shimadzu_ascii", "shimadzu_dad",
                                     "shimadzu_fid", "shimadzu_gcd",
-                                    "shimadzu_lcd", "thermoraw",
-                                    "varian_sms",
+                                    "shimadzu_qgd", "shimadzu_lcd",
+                                    "thermoraw", "varian_sms",
                                     "waters_arw", "waters_raw",
                                     "msd", "csd", "wsd", "other"),
                         pattern = NULL,
@@ -153,7 +153,7 @@ read_chroms <- function(paths, find_files,
                                       "masshunter_dad", "shimadzu_ascii",
                                       "shimadzu_dad", "shimadzu_fid",
                                       "shimadzu_gcd", "shimadzu_lcd",
-                                      "varian_sms",
+                                      "shimadzu_qgd", "varian_sms",
                                       "chromeleon_uv", "thermoraw", "mzml", "mzxml",
                                       "waters_arw", "waters_raw", "msd", "csd",
                                       "wsd", "mdf", "cdf", "other"))
@@ -263,6 +263,10 @@ read_chroms <- function(paths, find_files,
     converter <- partial(read_shimadzu_lcd, format_out = format_out,
                          data_format = data_format,
                          read_metadata = read_metadata, ...)
+  } else if (format_in == "shimadzu_qgd"){
+    converter <- partial(read_shimadzu_qgd, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata, ...)
   } else if (format_in == "thermoraw"){
     converter <- switch(parser,
                         "thermoraw" = partial(read_thermoraw, path_out = path_out,
@@ -352,7 +356,7 @@ read_chroms <- function(paths, find_files,
                                 no = tail(n,1))
                        }))
   } else {
-    file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
+    file_names <- fs::path_ext_remove(basename(files))
   }
   if (parser != "openchrom"){
     laplee <- choose_apply_fnc(progress_bar, cl = cl)
