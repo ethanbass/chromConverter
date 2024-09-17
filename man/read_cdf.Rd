@@ -6,9 +6,9 @@
 \usage{
 read_cdf(
   path,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
-  what = "chromatogram",
+  what = NULL,
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
@@ -25,7 +25,9 @@ For 2D files, "long" format returns the retention time as the first column of
 the data.frame or matrix while "wide" format returns the retention time as the
 rownames of the object.}
 
-\item{what}{Whether to extract \code{chromatogram} and/or \code{peak_table}.}
+\item{what}{For ANDI chrom files, whether to extract \code{chromatogram}
+and/or \code{peak_table}. For ANDI ms files, whether to extract MS1 scans
+(\code{MS1}) or the total ion chromatogram (\code{TIC}).}
 
 \item{read_metadata}{Whether to read metadata from file.}
 
