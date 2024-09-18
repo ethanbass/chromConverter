@@ -11,6 +11,13 @@ test_that("chromConverter can read `Agilent Chemstation` .csv file", {
                tolerance = .0001, ignore_attr = TRUE)
   expect_equal(head(rownames(x), n = 3), c("0.002", "0.0086666666667",
                                            "0.0153333333333"))
+  x1 <- read_chroms(path_csv, format_in="chemstation_csv",
+                    format_out="data.table", progress_bar = FALSE)[[1]]
+  expect_s3_class(x1, "data.table")
+
+  x2 <- read_chroms(path_csv, format_in="chemstation_csv",
+                    format_out="data.frame", progress_bar = FALSE)[[1]]
+  expect_s3_class(x1, "data.frame")
 })
 
 test_that("Aston parser can read `Agilent Chemstation` 131 files", {
@@ -27,6 +34,10 @@ test_that("Aston parser can read `Agilent Chemstation` 131 files", {
   expect_equal(class(x1[[1]])[1], "matrix")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
   expect_equal(names(x1), c("dad1", "dad1"))
+
+  # x2 <- read_chroms(paths, format_in = "chemstation_uv", parser = "aston",
+  #                   format_out = "data.table", progress_bar = FALSE)[[1]]
+  # expect_s3_class(x2, "data.table")
 })
 
 x1 <- read_chroms(path_uv, format_in = "chemstation_uv",
@@ -38,6 +49,13 @@ test_that("read_chemstation_uv parser can read chemstation 131 files", {
   expect_equal(as.numeric(rownames(x)), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
+
+  x2 <- read_chroms(path_uv, format_in = "chemstation_uv",
+              parser = "chromconverter", format_out="data.table",
+              read_metadata = TRUE, progress_bar = FALSE)[[1]]
+  expect_s3_class(x2, class = "data.table")
+  expect_equal(attr(x2, "format_out"), "data.table")
+  expect_equal(attr(x2, "detector_unit"), "mAU")
 })
 
 test_that("extract_metadata function works", {
@@ -45,7 +63,7 @@ test_that("extract_metadata function works", {
   expect_equal(class(meta), "data.frame")
   expect_equal(nrow(meta), 1)
   expect_equal(meta$instrument, attr(x1[[1]],"instrument"))
-  expect_equal(meta$parser, attr(x1[[1]],"parser"))
+  expect_equal(meta$parser, attr(x1[[1]], "parser"))
   expect_equal(meta$sample_name, "las_bulk_hexE")
   expect_equal(meta$detector, "G1315A")
   # expect_equal(meta$detector_range1, 200)
@@ -63,6 +81,7 @@ test_that("extract_metadata function works", {
 test_that("entab parser can read `Agilent Chemstation` 131 files", {
   skip_on_cran()
   skip_if_not_installed("entab")
+
   path <- test_path("testdata/dad1.uv")
 
   x1 <- read_chroms(path, format_in = "chemstation_uv", parser = "entab",
@@ -74,6 +93,23 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   expect_equal(class(x1)[1], "matrix")
   expect_equal(attr(x1, "parser"), "entab")
   expect_equal(attr(x1, "data_format"), "wide")
+  expect_equal(attr(x1, "operator"), "Ethan")
+  expect_equal(attr(x1, "detector"), "G1315A")
+  expect_equal(attr(x1, "sample_id"), 24)
+
+  x2 <- read_chroms(path, format_in = "chemstation_uv", parser = "entab",
+                    find_files = FALSE, data_format = "long",
+                    format_out = "data.frame",
+                    read_metadata = TRUE, progress_bar = FALSE)[[1]]
+  expect_equal(colnames(x2), c("rt", "lambda", "intensity"))
+  expect_equal(x[,1], x2[x2$lambda == 220, "intensity"], ignore_attr = TRUE)
+  expect_equal(nrow(x2), ncol(x1)*nrow(x1))
+  expect_equal(attr(x2, "data_format"), "long")
+  expect_equal(attr(x2, "operator"), "Ethan")
+  expect_equal(attr(x2, "detector"), "G1315A")
+  expect_equal(attr(x2, "sample_id"), 24)
+  expect_equal(attr(x2, "format_out"), "data.frame")
+  expect_s3_class(x2, "data.frame")
 })
 
 test_that("`Shimadzu` ASCII parser works", {
@@ -92,7 +128,9 @@ test_that("read_mzml works", {
   ext_filepath <- system.file("extdata", package = "RaMS")
   DAD_filepath <- list.files(ext_filepath, full.names = TRUE,
                              pattern = "uv_test_mini.mzML.gz")
+
   dad_long <- read_mzml(DAD_filepath, what = "DAD", verbose = FALSE)
+  colnames(dad_long$DAD)[3] <- "int"
   expect_equal(dad_long,
                RaMS::grabMSdata(files = DAD_filepath, grab_what = "DAD",
                                 verbosity = FALSE)
@@ -121,29 +159,38 @@ test_that("Rainbow parser can read chemstation 131 files", {
 
   expect_equal(as.numeric(x[,1]), as.numeric(x1[[1]][,"220"]))
   expect_equal(as.numeric(rownames(x)), as.numeric(rownames(x1[[1]])))
+
+  # check metadata
   expect_equal(class(x1[[1]])[1], "matrix")
   expect_equal(attr(x1[[1]], "parser"), "rainbow")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
-  expect_equal(attr(x1$dad1, "metadata")$unit, "mAU")
+  expect_equal(attr(x1$dad1, "detector_unit"), "mAU")
+  expect_equal(attr(x1$dad1, "sample_name"), "las_bulk_hexE")
 
   x2 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "rainbow",
                     find_files = FALSE, data_format = "long",
+                    format_out = "data.frame",
                     read_metadata = TRUE,
                     progress_bar = FALSE)
   expect_equal(nrow(x2$dad1), nrow(x1$dad1)*ncol(x1$dad1))
   expect_equal(colnames(x2$dad1), c("rt", "lambda", "intensity"))
-  expect_equal(attr(x2$dad1, "metadata")$unit, "mAU")
+  expect_equal(attr(x2$dad1, "detector_unit"), "mAU")
+  expect_equal(attr(x1$dad1, "sample_name"), "las_bulk_hexE")
   expect_equal(attr(x2[[1]], "data_format"), "long")
+  expect_equal(attr(x2[[1]], "format_out"), "data.frame")
+  expect_s3_class(x2[[1]], "data.frame")
   expect_equal(attr(x2[[1]], "parser"), "rainbow")
 })
 
 test_that("chromConverter parser can read `ChemStation` 130 files", {
   skip_if_missing_dependencies()
   skip_on_cran()
+
   x1 <- read_chroms(test_path("testdata/chemstation_130.ch"), progress_bar = FALSE)
   # expect_equal(as.numeric(x[[1]][,1]), as.numeric(x1[[1]][,"220"]))
   # expect_equal(as.numeric(rownames(x[[1]])), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
+  expect_equal(colnames(x1[[1]]), "intensity")
   expect_equal(attr(x1[[1]], "parser"), "chromconverter")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
   expect_equal(attr(x1[[1]], "detector_unit"), "mAU")
@@ -153,32 +200,52 @@ test_that("chromConverter parser can read `ChemStation` 130 files", {
   x2 <- read_chroms(test_path("testdata/chemstation_130.ch"), progress_bar = FALSE,
                     data_format = "long", format_out = "data.frame")[[1]]
   expect_equal(ncol(x2), 2)
-  expect_equal(class(x2), "data.frame")
+  expect_equal(colnames(x2), c("rt", "intensity"))
+  expect_s3_class(x2, "data.frame")
+  expect_equal(attr(x2,"format_out"), "data.frame")
   expect_equal(as.numeric(rownames(x1[[1]])), x2[,1])
 })
 
-test_that("read_chroms exports CSVs correctly", {
+test_that("read_chroms exports CSV files correctly", {
   skip_on_cran()
   path_out <-  tempdir(check = TRUE)
   on.exit(unlink(c(fs::path(path_out, "dad1", ext = "csv"), path_out)))
   x1 <- read_chroms(paths = path_uv, export = TRUE, path_out = path_out,
-                    export_format="csv", format_out = "data.frame",
+                    export_format = "csv", format_out = "data.frame",
                     progress_bar = FALSE)
   x1_out <- read.csv(fs::path(path_out, "dad1", ext = "csv"), row.names = 1)
   expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
 })
 
-test_that("read_chroms exports `.cdf` files correctly", {
+# progress bar can't be supressed when writing CDFs
+test_that("read_chroms exports CDF files correctly", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")
   path_out <-  tempdir(check = TRUE)
   on.exit(unlink(c(fs::path(path_out, "ladder", ext = "cdf"), path_out)))
   file <- test_path("testdata/ladder.txt")
-  x1 <- read_chroms(paths = file, format_in = "shimadzu_fid", export = TRUE,
+  x1 <- read_chroms(paths = file, format_in = "shimadzu_fid",
                     path_out = path_out, export_format = "cdf",
                     progress_bar = FALSE)
   x1_out <- read_cdf(fs::path(path_out, "ladder", ext = "cdf"))
+
+  # check metadata equivalence
   expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
+  # expect_equal(attr(x1[[1]],"instrument"), attr(x1_out,"instrument"))
+  expect_equal(attr(x1[[1]],"detector"), attr(x1_out,"detector"))
+  # expect_equal(attr(x1[[1]],"software_name"), attr(x1_out,"software_name")) #NA
+  # expect_equal(attr(x1[[1]],"software_version"), attr(x1_out,"software_version")) #NA
+  # expect_equal(attr(x1[[1]],"method"), attr(x1_out,"method")) #NA
+  # expect_equal(attr(x1[[1]],"operator"), attr(x1_out,"operator")) #NA
+  expect_equal(attr(x1[[1]],"run_datetime"), attr(x1_out,"run_datetime"))
+  # expect_equal(attr(x1[[1]],"sample_name"), attr(x1_out,"sample_name")) #???
+  expect_equal(as.numeric(attr(x1[[1]],"sample_injection_volume")),
+               attr(x1_out,"sample_injection_volume"))
+  expect_equal(as.numeric(attr(x1[[1]],"sample_amount")), attr(x1_out,"sample_amount"))
+  # expect_equal(attr(x1[[1]],"time_interval"), attr(x1_out,"time_interval"))
+  expect_equal(attr(x1[[1]],"time_unit"), attr(x1_out,"time_unit"))
+  # expect_equal(attr(x1[[1]],"source_file"), attr(x1_out,"source_file")) # doesn't match
+
 })
 
 test_that("read_peaklist can read `ChemStation` report files", {

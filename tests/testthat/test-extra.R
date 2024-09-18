@@ -12,10 +12,15 @@ test_that("read_chroms can read 'Agilent' MS files", {
   skip_if_not(file.exists(path))
 
   x <- read_chroms(path, parser = "entab", progress_bar = FALSE)[[1]]
-  expect_equal(class(x), "data.frame")
+  expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(95471, 3))
   expect_equal(attr(x, "parser"), "entab")
   expect_equal(colnames(x), c("rt", "mz", "intensity"))
+
+  x1 <- read_chroms(path, parser = "entab", format_out = "data.table",
+                   progress_bar = FALSE)[[1]]
+  expect_s3_class(x1, "data.table")
+  expect_equal(attr(x1, "format_out"), "data.table")
 
   x1 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, precision = 0)[[1]]
@@ -30,6 +35,59 @@ test_that("read_chroms can read 'Agilent' MS files", {
   expect_equal(colnames(x2), c("rt", "mz", "intensity"))
 })
 
+test_that("read_chroms can write mzML files", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_not_installed("entab")
+
+  path <- system.file("chemstation_MSD.MS",
+                      package = "chromConverterExtraTests")
+
+  tmp <- tempdir()
+  path_mzml <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzml")
+  on.exit(unlink(path_mzml))
+
+  x <- read_chroms(path, parser = "entab", progress_bar = FALSE,
+                   format_out = "data.table",
+                   export_format = "mzml", path_out = tmp, force = TRUE)[[1]]
+  x1 <- read_mzml(path_mzml, what = c("MS1","metadata"))
+  expect_equal(x1$MS1[,c(1:3)], x, ignore_attr = TRUE)
+  # expect_equal(x1$metadata$timestamp, attr(x,"run_datetime"))
+  expect_equal(x1$metadata$source_file, basename(attr(x,"source_file")))
+
+  # only works with `data_format == "long"`
+  # time zone discrepancy between rainbow and entab
+  # whyd doesn't work with format == dataa.table
+  x <- read_chroms(path, parser = "rainbow",
+                   data_format = "long",
+                   progress_bar = FALSE,
+                   export_format = "mzml", path_out = tmp,
+                   force = TRUE)[[1]]
+  x1 <- read_mzml(path_mzml, what = c("MS1","metadata"))
+  expect_equal(x1$MS1[,c(1:3)], as.data.frame(x), ignore_attr = TRUE)
+  expect_equal(x1$metadata$source_file, basename(attr(x,"source_file")))
+  # expect_equal(x1$metadata$timestamp, attr(x,"run_datetime"))
+})
+
+test_that("read_chroms can convert CDF to mzML", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("HP_MS.CDF", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  tmp <- tempdir()
+  mzml_path <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzml")
+  on.exit(unlink(mzml_path))
+  #shouldn't require what = "MS1
+  x <- read_chroms(path, progress_bar = FALSE, export_format = "mzml",
+                   path_out = tmp, force = TRUE)[[1]]
+  x1 <- read_mzml(mzml_path, what = c("MS1","metadata"))
+  expect_equal(x1$MS1[,c(1:3)], x[[1]], ignore_attr = TRUE)
+  expect_equal(x1$metadata$source_file, basename(attr(x$MS1,"source_file")))
+})
+
 test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
@@ -38,7 +96,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, parser="chromconverter", progress_bar = FALSE)[[1]]
+  x <- read_chroms(path, parser = "chromconverter", progress_bar = FALSE)[[1]]
+
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(38405, 1))
   expect_equal(attr(x, "parser"), "chromconverter")
@@ -50,7 +109,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
 
   x1 <- read_chroms(path, parser = "chromconverter", format_out = "data.frame",
                     data_format = "long", progress_bar = FALSE)[[1]]
-  expect_equal(class(x1)[1], "data.frame")
+  expect_equal(colnames(x1), c("rt","intensity"))
+  expect_s3_class(x1[1], "data.frame")
   expect_equal(as.numeric(rownames(x)), x1[,1])
   expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
 })
@@ -75,11 +135,20 @@ test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
   # check metadata
   expect_equal(attr(x1, "parser"), "entab")
   expect_equal(attr(x, "parser"), "chromconverter")
+
   expect_equal(attr(x, "sample_name"), "NVAC-6B1-S3R1")
+  expect_equal(attr(x, "sample_name"), attr(x1, "sample_name"))
+
   expect_equal(attr(x, "detector"), "G1315B")
-  expect_equal(attr(x, "detector_range"), c(250,600))
+  expect_equal(attr(x, "detector"), attr(x1, "detector"))
+
+  expect_equal(attr(x, "detector_range"), c(250, 600))
+
   expect_equal(attr(x, "method"), "JCMONO1.M")
+  expect_equal(attr(x, "method"), attr(x1, "method"))
+
   expect_equal(attr(x, "time_unit"), "Minutes")
+  expect_equal(attr(x, "time_unit"), attr(x1, "time_unit"))
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
@@ -91,6 +160,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   skip_if_not(file.exists(path))
 
   x <- read_chroms(path, progress_bar = FALSE)[[1]]
+
+  # check metadata
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(2699, 1))
   expect_equal(attr(x, "parser"), "chromconverter")
@@ -99,12 +170,14 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   expect_equal(attr(x, "sample_name"), "5970 mix 10nG")
   expect_equal(attr(x, "time_unit"), "Minutes")
 
+  # long format
   x1 <- read_chroms(path, progress_bar = FALSE,
-                    format_out = "data.frame", data_format = "long")[[1]]
-  expect_equal(class(x1)[1], "data.frame")
+                    format_out = "data.table", data_format = "long")[[1]]
+  expect_equal(colnames(x1), c("rt", "intensity"))
+  expect_s3_class(x1[1], "data.table")
   expect_equal(dim(x1), c(2699, 2))
-  expect_equal(as.numeric(rownames(x)), x1[,1])
-  expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
+  expect_equal(as.numeric(rownames(x)), x1[[1]])
+  expect_equal(x[,1], x1[[2]], ignore_attr = TRUE)
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
@@ -116,17 +189,28 @@ test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
   skip_if_not(file.exists(path))
 
   x <- read_chroms(path, progress_bar = FALSE)[[1]]
+
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(12750, 1))
+
+  # check metadata
   expect_equal(attr(x, "sample_name"), "0-CN-6-6-PU")
   expect_equal(attr(x, "detector_unit"), "mAU")
   expect_equal(attr(x, "method"), "Phenolics_new2.M")
   expect_equal(attr(x, "time_unit"), "Minutes")
 
-  x <- read_chroms(path, data_format = "long", format_out = "data.frame",
+  # long format
+  x1 <- read_chroms(path, data_format = "long", format_out = "data.table",
                    progress_bar = FALSE)[[1]]
-  expect_equal(class(x)[1], "data.frame")
-  expect_equal(dim(x), c(12750, 2))
+  expect_equal(as.numeric(rownames(x)), x1[[1]])
+  expect_equal(x[,1], x1[[2]], ignore_attr = TRUE)
+  expect_s3_class(x1[1], c("data.table","data.frame"))
+  expect_equal(colnames(x1), c("rt", "intensity"))
+  expect_equal(dim(x1), c(12750, 2))
+  expect_equal(attr(x1, "sample_name"), "0-CN-6-6-PU")
+  expect_equal(attr(x1, "detector_unit"), "mAU")
+  expect_equal(attr(x1, "method"), "Phenolics_new2.M")
+  expect_equal(attr(x1, "time_unit"), "Minutes")
 })
 
 
@@ -141,14 +225,20 @@ test_that("read_chroms can read 'Agilent OpenLab' 179 files", {
   x <- read_chroms(path, progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(10000, 1))
+
+  # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "STD_1_1mM-1MKHCO3")
   expect_equal(attr(x, "detector_unit"), "nRIU")
   expect_equal(attr(x, "time_unit"), "Minutes")
 
+  # long format
   x1 <- read_chroms(path, progress_bar = FALSE,
                     format_out = "data.frame", data_format = "long")[[1]]
-  expect_equal(class(x1)[1], "data.frame")
+  expect_equal(as.numeric(rownames(x)), x1[[1]])
+  expect_equal(x[,1], x1[[2]], ignore_attr = TRUE)
+  expect_s3_class(x1[1], "data.frame")
+  expect_equal(colnames(x1), c("rt", "intensity"))
   expect_equal(as.numeric(rownames(x)), x1[,1])
   expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
 })
@@ -165,6 +255,8 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)"
 
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(54704, 1))
+
+  # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "393006_A1_diol_Al")
   expect_equal(attr(x, "detector_unit"), "pA")
@@ -188,6 +280,8 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
   x <- read_chroms(path, progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(22800, 1))
+
+  # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "NI cat")
   expect_equal(attr(x, "detector_unit"), "pA")
@@ -218,15 +312,18 @@ test_that("read_chroms can read 'Agilent MassHunter' dad files", {
 
   x <- read_chroms(path, format_in = "masshunter_dad", parser = "entab",
                     data_format = "long", format_out = "data.frame",
-                    progress_bar = FALSE)
+                    progress_bar = FALSE)[[1]]
   x1 <- read_chroms(path, format_in = "masshunter_dad", parser = "aston",
                     data_format = "long", format_out = "data.frame",
-                    progress_bar = FALSE)
-  expect_equal(dim(x[[1]]), c(66240, 3))
-  expect_equal(class(x[[1]]), "data.frame")
+                    progress_bar = FALSE)[[1]]
+  expect_equal(dim(x), c(66240, 3))
+  expect_equal(colnames(x), c("rt", "lambda", "intensity"))
+  expect_s3_class(x, "data.frame")
   # expect_equal(x[[1]], x1[[1]], ignore_attr = TRUE)
-  expect_equal(attr(x[[1]], "parser"), "entab")
-  expect_equal(attr(x1[[1]], "parser"), "aston")
+  expect_equal(attr(x, "parser"), "entab")
+
+  expect_equal(attr(x1, "parser"), "aston")
+  expect_equal(colnames(x1), c("rt", "lambda", "intensity"))
 })
 
 test_that("read_chroms can read 'Waters ARW' PDA files", {
@@ -243,9 +340,10 @@ test_that("read_chroms can read 'Waters ARW' PDA files", {
   expect_equal(attr(x[[1]], "data_format"), "wide")
 
   x1 <- read_chroms(path, format_in = "waters_arw", progress_bar = FALSE,
-                    format_out = "data.frame", data_format = "long")
-  expect_equal(class(x1[[1]])[1], "data.frame")
-  expect_equal(attr(x1[[1]], "data_format"), "long")
+                    format_out = "data.frame", data_format = "long")[[1]]
+  expect_equal(colnames(x1), c("rt", "lambda", "intensity"))
+  expect_s3_class(x1[1], "data.frame")
+  expect_equal(attr(x1, "data_format"), "long")
 })
 
 test_that("read_chroms can read 'Waters RAW' files", {
@@ -261,19 +359,23 @@ test_that("read_chroms can read 'Waters RAW' files", {
   expect_equal(dim(x$MS), c(725, 740))
   expect_equal(attr(x$MS, "parser"), "rainbow")
   expect_equal(attr(x$MS, "data_format"), "wide")
-  expect_equal(attr(x$MS, "metadata")$polarity, "+")
+  expect_equal(attr(x$MS,"polarity"), "+")
+  expect_equal(attr(x$MS,"vial"), "2:A,11")
+
+  expect_equal(attr(x$CAD,"vial"), "2:A,11")
+  expect_equal(attr(x$CAD,"detector_unit"), "mV")
+  expect_equal(attr(x$CAD,"parser"), "rainbow")
 
   x1 <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
                     parser = "chromconverter")[[1]]
   expect_equal(class(x1$CAD)[1], "matrix")
   expect_equal(x$CAD, x1$CAD, ignore_attr = TRUE)
+  # attr(x1$CAD, "parser")
 
   x2 <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
                     what = "MS", data_format = "long", precision = 0)[[1]]
   expect_equal(nrow(x2$MS), nrow(x$MS)*ncol(x$MS))
   expect_equal(colnames(x2$MS), c("rt", "mz", "intensity"))
-  # no metadata
-  # expect_equal(attr(x1$CAD, "parser"), "chromconverter")
 })
 
 test_that("read_chroms can read 'Chromeleon' comma-separated files", {
@@ -284,18 +386,19 @@ test_that("read_chroms can read 'Chromeleon' comma-separated files", {
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, format_in = "chromeleon_uv", progress_bar = FALSE)
-  expect_equal(class(x[[1]])[1], "matrix")
-  expect_equal(dim(x[[1]]), c(3241, 1))
-  expect_equal(attr(x[[1]], "parser"), "chromconverter")
-  expect_equal(attr(x[[1]], "data_format"), "wide")
+  x <- read_chroms(path, format_in = "chromeleon_uv", progress_bar = FALSE)[[1]]
+  expect_equal(class(x)[1], "matrix")
+  expect_equal(dim(x), c(3241, 1))
+  expect_equal(attr(x, "parser"), "chromconverter")
+  expect_equal(attr(x, "data_format"), "wide")
 
   x1 <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE,
-                    format_out = "data.frame", data_format = "long")
-  expect_equal(class(x1[[1]])[1], "data.frame")
-  expect_equal(as.numeric(rownames(x[[1]])), x1[[1]][,1])
-  expect_equal(x[[1]][,1], x1[[1]][,2], ignore_attr = TRUE)
-  expect_equal(attr(x1[[1]], "data_format"), "long")
+                    format_out = "data.frame", data_format = "long")[[1]]
+  expect_s3_class(x1[1], "data.frame")
+  expect_equal(colnames(x1), c("rt", "intensity"))
+  expect_equal(as.numeric(rownames(x)), x1[,1])
+  expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
+  expect_equal(attr(x1, "data_format"), "long")
 })
 
 test_that("read_chroms can read 'Chromeleon' period-separated files", {
@@ -306,16 +409,17 @@ test_that("read_chroms can read 'Chromeleon' period-separated files", {
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE)
-  expect_equal(class(x[[1]])[1], "matrix")
-  expect_equal(dim(x[[1]]), c(10, 1))
-  expect_equal(attr(x[[1]], "parser"), "chromconverter")
+  x <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE)[[1]]
+  expect_equal(class(x)[1], "matrix")
+  expect_equal(dim(x), c(10, 1))
+  expect_equal(attr(x, "parser"), "chromconverter")
 
   x1 <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE,
-                    format_out = "data.frame", data_format = "long")
-  expect_equal(class(x1[[1]])[1], "data.frame")
-  expect_equal(as.numeric(rownames(x[[1]])), x1[[1]][,1])
-  expect_equal(x[[1]][,1], x1[[1]][,2], ignore_attr = TRUE)
+                    format_out = "data.frame", data_format = "long")[[1]]
+  expect_s3_class(x1[1], "data.frame")
+  expect_equal(colnames(x1), c("rt", "intensity"))
+  expect_equal(as.numeric(rownames(x)), x1[,1])
+  expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
 })
 
 test_that("read_peaklist can read `Shimadzu` ASCII (PDA) files", {
@@ -329,9 +433,9 @@ test_that("read_peaklist can read `Shimadzu` ASCII (PDA) files", {
 
   x <- read_peaklist(path, format_in = "shimadzu_dad",
                      progress_bar = FALSE)[[1]]
-  expect_equal(class(x), "list")
+  expect_type(x, "list")
   expect_equal(length(x), 5)
-  expect_equal(class(x[[1]]), "data.frame")
+  expect_s3_class(x[[1]], "data.frame")
   expect_equal(dim(x[[1]]), c(133, 6))
   expect_equal(colnames(x[[1]]), c("sample", "rt", "start",
                                    "end", "area", "height"))
@@ -359,7 +463,7 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
   x1 <- read_chroms(path_ascii, format_in = "shimadzu_dad",
                     progress_bar = FALSE, data_format = "long",
                     format_out = "data.frame")[[1]]
-  expect_equal(class(x1)[1], "data.frame")
+  expect_s3_class(x1[1], "data.frame")
   expect_equal(dim(x1), c(4689*328, 3))
 
 
@@ -500,20 +604,21 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
   #                   data_format = "long", progress_bar = FALSE)[[1]]
 
   expect_s3_class(x2, "data.frame")
+
   # expect_s3_class(x3, "data.frame")
 
   expect_equal(nrow(x2), sum(sapply(x, nrow)))
-  expect_equal(x2[x2$wavelength == "260nm", "int"], x[["A, 260nm"]],
+  expect_equal(x2[x2$lambda == "260nm", "intensity"], x[["A, 260nm"]],
                ignore_attr = TRUE)
-  expect_equal(x2[x2$wavelength == "260nm", "rt"],
+  expect_equal(x2[x2$lambda == "260nm", "rt"],
                as.numeric(rownames(x[["A, 260nm"]])))
 
-  expect_equal(x2[x2$wavelength == "210nm", "int"], x[["A, 210nm"]],
+  expect_equal(x2[x2$lambda == "210nm", "intensity"], x[["A, 210nm"]],
                ignore_attr = TRUE)
-  expect_equal(x2[x2$wavelength == "210nm", "rt"],
+  expect_equal(x2[x2$lambda == "210nm", "rt"],
                as.numeric(rownames(x[["A, 210nm"]])))
 
-  expect_equal(x2[x2$wavelength == "", "int"], x[["B"]], ignore_attr = TRUE)
+  expect_equal(x2[x2$lambda == "", "intensity"], x[["B"]], ignore_attr = TRUE)
 })
 
 test_that("read_chroms can read 'Agilent' .dx files", {
@@ -525,13 +630,14 @@ test_that("read_chroms can read 'Agilent' .dx files", {
 
   x <- read_chroms(path, format_in = "agilent_dx", progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
+  expect_equal(colnames(x),"intensity")
   expect_equal(dim(x), c(10000, 1))
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "data_format"), "wide")
 
   x1 <- read_chroms(path, format_in="agilent_dx", progress_bar = FALSE,
                     data_format = "long", format_out = "data.frame")[[1]]
-  expect_equal(class(x1)[1], "data.frame")
+  expect_s3_class(x1[1], "data.frame")
   expect_equal(dim(x1), c(10000, 2))
 })
 
@@ -543,8 +649,10 @@ test_that("read_chroms can read 'Thermo' RAW files", {
 
   path <- system.file("20220404_CirA_D2_04.raw",
                       package = "chromConverterExtraTests")
-  x <- read_chroms(path, progress_bar = FALSE, path_out = tempdir())[[1]]
-  expect_equal(class(x), "list")
+  tmp <- tempdir()
+  on.exit(unlink(tmp))
+  x <- read_chroms(path, progress_bar = FALSE, path_out = tmp)[[1]]
+  expect_type(x, "list")
   expect_equal(names(x), c("MS1", "MS2", "DAD", "BPC",
                            "TIC", "chroms", "metadata"))
 })
@@ -557,16 +665,18 @@ test_that("read_chroms can use 'OpenChrom' parsers", {
 
   path <- system.file("DCM1.SMS", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
+  tmp <- tempdir()
+  on.exit(unlink(tmp))
   x <- read_chroms(path, format_in = "msd", progress_bar = FALSE,
                    verbose = FALSE, export_format = "csv",
-                   path_out = tempdir())[[1]]
+                   path_out = tmp)[[1]]
 
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(3032, 297))
 
   x <- read_chroms(path, format_in = "msd", progress_bar = FALSE,
-                   verbose = FALSE, path_out = tempdir())[[1]]
-  expect_equal(class(x), "list")
+                   verbose = FALSE, path_out = tmp)[[1]]
+  expect_type(x, "list")
   expect_equal(dim(x$MS1), c(469732,4))
 })
 
@@ -605,22 +715,25 @@ test_that("read_chroms can read ANDI MS files", {
   path <- system.file("HP_MS.CDF", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, what=c("chromatogram","ms_spectra"),
-                   progress_bar = FALSE)[[1]]
-  expect_equal(names(x), c("chromatogram", "ms_spectra"))
-  expect_s3_class(x$ms_spectra, "data.frame")
-  expect_equal(class(x$chromatogram)[1], "matrix")
-  expect_true(all(dim(x$chromatogram) == c(621, 1)))
-  expect_true(all(dim(x$ms_spectra) == c(7638, 3)))
+  x <- read_chroms(path, progress_bar = FALSE)[[1]]
 
-  x1 <- read_chroms(path, what=c("chromatogram"), data_format="long",
+  expect_equal(names(x), c("MS1", "TIC"))
+  expect_equal(colnames(x$MS1), c("rt","mz","intensity"))
+  expect_equal(colnames(x$TIC),"intensity")
+  expect_s3_class(x$MS1, "data.frame")
+  expect_equal(class(x$TIC)[1], "matrix")
+  expect_true(all(dim(x$TIC) == c(621, 1)))
+  expect_true(all(dim(x$MS1) == c(7638, 3)))
+
+  x1 <- read_chroms(path, what=c("TIC"), data_format="long",
                     progress_bar = FALSE)[[1]]
   expect_equal(ncol(x1), 2)
+  expect_equal(colnames(x1), c("rt", "intensity"))
 
-  x2 <- read_chroms(path, what=c("ms_spectra"), ms_format="list",
+  x2 <- read_chroms(path, what=c("MS1"), ms_format = "list",
                     progress_bar = FALSE)[[1]]
   expect_type(x2, "list")
-  expect_equal(length(x2), length(unique(x$ms_spectra$rt)))
+  expect_equal(length(x2), length(unique(x$MS1$rt)))
 })
 
 test_that("Shimadzu GCD parser works", {
@@ -653,6 +766,38 @@ test_that("Shimadzu GCD parser works", {
   expect_equal(as.numeric(attr(txt, "time_range")), round(attr(x, "time_range"), 3))
 })
 
+test_that("Shimadzu QGD parser works", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_gqd <- system.file("B4NF.7_C23.qgd", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_gqd))
+
+  tmp <- tempdir()
+  mzml_path <- fs::path_ext_set(fs::path(tmp, basename(path_gqd)), ext = "mzml")
+  on.exit(unlink(mzml_path))
+
+  x <- read_chroms(path_gqd, find_files = FALSE, progress_bar = FALSE,
+                   export_format = "mzml", path_out = tmp)[[1]]
+
+  expect_equal(class(x[[1]])[1], "matrix")
+  expect_equal(class(x[[2]])[1], "matrix")
+
+  # check metadata equivalence
+  expect_equal(attr(x$MS1, "operator"), "Admin")
+  expect_equal(attr(x$MS1, "sample_name"), "B4NF.7_C23")
+  expect_equal(attr(x$MS1, "sample_type"), "Unknown")
+  expect_equal(attr(x$MS1, "parser"), "chromconverter")
+
+  x1 <- read_mzml(mzml_path, what = c("MS1", "TIC", "metadata"))
+  expect_equal(x1$MS1[,c(1:3)], as.data.frame(x$MS1[,-1]), ignore_attr = TRUE)
+  expect_equal(x1$TIC[,"intensity"], as.data.frame(x$TIC[,"intensity"]),
+               ignore_attr = TRUE)
+  expect_equal(x1$metadata$source_file, basename(attr(x$MS1,"source_file")))
+  # expect_equal(x1$metadata$timestamp, attr(x$MS1, "run_datetime"))
+})
+
 test_that("read_chroms can read 'Varian' SMS", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
@@ -663,35 +808,45 @@ test_that("read_chroms can read 'Varian' SMS", {
   skip_if_not(file.exists(path_sms))
   skip_if_not(file.exists(path_mzml))
 
-  x <- read_chroms(path_sms, progress_bar = FALSE)[[1]]
+  tmp <- tempdir()
+  path_mzml_cc <- fs::path(tmp, fs::path_ext_remove(basename(path_sms)), ext = "mzml")
+  on.exit(unlink(path_mzml_cc))
+
+  x <- read_chroms(path_sms, progress_bar = FALSE, export_format = "mzml",
+                   path_out = tmp)[[1]]
   x1 <- read_chroms(path_mzml, format_in = "mzml", progress_bar = FALSE)[[1]]
+  x2 <- read_chroms(path_mzml_cc, format_in = "mzml", progress_bar = FALSE,
+                    format_out = "data.frame")[[1]]
 
   # check equality of mass spec scans
   ms1_mzml <- x1$MS1[,-4]
   ms1_mzml$rt <- ms1_mzml$rt / 1000
-  expect_equal(x$MS1, as.matrix(ms1_mzml))
+  expect_equal(as.data.frame(x$MS1), ms1_mzml, tolerance = .0000001,
+               ignore_attr = TRUE)
+  expect_equal(as.data.frame(x$MS1), x2$MS1[,c(1:3)], ignore_attr=TRUE)
 
   # check equality of TIC
-  expect_equal(x$chroms[, "rt"], x1$TIC$rt/1000, tolerance = .000001)
+  expect_equal(x$TIC[, "rt"], x1$TIC$rt/1000, tolerance = .000001)
   # there is a slight discrepancy with the TICs generated by OpenChrom but mine
   # seem to be correct...?
-  expect_equal(x$chroms[, "tic"], x1$TIC$int, tolerance = .000001)
+  expect_equal(x$TIC[, "intensity"], x1$TIC$int, tolerance = .000001)
+  # expect_equal(x$TIC, x2$TIC[,-3], ignore_attr = FALSE)
 
   # check equality of BPC
-  expect_equal(x$chroms[, "rt"], x1$BPC$rt/1000, tolerance = .000001)
-  expect_equal(x$chroms[, "bpc"], x1$BPC$int)
+  expect_equal(x$BPC[, "rt"], x1$BPC$rt/1000, tolerance = .000001)
+  expect_equal(x$BPC[, "intensity"], x1$BPC$int)
 
   # check metadata
-  expect_equal(attr(x, "software_name"), "MS Workstation (Upgrade)")
-  expect_equal(attr(x, "software_version"), "Version 6.9.3")
-  expect_equal(attr(x, "no_scans"), 3432)
-  expect_equal(attr(x, "sample_name"), "STRD15")
-  expect_equal(attr(x, "ms_params")$max_ric_scan, 1445)
-  expect_equal(attr(x, "ms_params")$max_ric_val, 39285)
-  expect_equal(attr(x, "ms_params")$max_ionization_time, c(0,25000))
-  expect_equal(attr(x, "ms_params")$temp_trap, 150)
-  expect_equal(attr(x, "ms_params")$temp_manifold, 50)
-  expect_equal(attr(x, "ms_params")$temp_transferline, 250)
-  expect_equal(attr(x, "ms_params")$axial_modulation, 4)
+  expect_equal(attr(x$TIC, "software_name"), "MS Workstation (Upgrade)")
+  expect_equal(attr(x$TIC, "no_scans"), 3432)
+  expect_equal(attr(x$TIC, "sample_name"), "STRD15")
+  expect_equal(attr(x$TIC, "ms_params")$max_ric_scan, 1445)
+  expect_equal(attr(x$TIC, "ms_params")$max_ric_val, 39285)
+  expect_equal(attr(x$TIC, "ms_params")$max_ionization_time, c(0, 25000))
+  expect_equal(attr(x$TIC, "ms_params")$temp_trap, 150)
+  expect_equal(attr(x$TIC, "ms_params")$temp_manifold, 50)
+  expect_equal(attr(x$TIC, "ms_params")$temp_transferline, 250)
+  expect_equal(attr(x$TIC, "ms_params")$axial_modulation, 4)
+  expect_equal(x2$metadata$source_file, basename(attr(x$MS1,"source_file")))
+  # expect_equal(x2$metadata$timestamp, attr(x$MS1,"run_datetime")[1])
 })
-
