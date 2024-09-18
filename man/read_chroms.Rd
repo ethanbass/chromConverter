@@ -6,19 +6,19 @@
 \usage{
 read_chroms(
   paths,
-  find_files,
   format_in = c("agilent_d", "agilent_dx", "chemstation", "chemstation_fid",
     "chemstation_ch", "chemstation_csv", "chemstation_uv", "masshunter_dad",
     "chromeleon_uv", "mzml", "mzxml", "mdf", "shimadzu_ascii", "shimadzu_dad",
     "shimadzu_fid", "shimadzu_gcd", "shimadzu_qgd", "shimadzu_lcd", "thermoraw",
     "varian_sms", "waters_arw", "waters_raw", "msd", "csd", "wsd", "other"),
+  find_files,
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
   format_out = c("matrix", "data.frame"),
   data_format = c("wide", "long"),
-  export = FALSE,
   path_out = NULL,
-  export_format = c("csv", "chemstation_csv", "cdf", "mzml", "animl"),
+  export_format = c("", "csv", "chemstation_csv", "cdf", "mzml", "animl"),
+  force = FALSE,
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   progress_bar,
@@ -32,10 +32,6 @@ read_chroms(
 \arguments{
 \item{paths}{Paths to data files or directories containing the files.}
 
-\item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
-the function with a folder or vector of folders containing the files.
-Otherwise, set to\code{FALSE}.}
-
 \item{format_in}{Format of files to be imported/converted. Current options
 include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
 \code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
@@ -44,6 +40,10 @@ include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
 \code{thermoraw}, \code{waters_arw}, \code{waters_raw}, \code{mzml},
 \code{mzxml}, \code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd},
 or \code{other}.}
+
+\item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
+the function with a folder or vector of folders containing the files.
+Otherwise, set to\code{FALSE}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}
@@ -57,9 +57,6 @@ case file extension will be deduced from \code{format_in}.}
 \item{data_format}{Whether to output data in wide or long format. Either
 \code{wide} or \code{long}.}
 
-\item{export}{Logical. If TRUE, the program will export files in the format
-specified by \code{export_format} in the directory specified by \code{path_out}.}
-
 \item{path_out}{Path for exporting files. If path not specified, files will
 export to current working directory.}
 
@@ -67,6 +64,9 @@ export to current working directory.}
 \code{chemstation_csv} (utf-16 encoding), and \code{cdf}, unless you are
 using OpenChrom parsers, where there are two additional options: \code{mzml},
 and \code{animl}.}
+
+\item{force}{Logical. Whether to overwrite files when exporting. Defaults to
+\code{FALSE}.}
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
 Defaults to TRUE.}
@@ -124,13 +124,11 @@ providing paths to directories, the file format must be specified using the
 \code{format_in} argument.
 }
 \section{Side effects}{
- If \code{export} is TRUE, chromatograms will be
-exported in the format specified by \code{export_format} in the folder
-specified by \code{path_out}. Currently, the most versatile option for
-exporting files is \code{csv}. However, unidimensional chromatograms can
-also be exported in ANDI Chromatography (netCDF) format by selecting
-\code{cdf}. If an \code{openchrom} parser is selected, ANIML and mzML are
-available as additional options.
+ If an \code{export_format} is provided, chromatograms
+will be exported in the specified format specified into the folder
+specified by \code{path_out}. Files can currently be converted to \code{csv},
+\code{mzml}, or \code{cdf} format. If an \code{openchrom} parser is selected,
+ANIML is available as an additional option.
 }
 
 \examples{
