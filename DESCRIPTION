@@ -35,7 +35,9 @@ Imports:
     RaMS,
     tibble,
     xml2,
-    bit64
+    bit64,
+    data.table,
+    base64enc
 Suggests: 
     entab,
     ncdf4,
