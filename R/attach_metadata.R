@@ -51,6 +51,39 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 data_format = data_format,
                 parser = parser,
                 format_out = format_out)
+    }, "rainbow" = {
+      meta$date <- convert_timestamp(meta$date, datetime_formats =
+                          c("%d %b %y %I:%M %p %z", "%d-%b-%Y %H:%M:%S",
+                                                        "%d-%b-%y, %H:%M:%S"))
+      structure(x,
+                sample_name = meta$notebook,
+                sample_id = NA,
+                vial = meta$vialpos,
+                file_version = NA,
+                file_type =  NA,
+                instrument =  NA,
+                detector = meta$detector,
+                detector_range = NA,
+                detector_unit = meta$unit,
+                polarity = meta$polarity,
+                software =  NA,
+                software_version =  NA,
+                software_revision =  NA,
+                method = meta$method,
+                batch =  NA,
+                operator =  NA,
+                run_datetime = meta$date,
+                sample_injection_volume =  NA,
+                sample_amount =  NA,
+                time_range =  NA,
+                time_interval = NA,
+                time_unit =  NA,
+                intensity_multiplier =  NA,
+                scaled = NA,
+                source_file = source_file,
+                data_format = data_format,
+                parser = parser,
+                format_out = format_out)
     }, "varian_sms" = {
       meta$max_ionization_time <- sapply(meta$segment_metadata, function(x){
         x$max_ionization_time
@@ -255,9 +288,9 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               parser = "chromconverter"
               )
   }, "chemstation" = {
-    datetime_formats <- c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p",
-                          "%d/%m/%Y %I:%M:%S %p")
-    meta$date <- as.POSIXct(meta$date, tz = "UTC", tryFormats = datetime_formats)
+    meta$date <- convert_timestamp(meta$date, datetime_formats =
+                        c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p",
+                          "%d/%m/%Y %I:%M:%S %p"))
     structure(x, sample_name = iconv(meta$sample_name, sub = ""),
               sample_id = meta$vial,
               file_version = meta$version,
@@ -608,4 +641,16 @@ get_sz_wv <- function(meta){
     get_metadata_field(meta, "ADN")
   }
 
+}
+
+#' Convert date-time string to POSIXct
+#' @author Ethan Bass
+#' @noRd
+convert_timestamp <- function(string, datetime_formats){
+  tryCatch({
+    as.POSIXct(string, tz = "UTC", tryFormats = datetime_formats)
+  }, error = function(cond){
+    warning("Run date-time could not be converted to POSIXct format, returning string instead.")
+    string
+  })
 }
