@@ -1,6 +1,7 @@
 #' Read 'Lumex' MDF files into R
 #' @param path The path to a 'Lumex' \code{.mdf} file.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
 #' @return A chromatogram in the format specified by the \code{format_out} and
@@ -8,10 +9,10 @@
 #' @author Ethan Bass
 #' @export
 
-read_mdf <- function(path, format_out = c("matrix", "data.frame"),
+read_mdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                      data_format = c("wide", "long"), read_metadata = TRUE){
   data_format <- match.arg(data_format, c("wide", "long"))
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
 
   f <- file(path, "rb")
   on.exit(close(f))
@@ -60,12 +61,7 @@ read_mdf <- function(path, format_out = c("matrix", "data.frame"),
                        Current = current_array)
   }
 
-  if (data_format == "long"){
-    data <- reshape_chrom(data, data_format = data_format)
-  }
-  if (format_out == "matrix"){
-    data <- as.matrix(data)
-  }
+  data <- convert_chrom_format(data, format_out = format_out)
   if (read_metadata){
     data <- attach_metadata(x = data, meta = meta, format_in = "mdf",
                             format_out = format_out, data_format = data_format,
@@ -84,14 +80,14 @@ extract_mdf_metadata <- function(x){
   splitAt <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
   x2 <- splitAt(ma, grep("\\[*\\]", ma))
   x2 <- x2[-length(x2)]
-  names(x2) <- gsub("\\[|\\]","",sapply(x2, function(xx) xx[[1]]))
+  names(x2) <- gsub("\\[|\\]", "", sapply(x2, function(xx) xx[[1]]))
   x3 <- lapply(seq_along(x2), function(i){
     xx <- x2[[i]][-1]
     xx <- as.data.frame(do.call(rbind,lapply(xx, function(xxx){
       stringr::str_split_fixed(xxx, "=", 2)
     })))
     xx[,3] <- names(x2)[i]
-    colnames(xx) <- c("Property","Value","Group")
+    colnames(xx) <- c("Property", "Value", "Group")
     xx
   })
   names(x3) <- names(x2)

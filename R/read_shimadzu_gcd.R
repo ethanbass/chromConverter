@@ -21,7 +21,8 @@
 #' floating-point numbers. The retention times can be (approximately?) derived
 #' from the number of values and the sampling interval encoded in the header.
 #' @param path Path to GCD file.
-#' @param format_out Matrix or data.frame.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
@@ -35,13 +36,13 @@
 #' yet able to interpret much metadata from the files.
 #' @export
 
-read_shimadzu_gcd <- function(path, format_out = c("matrix", "data.frame"),
+read_shimadzu_gcd <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                                    data_format = c("wide", "long"),
                                    read_metadata = TRUE,
                                     metadata_format = c("chromconverter","raw")){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
   data_format <- match.arg(data_format, c("wide", "long"))
-  metadata_format <- match.arg(metadata_format, c("chromconverter","raw"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, "chromconverter" = "shimadzu_lcd",
                           "raw")
   olefile_installed <- reticulate::py_module_available("olefile")
@@ -60,14 +61,9 @@ read_shimadzu_gcd <- function(path, format_out = c("matrix", "data.frame"),
     DI <- read_sz_2DDI(path, idx = idx)
 
     x <- decode_shimadzu_gcd(path, stream = stream)
-
-    if (data_format == "wide"){
-      x <- data.frame(int = x$int, row.names = x$rt)
-    }
-
-    if (format_out == "matrix"){
-      x <- as.matrix(x)
-    }
+    x <- format_2d_chromatogram(rt = x$rt, int = x$int,
+                                data_format = data_format,
+                                format_out = format_out)
     if (read_metadata){
       x <- attach_metadata(x, c(meta,DI), format_in = metadata_format,
                              source_file = path, data_format = data_format,

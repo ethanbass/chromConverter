@@ -28,7 +28,9 @@
 #' @param path_out directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame
 #' ionization data, or `wsd` for DAD/UV data.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out R format. Either \code{matrix}, \code{data.frame} or
+#' \code{data.table}.
+#' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param export_format Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
 #' Defaults to \code{mzml}.
 #' @param return_paths Logical. If TRUE, the function will return a character
@@ -51,11 +53,12 @@
 #' @export
 
 call_openchrom <- function(files, path_out = NULL, format_in,
-                             format_out = c("matrix","data.frame"),
-                             export_format = c("mzml", "csv", "cdf", "animl"),
-                             return_paths = FALSE,
+                           format_out = c("matrix", "data.frame", "data.table"),
+                           data_format = c("wide", "long"),
+                           export_format = c("mzml", "csv", "cdf", "animl"),
+                           return_paths = FALSE,
                            verbose = getOption("verbose")){
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
+  format_out <- check_format_out(format_out)
   if (length(files) == 0){
     stop("Files not found.")
   }
@@ -87,7 +90,8 @@ call_openchrom <- function(files, path_out = NULL, format_in,
   } else{
     file_reader <- switch(export_format,
                           "csv" = read.csv,
-                          "cdf" = read_cdf,
+                          "cdf" = purrr::partial(read_cdf, format_out = format_out,
+                                                 data_format = data_format),
                           "animl" = warning("An animl parser is not currently available in chromConverter"),
                           "mzml" = read_mzml)
       lapply(new_files, function(x){

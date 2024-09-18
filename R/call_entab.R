@@ -2,8 +2,9 @@
 #' Converts files using Entab parsers
 #' @param path Path to file
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param format_in Format of input.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
@@ -12,16 +13,15 @@
 #' @export
 
 call_entab <- function(path, data_format = c("wide", "long"),
-                       format_in = "",
-                       format_out = c("matrix", "data.frame"),
-                       read_metadata = TRUE,
+                       format_out = c("matrix", "data.frame", "data.table"),
+                       format_in = "", read_metadata = TRUE,
                        metadata_format = c("chromconverter", "raw")){
   if (!requireNamespace("entab", quietly = TRUE)){
     stop("The entab R package must be installed to use entab parsers:
       install.packages('entab', repos='https://ethanbass.github.io/drat/')",
          call. = FALSE)
   }
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
 
   metadata_format <- match.arg(tolower(metadata_format), c("chromconverter", "raw"))
@@ -35,23 +35,19 @@ call_entab <- function(path, data_format = c("wide", "long"),
     if (length(signal.idx) == 1){
       colnames(x)[signal.idx] <- "wavelength"
     }
+    colnames(x) <- c("rt", "lambda", "intensity")
     if (data_format == "wide"){
-      x <- reshape_chrom_wide(x, time_var = "time", lambda_var = "wavelength",
+      x <- reshape_chrom_wide(x, time_var = "rt", lambda_var = "lambda",
                               value_var = "intensity")
-      if (format_out == "matrix"){
-        x <- as.matrix(x)
       }
-    }
   } else if (grepl("fid$", file_format)){
     if (data_format == "wide"){
       x <- data.frame(row.names = x$time, intensity = x$intensity)
     }
-    if (format_out == "matrix"){
-      x <- as.matrix(x)
-    }
   } else if (grepl("ms$", file_format)){
-    colnames(x)[1] <- "rt"
+    colnames(x)[c(1,3)] <- c("rt", "intensity")
   }
+  x <- convert_chrom_format(x, format_out = format_out)
   if (read_metadata){
     meta <- r$metadata()
     meta$run_date <- as.POSIXct(eval(meta$run_date))

@@ -4,12 +4,16 @@
 \alias{read_chemstation_csv}
 \title{Read Chemstation CSV}
 \usage{
-read_chemstation_csv(path, format_out = c("matrix", "data.frame"))
+read_chemstation_csv(
+  path,
+  format_out = c("matrix", "data.frame", "data.table")
+)
 }
 \arguments{
 \item{path}{Path to file}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}

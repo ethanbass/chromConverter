@@ -9,7 +9,8 @@
 #'
 #' @importFrom bitops bitAnd bitShiftL
 #' @param path Path to \code{.ch} file
-#' @param format_out Matrix or data.frame.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
@@ -32,12 +33,12 @@
 #' @export
 #' @md
 
-read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
+read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
                                 scale = TRUE){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, chromconverter = "chemstation",
@@ -112,15 +113,10 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
     if (scale){
       data <- data * scaling_factor + intercept
     }
+    data <- format_2d_chromatogram(rt = times, int = data,
+                                   data_format = data_format,
+                                   format_out = format_out)
 
-    if (data_format == "wide"){
-      data <- data.frame(Intensity = data, row.names = times)
-    } else if (data_format == "long"){
-      data <- data.frame(RT = times, Intensity = data)
-    }
-    if (format_out == "matrix"){
-      data <- as.matrix(data)
-    }
     if (read_metadata){
       meta_slots <- switch(version, "8" = 10,
                                     "81" = 10,
@@ -193,9 +189,7 @@ get_nchar <- function(f){
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
 #' @noRd
-
 decode_double_delta <- function(file, offset){
-
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
 
@@ -264,7 +258,6 @@ decode_double_array_8byte <- function(file, offset){
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
 #' @noRd
-
 decode_delta <- function(file, offset){
     seek(file, 0, 'end')
     fsize <- seek(file, NA, "current")
@@ -441,7 +434,8 @@ get_agilent_offsets <- function(version){
 #' @importFrom utils unzip
 #' @param path Path to \code{.dx} file.
 #' @param path_out Path to directory to export unzipped files.
-#' @param format_out Matrix or data.frame.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
@@ -450,10 +444,10 @@ get_agilent_offsets <- function(version){
 #' @author Ethan Bass
 #' @export
 read_agilent_dx <-  function(path, path_out = NULL,
-                             format_out = c("matrix","data.frame"),
+                             format_out = c("matrix", "data.frame", "data.table"),
                               data_format = c("wide","long"),
                               read_metadata = TRUE){
-    format_out <- match.arg(format_out, c("matrix","data.frame"))
+    format_out <- check_format_out(format_out)
     data_format <- match.arg(data_format, c("wide","long"))
     files <- unzip(path, list = TRUE)
     files.idx <- grep(".ch$", files$Name, ignore.case = TRUE)

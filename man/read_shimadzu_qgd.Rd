@@ -6,8 +6,8 @@
 \usage{
 read_shimadzu_qgd(
   path,
-  what = c("tic", "ms"),
-  format_out = c("matrix", "data.frame"),
+  what = c("MS1", "TIC"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw")
@@ -30,8 +30,9 @@ streams.}
 or \code{raw}.}
 }
 \value{
-A 2D chromatogram from the chromatogram stream in \code{matrix} or
-\code{data.frame} format, according to the value of \code{format_out}.
+A 2D chromatogram from the chromatogram stream in \code{matrix},
+\code{data.frame}, or \code{data.table} format, according to the value of
+\code{format_out}.
 The chromatograms will be returned in \code{wide} or \code{long} format
 according to the value of \code{data_format}.
 }

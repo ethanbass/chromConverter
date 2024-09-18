@@ -51,13 +51,13 @@
 #' this file format.
 #' @export
 
-read_varian_sms <- function(path, what = c("chrom", "MS1"),
-                            format_out = c("matrix", "data.frame"),
+read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
+                            format_out = c("matrix", "data.frame", "data.table"),
                             data_format = c("wide", "long"),
                             read_metadata = TRUE, collapse = TRUE){
 
-  what <- match.arg(what, c("chroms", "MS1"), several.ok = TRUE)
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  what <- match.arg(what, c("MS1", "TIC", "BPC", "chroms"), several.ok = TRUE)
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
 
   f <- file(path, "rb")
@@ -65,19 +65,31 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
 
   meta <- read_varian_msdata_header(f)
 
-  chroms <- read_varian_chromatograms(f, n_time = meta$n_scan)
+  chroms <- read_varian_chromatograms(f, n_time = meta$n_scan,
+                                      format_out = format_out,
+                                      data_format = "long")
 
   skip_null_bytes(f)
 
   acq_delay <- max(which(chroms[, "tic"] == 0))
   n_scans <- nrow(chroms) - acq_delay
   if ("MS1" %in% what){
-    MS1 <- read_varian_ms_stream(f, n_scans = n_scans)
+    MS1 <- read_varian_ms_stream(f, n_scans = n_scans, format_out = format_out)
 
     MS1[,1] <- chroms[(MS1[,1] + acq_delay), "rt"]
-    colnames(MS1) <- c('rt', 'mz', 'int')
+    colnames(MS1) <- c("rt", "mz", "intensity")
   }
 
+  if (any(what == "TIC")){
+    TIC <- format_2d_chromatogram(rt = chroms[,"rt"], int = chroms[,"tic"],
+                                  data_format = "long",
+                                  format_out = format_out)
+  }
+  if (any(what == "BPC")){
+    BPC <- format_2d_chromatogram(rt = chroms[,"rt"], int = chroms[,"bpc"],
+                                  data_format = "long",
+                                  format_out = format_out)
+  }
   dat <- mget(what)
   if (collapse)
     dat <- collapse_list(dat)
@@ -90,9 +102,11 @@ read_varian_sms <- function(path, what = c("chrom", "MS1"),
 
     meta <- read_mod_metadata(f, offsets, meta)
 
-    dat <- attach_metadata(dat, meta, format_in = "varian_sms",
-                           format_out = format_out, data_format = data_format,
+    dat <- lapply(dat, function(x){
+      attach_metadata(x, meta, format_in = "varian_sms",
+                           format_out = format_out, data_format = "long",
                            source_file = path)
+    })
   }
   dat
 }
@@ -137,22 +151,30 @@ read_mod_metadata <- function(f, offsets, meta){
 #' Read 'Varian Workstation' Chromatograms
 #' @param f Connection to a 'Varian' SMS file opened to the beginning of the
 #' chromatogram.
+#' @param format_out Matrix or data.frame.
+#' @param data_format Either \code{wide} (default) or \code{long}.
 #' @author Ethan Bass
 #' @noRd
-read_varian_chromatograms <- function(f, n_time){
-  mat <- matrix(NA, nrow = n_time, ncol = 5)
-  colnames(mat) <- c("scan", "rt", "tic", "bpc", "ion_time")
+read_varian_chromatograms <- function(f, n_time, format_out = "data.frame",
+                                      data_format = "wide"){
+  dat <- matrix(NA, nrow = n_time, ncol = 5)
+  colnames(dat) <- c("scan", "rt", "tic", "bpc", "ion_time")
   for (i in seq_len(n_time)){
-    mat[i, "scan"] <- readBin(f, what="integer", size = 4, endian = "little")
-    mat[i, "rt"] <- readBin(f, what = "double", size = 8, endian = "little")
-    mat[i, "ion_time"] <- readBin(f, what = "integer", size = 2, signed = FALSE,
+    dat[i, "scan"] <- readBin(f, what = "integer", size = 4, endian = "little")
+    dat[i, "rt"] <- readBin(f, what = "double", size = 8, endian = "little")
+    dat[i, "ion_time"] <- readBin(f, what = "integer", size = 2, signed = FALSE,
                                  endian = "little")
-    mat[i, "tic"] <- readBin(f, what = "integer", size = 4, endian = "little")
+    dat[i, "tic"] <- readBin(f, what = "integer", size = 4, endian = "little")
     readBin(f, what = "raw", n = 6) # skip six unidentified bytes
-    mat[i, "bpc"] <- readBin(f, what="integer", size = 4, endian = "little")
+    dat[i, "bpc"] <- readBin(f, what = "integer", size = 4, endian = "little")
     readBin(f, what = "raw", n = 11) # skip 11 unidentified bytes
   }
-  mat
+  if (data_format == "wide"){
+    rownames(dat) <- dat[,"rt"]
+    dat <- dat[,-2]
+  }
+  dat <- convert_chrom_format(dat, format_out = format_out)
+  dat
 }
 
 #' Read 'Varian' MS stream
@@ -160,13 +182,18 @@ read_varian_chromatograms <- function(f, n_time){
 #' mass spectra stream.
 #' @author Ethan Bass
 #' @noRd
-read_varian_ms_stream <- function(f, n_scans){
+read_varian_ms_stream <- function(f, n_scans, format_out = "data.frame",
+                                  data_format = "wide"){
   xx <- lapply(seq_len(n_scans), function(i){
     xx <- read_varian_ms_block(f)
     cbind(scan = i, xx)
   })
-  do.call(rbind, xx)
+  dat <- do.call(rbind, xx)
+  convert_chrom_format(dat, format_out = format_out)
+  dat
 }
+
+
 
 #' Read 'Varian' MS block
 #' @author Ethan Bass
@@ -294,11 +321,13 @@ read_varian_msdata_header <- function(f){
   u1 <- readBin(f, what = "integer", size = 2, endian = "little",
                 signed = FALSE)
 
-  t2 <- readBin(f, what = "raw", n=4, endian = "little")
-  t2 <- as.POSIXct(strtoi(paste(c(t2[2],t2[1], t2[3:4]), collapse = ""), 16))
+  t2 <- readBin(f, what = "raw", n = 4, endian = "little")
+  t2 <- as.POSIXct(strtoi(paste(c(t2[2], t2[1], t2[3:4]), collapse = ""), 16),
+                   tz = "UTC")
 
-  t1 <- readBin(f, what = "raw", n=4, endian = "little")
-  t1 <- as.POSIXct(strtoi(paste(c(t1[2],t1[1], t1[3:4]), collapse = ""), 16))
+  t1 <- readBin(f, what = "raw", n = 4, endian = "little")
+  t1 <- as.POSIXct(strtoi(paste(c(t1[2], t1[1], t1[3:4]), collapse = ""), 16),
+                   tz = "UTC")
 
   u2 <- readBin(f, what = "integer", size = 2, endian = "little",
                 signed = FALSE)
@@ -331,7 +360,7 @@ read_varian_msdata_header <- function(f){
   readBin(f, what = "raw", n = 12) #skip
 
   # reader segment headers
-  seg_no <- readBin(f, what="integer", size = 2)
+  seg_no <- readBin(f, what = "integer", size = 2)
   segment_metadata <- list()
   i <- 1
   while(seg_no == i){
@@ -369,7 +398,7 @@ read_varian_msdata_header <- function(f){
                       endian = "little", signed = FALSE)
     i <- i + 1
   }
-  readBin(f, what="raw", n = 6)
+  readBin(f, what = "raw", n = 6)
   mget(c("ion_time", "emission_current", "dac", "u1", "t1", "t2", "u2", "n_scan",
   "max_ric_scan", "max_ric_val", "u3", "u4", "u5", "segment_metadata"))
 }

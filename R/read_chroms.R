@@ -12,10 +12,10 @@
 #' 'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent
 #' MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
 #' 'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
-#' (\code{.txt}), 'Shimadzu GCD', and 'Shimadzu LCD' files (preliminary support).
-#' Also, wraps 'OpenChrom' parsers, which include many additional formats. To use 'Entab',
-#' 'ThermoRawFileParser', or 'OpenChrom' parsers, they must be manually installed.
-#' Please see the instructions in the
+#' (\code{.txt}), 'Shimadzu GCD', 'Shimadzu LCD' (DAD and chromatogram streams)
+#' and 'Shimadzu QGD' files. Also, wraps 'OpenChrom' parsers, which include many
+#' additional formats. To use 'Entab', 'ThermoRawFileParser', or 'OpenChrom'
+#' parsers, they must be manually installed. Please see the instructions in the
 #' [README](https://ethanbass.github.io/chromConverter/) for further details.
 #'
 #' If paths to individual files are provided, \code{read_chroms} will try to
@@ -42,7 +42,7 @@
 #' @param pattern pattern (e.g. a file extension). Defaults to NULL, in which
 #' case file extension will be deduced from \code{format_in}.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
+#' or \code{\link[data.table]{data.table}}.
 #' @param data_format Whether to output data in wide or long format. Either
 #' \code{wide} or \code{long}.
 #' @param path_out Path for exporting files. If path not specified, files will
@@ -313,6 +313,7 @@ read_chroms <- function(paths,
     return_paths <- ifelse(export_format == "animl", TRUE, FALSE)
     converter <- partial(call_openchrom, path_out = path_out,
                          format_in = format_in, export_format = export_format,
+                         format_out = format_out, data_format = data_format,
                          return_paths = return_paths, verbose = verbose)
   } else if (format_in == "mdf"){
     converter <- partial(read_mdf, format_out = format_out,

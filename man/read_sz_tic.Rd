@@ -16,7 +16,7 @@ is the intensity.}
 \usage{
 read_sz_tic(
   path,
-  format_out = c("matrix", "data.frame"),
+  format_out = "data.frame",
   data_format = c("wide", "long"),
   read_metadata = TRUE
 )

@@ -3,7 +3,8 @@
 #' Parser for Analytical Data Interchange (ANDI) netCDF files.
 #'
 #' @param path Path to ANDI netCDF file.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{\link[data.table]{data.table}}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' For 2D files, "long" format returns the retention time as the first column of
 #' the data.frame or matrix while "wide" format returns the retention time as the
@@ -56,7 +57,8 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
 
 #' Read ANDI chrom file
 #' @param path Path to file.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' For 2D files, "long" format returns the retention time as the first column of
 #' the data.frame or matrix while "wide" format returns the retention time as the
@@ -120,7 +122,8 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame", "data.t
 
 #' Read ANDI MS file
 #' @param path Path to file.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return the total ion chromatogram in \code{wide}
 #' or \code{long} format. The "long" format returns the retention time as the
 #' first column of the data.frame or matrix while "wide" format returns the

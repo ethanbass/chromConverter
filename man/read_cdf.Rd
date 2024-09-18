@@ -18,7 +18,8 @@ read_cdf(
 \arguments{
 \item{path}{Path to ANDI netCDF file.}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{\link[data.table]{data.table}}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.
 For 2D files, "long" format returns the retention time as the first column of

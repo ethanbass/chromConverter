@@ -6,8 +6,8 @@
 \usage{
 read_varian_sms(
   path,
-  what = c("chrom", "MS1"),
-  format_out = c("matrix", "data.frame"),
+  what = c("MS1", "TIC", "BPC"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   collapse = TRUE

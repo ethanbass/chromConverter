@@ -30,8 +30,9 @@
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
-#' @return A 2D chromatogram from the chromatogram stream in \code{matrix} or
-#' \code{data.frame} format, according to the value of \code{format_out}.
+#' @return A 2D chromatogram from the chromatogram stream in \code{matrix},
+#' \code{data.frame}, or \code{data.table} format, according to the value of
+#' \code{format_out}.
 #' The chromatograms will be returned in \code{wide} or \code{long} format
 #' according to the value of \code{data_format}.
 #' @note This parser is experimental and may still need some work. It is not
@@ -39,14 +40,14 @@
 #' @author Ethan Bass
 #' @export
 
-read_shimadzu_qgd <- function(path, what = c("tic", "ms"),
-                              format_out = c("matrix", "data.frame"),
+read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
+                              format_out = c("matrix", "data.frame", "data.table"),
                               data_format = c("wide", "long"),
                               read_metadata = TRUE,
                               metadata_format = c("chromconverter", "raw")){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
-  what <- match.arg(what, c("tic","ms"), several.ok = TRUE)
+  what <- match.arg(toupper(what), c("MS1", "TIC"), several.ok = TRUE)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, "chromconverter" = "shimadzu_lcd",
                             "raw")
@@ -55,19 +56,22 @@ read_shimadzu_qgd <- function(path, what = c("tic", "ms"),
     configure_python_environment(parser = "olefile")
   }
 
-  if ("tic" %in% what){
-    tic <- read_qgc_tic(path, format_out = format_out, data_format = data_format)
+  if ("TIC" %in% what){
+    TIC <- read_qgc_tic(path, format_out = format_out,
+                        data_format = data_format)
   }
-  if ("ms" %in% what){
-    ms <- read_qgd_ms_stream(path, format_out = format_out)
+  if ("MS1" %in% what){
+    MS1 <- read_qgd_ms_stream(path, format_out = format_out)
   }
   dat <- mget(what)
 
   if (read_metadata){
     meta <- try(read_qgd_fp(path))
-    dat <- attach_metadata(dat, meta, format_in = metadata_format,
+    dat <- lapply(dat, function(x){
+      attach_metadata(x, meta, format_in = metadata_format,
                          source_file = path, data_format = data_format,
                          format_out = format_out)
+    })
   }
   dat
 }
@@ -75,7 +79,7 @@ read_shimadzu_qgd <- function(path, what = c("tic", "ms"),
 #' Read QGC total ion chromatogram
 #' @author Ethan Bass
 #' @noRd
-read_qgc_tic <- function(path, format_out = c("matrix", "data.frame"),
+read_qgc_tic <- function(path, format_out = "data.frame",
                         data_format = c("wide", "long"),
                         read_metadata = TRUE){
 
@@ -95,15 +99,8 @@ read_qgc_tic <- function(path, format_out = c("matrix", "data.frame"),
 
   rts <- read_qgd_retention_times(path)
 
-  if (data_format == "wide"){
-    dat <- matrix(int, nrow = nval, ncol = 1, dimnames = list(rts, "int"))
-  } else if (data_format == "long"){
-    dat <- cbind(rts, int)
-    colnames(dat) <- c("rt", "int")
-  }
-  if (format_out == "data.frame"){
-    dat <- as.data.frame(dat)
-  }
+  dat <- format_2d_chromatogram(rt = rts, int = int, format_out = format_out,
+                         data_format = data_format)
   dat
 }
 
@@ -124,7 +121,7 @@ read_qgd_ms_block <- function(f){
   readBin(f, "integer", size = 4, endian = "little", n = 2) #skip
 
   mat <- matrix(NA, nrow = nval, ncol = 4,
-                dimnames = list(NULL, c("scan", "rt", "mz", "int")))
+                dimnames = list(NULL, c("scan", "rt", "mz", "intensity")))
   # we have to add a byte of 00s for odd numbers of bytes because R can't deal
   # with integers that have odd numbers of bytes
   add_byte <- n_bytes %% 2 == 1
@@ -146,8 +143,6 @@ read_qgd_ms_block <- function(f){
   mat
 }
 
-# what are time units?
-
 #' Read 'Shimadzu QGD' retention times
 #' Retention times are stored in the "GCMS Raw Data/Retention Time" stream as
 #' a series of 4-byte, little-endian integers.
@@ -162,7 +157,7 @@ read_qgd_retention_times <- function(path){
 
   n_val <- last_byte/4
   seek(f, 0, origin = "start")
-  rts <- readBin(f, what = "integer", size = 4, n = n_val, endian = "little")/60
+  rts <- readBin(f, what = "integer", size = 4, n = n_val, endian = "little")
   rts
 }
 
@@ -171,8 +166,8 @@ read_qgd_retention_times <- function(path){
 #' @param path Path to 'Shimadzu' QGD file.
 #' @author Ethan Bass
 #' @noRd
-read_qgd_ms_stream <- function(path, format_out = c("matrix", "data.frame")){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+read_qgd_ms_stream <- function(path, format_out = "data.frame"){
+  format_out <- check_format_out(format_out)
 
   rts <- read_qgd_retention_times(path)
 
@@ -183,11 +178,9 @@ read_qgd_ms_stream <- function(path, format_out = c("matrix", "data.frame")){
   xx <- lapply(seq_along(rts), function(i){
     read_qgd_ms_block(f)
   })
-  mat <- do.call(rbind, xx)
-  if (format_out == "data.frame"){
-    mat <- as.data.frame(mat)
-  }
-  mat
+  dat <- do.call(rbind, xx)
+  dat <- convert_chrom_format(dat, format_out = format_out)
+  dat
 }
 
 

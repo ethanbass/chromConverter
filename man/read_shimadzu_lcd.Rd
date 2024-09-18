@@ -7,7 +7,7 @@
 read_shimadzu_lcd(
   path,
   what,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),

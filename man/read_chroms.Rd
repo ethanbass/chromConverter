@@ -14,7 +14,7 @@ read_chroms(
   find_files,
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   path_out = NULL,
   export_format = c("", "csv", "chemstation_csv", "cdf", "mzml", "animl"),
@@ -52,7 +52,8 @@ case file extension will be deduced from \code{format_in}.}
 \code{chromconverter}, \code{aston}, \code{entab}, \code{thermoraw},
 \code{openchrom}, or \code{rainbow}.}
 
-\item{format_out}{Class of output (i.e. data.frame or matrix).}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{\link[data.table]{data.table}}.}
 
 \item{data_format}{Whether to output data in wide or long format. Either
 \code{wide} or \code{long}.}
@@ -112,10 +113,10 @@ Provides a unified interface to all chromConverter parsers. Currently recognizes
 'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent
 MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
 'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
-(\code{.txt}), 'Shimadzu GCD', and 'Shimadzu LCD' files (preliminary support).
-Also, wraps 'OpenChrom' parsers, which include many additional formats. To use 'Entab',
-'ThermoRawFileParser', or 'OpenChrom' parsers, they must be manually installed.
-Please see the instructions in the
+(\code{.txt}), 'Shimadzu GCD', 'Shimadzu LCD' (DAD and chromatogram streams)
+and 'Shimadzu QGD' files. Also, wraps 'OpenChrom' parsers, which include many
+additional formats. To use 'Entab', 'ThermoRawFileParser', or 'OpenChrom'
+parsers, they must be manually installed. Please see the instructions in the
 \href{https://ethanbass.github.io/chromConverter/}{README} for further details.
 
 If paths to individual files are provided, \code{read_chroms} will try to

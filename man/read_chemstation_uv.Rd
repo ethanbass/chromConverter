@@ -6,7 +6,7 @@
 \usage{
 read_chemstation_uv(
   path,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
@@ -16,7 +16,8 @@ read_chemstation_uv(
 \arguments{
 \item{path}{Path to \code{.uv} file.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 

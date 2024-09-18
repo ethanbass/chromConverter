@@ -8,7 +8,8 @@ call_openchrom(
   files,
   path_out = NULL,
   format_in,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
+  data_format = c("wide", "long"),
   export_format = c("mzml", "csv", "cdf", "animl"),
   return_paths = FALSE,
   verbose = getOption("verbose")
@@ -22,7 +23,10 @@ call_openchrom(
 \item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame
 ionization data, or \code{wsd} for DAD/UV data.}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{R format. Either \code{matrix}, \code{data.frame} or
+\code{data.table}.}
+
+\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
 \item{export_format}{Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
 Defaults to \code{mzml}.}

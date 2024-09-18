@@ -7,7 +7,8 @@
 #'
 #' @importFrom utils head tail
 #' @param path Path to \code{.uv} file.
-#' @param format_out Matrix or data.frame.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
@@ -28,12 +29,12 @@
 #' \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
 #' @export
 
-read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
+read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
                                 scale = TRUE){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
@@ -102,10 +103,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   if (data_format == "long"){
     data <- reshape_chrom(data)
   }
-
-  if (format_out == "data.frame"){
-    data <- as.data.frame(data)
-  }
+  data <- convert_chrom_format(data, format_out = format_out)
 
   if (read_metadata){
     metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
@@ -123,6 +121,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame"),
   data
 }
 
+#' Decode 'Agilent' delta-encoded DAD array
 #' @author Ethan Bass
 #' @noRd
 decode_uv_delta <- function(f, nval, ncol){
@@ -149,6 +148,7 @@ decode_uv_delta <- function(f, nval, ncol){
   data
 }
 
+#' Decode 'Agilent' DAD array
 #' @author Ethan Bass
 #' @noRd
 decode_uv_array <- function(f, nval, ncol){

@@ -1,4 +1,46 @@
-utils::globalVariables(names = c('.'))
+utils::globalVariables(names = c('.', "rt"))
+
+#' Check Format Out Argument
+#' @noRd
+check_format_out <- function(format_out){
+  match.arg(format_out, c("matrix", "data.frame", "data.table"))
+}
+
+#' Convert chromatogram format
+#' @author Ethan Bass
+#' @noRd
+convert_chrom_format <- function(x, format_out){
+  if (inherits(x, format_out)){
+    return(x)
+  } else if (format_out == "matrix"){
+    return(as.matrix(x))
+  } else if (format_out == "data.frame"){
+    return(as.data.frame(x))
+  } else if (format_out == "data.table"){
+    return(data.table::as.data.table(x))
+  }
+}
+
+#' Format 2D chromatogram
+#' @noRd
+format_2d_chromatogram <- function(rt, int, data_format, format_out){
+  data_format <- match.arg(data_format, c("wide","long"))
+  format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
+  if (data_format == "wide" && any(duplicated(rt))){
+    stop("Some row names are duplicated. Please use `long` format instead.")
+  }
+  if (data_format == "long"){
+    dat <- data.frame(rt = rt, intensity = int)
+  } else{
+    dat <- data.frame(intensity = int, row.names = rt)
+  }
+  if (format_out == "matrix"){
+    dat <- as.matrix(dat)
+  } else if (format_out == "data.table"){
+    data.table::setDT(dat)
+  }
+  dat
+}
 
 #' Get filetype
 #' @noRd
@@ -28,9 +70,9 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                      "x01/x38/x00/x00" = "chemstation_8", #81
                      "x03/x31/x38/x31" = "chemstation_181", #181
                      "x01/xa1/x46/x00" = "ThermoRAW",
-                     "xd0/xcf/x11/xe0" = "ShimadzuLCD",
-                     "x1c/x00/x09/x03" = "VarianSMS",
-                     "x80/x00/x01/x00" = "WatersRAW",
+                     "xd0/xcf/x11/xe0" = "shimadzu_ole",
+                     "x1c/x00/x09/x03" = "varian_sms",
+                     "x80/x00/x01/x00" = "waters_raw",
                      "x43/x44/x46/x01" = "cdf"
   )
   if (is.null(filetype)){
@@ -43,6 +85,12 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
     magic2 <- paste(magic2, collapse = "")
     filetype <- switch(magic2, "OL" = "openlab_131",
                    "LC" = "chemstation_131")
+  } else if (filetype == "shimadzu_ole"){
+    filetype <- paste("shimadzu", tolower(fs::path_ext(path)),sep = "_")
+    # fp <- read_sz_file_properties(path)
+    # filetype <- switch(fp$FileProperty.dwFileType,
+    #        "67108895" = "shimadzu_lcd",
+    #        "67108975" = "shimadzu_gcd")
   }
   format_in <- switch(filetype,
                       "AgilentChemstationMS" = "chemstation",
@@ -52,9 +100,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                       # "chemstation_131" = "chemstation_uv",
                       # "openlab_131" = "chemstation_uv",
                       "ThermoRAW" = "thermoraw",
-                      "ShimadzuLCD" = "shimadzu_lcd",
                       "VarianSMS" = "varian_sms",
-                      "WatersRAW" = "waters_raw",
                       filetype
   )
   switch(out, "filetype" = filetype, "format_in" = format_in)
@@ -63,7 +109,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
 #' Check parser
 #' @noRd
 check_parser <- function(format_in, parser = NULL, find = FALSE){
-  allowed_formats <- list(openchrom = c("msd","csd","wsd"),
+  allowed_formats <- list(openchrom = c("msd", "csd", "wsd"),
                           chromconverter = c("agilent_dx", "cdf", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
@@ -74,7 +120,8 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                              "mzml", "mzxml", "mdf",
                                              "shimadzu_ascii", "shimadzu_dad",
                                              "shimadzu_fid", "shimadzu_gcd",
-                                             "shimadzu_lcd", "varian_sms",
+                                             "shimadzu_qgd", "shimadzu_lcd",
+                                             "varian_sms",
                                              "waters_arw", "waters_raw",
                                              "waters_chro"),
                           aston = c("chemstation_uv", "chemstation_131",
@@ -117,17 +164,25 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
         }
       }
     }
-    possible_parsers[1]
+    parser <- possible_parsers[1]
   } else{
     if (!(format_in %in% allowed_formats[[tolower(parser)]])){
       stop("Mismatched arguments!", "\n\n", "The ",
            paste0(sQuote(format_in), " format can be converted using the following parsers: ",
-        paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]), collapse = ", "), ". \n \n",
+        paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]),
+              collapse = ", "), ". \n \n",
         "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
-                                    paste(sQuote(allowed_formats[[parser]]), collapse=", "), ". \n \n",
+                                    paste(sQuote(allowed_formats[[parser]]),
+                                          collapse=", "), ". \n \n",
         "Please double check your arguments and try again."))
     }
   }
+  if (parser == "entab" & !requireNamespace("entab", quietly = TRUE)) {
+    stop("The entab R package must be installed to use entab parsers:
+      install.packages('entab', repos='https://ethanbass.github.io/drat/')",
+         call. = FALSE)
+  }
+  return(parser)
 }
 
 #' Remove unicode characters
@@ -175,11 +230,14 @@ format_to_extension <- function(format_in){
          "shimadzu_fid" = "\\.txt$",
          "shimadzu_dad" = "\\.txt$",
          "shimadzu_lcd" = "\\.lcd$",
+         "shimadzu_gcd" = "\\.gcd$",
+         "shimadzu_qgd" = "\\.qgd",
          "chromeleon_uv" = "\\.txt$",
          "thermoraw" = "\\.raw$",
          "cdf" = "\\.cdf$",
          "mzml" = "\\.mzml$",
          "mzxml" = "\\.mzxml$",
+         "varian_sms" = "\\.sms$",
          "waters_arw" = "\\.arw$",
          "waters_raw" = "\\.raw$",
          "msd" = "\\.",

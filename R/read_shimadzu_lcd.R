@@ -51,12 +51,12 @@
 #' the acquisition times diverge slightly from the ASCII file.
 #' @export
 
-read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame"),
+read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame", "data.table"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
                                 scale = TRUE){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
@@ -155,10 +155,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
   if (data_format == "long"){
     dat <- reshape_chrom(dat, data_format = "wide")
   }
-
-  if (format_out == "data.frame"){
-    dat <- as.data.frame(dat)
-  }
+  dat <- convert_chrom_format(dat, format_out = format_out)
   if (read_metadata){
     meta <- read_sz_file_properties(path)
     meta <- c(meta, DI)
@@ -216,12 +213,12 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' \code{wide} or \code{long} format according to the value of \code{data_format}.
 #' @export
 
-read_sz_lcd_2d <- function(path, format_out = "matrix",
+read_sz_lcd_2d <- function(path, format_out = "data.frame",
                             data_format = "wide",
                             read_metadata = TRUE,
                             metadata_format = "shimadzu_lcd",
                             scale = TRUE){
-  if (data_format == "long"){
+  if (data_format == "long" && format_out == "matrix"){
     format_out <- "data.frame"
   }
   existing_streams <- check_streams(path, what = "chromatogram")
@@ -246,13 +243,11 @@ read_sz_lcd_2d <- function(path, format_out = "matrix",
       dat <- dat*DI$detector.vf
     }
     if (data_format == "long"){
-      dat <- data.frame(rt = times, int = dat$int, detector = DI$DETN,
-                   channel = DI$DSCN, wavelength = DI$ADN,
+      dat <- data.frame(rt = times, intensity = dat$int, detector = DI$DETN,
+                   channel = DI$DSCN, lambda = DI$ADN,
                    unit = DI$detector.unit)
     }
-    if (format_out == "matrix"){
-      dat <- as.matrix(dat)
-    }
+    dat <- convert_chrom_format(dat, format_out = format_out)
     if (read_metadata){
       dat <- attach_metadata(dat, c(meta, DI), format_in = metadata_format,
                              source_file = path, data_format = data_format,
@@ -262,7 +257,7 @@ read_sz_lcd_2d <- function(path, format_out = "matrix",
   })
 
   names(dat) <- sapply(dat, function(x){
-    det <- gsub("Detector ", "", attr(x,"detector"))
+    det <- gsub("Detector ", "", attr(x, "detector"))
     wv <- attr(x, "wavelength")
     ifelse(wv == "", det, paste(det, wv, sep = ", "))
   })
@@ -301,7 +296,7 @@ read_sz_lcd_2d <- function(path, format_out = "matrix",
 #' yet able to interpret much metadata from the files.
 #' @export
 
-read_sz_tic <- function(path, format_out = c("matrix", "data.frame"),
+read_sz_tic <- function(path, format_out = "data.frame",
                               data_format = c("wide", "long"),
                               read_metadata = TRUE){
   path_tic <- check_streams(path, what = "tic")
@@ -311,11 +306,9 @@ read_sz_tic <- function(path, format_out = c("matrix", "data.frame"),
   dat <- decode_sz_tic(f)
   if (data_format == "wide"){
     row.names(dat) <- dat[, "rt"]
-    dat <- dat[,"int", drop=FALSE]
+    dat <- dat[, "intensity", drop = FALSE]
   }
-  if (format_out == "data.frame"){
-    dat <- as.data.frame(dat)
-  }
+  dat <- convert_chrom_format(dat, format_out = format_out)
   dat
 }
 
@@ -338,16 +331,17 @@ decode_sz_tic <- function(f){
     count <- count + 1
   }
   mat[,1] <- mat[,1]/1000
-  colnames(mat) <- c("rt", "index", "int")
+  colnames(mat) <- c("rt", "index", "intensity")
   mat
 }
 
+#' Read Shimadzu chromatogram
 #' @noRd
 read_sz_chrom <- function(path, stream){
   path_raw <- export_stream(path, stream = stream)
   f <- file(path_raw, "rb")
   on.exit(close(f))
-  data.frame(int = decode_sz_block(f))
+  data.frame(intensity = decode_sz_block(f))
 }
 
 #' Read 'Shimadzu' "Method" stream
@@ -390,7 +384,7 @@ read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
 #' (more reliably?) from the 2D Data Item.
 #' @author Ethan Bass
 #' @noRd
-get_sz_times <- function(sz_method, what = c("pda","chromatogram"), nval){
+get_sz_times <- function(sz_method, what = c("pda", "chromatogram"), nval){
   what <- match.arg(what, c("pda", "chromatogram"))
   fields <- switch(what, "pda" = c("StTm", "EdTm"),
                          "chromatogram" = c("ACQ$StartTm#1", "ACQ$EndTm#1"))
@@ -459,7 +453,7 @@ read_sz_wavelengths <- function(path){
                                                  "Wavelength Table"))
   f <- file(path_wavtab, "rb")
   on.exit(close(f))
-  n_lambda <- readBin(f, what="integer", size = 4)
+  n_lambda <- readBin(f, what = "integer", size = 4)
   count <- 1
   lambdas <- sapply(seq_len(n_lambda), function(i){
     readBin(f, what = "integer", size = 4)/100
@@ -659,8 +653,8 @@ read_sz_3DDI <- function(path){
   meta <- as.list(xml2::xml_text(nodes[-rm]))
   names(meta) <- xml2::xml_name(nodes[-rm])
 
-  meta[c("WVB","WVE","WLS")] <-
-    lapply(meta[c("WVB","WVE","WLS")], function(x){
+  meta[c("WVB", "WVE", "WLS")] <-
+    lapply(meta[c("WVB", "WVE", "WLS")], function(x){
       sz_float(x)/100
   })
   meta <- c(meta, read_sz_2DDI(xml2::xml_find_all(doc,
@@ -685,16 +679,16 @@ read_sz_2DDI <- function(path, read_file = TRUE, idx = 1){
   meta <- xml2::xml_text(nodes[-ddi_idx])
   names(meta) <- xml2::xml_name(nodes[-ddi_idx])
 
-  meta[c("CF","GF","AT","DLT")] <-
-    lapply(meta[c("CF","GF","AT","DLT")], function(x) sz_float(x))
+  meta[c("CF", "GF", "AT", "DLT")] <-
+    lapply(meta[c("CF", "GF", "AT", "DLT")], function(x) sz_float(x))
 
   meta <- c(meta, extract_axis_metadata(nodes))
 
   meta$time.vf <- ifelse(is.na(meta$time.vf), 60000, meta$time.vf)
   meta$detector.vf <- 1/meta$detector.vf
 
-  meta[c("AT","DLT","Rate")] <-
-    lapply(meta[c("AT","DLT","Rate")], function(x) as.numeric(x)/meta$time.vf)
+  meta[c("AT", "DLT", "Rate")] <-
+    lapply(meta[c("AT", "DLT", "Rate")], function(x) as.numeric(x)/meta$time.vf)
 
   meta
 }
@@ -711,7 +705,7 @@ extract_axis_metadata <- function(x){
     } else NA
 
   })
-  names(ax) <- c("detector","time")
+  names(ax) <- c("detector", "time")
   unlist(lapply(ax, function(x){
     if (inherits(x, "xml_node")){
       list(vf = xml2::xml_find_all(x, "VF") |> xml2::xml_text() |> sz_float(),

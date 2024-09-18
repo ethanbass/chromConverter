@@ -4,7 +4,8 @@
 #'
 #' @importFrom utils tail read.csv
 #' @param path Path to file
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
@@ -14,11 +15,11 @@
 #' @author Ethan Bass
 #' @export
 
-read_chromeleon <- function(path, format_out = c("matrix", "data.frame"),
+read_chromeleon <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                             data_format = c("wide", "long"),
                             read_metadata = TRUE,
                             metadata_format = c("chromconverter", "raw")){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, chromconverter = "chromeleon",
@@ -37,14 +38,12 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame"),
     decimal_separator <- "."
   }
   x <- apply(x, 2, as.numeric)
-  colnames(x) <- c("RT", "Intensity")
+  colnames(x) <- c("rt", "intensity")
   if (data_format == "wide"){
     rownames(x) <- x[,1]
     x <- x[, 2, drop = FALSE]
   }
-  if (format_out == "data.frame"){
-    x <- as.data.frame(x)
-  }
+  x <- convert_chrom_format(x, format_out = format_out)
   if (read_metadata){
     meta <- try(read_chromeleon_metadata(xx))
     if (decimal_separator == ","){

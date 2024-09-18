@@ -77,7 +77,8 @@ read_chemstation_report <- function(path, data_format = c("chromatographr", "ori
     metadata <- gsub("^\\s+","", metadata)
     metadata <- gsub("\\s+\\:\\s+", " : ", metadata)
     metadata <- merge_lines(metadata)
-    metadata <- unlist(strsplit(metadata, "(?<!\\s:\\s)\\s{2,}(?!\\s)", perl = TRUE))
+    metadata <- unlist(strsplit(metadata, "(?<!\\s:\\s)\\s{2,}(?!\\s)",
+                                perl = TRUE))
 
     sample_info <- x[1:(sections[1]-1)]
     sample_info <- remove_blank_lines(sample_info)
@@ -103,7 +104,7 @@ read_chemstation_report <- function(path, data_format = c("chromatographr", "ori
 #' @author Ethan Bass
 #' @noRd
 convert_chemstation_peaklist <- function(table, data_format =
-                                           c("chromatographr","original")){
+                                           c("chromatographr", "original")){
   markdown_table <- table[-which(table == "")]
   split.pos <- c(1,gregexpr("\\|",markdown_table[4])[[1]])
   header1 <- sapply(seq_len(length(split.pos)-1), function(i){
@@ -126,7 +127,7 @@ convert_chemstation_peaklist <- function(table, data_format =
   df <- data.frame(matrix(unlist(rows), nrow = length(rows), byrow = TRUE),
                    stringsAsFactors = FALSE)
   colnames(df) <- header
-  df2 <- as.data.frame(purrr::map_df(df[,-c(which(colnames(df)=="Type"))],
+  df2 <- as.data.frame(purrr::map_df(df[,-c(which(colnames(df) == "Type"))],
                                      as.numeric))
   df2 <- cbind(df2, df[, "Type", drop = FALSE])
   if (data_format == "chromatographr"){

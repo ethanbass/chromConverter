@@ -8,7 +8,8 @@
 #' @name read_waters_arw
 #' @importFrom utils tail read.csv
 #' @param path Path to file
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
@@ -18,11 +19,11 @@
 #' @author Ethan Bass
 #' @export
 
-read_waters_arw <- function(path, format_out = c("matrix", "data.frame"),
+read_waters_arw <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                             data_format = c("wide", "long"),
                             read_metadata = TRUE,
                             metadata_format = c("chromconverter", "raw")){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
@@ -42,12 +43,10 @@ read_waters_arw <- function(path, format_out = c("matrix", "data.frame"),
   } else if (ncol(x) == 1){
     colnames(x) <- "Intensity"
     if (data_format == "long"){
-      x <- data.frame(RT = rownames(x), Intensity = x[,1])
+      x <- data.frame(rt = rownames(x), intensity = x[,1])
     }
   }
-  if (format_out == "matrix"){
-    x <- as.matrix(x)
-  }
+  x <- convert_chrom_format(x, format_out = format_out)
   if (read_metadata){
     meta <- try(read_waters_metadata(path))
     if (!inherits(meta, "try-error")){
