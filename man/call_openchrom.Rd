@@ -50,7 +50,9 @@ system call to the command-line interface. To use this function
 \href{https://lablicate.com/platform/openchrom}{OpenChrom} (version 0.4.0) must be
 manually installed. The command line interface is no longer supported in the
 latest versions of OpenChrom (starting with version 0.5.0), so the function
-will not work with these newer versions.
+will no longer work with these newer versions. OpenChrom 1.4 has been scrubbed
+from the internet, but OpenChrom 1.3 is still available from
+\href{https://sourceforge.net/projects/openchrom/files/REL-1.3.0/}{SourceForge}.
 }
 \details{
 The \code{call_openchrom} works by creating an \code{xml} batchfile and
@@ -65,7 +67,7 @@ the OpenChrom parsers, you must select one of these three options for the
 input format (\code{format_in}).
 }
 \note{
-Turning on the OpenChrom command-line will deactivate the graphical
+Activating the OpenChrom command-line will deactivate the graphical
 user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
 it is recommended to create a separate command-line version of OpenChrom to
 call from R.
