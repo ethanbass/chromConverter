@@ -16,6 +16,7 @@
 * Harmonized file path arguments across parser functions by changing `file` arguments to `path`.
 * Harmonized column names in output across parsers.
 * Small changes in `read_cdf` UI: `what` now defaults to `NULL` and defaults are coded into downstream `read_andi_chrom` and `read_andi_ms` functions.
+* Added extra verbosity in `read_chroms` when `verbose` is `TRUE`.
 
 ### Other improvements
 

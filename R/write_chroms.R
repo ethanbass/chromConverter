@@ -101,8 +101,9 @@ write_cdf <- function(x, path_out, sample_name, lambda = NULL, force = FALSE){
 #' @author Ethan Bass
 #' @noRd
 export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE,
-                        force = FALSE){
+                        force = FALSE, verbose = getOption("verbose")){
   sapply(seq_along(data), function(i){
+    if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".csv")))
     if (attr(data[[i]], "data_format") == "wide"){
       data[[i]] <- data.frame(rt = rownames(data[[i]]), data[[i]])
     }
@@ -115,9 +116,10 @@ export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE,
 #' @author Ethan Bass
 #' @noRd
 export_cdf <- function(data, path_out, force = FALSE,
-                       show_progress = TRUE){
+                       show_progress = TRUE, verbose = getOption("verbose")){
   laplee <- choose_apply_fnc(show_progress)
   laplee(seq_along(data), function(i){
+    if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".cdf")))
     try(write_cdf(data[[i]], path_out = path_out, sample_name = names(data)[i],
                   force = force))
   })
@@ -127,10 +129,11 @@ export_cdf <- function(data, path_out, force = FALSE,
 #' @author Ethan Bass
 #' @noRd
 export_mzml <- function(data, path_out, force = FALSE,
-                        show_progress = TRUE){
+                        show_progress = TRUE, verbose = getOption("verbose")){
   laplee <- choose_apply_fnc(show_progress)
 
   laplee(seq_along(data), function(i){
+    if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".mzml")))
     try(write_mzml(data[[i]], path_out = fs::path(path_out, names(data)[i],
                                                   ext = "mzml"),
                    show_progress = FALSE, force = force))

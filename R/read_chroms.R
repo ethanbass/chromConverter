@@ -367,6 +367,9 @@ read_chroms <- function(paths,
   if (parser != "openchrom"){
     laplee <- choose_apply_fnc(progress_bar, cl = cl)
     data <- laplee(X = files, function(file){
+      if (verbose){
+        message(sprintf("Reading %s", basename(file)))
+      }
       df <- try(converter(file), silent = TRUE)
     })
     errors <- which(sapply(data, function(x) inherits(x,"try-error")))
@@ -395,7 +398,7 @@ read_chroms <- function(paths,
                                            show_progress = progress_bar))
     if (verbose)
       message(sprintf("Writing to %s...", toupper(export_format)))
-    writer(data, path_out = path_out, force = force)
+    writer(data, path_out = path_out, force = force, verbose = verbose)
   }
   dat <- append(dat, data)
   dat
