@@ -23,25 +23,26 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
       structure(x, metadata = meta, data_format = data_format, parser = parser,
                 source_file = source_file)
     }, "asm" = {
-        structure(x, sample_name = meta$written_name,
-                sample_id = meta$sample_identifier,
+        structure(x, sample_name = meta$`sample document`$written_name,
+                sample_id = meta$`sample document`$sample_identifier,
                 file_version = meta$file_version,
-                file_type = "asm",
+                file_type = NA,
                 instrument = meta$`asset management identifier`,
-                detector = meta$`detector model number`,
+                detector = meta$detector_model_number,
                 detector_range = get_asm_wavelength(meta),
                 detector_unit = meta$detector_unit,
                 detector_reference = get_asm_wavelength(meta,
-                                                        lab = "reference_wavelength_setting"),
+                                                        lab = "reference_wavelength_setting_value"),
                 software = NA,
                 software_version = NA,
                 software_revision = NA,
                 method = NA,
                 batch = NA,
                 operator = meta$operator,
-                run_datetime = meta$injection_time,
-                sample_injection_volume = paste(meta$injection_volume_value,
-                                                meta$injection_volume_unit),
+                run_datetime = as.POSIXct(strptime(meta$`injection document`$injection_time,
+                                                   format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC")),
+                sample_injection_volume = paste(meta$`injection document`$autosampler_injection_volume_setting_chromatography_value,
+                                                meta$`injection document`$autosampler_injection_volume_setting_chromatography_unit),
                 sample_amount = NA,
                 # time_range = meta$time_range,
                 # time_interval = NA,
@@ -598,9 +599,10 @@ extract_metadata <- function(chrom_list,
                                       "data_format", "parser", "format_out"),
                              format_out = c("data.frame", "tibble")
                                                   ){
-  if (is.matrix(chrom_list) | is.data.frame(chrom_list)){
+  if (inherits(chrom_list, c("matrix", "data.table", "data.frame"))){
     chrom_list <- list(chrom_list)
-  }
+    use_names <- FALSE
+  } else use_names <- TRUE
   what <- match.arg(what, several.ok = TRUE)
   format_out <- match.arg(format_out, c("data.frame", "tibble"))
   metadata <- purrr::map_df(chrom_list, function(chrom){
@@ -608,11 +610,11 @@ extract_metadata <- function(chrom_list,
       attr(chrom, which = x)
     }, simplify = FALSE))
   })
-  if (format_out == "tibble"){
+  if (use_names && format_out == "tibble"){
     metadata <- tibble::add_column(.data = metadata,
                                    data.frame(name = names(chrom_list)),
                                    .before=TRUE)
-  } else if (format_out == "data.frame"){
+  } else if (use_names && format_out == "data.frame"){
     metadata <- data.frame(name = names(chrom_list), metadata,
                            row.names = names(chrom_list))
   }
@@ -640,7 +642,15 @@ get_sz_wv <- function(meta){
   } else{
     get_metadata_field(meta, "ADN")
   }
+}
 
+
+#' Extract ASM wavelength from metadata list
+#' @author Ethan Bass
+#' @noRd
+get_asm_wavelength <- function(meta, lab = "absorbance_wavelength_setting.value"){
+  wv_idx <- grep(lab, names(meta$`device control aggregate document`))
+  unique(unlist(meta$`device control aggregate document`[wv_idx]))
 }
 
 #' Convert date-time string to POSIXct
