@@ -110,7 +110,8 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
 #' @noRd
 check_parser <- function(format_in, parser = NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd", "csd", "wsd"),
-                          chromconverter = c("agilent_dx", "cdf", "chemstation_csv",
+                          chromconverter = c("agilent_d", "agilent_dx", "asm",
+                                             "cdf", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
                                              "chemstation_30", "chemstation_31",
