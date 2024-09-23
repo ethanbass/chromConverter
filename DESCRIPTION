@@ -37,7 +37,8 @@ Imports:
     xml2,
     bit64,
     data.table,
-    base64enc
+    base64enc,
+    jsonlite
 Suggests: 
     entab,
     ncdf4,
@@ -48,7 +49,7 @@ Suggests:
 Config/reticulate: list( packages = list(list(package = "scipy"),
                                     list(package="numpy"),
                                     list(package = "pandas"),
-                                    list(package="aston", pip = TRUE),
+                                    list(package="Aston", pip = TRUE),
                                     list(package="rainbow-api", pip = TRUE),
                                     list(package = "olefile", pip = TRUE)) )
 Encoding: UTF-8

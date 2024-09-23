@@ -69,9 +69,10 @@
 #' @param dat Existing list of chromatograms to append results.
 #' (Defaults to NULL).
 #' @param ... Additional arguments to parser.
-#' @return A list of chromatograms in \code{matrix} or \code{data.frame} format,
-#' according to the value of \code{format_out}. Chromatograms may be returned
-#' in either \code{wide} or \code{long} format according to the value of
+#' @return A list of chromatograms in \code{matrix}, \code{data.frame}, or
+#' \code{data.table} format, according to the value of \code{format_out}.
+#' Chromatograms may be returned in either \code{wide} or \code{long} format
+#' according to the value of
 #' \code{data_format}.
 #' @section Side effects: If an \code{export_format} is provided, chromatograms
 #' will be exported in the specified format specified into the folder
@@ -88,17 +89,18 @@
 #' @export read_chroms
 
 read_chroms <- function(paths,
-                        format_in = c("agilent_d", "agilent_dx", "chemstation",
-                                    "chemstation_fid", "chemstation_ch",
-                                    "chemstation_csv", "chemstation_uv",
-                                    "masshunter_dad", "chromeleon_uv",
-                                    "mzml", "mzxml", "mdf",
-                                    "shimadzu_ascii", "shimadzu_dad",
-                                    "shimadzu_fid", "shimadzu_gcd",
-                                    "shimadzu_qgd", "shimadzu_lcd",
-                                    "thermoraw", "varian_sms",
-                                    "waters_arw", "waters_raw",
-                                    "msd", "csd", "wsd", "other"),
+                        format_in = c("agilent_d", "agilent_dx", "asm",
+                                      "chemstation", "chemstation_fid",
+                                      "chemstation_ch", "chemstation_csv",
+                                      "chemstation_uv",
+                                      "masshunter_dad", "chromeleon_uv",
+                                      "mzml", "mzxml", "mdf",
+                                      "shimadzu_ascii", "shimadzu_dad",
+                                      "shimadzu_fid", "shimadzu_gcd",
+                                      "shimadzu_qgd", "shimadzu_lcd",
+                                      "thermoraw", "varian_sms",
+                                      "waters_arw", "waters_raw",
+                                      "msd", "csd", "wsd", "other"),
                         find_files,
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
@@ -141,25 +143,27 @@ read_chroms <- function(paths,
     if (!find_files){
       format_in <- get_filetype(paths[1])
     } else{
-        stop("Please specify the file format of your chromatograms by setting the `format_in` argument.")
+        stop("Files could not be identified. Please specify a file format using
+             the `format_in` argument.")
     }
   }
-  format_in <- match.arg(tolower(format_in), c("agilent_d", "agilent_dx", "chemstation",
-                                      "chemstation_uv", "chemstation_ch",
-                                      "chemstation_30", "chemstation_31",
-                                      "chemstation_130", "chemstation_131",
-                                      "openlab_131", "chemstation_179",
-                                      "chemstation_81", "chemstation_181",
-                                      "chemstation_fid", "chemstation_csv",
-                                      "masshunter_dad", "shimadzu_ascii",
-                                      "shimadzu_dad", "shimadzu_fid",
-                                      "shimadzu_gcd", "shimadzu_lcd",
-                                      "shimadzu_qgd", "varian_sms",
-                                      "chromeleon_uv", "thermoraw", "mzml", "mzxml",
-                                      "waters_arw", "waters_raw", "msd", "csd",
-                                      "wsd", "mdf", "cdf", "other"))
+  format_in <- match.arg(tolower(format_in),
+                         c("agilent_d", "agilent_dx", "asm", "chemstation",
+                           "chemstation_uv", "chemstation_ch", "chemstation_30",
+                           "chemstation_31", "chemstation_130",
+                           "chemstation_131", "openlab_131", "chemstation_179",
+                           "chemstation_81", "chemstation_181",
+                           "chemstation_fid", "chemstation_csv",
+                           "masshunter_dad", "shimadzu_ascii", "shimadzu_dad",
+                           "shimadzu_fid", "shimadzu_gcd", "shimadzu_lcd",
+                           "shimadzu_qgd", "varian_sms", "chromeleon_uv",
+                           "thermoraw", "mzml", "mzxml", "waters_arw",
+                           "waters_raw", "msd", "csd", "wsd", "mdf", "cdf",
+                           "other"))
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
+    if (is.na(parser)) stop(sprintf(
+      "Parser could not be identified for format %s", format_in))
   } else{
     check_parser(format_in, parser)
   }
@@ -171,7 +175,8 @@ read_chroms <- function(paths,
     export_format <- "mzml"
   }
   if (parser != "openchrom" && export_format == "animl")
-    stop("The selected export format is currently only supported by `openchrom` parsers.")
+    stop("The selected export format is currently only supported by `openchrom`
+         parsers.")
 
   exists <- dir.exists(paths) | file.exists(paths)
   if (all(!exists)){
@@ -208,12 +213,23 @@ read_chroms <- function(paths,
                             metadata_format = metadata_format, ...)
 
   if (format_in == "agilent_d"){
-    converter <- rainbow_parser
+    converter <- switch(parser,
+                        "chromconverter" =  partial(read_agilent_d,
+                                                    format_out = format_out,
+                                                    data_format = data_format,
+                                                    read_metadata = read_metadata,
+                                                    metadata_format = metadata_format),
+                        "rainbow" = rainbow_parser)
   } else if (format_in == "agilent_dx"){
     converter <- partial(read_agilent_dx, path_out = path_out,
                          format_out = format_out,
                          data_format = data_format,
                          read_metadata = read_metadata)
+  } else if (format_in == "asm"){
+    converter <- partial(read_asm, format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata,
+                         metadata_format = metadata_format)
   } else if (format_in == "masshunter_dad"){
     converter <- switch(parser,
                         "aston" = partial(sp_converter, format_out = format_out,
