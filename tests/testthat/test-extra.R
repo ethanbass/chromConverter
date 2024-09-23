@@ -326,6 +326,53 @@ test_that("read_chroms can read 'Agilent MassHunter' dad files", {
   expect_equal(colnames(x1), c("rt", "lambda", "intensity"))
 })
 
+
+test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("chemstation_181.D",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chroms(path, format_in = "agilent_d", progress_bar = FALSE)[[1]]
+
+  expect_type(x, "list")
+  expect_equal(class(x[[1]]), c("matrix","array"))
+  expect_equal(dim(x[[2]]), c(5914, 1))
+
+  # check metadata
+  expect_equal(attr(x[[1]], "sample_name"), "blanc421")
+  expect_equal(attr(x[[1]], "file_version"), "181")
+  expect_equal(attr(x[[1]], "detector_unit"), "pA")
+  expect_equal(attr(x[[1]], "method"), "DET3300.M")
+  expect_equal(attr(x[[1]], "run_datetime"), as.POSIXct("2022-08-23 12:16:25",
+                                                        tz="UTC"))
+  expect_equal(attr(x[[1]], "time_unit"), "Minutes")
+
+  expect_equal(attr(x[[2]], "sample_name"), "140+H")
+  expect_equal(attr(x[[2]], "file_version"), "181")
+  expect_equal(attr(x[[2]], "detector_unit"), "pA")
+  expect_equal(attr(x[[2]], "method"), "DET3300.M")
+  expect_equal(attr(x[[2]], "run_datetime"), as.POSIXct("2022-08-23 12:48:20",
+                                                        tz="UTC"))
+  expect_equal(attr(x[[2]], "time_unit"), "Minutes")
+
+  # long format
+  x1 <- read_chroms(path, format_in="agilent_d", data_format = "long",
+                    format_out = "data.table",
+                    progress_bar = FALSE)[[1]]
+  expect_type(x1,"list")
+  expect_s3_class(x1[[1]],"data.table")
+  expect_equal(x[[1]][,1], x1[[1]][[2]], ignore_attr=TRUE)
+  expect_equal(as.numeric(rownames(x[[1]])), x1[[1]][[1]])
+  expect_equal(x[[2]][,1], x1[[2]][[2]], ignore_attr=TRUE)
+  expect_equal(colnames(x1[[1]]), c("rt","intensity"))
+
+  #error
+  expect_equal(extract_metadata(x)[,c(1:8)], extract_metadata(x1)[,c(1:8)])
+})
+
 test_that("read_chroms can read 'Waters ARW' PDA files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
@@ -798,7 +845,7 @@ test_that("Shimadzu QGD parser works", {
   # expect_equal(x1$metadata$timestamp, attr(x$MS1, "run_datetime"))
 })
 
-test_that("read_chroms can read 'Varian' SMS", {
+test_that("read_chroms can read Varian SMS", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -847,6 +894,52 @@ test_that("read_chroms can read 'Varian' SMS", {
   expect_equal(attr(x$TIC, "ms_params")$temp_manifold, 50)
   expect_equal(attr(x$TIC, "ms_params")$temp_transferline, 250)
   expect_equal(attr(x$TIC, "ms_params")$axial_modulation, 4)
+  # attr(x$MS1, "run_datetime") # should be 8/8/2014 8:50 PM - 9:20 PM
   expect_equal(x2$metadata$source_file, basename(attr(x$MS1,"source_file")))
   # expect_equal(x2$metadata$timestamp, attr(x$MS1,"run_datetime")[1])
+})
+
+test_that("read_chroms can read ASM LC format", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("ASM-liquid-chromatography.json",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chroms(path, format_in = "asm", format_out = "data.table",
+                   progress_bar = FALSE)[[1]]
+  expect_equal(names(x), c("single channel", "UV spectrum"))
+  expect_equal(nrow(x[[1]]), 36000)
+  expect_s3_class(x[[1]], c("data.table","data.frame"))
+  expect_equal(attr(x[[1]], "sample_name"), "Sample 1")
+  expect_equal(attr(x[[1]], "instrument"), "LC344")
+  expect_equal(attr(x[[1]], "detector_range"), 210)
+  expect_equal(attr(x[[1]], "detector_unit"), "mAU")
+  expect_equal(attr(x[[1]], "run_datetime"), as.POSIXct("2016-10-20 06:33:54",
+                                                        tz = "UTC"))
+  expect_equal(as.character(attr(x[[1]], "time_unit")), "s")
+  expect_equal(as.character(attr(x[[1]], "data_format")), "wide")
+})
+
+test_that("read_chroms can read ASM GC format", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("ASM-gas-chromatography.tabular.json",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chroms(path, format_in = "asm", format_out = "data.frame",
+                   data_format = "long", progress_bar = FALSE)[[1]]
+
+  expect_equal(nrow(x), 36000)
+  expect_s3_class(x, "data.frame")
+  expect_equal(attr(x, "sample_name"), "22-00465-1")
+  expect_equal(attr(x, "instrument"), "GC65")
+  expect_equal(attr(x, "detector_unit"), "pA")
+  expect_equal(attr(x, "run_datetime"), as.POSIXct("2022-05-12 11:24:28",
+                                                   tz = "UTC"))
+  expect_equal(as.character(attr(x, "time_unit")), "s")
+  expect_equal(as.character(attr(x, "data_format")), "long")
 })
