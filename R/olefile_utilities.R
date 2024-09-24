@@ -38,10 +38,10 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
 
 #' Check OLE stream size
 #' @noRd
-check_streams <- function(path, what = c("pda", "chromatogram", "tic", ""),
+check_streams <- function(path, what = c("pda", "chroms", "tic", ""),
                           stream = NULL,
                           boolean = FALSE){
-  what <- match.arg(what, c("pda", "chromatogram", "tic", ""))
+  what <- match.arg(what, c("pda", "chroms", "tic", ""))
   olefile <- reticulate::import("olefile")
   ole <- olefile$OleFileIO(path)
   if (what == "pda"){
@@ -53,7 +53,7 @@ check_streams <- function(path, what = c("pda", "chromatogram", "tic", ""),
     }
   } else {
     streams <- ole$listdir()
-    what <- switch(what, "chromatogram" = "Chromatogram Ch",
+    what <- switch(what, "chroms" = "Chromatogram Ch",
                    "tic" = "Centroid SumTIC")
     selected_streams <- streams[grep(what, streams)]
     sizes <- sapply(selected_streams, function(x){

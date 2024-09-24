@@ -6,7 +6,7 @@
 \usage{
 read_shimadzu(
   path,
-  what = "chromatogram",
+  what = "chroms",
   format_in = NULL,
   include = c("fid", "lc", "dad", "uv", "tic"),
   format_out = c("matrix", "data.frame"),
@@ -22,8 +22,8 @@ read_shimadzu(
 \arguments{
 \item{path}{Path to file.}
 
-\item{what}{Whether to extract \code{chromatogram}, \code{peak_table}, and/or
-\code{ms_spectra}. Accepts multiple arguments.}
+\item{what}{Whether to extract chromatograms (\code{chroms}),
+\code{peak_table}, and/or \code{ms_spectra}. Accepts multiple arguments.}
 
 \item{format_in}{This argument is deprecated and is no longer required.}
 

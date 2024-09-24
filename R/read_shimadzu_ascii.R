@@ -8,8 +8,8 @@
 #' @importFrom utils tail read.csv
 #' @importFrom stringr str_split_fixed
 #' @param path Path to file.
-#' @param what Whether to extract \code{chromatogram}, \code{peak_table}, and/or
-#' \code{ms_spectra}. Accepts multiple arguments.
+#' @param what Whether to extract chromatograms (\code{chroms}),
+#' \code{peak_table}, and/or \code{ms_spectra}. Accepts multiple arguments.
 #' @param include Which chromatograms to include. Options are \code{fid},
 #' \code{dad}, \code{uv}, \code{tic}, and \code{status}.
 #' @param format_in This argument is deprecated and is no longer required.
@@ -33,7 +33,7 @@
 #' @author Ethan Bass
 #' @export
 
-read_shimadzu <- function(path, what = "chromatogram",
+read_shimadzu <- function(path, what = "chroms",
                           format_in = NULL,
                           include =  c("fid", "lc", "dad", "uv", "tic"),
                           format_out = c("matrix", "data.frame"),
@@ -48,7 +48,11 @@ read_shimadzu <- function(path, what = "chromatogram",
     function no longer requires you to specify the file format. Please use the
     `include` argument instead to specify which chromatograms you'd like to read.")
   }
-  what <- match.arg(what, c("chromatogram", "peak_table", "ms_spectra"),
+  if (any(what == "chromatogram")){
+    warning("The `chromatogram` argument to `what` is deprecated. Please use `chroms` instead.")
+    what[which(what == "chromatogram")] <- "chroms"
+  }
+  what <- match.arg(what, c("chroms", "peak_table", "ms_spectra"),
                     several.ok = TRUE)
   include <- match.arg(include, c("fid", "lc", "dad", "uv", "tic", "status"),
                        several.ok = TRUE)
@@ -62,7 +66,7 @@ read_shimadzu <- function(path, what = "chromatogram",
   sep <- substr(x[grep("Output Date", x)[1]], 12, 12)
 
   ### extract chromatograms ###
-  if (any(what == "chromatogram")){
+  if (any(what == "chroms")){
 
     regex <- c("fid" = "\\[Chromatogram .*]",
                "lc" = "\\[LC Chromatogram\\(.+\\)]",
@@ -82,7 +86,7 @@ read_shimadzu <- function(path, what = "chromatogram",
         what <- what[grep("chroms", what, invert = TRUE)]
       }
     }
-    chromatogram <- lapply(seq_along(chrom.idx), function(i){
+    chroms <- lapply(seq_along(chrom.idx), function(i){
       read_shimadzu_chrom <- switch(names(chrom.idx)[i],
                                     "dad" = read_shimadzu_dad,
                                     read_shimadzu_chromatogram)
@@ -96,13 +100,13 @@ read_shimadzu <- function(path, what = "chromatogram",
       if (collapse) xx <- collapse_list(xx)
       xx
     })
-    names(chromatogram) <- names(chrom.idx)
+    names(chroms) <- names(chrom.idx)
     if (data_format == "long"){
       # how to merge metadata appropriately?
       if (inherits(chromatogram[[1]],"list")){
-        chromatogram <- unlist(chromatogram, recursive = FALSE)
+        chroms <- unlist(chroms, recursive = FALSE)
       }
-      chromatogram <- do.call(rbind, chromatogram)
+      chroms <- do.call(rbind, chroms)
     }
   }
 
@@ -149,9 +153,9 @@ read_shimadzu <- function(path, what = "chromatogram",
       ms_spectra <- ms_list_to_dataframe(ms_spectra)
     }
   }
-  xx <- mget(what)
-  if (collapse) xx <- collapse_list(xx)
-  xx
+  dat <- mget(what, ifnotfound = NA)
+  if (collapse) dat <- collapse_list(dat)
+  dat
 }
 
 #' Convert list of mass spectra to data.frame

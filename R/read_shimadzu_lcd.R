@@ -32,8 +32,8 @@
 #' at each position from the previous value.
 #'
 #' @param path Path to LCD file.
-#' @param what What stream to get: current options are \code{pda},
-#' \code{chromatogram}, or \code{tic}. If a stream is not specified,
+#' @param what What stream to get: current options are \code{pda}, chromatograms
+#' \code{chroms}, or \code{tic}. If a stream is not specified,
 #' the function will default to \code{pda} if the PDA stream is present.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
@@ -42,44 +42,75 @@
 #' or \code{raw}.
 #' @param scale Whether to scale the data by the value factor. Defaults to
 #' \code{TRUE}.
+#' @param collapse Logical. Whether to collapse lists that only contain a single
+#' element.
 #' @author Ethan Bass
-#' @return A 3D chromatogram from the PDA stream in \code{matrix} or
-#' \code{data.frame} format, according to the value of \code{format_out}.
-#' The chromatograms will be returned in \code{wide} or \code{long} format
-#' according to the value of \code{data_format}.
+#' @return A chromatogram or list of chromatograms in the format specified by
+#' \code{data_format} and \code{format_out}. If \code{data_format} is \code{wide},
+#' the chromatogram(s) will be returned with retention times as rows and a
+#' single column for the intensity. If \code{long} format is requested, two
+#' columns will be returned: one for the retention time and one for the intensity.
+#' The \code{format_out} argument determines whether chromatograms are returned
+#' as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
+#' attached to the chromatogram as \code{\link{attributes}} if
+#' \code{read_metadata} is \code{TRUE}.
 #' @note My parsing of the date-time format seems to be a little off, since
 #' the acquisition times diverge slightly from the ASCII file.
 #' @export
 
-read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame", "data.table"),
+read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
+                                                         "data.table"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
-                                scale = TRUE){
+                                scale = TRUE, collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- match.arg(tolower(metadata_format),
+                               c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "shimadzu_lcd", raw = "raw")
 
   if (missing(what)){
     what <- ifelse(check_streams(path, "pda", boolean = TRUE),
-                   "pda", "chromatogram")
+                   "pda", "chroms")
   }
-  what <- match.arg(what, c("pda", "chromatogram", "tic"))
+  if (any(what == "chromatogram")){
+    warning("The `chromatogram` argument to `what` is deprecated. Please use `chroms` instead.")
+    what[which(what == "chromatogram")] <- "chroms"
+  }
+  what <- match.arg(tolower(what), c("pda", "chroms", "tic"),
+                    several.ok = TRUE)
 
   olefile_installed <- reticulate::py_module_available("olefile")
   if (!olefile_installed){
     configure_python_environment(parser = "olefile")
   }
-
-  read_sz <- switch(what, "pda" = read_sz_lcd_3d,
-                          "chromatogram" = read_sz_lcd_2d,
-                          "tic" = read_sz_tic)
-
-  read_sz(path, format_out = format_out, data_format = data_format,
-           read_metadata = read_metadata, metadata_format = metadata_format,
-            scale = scale)
+  if (any(what == "chroms")){
+    chroms <- read_sz_lcd_2d(path, format_out = format_out,
+                             data_format = data_format,
+                             read_metadata = read_metadata,
+                             metadata_format = metadata_format,
+                             scale = scale)
+  }
+  if (any(what == "pda")){
+    pda <- read_sz_lcd_3d(path, format_out = format_out,
+                             data_format = data_format,
+                             read_metadata = read_metadata,
+                             metadata_format = metadata_format,
+                             scale = scale)
+  }
+  if (any(what == "tic")){
+    tic <- read_sz_tic(path, format_out = format_out,
+                          data_format = data_format,
+                          read_metadata = read_metadata,
+                          metadata_format = metadata_format)
+  }
+  dat <- mget(what, ifnotfound = NA)
+  null <- sapply(dat, is.null)
+  if (any(null))   dat <- dat[-which(sapply(dat, is.null))]
+  if (collapse) dat <- collapse_list(dat)
+  dat
 }
 
 #' Shimadzu LCD 3D parser
@@ -159,7 +190,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
   if (read_metadata){
     meta <- read_sz_file_properties(path)
     meta <- c(meta, DI)
-    dat <- attach_metadata(dat,meta, format_in = metadata_format,
+    dat <- attach_metadata(dat, meta, format_in = metadata_format,
                            source_file = path, data_format = data_format,
                            format_out = format_out)
   }
@@ -221,7 +252,7 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
   if (data_format == "long" && format_out == "matrix"){
     format_out <- "data.frame"
   }
-  existing_streams <- check_streams(path, what = "chromatogram")
+  existing_streams <- check_streams(path, what = "chroms")
   if (length(existing_streams) == 0){
     stop("Chromatogram streams not detected.")
   }
@@ -275,8 +306,8 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
 #' \code{.lcd} files. LCD files are encoded as 'Microsoft' OLE documents. The
 #' parser relies on the [olefile](https://pypi.org/project/olefile/) package in
 #' Python to unpack the files. The TIC data is encoded in a stream called
-#' \code{Centroid:3D Raw Data}.
-#' The PDA data stream contains a segment for each retention time, beginning
+#' \code{Centroid SumTIC}.
+#' The TIC data stream contains a segment for each retention time, beginning
 #' with a 8-byte header. After the header, the file consists of a series of
 #' 4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
 #' a 4-byte spacer (\code{00000000}) The first integer is the retention time
@@ -294,13 +325,15 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
 #' according to the value of \code{data_format}.
 #' @note This parser is experimental and may still need some work. It is not
 #' yet able to interpret much metadata from the files.
-#' @export
+#' @noRd
 
 read_sz_tic <- function(path, format_out = "data.frame",
-                              data_format = c("wide", "long"),
-                              read_metadata = TRUE){
+                        data_format = c("wide", "long"), read_metadata = TRUE,
+                        metadata_format = "shimadzu_lcd"){
   path_tic <- check_streams(path, what = "tic")
-  path_tic <- export_stream(path, c("QTFL RawData", "Centroid SumTIC"))
+  if (length(path_tic) == 0){
+    return(NULL)
+  }
   f <- file(path_tic, "rb")
   on.exit(close(f))
   dat <- decode_sz_tic(f)

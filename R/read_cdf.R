@@ -9,7 +9,7 @@
 #' For 2D files, "long" format returns the retention time as the first column of
 #' the data.frame or matrix while "wide" format returns the retention time as the
 #' rownames of the object.
-#' @param what For ANDI chrom files, whether to extract \code{chromatogram}
+#' @param what For ANDI chrom files, whether to extract \code{chroms}
 #' and/or \code{peak_table}. For ANDI ms files, whether to extract MS1 scans
 #' (\code{MS1}) or the total ion chromatogram (\code{TIC}).
 #' @param read_metadata Whether to read metadata from file.
@@ -73,20 +73,24 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
 #' @noRd
 read_andi_chrom <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                             data_format = c("wide", "long"),
-                            what = "chromatogram", read_metadata = TRUE,
+                            what = "chroms", read_metadata = TRUE,
                             metadata_format = c("chromconverter", "raw"),
                             collapse = TRUE){
-  what <- if(is.null(what)) "chromatogram" else what
-  what <- match.arg(what, c("chromatogram", "peak_table"), several.ok = TRUE)
+  what <- if(is.null(what)) "chroms" else what
+  if (any(what == "chromatogram")){
+    warning("The `chromatogram` argument to `what` is deprecated. Please use `chroms` instead.")
+    what[which(what == "chromatogram")] <- "chroms"
+  }
+  what <- match.arg(what, c("chroms", "peak_table"), several.ok = TRUE)
   nc <- ncdf4::nc_open(path)
   on.exit(ncdf4::nc_close(nc))
-  if (any(what == "chromatogram")){
+  if (any(what == "chroms")){
     y <- ncdf4::ncvar_get(nc, "ordinate_values")
     nvals <- ncdf4::ncvar_get(nc, "actual_run_time_length")
     n_interval <- ncdf4::ncvar_get(nc, "actual_sampling_interval")
     n_start <- ncdf4::ncvar_get(nc, "actual_delay_time")
     x <- seq(from = n_start, to = nvals, length.out = length(y))
-    chromatogram <- format_2d_chromatogram(rt = x, int = y,
+    chroms <- format_2d_chromatogram(rt = x, int = y,
                                            data_format = data_format,
                                            format_out = format_out)
   }

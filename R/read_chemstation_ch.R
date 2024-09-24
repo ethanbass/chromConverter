@@ -24,16 +24,17 @@
 #' be returned with retention times as rows and a single column for the intensity.
 #' If \code{long} format is requested, two columns will be returned: one for the
 #' retention time and one for the intensity. The \code{format_out} argument
-#' determines whether the chromatogram is returned as a \code{matrix} or
-#' \code{data.frame}. Metadata can be attached to the chromatogram as
-#' \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+#' determines whether the chromatogram is returned as a \code{matrix},
+#' \code{data.frame}, or \code{data.table}. Metadata can be attached to the
+#' chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' (&copy James Dillon 2014).
 #' @export
 #' @md
 
-read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame", "data.table"),
+read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
+                                                     "data.table"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),

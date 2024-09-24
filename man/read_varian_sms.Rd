@@ -30,10 +30,9 @@ placeholder for now as there is not yet support for parsing metadata).}
 element.}
 }
 \value{
-A nested list of elements from the specified \code{file}, where the
-top levels are chromatograms and/or mass spectra according to
-the value of \code{what}. Chromatograms are returned in the format specified
-by \code{format_out} (retention time x wavelength).
+A chromatogram or list of chromatograms from the specified
+\code{file},  according to the value of \code{what}. Chromatograms are
+returned in the format specified by \code{format_out}.
 }
 \description{
 Parser for reading 'Varian Workstation' SMS file.
@@ -73,7 +72,7 @@ following scheme:
 }
 \note{
 There is still only limited support for the extraction of metadata from
-this file format.
+this file format. Also, the timestamp conversions aren't quite right.
 }
 \author{
 Ethan Bass

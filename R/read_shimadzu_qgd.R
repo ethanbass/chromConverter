@@ -30,13 +30,23 @@
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
+#' @param collapse Logical. Whether to collapse lists that only contain a single
+#' element. Defaults to \code{TRUE}.
 #' @return A 2D chromatogram from the chromatogram stream in \code{matrix},
 #' \code{data.frame}, or \code{data.table} format, according to the value of
-#' \code{format_out}.
-#' The chromatograms will be returned in \code{wide} or \code{long} format
-#' according to the value of \code{data_format}.
+#' \code{format_out}. The chromatograms will be returned in \code{wide} or
+#' \code{long} format according to the value of \code{data_format}.
 #' @note This parser is experimental and may still need some work. It is not
 #' yet able to interpret much metadata from the files.
+#' @return A chromatogram or list of chromatograms in the format specified by
+#' \code{data_format} and \code{format_out}. If \code{data_format} is \code{wide},
+#' the chromatogram(s) will be returned with retention times as rows and a
+#' single column for the intensity. If \code{long} format is requested, two
+#' columns will be returned: one for the retention time and one for the intensity.
+#' The \code{format_out} argument determines whether chromatograms are returned
+#' as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
+#' attached to the chromatogram as \code{\link{attributes}} if
+#' \code{read_metadata} is \code{TRUE}.
 #' @author Ethan Bass
 #' @export
 
@@ -44,7 +54,8 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
                               format_out = c("matrix", "data.frame", "data.table"),
                               data_format = c("wide", "long"),
                               read_metadata = TRUE,
-                              metadata_format = c("chromconverter", "raw")){
+                              metadata_format = c("chromconverter", "raw"),
+                              collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
   what <- match.arg(toupper(what), c("MS1", "TIC"), several.ok = TRUE)
@@ -64,7 +75,8 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
     MS1 <- read_qgd_ms_stream(path, format_out = format_out)
   }
   dat <- mget(what)
-
+  if (collapse)
+    dat <- collapse_list(dat)
   if (read_metadata){
     meta <- try(read_qgd_fp(path))
     dat <- lapply(dat, function(x){

@@ -53,7 +53,7 @@ read_shimadzu_gcd <- function(path, format_out = c("matrix", "data.frame", "data
   if (read_metadata){
     meta <- read_sz_file_properties(path)
   }
-  existing_streams <- check_streams(path, what = "chromatogram")
+  existing_streams <- check_streams(path, what = "chroms")
 
   dat <- lapply(existing_streams, function(stream){
 

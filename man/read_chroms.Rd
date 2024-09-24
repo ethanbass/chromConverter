@@ -6,7 +6,7 @@
 \usage{
 read_chroms(
   paths,
-  format_in = c("agilent_d", "agilent_dx", "chemstation", "chemstation_fid",
+  format_in = c("agilent_d", "agilent_dx", "asm", "chemstation", "chemstation_fid",
     "chemstation_ch", "chemstation_csv", "chemstation_uv", "masshunter_dad",
     "chromeleon_uv", "mzml", "mzxml", "mdf", "shimadzu_ascii", "shimadzu_dad",
     "shimadzu_fid", "shimadzu_gcd", "shimadzu_qgd", "shimadzu_lcd", "thermoraw",
@@ -94,9 +94,10 @@ sample names default to the \code{\link{basename}} of the specified files.}
 \item{...}{Additional arguments to parser.}
 }
 \value{
-A list of chromatograms in \code{matrix} or \code{data.frame} format,
-according to the value of \code{format_out}. Chromatograms may be returned
-in either \code{wide} or \code{long} format according to the value of
+A list of chromatograms in \code{matrix}, \code{data.frame}, or
+\code{data.table} format, according to the value of \code{format_out}.
+Chromatograms may be returned in either \code{wide} or \code{long} format
+according to the value of
 \code{data_format}.
 }
 \description{

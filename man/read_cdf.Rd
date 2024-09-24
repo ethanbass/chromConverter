@@ -26,7 +26,7 @@ For 2D files, "long" format returns the retention time as the first column of
 the data.frame or matrix while "wide" format returns the retention time as the
 rownames of the object.}
 
-\item{what}{For ANDI chrom files, whether to extract \code{chromatogram}
+\item{what}{For ANDI chrom files, whether to extract \code{chroms}
 and/or \code{peak_table}. For ANDI ms files, whether to extract MS1 scans
 (\code{MS1}) or the total ion chromatogram (\code{TIC}).}
 

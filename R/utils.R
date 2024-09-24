@@ -24,7 +24,7 @@ convert_chrom_format <- function(x, format_out){
 #' Format 2D chromatogram
 #' @noRd
 format_2d_chromatogram <- function(rt, int, data_format, format_out){
-  data_format <- match.arg(data_format, c("wide","long"))
+  data_format <- match.arg(data_format, c("wide", "long"))
   format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
   if (data_format == "wide" && any(duplicated(rt))){
     stop("Some row names are duplicated. Please use `long` format instead.")

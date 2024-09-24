@@ -9,9 +9,11 @@
 #' @author Ethan Bass
 #' @export
 
-read_chemstation_reports <- function(paths, data_format = c("chromatographr", "original"),
+read_chemstation_reports <- function(paths, data_format = c("chromatographr",
+                                                            "original"),
                                      metadata_format = c("chromconverter", "raw")){
-  data_format <- match.arg(tolower(data_format), c("chromatographr", "original"))
+  data_format <- match.arg(tolower(data_format),
+                           c("chromatographr", "original"))
   metadata_format = match.arg(metadata_format, c("chromconverter", "raw"))
   names(paths) <- sub(".*/([^/]+)\\.D/.*$", "\\1", paths)
 
@@ -38,12 +40,14 @@ read_chemstation_reports <- function(paths, data_format = c("chromatographr", "o
 #' @param path Path to file
 #' @param data_format Format to output data. Either \code{chromatographr} or
 #' \code{chemstation}.
+#' @param combine Whether to combine peaklists into a single data.frame.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
 #' \code{raw}.
 #' @author Ethan Bass
 #' @noRd
 
 read_chemstation_report <- function(path, data_format = c("chromatographr", "original"),
+                                    combine = FALSE,
                                     read_metadata = TRUE,
                                     metadata_format = c("chromconverter", "raw")){
   data_format <- match.arg(tolower(data_format), c("chromatographr", "original"))
@@ -70,7 +74,7 @@ read_chemstation_report <- function(path, data_format = c("chromatographr", "ori
     metadata <- remove_blank_lines(metadata)
     merge_lines <- function(xx){
       idx <- grep(":", xx, invert = TRUE)
-      xx[idx - 1] <- paste0(xx[idx-1], xx[idx])
+      xx[idx - 1] <- paste0(xx[idx - 1], xx[idx])
       xx <- xx[-idx]
       xx
     }
