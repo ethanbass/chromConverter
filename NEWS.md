@@ -5,6 +5,7 @@
 * Added preliminary support for 'Varian Worktation' (`.sms`) format through `read_varian_sms` function.
 * Added preliminary support for 'Shimadzu QGD' GCMS files through the `read_shimadzu_qgd` function.
 * Added preliminary support for 'Allotrope Simple Model' (ASM) 2D chromatography date files.
+* Added support for reading multiple files from 'Agilent' `.D` directories through `read_agilent_d` function.
 * Added option to write mzML files (MS1 and DAD).
 
 ### UI changes
@@ -20,6 +21,7 @@
 
 ### Other improvements
 
+* Fixed bug causing reticulate to attempt reinstallation of Aston every time the package is loaded (due to case sensitivity of packages names in `reticulate::configure_environment`).
 * Added `data.table` as an option for `format_out`.
 * Improved speed of `read_shimadzu_lcd` by dealing with twos-complements more sensibly.
 * Start 'Shimadzu LCD' chromatogram retention times at dwell time (DLT).
@@ -32,6 +34,8 @@
 * Fixed bug causing truncation of sample names at the first period by `read_chroms`.
 * Modified `export_csv` function to label first column for wide-format chromatograms.
 * Improved handling of metadata from rainbow parsers.
+* Fixed error when providing single chromatogram to \code{extract_metadata}.
+* Added metadata field for source checksum (SHA1).
 
 ## chromConverter 0.6.4
 
