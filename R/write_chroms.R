@@ -135,7 +135,7 @@ export_mzml <- function(data, path_out, force = FALSE,
   laplee(seq_along(data), function(i){
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".mzml")))
     try(write_mzml(data[[i]], path_out = fs::path(path_out, names(data)[i],
-                                                  ext = "mzml"),
+                                                  ext = "mzML"),
                    show_progress = FALSE, force = force))
   })
 }

@@ -38,7 +38,8 @@ Imports:
     bit64,
     data.table,
     base64enc,
-    jsonlite
+    jsonlite,
+    digest
 Suggests: 
     entab,
     ncdf4,

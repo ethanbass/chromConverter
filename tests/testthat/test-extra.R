@@ -44,7 +44,7 @@ test_that("read_chroms can write mzML files", {
                       package = "chromConverterExtraTests")
 
   tmp <- tempdir()
-  path_mzml <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzml")
+  path_mzml <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzML")
   on.exit(unlink(path_mzml))
 
   x <- read_chroms(path, parser = "entab", progress_bar = FALSE,
@@ -78,7 +78,7 @@ test_that("read_chroms can convert CDF to mzML", {
   skip_if_not(file.exists(path))
 
   tmp <- tempdir()
-  mzml_path <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzml")
+  mzml_path <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzML")
   on.exit(unlink(mzml_path))
   #shouldn't require what = "MS1
   x <- read_chroms(path, progress_bar = FALSE, export_format = "mzml",
@@ -511,11 +511,11 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
                     progress_bar = FALSE, data_format = "long",
                     format_out = "data.frame")[[1]]
   expect_s3_class(x1[1], "data.frame")
-  expect_equal(dim(x1), c(4689*328, 3))
+  expect_equal(dim(x1), c(4689 * 328, 3))
 
 
   x2 <- read_chroms(path_lcd, progress_bar = FALSE)[[1]]
-  expect_equal(dim(x2),c(4689, 328))
+  expect_equal(dim(x2), c(4689, 328))
   expect_equal(x, x2, ignore_attr = TRUE)
 
   # check metadata equivalence
@@ -608,7 +608,7 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
                           package = "chromConverterExtraTests")
   skip_if_not(file.exists(path_lcd))
 
-  x <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
+  x <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                     progress_bar = FALSE)[[1]]
   x1 <- read_chroms(path_asc, format_in = "shimadzu_ascii", what = "chromatogram",
                    progress_bar = FALSE)[[1]]
@@ -822,7 +822,7 @@ test_that("Shimadzu QGD parser works", {
   skip_if_not(file.exists(path_gqd))
 
   tmp <- tempdir()
-  mzml_path <- fs::path_ext_set(fs::path(tmp, basename(path_gqd)), ext = "mzml")
+  mzml_path <- fs::path_ext_set(fs::path(tmp, basename(path_gqd)), ext = "mzML")
   on.exit(unlink(mzml_path))
 
   x <- read_chroms(path_gqd, find_files = FALSE, progress_bar = FALSE,
@@ -856,7 +856,7 @@ test_that("read_chroms can read Varian SMS", {
   skip_if_not(file.exists(path_mzml))
 
   tmp <- tempdir()
-  path_mzml_cc <- fs::path(tmp, fs::path_ext_remove(basename(path_sms)), ext = "mzml")
+  path_mzml_cc <- fs::path(tmp, fs::path_ext_remove(basename(path_sms)), ext = "mzML")
   on.exit(unlink(path_mzml_cc))
 
   x <- read_chroms(path_sms, progress_bar = FALSE, export_format = "mzml",

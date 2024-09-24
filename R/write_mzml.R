@@ -32,9 +32,9 @@
 #' @param show_progress Logical. Whether to show progress bar. Defaults to
 #' \code{TRUE}.
 #' @param verbose Logical. Whether or not to print status messages.
-#' @author Ethan Bass
 #' @return Invisibly returns the path to the written mzML file.
-
+#' @author Ethan Bass
+#' @export
 
 write_mzml <- function(data, path_out, what = NULL,
                       instrument_info = NULL, compress = TRUE, indexed = TRUE,
@@ -69,7 +69,8 @@ write_mzml <- function(data, path_out, what = NULL,
   }), na.rm = TRUE)
 
   write_mzml_header(con, meta = attributes(data$MS1), n_scan = n_scan,
-                    indexed = indexed, instrument_info = instrument_info)
+                    indexed = indexed, instrument_info = instrument_info,
+                    sample_name = attr(data$MS1,"sample_name"))
 
   if (any(what == "MS1")){
     if ("MS1" %in% names(data)){
@@ -85,34 +86,41 @@ write_mzml <- function(data, path_out, what = NULL,
       idx <- try(index[[length(index)]]$id)
       start <- ifelse(is.null(idx), 0, as.numeric(gsub("scan=", "", idx)))
       index <- write_spectra(con, data, what = "DAD", indexed = indexed,
-                             idx_start = start, show_progress = show_progress, verbose = verbose)
+                             idx_start = start, show_progress = show_progress,
+                             verbose = verbose)
     } else{
       warning("DAD data not found.")
     }
   }
 
-  cat('    </spectrumList>\n', file = con) # close spectrumList
-
-  cat('</run>
-</mzML>\n', file = con)
+  cat('    </spectrumList>
+          </run>
+        </mzML>\n', file = con) # close spectrumList
 
   if (indexed){
-    indexListOffset <- seek(con)
-    cat('<indexList count="1">
-    <index name="spectrum">\n', file = con)
+    indexListOffset <- seek(con, NA)
+    indexListOffset <- seek(con, NA) - 1
+
+    cat(
+    '<indexList count="1">\n\t<index name="spectrum">\n', file = con)
     for (entry in index) {
-      cat(sprintf('    <offset idRef="%s">%d</offset>\n', entry$id, entry$offset),
+      cat(sprintf('\t\t<offset idRef="%s">%d</offset>\n', entry$id, entry$offset),
           file = con)
     }
-    cat('  </index>
-  </indexList>\n', file = con)
+    cat('\t</index>\n</indexList>\n', file = con)
+
+    content <- readLines(path_out)
+    checksum <- digest::digest(content, algo="sha1", serialize = FALSE)
 
     # Write final tags
-    cat(sprintf('<indexListOffset>%d</indexListOffset>
-  </indexedmzML>', indexListOffset), file = con)
+    cat(sprintf(
+    '<indexListOffset>%d</indexListOffset>
+    <fileChecksum>%s</fileChecksum>\n
+  </indexedmzML>', indexListOffset, checksum), file = con)
 }
   return(invisible(path_out))
 }
+
 
 #' Write mzML header
 #' @param con Connection to write mzML file.
@@ -121,19 +129,17 @@ write_mzml <- function(data, path_out, what = NULL,
 #' @author Ethan Bass
 #' @noRd
 write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
-                              instrument_info = NULL){
-  start_tag <- ifelse(indexed,
-                      '<indexedmzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml">
-                        <mzML version="1.1.0">',
-                      '<mzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml">
-                        version="1.1.0">')
+                              instrument_info = NULL, sample_name){
   # Write XML declaration and opening tags
   cat(
-    '<?xml version="1.0" encoding="UTF-8"?>\n', start_tag,
-    '  <cvList count="2">
+    '<?xml version="1.0" encoding="UTF-8"?>\n',
+    ifelse(indexed, '<indexedmzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml">\n', ''),
+    sprintf('<mzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml" id="%s" version="1.1.0">\n',
+            sample_name),
+    '<cvList count="2">
           <cv id="MS" fullName="Proteomics Standards Initiative Mass Spectrometry Ontology" version="4.1.0" URI="https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo"/>
           <cv id="UO" fullName="Unit Ontology" version="releases/2020-03-10" URI="http://data.bioontology.org/ontologies/UO"/>
-      </cvList>',
+      </cvList>\n',
   create_mzml_file_description(meta),
   create_mzml_sample_list(meta),
   create_mzml_software_list(),
@@ -153,15 +159,16 @@ write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
   cat(sprintf('    </instrumentConfiguration>
   </instrumentConfigurationList>
   <dataProcessingList count="1">
-    <dataProcessing id="RaMS_processing">
+    <dataProcessing id="chromConverter_processing">
       <processingMethod order="0" softwareRef="chromConverter">
         <cvParam cvRef="MS" accession="MS:1000544" name="Conversion to mzML"/>
       </processingMethod>
     </dataProcessing>
   </dataProcessingList>
   <run id="run1" defaultInstrumentConfigurationRef="IC" startTimeStamp="%s">
-    <spectrumList count="%d">\n',
-              format(meta$run_datetime[1], "%Y-%m-%dT%H:%M:%SZ"), n_scan),
+    <spectrumList count="%d" defaultDataProcessingRef="%s">\n',
+              format(meta$run_datetime[1], "%Y-%m-%dT%H:%M:%SZ"), n_scan,
+              "chromConverter_processing"),
       file = con, sep = "")
 }
 
@@ -175,25 +182,31 @@ create_mzml_sample_list <- function(meta){
 }
 
 create_mzml_file_description <- function(meta){
-  sprintf('<fileDescription>
-    <fileContent>
-      <cvParam cvRef="MS" accession="MS:1000294" name="mass spectrum"/>
-    </fileContent>
-    <sourceFileList count="1">
-      <sourceFile id="SF1" name="%s" location="%s">
-      <cvParam cvRef="MS" accession="MS:1000769" name="file creation time" value="%s"/>
-    </sourceFile>
-  </sourceFileList>
-  </fileDescription>', basename(meta$source_file), meta$source_file,
-          format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ"))
+  sprintf(
+  '  <fileDescription>
+        <fileContent>
+          <cvParam cvRef="MS" accession="MS:1000294" name="mass spectrum"/>
+        </fileContent>
+        <sourceFileList count="1">
+          <sourceFile id="SF1" name="%s" location="%s">
+            <cvParam cvRef="MS" accession="MS:1002597" name="MS1 format"/>
+            <cvParam cvRef="MS" accession="MS:1000569" name="SHA-1" value="%s"/>
+            <cvParam cvRef="MS" accession="MS:1000776" name="scan number only nativeID format"/>
+          </sourceFile>
+        </sourceFileList>
+    </fileDescription>',
+          ifelse(is.na(meta$source_file), "", basename(meta$source_file)),
+          ifelse(is.na(meta$source_file), "", meta$source_file),
+          ifelse(is.na(meta$source_sha1), "", meta$source_sha1))
 }
 
 create_mzml_software_list <- function(){
-  sprintf('<softwareList count="1">
-    <software id="chromConverter" version="%s">
-      <cvParam cvRef="MS" accession="MS:1000799" name="custom unreleased software tool" value="chromConverter R package"/>
-    </software>
-  </softwareList>', as.character(packageVersion("chromConverter")))
+  sprintf(
+  '  <softwareList count="1">
+      <software id="chromConverter" version="%s">
+        <cvParam cvRef="MS" accession="MS:1000799" name="custom unreleased software tool" value="chromConverter R package"/>
+      </software>
+    </softwareList>', as.character(packageVersion("chromConverter")))
 }
 
 
@@ -230,6 +243,11 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
   n_scan <- ifelse(!is.null(data$TIC), nrow(data$TIC),
                    length(unique(spectra_data$rt)))
   laplee(seq_len(n_scan), function(i) {
+
+    if (indexed){
+      offset <- seek(con, NA)
+    }
+
     scan_data <- spectra_data[rt == rts[i]]
     # Create and write spectrum
     spectrum_xml <- create_spectrum(scan = i, index = i + idx_start - 1,
@@ -244,11 +262,8 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
                                                         0, max(scan_data$intensity))),
                                     scan_data = scan_data)
     writeLines(spectrum_xml, con)
-
-    if (indexed){
-      offset <- seek(con) #- nchar(spectrum_xml)
+    if (indexed)
       list(id = paste0("scan=", i), offset = offset)
-    }
   })
 }
 
@@ -277,25 +292,26 @@ create_mzml_ms1_spectrum <- function(scan, index, rt, scan_data, ms_level = 1,
   mz_encoded <- encode_data(scan_data$mz, compress = compress)
   int_encoded <- encode_data(scan_data$intensity, compress)
 
-  sprintf('
-  <spectrum id="scan=%d" index="%d">
+  sprintf('<spectrum id="scan=%d" index="%d" defaultArrayLength="%d">
+    <cvParam cvRef="MS" accession="MS:1000580" name="MSn spectrum"/>
     <cvParam cvRef="MS" accession="MS:1000511" name="ms level" value="%d"/>
     <cvParam cvRef="MS" accession="MS:1000127" name="centroid spectrum"/>
-    <cvParam cvRef="MS" accession="MS:1000505" name="base peak intensity" value="%f"/>
+    <cvParam cvRef="MS" accession="MS:1000505" name="base peak intensity" unitAccession="MS:1000131" unitName="number of detector counts" unitCvRef="MS" value="%f"/>
     <cvParam cvRef="MS" accession="MS:1000285" name="total ion current" value="%f"/>
     <scanList count="1">
+    <cvParam cvRef="MS" accession="MS:1000795" name="no combination" value=""/>
       <scan>
         <cvParam cvRef="MS" accession="MS:1000016" name="scan start time" value="%s" unitCvRef="UO" unitAccession="UO:0000031" unitName="minute"/>
       </scan>
     </scanList>
     <binaryDataArrayList count="2">
-      <binaryDataArray>
+      <binaryDataArray encodedLength="%d">
         <cvParam cvRef="MS" accession="MS:1000514" name="m/z array" unitCvRef="MS" unitAccession="MS:1000040" unitName="m/z"/>
         <cvParam cvRef="MS" accession="MS:1000523" name="64-bit float"/>
         %s
         <binary>%s</binary>
       </binaryDataArray>
-      <binaryDataArray>
+      <binaryDataArray encodedLength="%d">
         <cvParam cvRef="MS" accession="MS:1000515" name="intensity array" unitCvRef="MS" unitAccession="MS:1000131" unitName="number of detector counts"/>
         <cvParam cvRef="MS" accession="MS:1000523" name="64-bit float"/>
         %s
@@ -303,9 +319,9 @@ create_mzml_ms1_spectrum <- function(scan, index, rt, scan_data, ms_level = 1,
       </binaryDataArray>
     </binaryDataArrayList>
   </spectrum>',
-          scan, index, ms_level, bpc, tic, as.character(rt),
-          mz_encoded$compression_param, mz_encoded$base64,
-          int_encoded$compression_param, int_encoded$base64)
+          scan, index, nrow(scan_data), ms_level, bpc, tic, as.character(rt),
+          nchar(mz_encoded$base64), mz_encoded$compression_param, mz_encoded$base64,
+          nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64)
 }
 
 #' Create mzML DAD spectrum node
@@ -382,10 +398,10 @@ create_mzml_dad_spectrum <- function(scan, index, rt, scan_data, tic = NULL,
 #' Write mzML chromList
 #' @author Ethan Bass
 #' @noRd
-write_mzml_chromlist <- function(con, data, what = c("TIC","BPC"),
+write_mzml_chromlist <- function(con, data, what = c("TIC", "BPC"),
                                  indexed = TRUE, compress = TRUE,
                                  verbose = getOption("verbose")){
-  what <- match.arg(toupper(what), c("TIC","BPC"))
+  what <- match.arg(toupper(what), c("TIC", "BPC"))
   chroms <- what[what %in% c("TIC", "BPC")]
   if (length(chroms) > 0){
     chrom_index <- vector("list", length(chroms))
