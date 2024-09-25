@@ -12,7 +12,9 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/configure_python_environment.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/extract_metadata.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/index.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_agilent_d.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_agilent_dx.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_asm.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_cdf.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.html</loc></url>
@@ -26,17 +28,19 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu_gcd.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.html</loc></url>
-<url><loc>https://ethanbass.github.io/chromConverter/reference/read_sz_tic.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_thermoraw.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_varian_peaklist.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_varian_sms.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_waters_arw.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_waters_raw.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/reshape_chroms.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/sp_converter.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/uv_converter.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/write_cdf.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/write_mzml.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/write_openchrom_batchfile.html</loc></url>
 </urlset>
 

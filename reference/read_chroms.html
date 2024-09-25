@@ -19,7 +19,7 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,19 +58,19 @@ internal parser or bindings to an external library, such as
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_chroms</span><span class="op">(</span></span>
 <span>  <span class="va">paths</span>,</span>
-<span>  <span class="va">find_files</span>,</span>
-<span>  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"agilent_d"</span>, <span class="st">"agilent_dx"</span>, <span class="st">"chemstation"</span>, <span class="st">"chemstation_fid"</span>,</span>
+<span>  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"agilent_d"</span>, <span class="st">"agilent_dx"</span>, <span class="st">"asm"</span>, <span class="st">"chemstation"</span>, <span class="st">"chemstation_fid"</span>,</span>
 <span>    <span class="st">"chemstation_ch"</span>, <span class="st">"chemstation_csv"</span>, <span class="st">"chemstation_uv"</span>, <span class="st">"masshunter_dad"</span>,</span>
-<span>    <span class="st">"chromeleon_uv"</span>, <span class="st">"shimadzu_ascii"</span>, <span class="st">"shimadzu_dad"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_gcd"</span>,</span>
-<span>    <span class="st">"shimadzu_lcd"</span>, <span class="st">"thermoraw"</span>, <span class="st">"mzml"</span>, <span class="st">"mzxml"</span>, <span class="st">"waters_arw"</span>, <span class="st">"waters_raw"</span>, <span class="st">"msd"</span>,</span>
-<span>    <span class="st">"csd"</span>, <span class="st">"wsd"</span>, <span class="st">"mdf"</span>, <span class="st">"other"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"chromeleon_uv"</span>, <span class="st">"mzml"</span>, <span class="st">"mzxml"</span>, <span class="st">"mdf"</span>, <span class="st">"shimadzu_ascii"</span>, <span class="st">"shimadzu_dad"</span>,</span>
+<span>    <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_gcd"</span>, <span class="st">"shimadzu_qgd"</span>, <span class="st">"shimadzu_lcd"</span>, <span class="st">"thermoraw"</span>,</span>
+<span>    <span class="st">"varian_sms"</span>, <span class="st">"waters_arw"</span>, <span class="st">"waters_raw"</span>, <span class="st">"msd"</span>, <span class="st">"csd"</span>, <span class="st">"wsd"</span>, <span class="st">"other"</span><span class="op">)</span>,</span>
+<span>  <span class="va">find_files</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  parser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"chromconverter"</span>, <span class="st">"aston"</span>, <span class="st">"entab"</span>, <span class="st">"thermoraw"</span>, <span class="st">"openchrom"</span>, <span class="st">"rainbow"</span><span class="op">)</span>,</span>
-<span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span><span class="op">)</span>,</span>
+<span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span>, <span class="st">"data.table"</span><span class="op">)</span>,</span>
 <span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span><span class="op">)</span>,</span>
-<span>  export <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  path_out <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  export_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"csv"</span>, <span class="st">"chemstation_csv"</span>, <span class="st">"cdf"</span>, <span class="st">"mzml"</span>, <span class="st">"animl"</span><span class="op">)</span>,</span>
+<span>  export_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"csv"</span>, <span class="st">"chemstation_csv"</span>, <span class="st">"cdf"</span>, <span class="st">"mzml"</span>, <span class="st">"animl"</span><span class="op">)</span>,</span>
+<span>  force <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
 <span>  <span class="va">progress_bar</span>,</span>
@@ -90,12 +90,6 @@ internal parser or bindings to an external library, such as
 <dd><p>Paths to data files or directories containing the files.</p></dd>
 
 
-<dt id="arg-find-files">find_files<a class="anchor" aria-label="anchor" href="#arg-find-files"></a></dt>
-<dd><p>Logical. Set to <code>TRUE</code> (default) if you are providing
-the function with a folder or vector of folders containing the files.
-Otherwise, set to<code>FALSE</code>.</p></dd>
-
-
 <dt id="arg-format-in">format_in<a class="anchor" aria-label="anchor" href="#arg-format-in"></a></dt>
 <dd><p>Format of files to be imported/converted. Current options
 include: <code>agilent_d</code>, <code>agilent_dx</code>, <code>chemstation</code>,
@@ -105,6 +99,12 @@ include: <code>agilent_d</code>, <code>agilent_dx</code>, <code>chemstation</cod
 <code>thermoraw</code>, <code>waters_arw</code>, <code>waters_raw</code>, <code>mzml</code>,
 <code>mzxml</code>, <code>cdf</code>, <code>mdf</code>, <code>msd</code>, <code>csd</code>, <code>wsd</code>,
 or <code>other</code>.</p></dd>
+
+
+<dt id="arg-find-files">find_files<a class="anchor" aria-label="anchor" href="#arg-find-files"></a></dt>
+<dd><p>Logical. Set to <code>TRUE</code> (default) if you are providing
+the function with a folder or vector of folders containing the files.
+Otherwise, set to<code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
@@ -119,17 +119,13 @@ case file extension will be deduced from <code>format_in</code>.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
-<dd><p>Class of output (i.e. data.frame or matrix).</p></dd>
+<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>,
+or <code><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.html" class="external-link">data.table</a></code>.</p></dd>
 
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
 <dd><p>Whether to output data in wide or long format. Either
 <code>wide</code> or <code>long</code>.</p></dd>
-
-
-<dt id="arg-export">export<a class="anchor" aria-label="anchor" href="#arg-export"></a></dt>
-<dd><p>Logical. If TRUE, the program will export files in the format
-specified by <code>export_format</code> in the directory specified by <code>path_out</code>.</p></dd>
 
 
 <dt id="arg-path-out">path_out<a class="anchor" aria-label="anchor" href="#arg-path-out"></a></dt>
@@ -142,6 +138,11 @@ export to current working directory.</p></dd>
 <code>chemstation_csv</code> (utf-16 encoding), and <code>cdf</code>, unless you are
 using OpenChrom parsers, where there are two additional options: <code>mzml</code>,
 and <code>animl</code>.</p></dd>
+
+
+<dt id="arg-force">force<a class="anchor" aria-label="anchor" href="#arg-force"></a></dt>
+<dd><p>Logical. Whether to overwrite files when exporting. Defaults to
+<code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
@@ -186,9 +187,10 @@ sample names default to the <code><a href="https://rdrr.io/r/base/basename.html"
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of chromatograms in <code>matrix</code> or <code>data.frame</code> format,
-according to the value of <code>format_out</code>. Chromatograms may be returned
-in either <code>wide</code> or <code>long</code> format according to the value of
+    <p>A list of chromatograms in <code>matrix</code>, <code>data.frame</code>, or
+<code>data.table</code> format, according to the value of <code>format_out</code>.
+Chromatograms may be returned in either <code>wide</code> or <code>long</code> format
+according to the value of
 <code>data_format</code>.</p>
     </div>
     <div class="section level2">
@@ -197,10 +199,10 @@ in either <code>wide</code> or <code>long</code> format according to the value o
 'Agilent ChemStation' (<code>.uv</code>, <code>.ch</code>, <code>.dx</code>), 'Agilent
 MassHunter' (<code>.dad</code>), 'Thermo RAW' (<code>.raw</code>), 'Waters ARW' (<code>.arw</code>),
 'Waters RAW' (<code>.raw</code>), 'Chromeleon ASCII' (<code>.txt</code>), 'Shimadzu ASCII'
-(<code>.txt</code>), 'Shimadzu GCD', and 'Shimadzu LCD' files (preliminary support).
-Also, wraps 'OpenChrom' parsers, which include many additional formats. To use 'Entab',
-'ThermoRawFileParser', or 'OpenChrom' parsers, they must be manually installed.
-Please see the instructions in the
+(<code>.txt</code>), 'Shimadzu GCD', 'Shimadzu LCD' (DAD and chromatogram streams)
+and 'Shimadzu QGD' files. Also, wraps 'OpenChrom' parsers, which include many
+additional formats. To use 'Entab', 'ThermoRawFileParser', or 'OpenChrom'
+parsers, they must be manually installed. Please see the instructions in the
 <a href="https://ethanbass.github.io/chromConverter/">README</a> for further details.</p>
 <p>If paths to individual files are provided, <code>read_chroms</code> will try to
 infer the file format and select an appropriate parser. However, when
@@ -209,13 +211,11 @@ providing paths to directories, the file format must be specified using the
     </div>
     <div class="section level2">
     <h2 id="side-effects">Side effects<a class="anchor" aria-label="anchor" href="#side-effects"></a></h2>
-    <p>If <code>export</code> is TRUE, chromatograms will be
-exported in the format specified by <code>export_format</code> in the folder
-specified by <code>path_out</code>. Currently, the most versatile option for
-exporting files is <code>csv</code>. However, unidimensional chromatograms can
-also be exported in ANDI Chromatography (netCDF) format by selecting
-<code>cdf</code>. If an <code>openchrom</code> parser is selected, ANIML and mzML are
-available as additional options.</p>
+    <p>If an <code>export_format</code> is provided, chromatograms
+will be exported in the specified format specified into the folder
+specified by <code>path_out</code>. Files can currently be converted to <code>csv</code>,
+<code>mzml</code>, or <code>cdf</code> format. If an <code>openchrom</code> parser is selected,
+ANIML is available as an additional option.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -239,7 +239,7 @@ available as additional options.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer></div>

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,8 +32,48 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.0" id="chromconverter-070">chromConverter 0.7.0<a class="anchor" aria-label="anchor" href="#chromconverter-070"></a></h2>
+<div class="section level3">
+<h3 id="major-features-0-7-0">Major features<a class="anchor" aria-label="anchor" href="#major-features-0-7-0"></a></h3>
+<ul><li>Added preliminary support for ‘Varian Worktation’ (<code>.sms</code>) format through <code>read_varian_sms</code> function.</li>
+<li>Added preliminary support for ‘Shimadzu QGD’ GCMS files through the <code>read_shimadzu_qgd</code> function.</li>
+<li>Added preliminary support for ‘Allotrope Simple Model’ (ASM) 2D chromatography date files.</li>
+<li>Added support for reading multiple files from ‘Agilent’ <code>.D</code> directories through <code>read_agilent_d</code> function.</li>
+<li>Added option to write mzML files (MS1 and DAD).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="ui-changes-0-7-0">UI changes<a class="anchor" aria-label="anchor" href="#ui-changes-0-7-0"></a></h3>
+<ul><li>Changed order of arguments in <code>read_chroms</code> so that <code>format_in</code> comes second after <code>path</code>.</li>
+<li>Removed extraneous <code>export</code> argument from <code>read_chroms</code>. To export files, you now only need to provide an argument to <code>export_format</code>.</li>
+<li>Updated handling of multiple chromatograms by <code>read_shimadzu_lcd</code>. The function now returns a list of named chromatograms if <code>data_format == "wide"</code> and returns multiple chromatograms in a single <code>data.frame</code> if <code>data_format == "long"</code>.</li>
+<li>Added <code>scale</code> argument to <code>read_chemstation_uv</code> and <code>read_shimadzu_ascii</code> to toggle scaling of chromatograms.</li>
+<li>Harmonized file path arguments across parser functions by changing <code>file</code> arguments to <code>path</code>.</li>
+<li>Harmonized column names in output across parsers.</li>
+<li>Small changes in <code>read_cdf</code> UI: <code>what</code> now defaults to <code>NULL</code> and defaults are coded into downstream <code>read_andi_chrom</code> and <code>read_andi_ms</code> functions.</li>
+<li>Added extra verbosity in <code>read_chroms</code> when <code>verbose</code> is <code>TRUE</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="other-improvements-0-7-0">Other improvements<a class="anchor" aria-label="anchor" href="#other-improvements-0-7-0"></a></h3>
+<ul><li>Fixed bug causing reticulate to attempt reinstallation of Aston every time the package is loaded (due to case sensitivity of packages names in <code><a href="https://rstudio.github.io/reticulate/reference/configure_environment.html" class="external-link">reticulate::configure_environment</a></code>).</li>
+<li>Added <code>data.table</code> as an option for <code>format_out</code>.</li>
+<li>Improved speed of <code>read_shimadzu_lcd</code> by dealing with twos-complements more sensibly.</li>
+<li>Start ‘Shimadzu LCD’ chromatogram retention times at dwell time (DLT).</li>
+<li>Give temp files generated from Shimadzu OLE files informative names.</li>
+<li>Use ‘Output Date’ field instead of ‘Type’ to find ‘Shimadzu’ ASCII delimiter. (This seems to be a more generalizable solution since some files do not contain the ‘Type’ field).</li>
+<li>Allow relative paths for <code>path_out</code> when using ‘ThermoRawFileParser’ and ‘OpenChrom’ parsers.</li>
+<li>Allow creation of new directories by <code>read_chroms</code> if <code>path_out</code> does not exist.</li>
+<li>Fixed bug affecting some <code>mdf</code> files lacking null bytes after the file header.</li>
+<li>Eliminated ‘magrittr’ dependency by using xpath to parse XML in a more straightforward fashion.</li>
+<li>Fixed bug causing truncation of sample names at the first period by <code>read_chroms</code>.</li>
+<li>Modified <code>export_csv</code> function to label first column for wide-format chromatograms.</li>
+<li>Improved handling of metadata from rainbow parsers.</li>
+<li>Fixed error when providing single chromatogram to .</li>
+<li>Added metadata field for source checksum (SHA1).</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.4" id="chromconverter-064">chromConverter 0.6.4<a class="anchor" aria-label="anchor" href="#chromconverter-064"></a></h2>
-<ul><li>Added support for Agilent ChemStation’ version 8 (<code>.ch</code>) files through <code>read_chemstation_ch</code>.</li>
+<ul><li>Added support for ‘Agilent ChemStation’ version 8 (<code>.ch</code>) files through <code>read_chemstation_ch</code>.</li>
 <li>Fixed failure to return units in some <code>Agilent Chemstation</code> files due to typo.</li>
 <li>Fixed bug causing “spill-over” of Agilent metadata fields.</li>
 <li>Fixed bug causing failure to read <code>ChemStation</code> CSV files on (some) mac machines by specifying little-endian format in call to <code>read.csv</code>.</li>
@@ -249,7 +289,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer></div>

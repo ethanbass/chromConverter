@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,10 +79,22 @@
         <dd>Extract metadata</dd>
       </dl><dl><dt>
 
+          <code><a href="read_agilent_d.html">read_agilent_d()</a></code>
+
+        </dt>
+        <dd>Read files from 'ChemStation' .D directories</dd>
+      </dl><dl><dt>
+
           <code><a href="read_agilent_dx.html">read_agilent_dx()</a></code>
 
         </dt>
         <dd>Parser for reading Agilent ('.dx') files into R</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_asm.html">read_asm()</a></code>
+
+        </dt>
+        <dd>Read Allotrope Simple Model (ASM) 2D chromatograms</dd>
       </dl><dl><dt>
 
           <code><a href="read_cdf.html">read_cdf()</a></code>
@@ -130,7 +142,7 @@
           <code><a href="read_mdf.html">read_mdf()</a></code>
 
         </dt>
-        <dd>Read MDF files into R</dd>
+        <dd>Read 'Lumex' MDF files into R</dd>
       </dl><dl><dt>
 
           <code><a href="read_mzml.html">read_mzml()</a></code>
@@ -163,6 +175,12 @@
         <dd>Shimadzu LCD parser</dd>
       </dl><dl><dt>
 
+          <code><a href="read_shimadzu_qgd.html">read_shimadzu_qgd()</a></code>
+
+        </dt>
+        <dd>Read 'Shimadzu' QGD</dd>
+      </dl><dl><dt>
+
           <code><a href="read_sz_lcd_2d.html">read_sz_lcd_2d()</a></code>
 
         </dt>
@@ -175,12 +193,6 @@
         <dd>Shimadzu LCD 3D parser</dd>
       </dl><dl><dt>
 
-          <code><a href="read_sz_tic.html">read_sz_tic()</a></code>
-
-        </dt>
-        <dd>A parser to read total ion chromatogram data streams from 'Shimadzu' <code>.lcd</code> files. LCD files are encoded as 'Microsoft' OLE documents. The parser relies on the <a href="https://pypi.org/project/olefile/" class="external-link">olefile</a> package in Python to unpack the files. The TIC data is encoded in a stream called <code>Centroid:3D Raw Data</code>. The PDA data stream contains a segment for each retention time, beginning with a 8-byte header. After the header, the file consists of a series of 4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by a 4-byte spacer (<code>00000000</code>) The first integer is the retention time (scaled by 1000), the second integer is the scan number, and the third integer is the intensity.</dd>
-      </dl><dl><dt>
-
           <code><a href="read_thermoraw.html">read_thermoraw()</a></code>
 
         </dt>
@@ -191,6 +203,12 @@
 
         </dt>
         <dd>Read 'Varian' peaklist. Read peak list(s) from 'Varian MS Workstation'.</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_varian_sms.html">read_varian_sms()</a></code>
+
+        </dt>
+        <dd>Read 'Varian' SMS</dd>
       </dl><dl><dt>
 
           <code><a href="read_waters_arw.html">read_waters_arw()</a></code>
@@ -229,6 +247,12 @@
         <dd>Write CDF file from chromatogram</dd>
       </dl><dl><dt>
 
+          <code><a href="write_mzml.html">write_mzml()</a></code>
+
+        </dt>
+        <dd>Write mzML</dd>
+      </dl><dl><dt>
+
           <code><a href="write_openchrom_batchfile.html">write_openchrom_batchfile()</a></code>
 
         </dt>
@@ -242,7 +266,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer></div>
