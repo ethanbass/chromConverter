@@ -5,25 +5,27 @@
 \title{Parse Agilent or Waters files with rainbow parser}
 \usage{
 call_rainbow(
-  file,
+  path,
   format_in = c("agilent_d", "waters_raw", "masshunter", "chemstation", "chemstation_uv",
     "chemstation_fid"),
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   by = c("detector", "name"),
   what = NULL,
   read_metadata = TRUE,
+  metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
   precision = 1
 )
 }
 \arguments{
-\item{file}{Path to file}
+\item{path}{Path to file}
 
 \item{format_in}{Format of the supplied files. Either \code{agilent_d},
 \code{waters_raw}, or \code{chemstation}.}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{R format. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
 \item{data_format}{Whether to return data in wide or long format.}
 
@@ -34,6 +36,9 @@ call_rainbow(
 \code{ELSD}). This argument only applies if \code{by == "detector"}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to TRUE.}
+
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element.}

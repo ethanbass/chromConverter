@@ -20,13 +20,17 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 ##### ChromConverter
 - 'Agilent ChemStation' & 'OpenLab' `.uv` files (versions 131, 31)
 - 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 30, 130, 8, 81, 179, 181)
+- Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
 - ÅNDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
+- 'Allotrope Simple Model' (ASM) 2D chromatograms.
 - mzML (`.mzml`) & mzXML (.`mzxml`) (via RaMS).
 - 'Shimadzu LabSolutions' ascii (`.txt`)
-- 'Shimadzu LabSolutions'`.gcd`
+- 'Shimadzu GCsolution' data files (`.gcd`)
+- 'Shimadzu GCMSsolution' data files (`.qgd`) 
 - 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA and chromatogram streams)
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
-- 'Waters' ascii (`.arw`)
+- 'Varian Workstation' (`.SMS`)
+- 'Waters Empower' ascii (`.arw`)
 
 ##### External Libraries
 ###### Aston/Entab (*Entab requires separate installation, see [instructions below](README.md#Installation)*)
@@ -104,7 +108,7 @@ Parsers in OpenChrom are organized by detector-type. Thus, for the `format_in` a
 
 ###### Extracting metadata
 
-chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as [attributes](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) of the associated object. The metadata can then be extracted into a data.frame or tibble using the `extract_metadata` function. 
+chromConverter includes some options to extract metadata from the provided files. If `read_metadata = TRUE`, metadata will be extracted and stored as [attributes](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) of the associated object. The metadata can then be accessed using the `attributes` or `attr` functions on individual chromatograms, or extracted into a data.frame or tibble from a list of chromatograms using the `extract_metadata` function. 
 
 ##### Importing peak lists
 
@@ -120,7 +124,7 @@ Some of the parsers rely on external software libraries that must be manually in
 
 ##### **Aston**
 
-To install Aston, call the `configure_aston()` function to install miniconda along with the necessary python dependencies. Running `read_chroms` with the Aston parser selected should also trigger a prompt to install Aston. If you're running Windows, you may need to install the latest version of ['Microsoft Visual C++'](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170) if you don't already have it.
+To install Aston, call the `configure_aston()` function to install miniconda along with the necessary python dependencies. Running `read_chroms` with the Aston parser selected should also trigger a prompt to install Aston. If you're running Windows, you may need to install the latest version of ['Microsoft Visual C++'](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist) if you don't already have it.
 
 ##### **Entab**
 
@@ -135,7 +139,7 @@ remotes::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser) on the command-line. To install the ThermoRawFileParser, follow the instructions [here](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will also need to install [mono](https://www.mono-project.com/download/stable/#download-lin), following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
 
 ##### **OpenChrom** 
-###### (**Note:** Support for the commmand line interface has been removed from OpenChrom (as of `version 1.5.0`). Older versions (e.g., `1.4.x`) should still work but are unfortunately no longer available from Lablicate).
+###### (**Note:** Support for the commmand line interface has been removed from OpenChrom (as of `version 1.5.0`). Older versions (e.g. `1.4.x`) should still work for now. Unfortunately, OpenChrom 1.4 has been scrubbed from the internet, but OpenChrom 1.3 is still available from [SourceForge](https://sourceforge.net/projects/openchrom/files/REL-1.3.0/)).
 
 [OpenChrom](https://lablicate.com/platform/openchrom) is open source chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
 

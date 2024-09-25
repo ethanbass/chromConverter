@@ -5,7 +5,9 @@
 #' [OpenChrom](https://lablicate.com/platform/openchrom) (version 0.4.0) must be
 #' manually installed. The command line interface is no longer supported in the
 #' latest versions of OpenChrom (starting with version 0.5.0), so the function
-#' will not work with these newer versions.
+#' will no longer work with these newer versions. OpenChrom 1.4 has been scrubbed
+#' from the internet, but OpenChrom 1.3 is still available from
+#' [SourceForge](https://sourceforge.net/projects/openchrom/files/REL-1.3.0/).
 #'
 #' The \code{call_openchrom} works by creating an \code{xml} batchfile and
 #' feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
@@ -18,17 +20,19 @@
 #' the OpenChrom parsers, you must select one of these three options for the
 #' input format (\code{format_in}).
 #'
-#' @note Turning on the OpenChrom command-line will deactivate the graphical
+#' @note Activating the OpenChrom command-line will deactivate the graphical
 #' user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
 #' it is recommended to create a separate command-line version of OpenChrom to
 #' call from R.
 #'
 #' @import xml2
-#' @import magrittr
 #' @param files files to parse
 #' @param path_out directory to export converted files.
-#' @param format_in Either `msd` for mass spectrometry data, `csd` for flame ionization data, or `wsd` for DAD/UV data.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_in Either `msd` for mass spectrometry data, `csd` for flame
+#' ionization data, or `wsd` for DAD/UV data.
+#' @param format_out R format. Either \code{matrix}, \code{data.frame} or
+#' \code{data.table}.
+#' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param export_format Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
 #' Defaults to \code{mzml}.
 #' @param return_paths Logical. If TRUE, the function will return a character
@@ -51,10 +55,12 @@
 #' @export
 
 call_openchrom <- function(files, path_out = NULL, format_in,
-                             format_out = c("matrix","data.frame"),
-                             export_format = c("mzml", "csv", "cdf", "animl"),
-                             return_paths = FALSE, verbose = getOption("verbose")){
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
+                           format_out = c("matrix", "data.frame", "data.table"),
+                           data_format = c("wide", "long"),
+                           export_format = c("mzml", "csv", "cdf", "animl"),
+                           return_paths = FALSE,
+                           verbose = getOption("verbose")){
+  format_out <- check_format_out(format_out)
   if (length(files) == 0){
     stop("Files not found.")
   }
@@ -64,6 +70,8 @@ call_openchrom <- function(files, path_out = NULL, format_in,
   export_format <- match.arg(export_format, c("mzml", "csv", "cdf", "animl"))
   if (is.null(path_out)){
     path_out <- tempdir()
+  } else{
+    path_out <- fs::path_expand(path_out)
   }
   if(!dir.exists(path_out)){
     stop("Export directory not found. Please check `path_out` argument and try again.")
@@ -84,7 +92,8 @@ call_openchrom <- function(files, path_out = NULL, format_in,
   } else{
     file_reader <- switch(export_format,
                           "csv" = read.csv,
-                          "cdf" = read_cdf,
+                          "cdf" = purrr::partial(read_cdf, format_out = format_out,
+                                                 data_format = data_format),
                           "animl" = warning("An animl parser is not currently available in chromConverter"),
                           "mzml" = read_mzml)
       lapply(new_files, function(x){
@@ -100,7 +109,6 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 #' Writes OpenChrom XML batch file
 #' This function is called internally by \code{call_openchrom}.
 #' @import xml2
-#' @import magrittr
 #' @param files Paths to files for conversion
 #' @param path_out directory to export converted files.
 #' @param format_in Either \code{msd} for mass spectrometry data, \code{csd} for
@@ -110,16 +118,19 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 #' @author Ethan Bass
 
 write_openchrom_batchfile <- function(files, path_out,
-                                      format_in = c("msd","csd","wsd"),
-                                      export_format = c("csv","cdf","mzml","animl")){
-  path_template <- system.file("openchrom_template.xml", package = "chromConverter")
+                                      format_in = c("msd", "csd", "wsd"),
+                                      export_format = c("csv", "cdf", "mzml",
+                                                        "animl")){
+  path_template <- system.file("openchrom_template.xml",
+                               package = "chromConverter")
   x <- xml2::read_xml(x = path_template)
 
-  ### add files to InputEntries ###
+  input_entries <- xml_find_first(x,"//InputEntries")
   for (file in files){
-    x %>% xml_children %>% .[[3]] %>%
-      xml_add_child(.value = "InputEntry")  %>% xml_add_child(xml_cdata(file))
+    xml_add_child(input_entries, .value = "InputEntry")  |>
+      xml_add_child(xml_cdata(file))
   }
+
 
   ### add appropriate parser to ProcessEntries ###
   msd_mzml_converter <- 'ProcessEntry id="msd.export.org.eclipse.chemclipse.msd.converter.supplier.mzml" name="mzML Chromatogram (*.mzML)" description="Reads mzML Chromatograms" jsonSettings="{&quot;Filename&quot;:&quot;{chromatogram_name}{extension}&quot;,&quot;Export Folder&quot;:&quot;path_out&quot;}" symbolicName="" className="" dataTypes=""'
@@ -146,8 +157,15 @@ write_openchrom_batchfile <- function(files, path_out,
                      "csv" = wsd_csv_converter,
                      "animl" = wsd_animl_converter)
   }
-  x %>% xml_children %>% .[[4]] %>% xml_add_child(.value=gsub("path_out", path_out, parser))
-  path_xml <- fs::path(path_out, paste0("batchfile_", strftime(Sys.time(),format = "%Y-%m-%d_%H-%M-%S")), ext = "xml")
+  process_entries <- xml_find_first(x,"//ProcessEntries")
+  for (file in files){
+    xml_add_child(input_entries, .value = gsub("path_out", path_out, parser))
+  }
+
+  path_xml <- fs::path(path_out, paste0("batchfile_",
+                                        strftime(Sys.time(),
+                                                 format = "%Y-%m-%d_%H-%M-%S")),
+                       ext = "xml")
   write_xml(x, file = path_xml)
   path_xml
 }
@@ -195,10 +213,12 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
       path_parser <- gsub("/","\\\\", path_parser)
     }
     writeLines(path_parser,
-               con = system.file('shell/path_to_openchrom_commandline.txt', package='chromConverter'))
+               con = system.file('shell/path_to_openchrom_commandline.txt',
+                                 package='chromConverter'))
   }
   path_ini <- switch(.Platform$OS.type,
-                     "unix" = paste0(gsub("MacOS/openchrom", "", path_parser), "Eclipse/openchrom.ini"),
+                     "unix" = paste0(gsub("MacOS/openchrom", "", path_parser),
+                                     "Eclipse/openchrom.ini"),
                      "linux" = paste0(path_parser, ".uni"),
                      "windows" = paste0(gsub(".exe", "", path_parser), ".ini"))
   ini <- readLines(path_ini)

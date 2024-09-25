@@ -1,6 +1,6 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.6.4
+Version: 0.7.0
 Authors@R: c(
     person(given = "Ethan", family = "Bass", email = "ethanbass@gmail.com",
                   role = c("aut", "cre"),
@@ -13,7 +13,13 @@ Authors@R: c(
     for parsing 'Agilent' UV files."))
     )
 Maintainer: Ethan Bass <ethanbass@gmail.com>
-Description: Reads chromatograms from binary formats into R objects. Currently supports conversion of 'Agilent ChemStation', 'Agilent MassHunter', 'Shimadzu LabSolutions', 'ThermoRaw' files as well as various text-based formats. Utilizes file parsers from external libraries, such as 'Aston' <https://github.com/bovee/aston>, 'Entab' <https://github.com/bovee/entab>, 'rainbow' <https://rainbow-api.readthedocs.io/>, and 'ThermoRawFileParser' <https://github.com/compomics/ThermoRawFileParser>.
+Description: Reads chromatograms from binary formats into R objects. Currently supports 
+    conversion of 'Agilent ChemStation', 'Agilent MassHunter', 'Shimadzu LabSolutions', 
+    'ThermoRaw', and 'Varian Workstation' files as well as various text-based formats. 
+    In addition to its internal parsers, chromConverter contains bindings to parsers in
+    external libraries, such as 'Aston' <https://github.com/bovee/aston>, 
+    'Entab' <https://github.com/bovee/entab>, 'rainbow' <https://rainbow-api.readthedocs.io/>,
+    and 'ThermoRawFileParser' <https://github.com/compomics/ThermoRawFileParser>.
 License: GPL (>= 3)
 URL: https://ethanbass.github.io/chromConverter, https://github.com/ethanbass/chromConverter
 BugReports: https://github.com/ethanbass/chromConverter/issues
@@ -26,11 +32,14 @@ Imports:
     stringr,
     tidyr,
     utils,
-    magrittr,
     RaMS,
     tibble,
     xml2,
-    bit64
+    bit64,
+    data.table,
+    base64enc,
+    jsonlite,
+    digest
 Suggests: 
     entab,
     ncdf4,
@@ -41,12 +50,12 @@ Suggests:
 Config/reticulate: list( packages = list(list(package = "scipy"),
                                     list(package="numpy"),
                                     list(package = "pandas"),
-                                    list(package="aston", pip = TRUE),
+                                    list(package="Aston", pip = TRUE),
                                     list(package="rainbow-api", pip = TRUE),
                                     list(package = "olefile", pip = TRUE)) )
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.0
-Additional_repositories: https://ethanbass.github.io/drat/
+Additional_repositories: https://ethanbass.github.io/drat/, https://ethanbass.r-universe.dev/
 Config/testthat/edition: 3

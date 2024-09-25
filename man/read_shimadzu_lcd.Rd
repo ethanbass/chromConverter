@@ -7,18 +7,19 @@
 read_shimadzu_lcd(
   path,
   what,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  scale = TRUE
+  scale = TRUE,
+  collapse = TRUE
 )
 }
 \arguments{
 \item{path}{Path to LCD file.}
 
-\item{what}{What stream to get: current options are \code{pda},
-\code{chromatogram}, or \code{tic}. If a stream is not specified,
+\item{what}{What stream to get: current options are \code{pda}, chromatograms
+\code{chroms}, or \code{tic}. If a stream is not specified,
 the function will default to \code{pda} if the PDA stream is present.}
 
 \item{format_out}{Matrix or data.frame.}
@@ -30,13 +31,22 @@ the function will default to \code{pda} if the PDA stream is present.}
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
-\item{scale}{Whether to scale the data by the value factor.}
+\item{scale}{Whether to scale the data by the value factor. Defaults to
+\code{TRUE}.}
+
+\item{collapse}{Logical. Whether to collapse lists that only contain a single
+element.}
 }
 \value{
-A 3D chromatogram from the PDA stream in \code{matrix} or
-\code{data.frame} format, according to the value of \code{format_out}.
-The chromatograms will be returned in \code{wide} or \code{long} format
-according to the value of \code{data_format}.
+A chromatogram or list of chromatograms in the format specified by
+\code{data_format} and \code{format_out}. If \code{data_format} is \code{wide},
+the chromatogram(s) will be returned with retention times as rows and a
+single column for the intensity. If \code{long} format is requested, two
+columns will be returned: one for the retention time and one for the intensity.
+The \code{format_out} argument determines whether chromatograms are returned
+as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
+attached to the chromatogram as \code{\link{attributes}} if
+\code{read_metadata} is \code{TRUE}.
 }
 \description{
 Read 3D PDA or 2D chromatogram streams from 'Shimadzu' LCD files.

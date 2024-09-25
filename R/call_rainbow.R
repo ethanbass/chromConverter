@@ -7,16 +7,19 @@
 #' \code{chemstation_uv} a \code{.uv} file should be provided. Data can be filtered
 #' by detector type using the \code{what} argument.
 #'
-#' @param file Path to file
+#' @param path Path to file
 #' @param format_in Format of the supplied files. Either \code{agilent_d},
 #' \code{waters_raw}, or \code{chemstation}.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out R format. Either \code{matrix}, \code{data.frame}, or
+#' \code{data.table}.
 #' @param data_format Whether to return data in wide or long format.
 #' @param what What types of data to return (e.g. \code{MS}, \code{UV}, \code{CAD},
 #' \code{ELSD}). This argument only applies if \code{by == "detector"}.
 #' @param by How to order the list that is returned. Either \code{detector}
 #' (default) or \code{name}.
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to TRUE.
+#' @param metadata_format Format to output metadata. Either \code{chromconverter}
+#' or \code{raw}.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
 #' element.
 #' @param precision Number of decimals to round mz values. Defaults to 1.
@@ -26,20 +29,24 @@
 #' \code{by}.
 #' @export
 
-call_rainbow <- function(file,
+call_rainbow <- function(path,
                          format_in = c("agilent_d", "waters_raw", "masshunter",
                                        "chemstation", "chemstation_uv",
                                        "chemstation_fid"),
-                         format_out = c("matrix", "data.frame"),
+                         format_out = c("matrix", "data.frame", "data.table"),
                          data_format = c("wide", "long"),
-                         by = c("detector","name"), what = NULL,
-                         read_metadata = TRUE, collapse = TRUE,
-                         precision = 1){
+                         by = c("detector", "name"), what = NULL,
+                         read_metadata = TRUE,
+                         metadata_format = c("chromconverter", "raw"),
+                         collapse = TRUE, precision = 1){
   check_rb_configuration()
-  by <- match.arg(by, c("detector","name"))
-  format_out <- match.arg(format_out, c("matrix","data.frame"))
+  by <- match.arg(by, c("detector", "name"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
-  # check_rb_dir(file)
+  metadata_format <- match.arg(tolower(metadata_format),
+                               c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format, "chromconverter" = "rainbow", "")
+
   if (grepl("chemstation", format_in)){
     format_in <- "chemstation"
   }
@@ -52,7 +59,7 @@ call_rainbow <- function(file,
   if (format_in %in% c("chemstation")){
     by <- "single"
   }
-  x <- converter(file, prec = as.integer(precision))
+  x <- converter(path, prec = as.integer(precision))
   if (by == "detector"){
     if (!is.null(what)){
       what_not_present <- which(!(what %in% names(x$by_detector)))
@@ -66,7 +73,8 @@ call_rainbow <- function(file,
     xx <- lapply(x$by_detector[dtr.idx], function(dtr){
       dtr_dat <- lapply(dtr, function(xx){
         extract_rb_data(xx, format_out = format_out, data_format = data_format,
-                        read_metadata = read_metadata)
+                        read_metadata = read_metadata, meta = x$metadata,
+                        metadata_format = metadata_format, source_file = path)
       })
       names(dtr_dat) <- extract_rb_names(dtr)
       if (collapse) dtr_dat <- collapse_list(dtr_dat)
@@ -75,12 +83,14 @@ call_rainbow <- function(file,
   } else if (by == "name"){
     xx <- lapply(x$datafiles, function(xx){
       extract_rb_data(xx, format_out = format_out, data_format = data_format,
-                      read_metadata = read_metadata)
+                      read_metadata = read_metadata, meta = x$metadata,
+                      metadata_format = metadata_format, source_file = path)
     })
     names(xx) <- names(x$by_name)
   } else{
     xx <- extract_rb_data(x, format_out = format_out, data_format = data_format,
-                          read_metadata = read_metadata)
+                          read_metadata = read_metadata, meta = x$metadata,
+                          metadata_format = metadata_format, source_file = path)
   }
   xx
 }
@@ -91,7 +101,10 @@ call_rainbow <- function(file,
 #' @noRd
 extract_rb_data <- function(xx, format_out = "matrix",
                             data_format = c("wide", "long"),
-                            read_metadata = TRUE){
+                            read_metadata = TRUE,
+                            metadata_format = "rainbow",
+                            meta = NULL,
+                            source_file){
   data_format <- match.arg(data_format, c("wide", "long"))
   data <- xx$data
   try(rownames(data) <- xx$xlabels)
@@ -102,14 +115,12 @@ extract_rb_data <- function(xx, format_out = "matrix",
                                            "lambda")
     data <- reshape_chrom(data, data_format = "long", names_to = names_to)
   }
-  if (format_out == "data.frame"){
-    data <- as.data.frame(data)
-  }
+  data <- convert_chrom_format(data, format_out = format_out)
   if (read_metadata){
-    try(attr(data, "detector") <- xx$detector)
-    try(attr(data, "metadata") <- xx$metadata)
-    attr(data, "parser") <- "rainbow"
-    attr(data, "data_format") <- data_format
+    meta <- c(meta, xx$metadata, detector = xx$detector)
+    data <- attach_metadata(data, meta = meta, format_in = metadata_format,
+                            format_out = format_out, data_format = data_format,
+                            parser = "rainbow", source_file = source_file)
   }
   data
 }

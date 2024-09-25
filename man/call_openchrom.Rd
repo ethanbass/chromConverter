@@ -8,7 +8,8 @@ call_openchrom(
   files,
   path_out = NULL,
   format_in,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
+  data_format = c("wide", "long"),
   export_format = c("mzml", "csv", "cdf", "animl"),
   return_paths = FALSE,
   verbose = getOption("verbose")
@@ -19,9 +20,13 @@ call_openchrom(
 
 \item{path_out}{directory to export converted files.}
 
-\item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame ionization data, or \code{wsd} for DAD/UV data.}
+\item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame
+ionization data, or \code{wsd} for DAD/UV data.}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{R format. Either \code{matrix}, \code{data.frame} or
+\code{data.table}.}
+
+\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
 \item{export_format}{Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
 Defaults to \code{mzml}.}
@@ -45,7 +50,9 @@ system call to the command-line interface. To use this function
 \href{https://lablicate.com/platform/openchrom}{OpenChrom} (version 0.4.0) must be
 manually installed. The command line interface is no longer supported in the
 latest versions of OpenChrom (starting with version 0.5.0), so the function
-will not work with these newer versions.
+will no longer work with these newer versions. OpenChrom 1.4 has been scrubbed
+from the internet, but OpenChrom 1.3 is still available from
+\href{https://sourceforge.net/projects/openchrom/files/REL-1.3.0/}{SourceForge}.
 }
 \details{
 The \code{call_openchrom} works by creating an \code{xml} batchfile and
@@ -60,7 +67,7 @@ the OpenChrom parsers, you must select one of these three options for the
 input format (\code{format_in}).
 }
 \note{
-Turning on the OpenChrom command-line will deactivate the graphical
+Activating the OpenChrom command-line will deactivate the graphical
 user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
 it is recommended to create a separate command-line version of OpenChrom to
 call from R.

@@ -5,17 +5,18 @@
 \title{Converter for 'Agilent MassHunter' UV files}
 \usage{
 sp_converter(
-  file,
-  format_out = c("matrix", "data.frame"),
+  path,
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
-\item{file}{path to file}
+\item{path}{Path to file}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 

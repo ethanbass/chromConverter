@@ -6,7 +6,7 @@
 \usage{
 read_waters_raw(
   path,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw")
@@ -15,7 +15,8 @@ read_waters_raw(
 \arguments{
 \item{path}{Path to \code{.raw} file.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
@@ -33,7 +34,7 @@ Parser for reading 'Waters MassLynx (.raw) files into R.
 }
 \note{
 For now this parser only reads 1D chromatograms (not mass spectra or
-DAD data).
+DAD data) and does not support parsing of metadata from 'Waters' RAW files.
 }
 \author{
 Ethan Bass

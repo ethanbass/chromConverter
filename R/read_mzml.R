@@ -3,14 +3,14 @@
 #' Extracts data from \code{mzML} files using parsers from either RaMS or mzR.
 #' The RaMS parser (default) will only return data in tidy (long) format. The
 #' mzR parser will return data in wide format. Currently the mzR-based parser
-#' only returns DAD data.
+#' is configured to return only DAD data.
 #'
 #' @name read_mzml
 #' @importFrom RaMS grabMSdata
 #' @param path path to file
-#' @param format_out R format. Only applies if \code{mzR} is selected.
-#' Either \code{matrix} or \code{data.frame}. \code{RaMS} will return
-#' a list of data.tables regardless of what is selected here.
+#' @param format_out Class of output. Only applies if \code{mzR} is selected.
+#' Either \code{matrix}, \code{data.frame}, or \code{data.table}. \code{RaMS}
+#' will return a list of data.tables regardless of what is selected here.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param parser What parser to use. Either \code{RaMS} or \code{mzR}.
 #' @param what What types of data to return (argument to \code{\link[RaMS]{grabMSdata}}.
@@ -25,7 +25,7 @@
 #' @author Ethan Bass
 #' @export read_mzml
 
-read_mzml <- function(path, format_out = c("matrix", "data.frame"),
+read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                       data_format = c("long","wide"),
                       parser = c("RaMS","mzR"),
                       what = c("MS1","MS2", "BPC", "TIC", "DAD",
@@ -33,7 +33,7 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame"),
                       verbose = FALSE,
                       ...){
   parser <- match.arg(parser, c("RaMS", "mzR"))
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("long","wide"))
   what <- match.arg(what, c("MS1","MS2", "BPC", "TIC", "DAD",
                             "chroms", "metadata", "everything"),
@@ -44,6 +44,12 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame"),
   }
   if (parser == "RaMS"){
     data <- RaMS::grabMSdata(path, grab_what = what, verbosity = verbose, ...)
+    data <- lapply(data, function(x){
+      int_idx <- which(colnames(x) == "int")
+      if (length(int_idx) > 0)
+        colnames(x)[int_idx] <- "intensity"
+      x
+    })
     if (data_format == "wide"){
       data <- reshape_chroms(data, data_format = "wide")
     }
@@ -67,9 +73,7 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame"),
     if (data_format == "long"){
       data <- reshape_chrom(data)
     }
-    if (format_out == "data.frame"){
-      data <- as.data.frame(data)
-    }
+    data <- convert_chrom_format(data, format_out = format_out)
   }
   data
 }

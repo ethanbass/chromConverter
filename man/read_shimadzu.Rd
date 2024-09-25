@@ -5,8 +5,8 @@
 \title{Shimadzu ascii reader}
 \usage{
 read_shimadzu(
-  file,
-  what = "chromatogram",
+  path,
+  what = "chroms",
   format_in = NULL,
   include = c("fid", "lc", "dad", "uv", "tic"),
   format_out = c("matrix", "data.frame"),
@@ -15,14 +15,15 @@ read_shimadzu(
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   ms_format = c("data.frame", "list"),
-  collapse = TRUE
+  collapse = TRUE,
+  scale = TRUE
 )
 }
 \arguments{
-\item{file}{Path to file.}
+\item{path}{Path to file.}
 
-\item{what}{Whether to extract \code{chromatogram}, \code{peak_table}, and/or
-\code{ms_spectra}. Accepts multiple arguments.}
+\item{what}{Whether to extract chromatograms (\code{chroms}),
+\code{peak_table}, and/or \code{ms_spectra}. Accepts multiple arguments.}
 
 \item{format_in}{This argument is deprecated and is no longer required.}
 
@@ -46,6 +47,9 @@ or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element.}
+
+\item{scale}{Whether to scale the data by the scaling factor present in the
+file. Defaults to \code{TRUE}.}
 }
 \value{
 A nested list of elements from the specified \code{file}, where the
@@ -56,7 +60,7 @@ by \code{format_out} (retention time x wavelength).
 \description{
 Reads 'Shimadzu' ascii files into R. These files can be exported from
 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
-selecting
+selecting \code{File Conversion:Convert to ASCII}.
 }
 \author{
 Ethan Bass

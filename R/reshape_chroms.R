@@ -21,17 +21,11 @@ reshape_chroms <- function(x, idx, sample_var = "sample", lambdas = NULL,
     idx <- seq_along(x)
   }
   dat <- lapply(idx, function(i){
-    if (is.null(lambdas)){
-      if (data_format == "wide"){
-        lambda.idx <- grep("lambda", colnames(x[[i]]))
-        lambdas <- unique(as.data.frame(x[[i]])[, lambda.idx])
-      } else if (data_format == "long"){
-        lambdas <- colnames(x[[i]])
-      }
-    }
-    xx <- reshape_chrom(x[[i]], lambdas = lambdas, data_format = data_format, ...)
+
+    xx <- reshape_chrom(x[[i]], lambdas = lambdas, data_format = data_format,
+                        ...)
     if (data_format == "long"){
-      xx[,sample_var] <- names(x)[[i]]
+      xx[, sample_var] <- names(x)[[i]]
     }
     xx
   })
@@ -61,7 +55,7 @@ reshape_chrom <- function(x, data_format, ...){
 #' @return A chromatographic matrix in long format.
 #' @author Ethan Bass
 #' @noRd
-reshape_chrom_long <- function(x, lambdas, format_out = NULL, names_to = "lambda"){
+reshape_chrom_long <- function(x, lambdas = NULL, format_out = NULL, names_to = "lambda"){
   if (!is.null(attr(x, "data_format")) && attr(x, "data_format") == "long"){
     warning("The data already appear to be in long format!", immediate. = TRUE)
   }
@@ -73,14 +67,16 @@ reshape_chrom_long <- function(x, lambdas, format_out = NULL, names_to = "lambda
   xx <- as.data.frame(x)
 
   if (ncol(x) == 1){
-    data <- data.frame(RT = as.numeric(rownames(xx)), Intensity = xx[,1],
+    data <- data.frame(rt = as.numeric(rownames(xx)), int = xx[,1],
                row.names = NULL)
   } else {
-    if (!missing(lambdas)){
+    if (!is.null(lambdas)){
       xx <- xx[,lambdas, drop = FALSE]
     }
-    data <- data.frame(tidyr::pivot_longer(data.frame(rt = rownames(xx), xx, check.names = FALSE),
-                                cols = -c("rt"), names_to = names_to, values_to = "intensity"))
+    data <- data.frame(tidyr::pivot_longer(data.frame(rt = rownames(xx), xx,
+                                                      check.names = FALSE),
+                                cols = -c("rt"), names_to = names_to,
+                                values_to = "intensity"))
     data <- apply(data, 2, as.numeric)
   }
   if (format_out == "matrix"){
@@ -93,19 +89,16 @@ reshape_chrom_long <- function(x, lambdas, format_out = NULL, names_to = "lambda
 
 #' Reshapes a single chromatogram from long to wide format
 #' @noRd
-reshape_chrom_wide <- function(x, lambdas, lambda_var = "lambda", time_var="rt",
-                               value_var = "int", drop){
+reshape_chrom_wide <- function(x, lambdas = NULL, lambda_var = "lambda",
+                               time_var = "rt", value_var = "intensity", drop = NULL){
   if (!is.null(attr(x, "data_format")) && attr(x, "data_format") == "wide"){
     warning("The data already appear to be in wide format!", immediate. = TRUE)
   }
-  if (missing(drop)){
+  if (is.null(drop)){
     drop <- colnames(x)[which(sapply(x, is.character))]
   }
-  if (missing(value_var)){
-    value_var <- colnames(x)[grep("int|abs", colnames(x),ignore.case = TRUE)]
-  }
-  if (!missing(lambdas)){
-    x <- x[which(x[,lambda_var] %in% lambdas),]
+  if (!is.null(lambdas)){
+    x <- x[which(x[[lambda_var]] %in% lambdas),]
   }
   x <- as.data.frame(x)
   data <- data.frame(tidyr::pivot_wider(x, id_cols = !!time_var,

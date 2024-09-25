@@ -6,16 +6,18 @@
 \usage{
 read_chemstation_uv(
   path,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
-  metadata_format = c("chromconverter", "raw")
+  metadata_format = c("chromconverter", "raw"),
+  scale = TRUE
 )
 }
 \arguments{
 \item{path}{Path to \code{.uv} file.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
@@ -23,6 +25,9 @@ read_chemstation_uv(
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
+
+\item{scale}{Whether to scale the data by the scaling factor present in the
+file. Defaults to \code{TRUE}.}
 }
 \value{
 A 3D chromatogram in the format specified by \code{data_format} and

@@ -6,7 +6,7 @@
 \usage{
 read_sz_lcd_2d(
   path,
-  format_out = "matrix",
+  format_out = "data.frame",
   data_format = "wide",
   read_metadata = TRUE,
   metadata_format = "shimadzu_lcd",

@@ -6,7 +6,7 @@
 \usage{
 read_shimadzu_gcd(
   path,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw")
@@ -15,7 +15,8 @@ read_shimadzu_gcd(
 \arguments{
 \item{path}{Path to GCD file.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
@@ -31,7 +32,7 @@ The chromatograms will be returned in \code{wide} or \code{long} format
 according to the value of \code{data_format}.
 }
 \description{
-Read 2D PDA data stream from 'Shimadzu' GCD files.
+Read chromatogram data streams from 'Shimadzu' GCD files.
 }
 \details{
 A parser to read chromatogram data streams from 'Shimadzu' \code{.gcd} files.

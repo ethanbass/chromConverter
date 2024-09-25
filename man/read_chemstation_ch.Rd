@@ -6,7 +6,7 @@
 \usage{
 read_chemstation_ch(
   path,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
@@ -16,7 +16,8 @@ read_chemstation_ch(
 \arguments{
 \item{path}{Path to \code{.ch} file}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
@@ -35,9 +36,9 @@ A 2D chromatogram in the format specified by \code{data_format} and
 be returned with retention times as rows and a single column for the intensity.
 If \code{long} format is requested, two columns will be returned: one for the
 retention time and one for the intensity. The \code{format_out} argument
-determines whether the chromatogram is returned as a \code{matrix} or
-\code{data.frame}. Metadata can be attached to the chromatogram as
-\code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+determines whether the chromatogram is returned as a \code{matrix},
+\code{data.frame}, or \code{data.table}. Metadata can be attached to the
+chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Agilent \code{.ch} files come in several different varieties. This parser

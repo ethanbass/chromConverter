@@ -7,7 +7,7 @@
 read_agilent_dx(
   path,
   path_out = NULL,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE
 )
@@ -17,7 +17,8 @@ read_agilent_dx(
 
 \item{path_out}{Path to directory to export unzipped files.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 

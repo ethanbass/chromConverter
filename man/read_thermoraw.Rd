@@ -5,7 +5,7 @@
 \title{Read ThermoRaw files into R using ThermoRawFileParser}
 \usage{
 read_thermoraw(
-  path_in,
+  path,
   path_out = NULL,
   format_out = c("matrix", "data.frame"),
   read_metadata = TRUE,
@@ -14,7 +14,7 @@ read_thermoraw(
 )
 }
 \arguments{
-\item{path_in}{Path to file.}
+\item{path}{Path to file.}
 
 \item{path_out}{Path to directory to export \code{mzML} files. If
 \code{path_out} isn't specified, a temp directory will be used.}

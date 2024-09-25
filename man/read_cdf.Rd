@@ -5,10 +5,10 @@
 \title{Read CDF file}
 \usage{
 read_cdf(
-  file,
-  format_out = c("matrix", "data.frame"),
+  path,
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
-  what = "chromatogram",
+  what = NULL,
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
@@ -16,16 +16,19 @@ read_cdf(
 )
 }
 \arguments{
-\item{file}{Path to file.}
+\item{path}{Path to ANDI netCDF file.}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{\link[data.table]{data.table}}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.
 For 2D files, "long" format returns the retention time as the first column of
 the data.frame or matrix while "wide" format returns the retention time as the
 rownames of the object.}
 
-\item{what}{Whether to extract \code{chromatogram} and/or \code{peak_table}.}
+\item{what}{For ANDI chrom files, whether to extract \code{chroms}
+and/or \code{peak_table}. For ANDI ms files, whether to extract MS1 scans
+(\code{MS1}) or the total ion chromatogram (\code{TIC}).}
 
 \item{read_metadata}{Whether to read metadata from file.}
 
@@ -44,7 +47,7 @@ A chromatogram in the format specified by the \code{format_out} and
 \code{data_format} arguments.
 }
 \description{
-Read CDF file
+Parser for Analytical Data Interchange (ANDI) netCDF files.
 }
 \author{
 Ethan Bass

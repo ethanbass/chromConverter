@@ -6,22 +6,23 @@
 Converts files using Entab parsers}
 \usage{
 call_entab(
-  file,
+  path,
   data_format = c("wide", "long"),
+  format_out = c("matrix", "data.frame", "data.table"),
   format_in = "",
-  format_out = c("matrix", "data.frame"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
-\item{file}{path to file}
+\item{path}{Path to file}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
-\item{format_in}{Format of input.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
+or \code{data.table}.}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_in}{Format of input.}
 
 \item{read_metadata}{Whether to read metadata from file.}
 

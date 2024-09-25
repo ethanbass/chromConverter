@@ -1,5 +1,5 @@
 #' Read 'Agilent ChemStation' Reports
-#' @param files Paths to 'ChemStation' report files.
+#' @param paths Paths to 'ChemStation' report files.
 #' @param data_format Format to output data. Either \code{chromatographr} or
 #' \code{chemstation}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
@@ -9,23 +9,25 @@
 #' @author Ethan Bass
 #' @export
 
-read_chemstation_reports <- function(files, data_format = c("chromatographr", "original"),
+read_chemstation_reports <- function(paths, data_format = c("chromatographr",
+                                                            "original"),
                                      metadata_format = c("chromconverter", "raw")){
-  data_format <- match.arg(tolower(data_format), c("chromatographr", "original"))
-  metadata_format = match.arg(metadata_format, c("chromconverter","raw"))
-  names(files) <- sub(".*/([^/]+)\\.D/.*$", "\\1", files)
+  data_format <- match.arg(tolower(data_format),
+                           c("chromatographr", "original"))
+  metadata_format = match.arg(metadata_format, c("chromconverter", "raw"))
+  names(paths) <- sub(".*/([^/]+)\\.D/.*$", "\\1", paths)
 
-  pks <- lapply(seq_along(files), function(i){
-    xx <- read_chemstation_report(files[i], data_format = data_format,
+  pks <- lapply(seq_along(paths), function(i){
+    xx <- read_chemstation_report(paths[i], data_format = data_format,
                                   metadata_format = metadata_format)
     dat <- lapply(seq_along(xx), function(ii){
       lambda <- sub(".*Sig=([0-9]+).*", "\\1", names(xx)[ii])
-      cbind(sample = names(files)[i], lambda = lambda, xx[[ii]])
+      cbind(sample = names(paths)[i], lambda = lambda, xx[[ii]])
     })
     names(dat) <- sub(".*Sig=([0-9]+).*", "\\1", names(xx))
     dat
   })
-  names(pks) <- names(files)
+  names(pks) <- names(paths)
   structure(pks,
             chrom_list = NA,
             lambdas = names(pks[[1]]), fit = "chemstation", sd.max = NA,
@@ -35,15 +37,17 @@ read_chemstation_reports <- function(files, data_format = c("chromatographr", "o
 }
 
 #' Read Agilent Chemstation Report
-#' @param file Path to file
+#' @param path Path to file
 #' @param data_format Format to output data. Either \code{chromatographr} or
 #' \code{chemstation}.
+#' @param combine Whether to combine peaklists into a single data.frame.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
 #' \code{raw}.
 #' @author Ethan Bass
 #' @noRd
 
-read_chemstation_report <- function(file, data_format = c("chromatographr", "original"),
+read_chemstation_report <- function(path, data_format = c("chromatographr", "original"),
+                                    combine = FALSE,
                                     read_metadata = TRUE,
                                     metadata_format = c("chromconverter", "raw")){
   data_format <- match.arg(tolower(data_format), c("chromatographr", "original"))
@@ -51,7 +55,7 @@ read_chemstation_report <- function(file, data_format = c("chromatographr", "ori
   metadata_format <- switch(metadata_format,
                             chromconverter = "chemstation_peaklist",
                             raw = "raw")
-  x <- readLines(file, encoding = "UTF-16LE", skipNul = TRUE)
+  x <- readLines(path, encoding = "UTF-16LE", skipNul = TRUE)
   x[1] <- gsub("\xff\xfe", "", x[1], useBytes = TRUE)
   x <- gsub("\xb5", "<b5>", x, useBytes = TRUE)
 
@@ -70,14 +74,15 @@ read_chemstation_report <- function(file, data_format = c("chromatographr", "ori
     metadata <- remove_blank_lines(metadata)
     merge_lines <- function(xx){
       idx <- grep(":", xx, invert = TRUE)
-      xx[idx - 1] <- paste0(xx[idx-1], xx[idx])
+      xx[idx - 1] <- paste0(xx[idx - 1], xx[idx])
       xx <- xx[-idx]
       xx
     }
     metadata <- gsub("^\\s+","", metadata)
     metadata <- gsub("\\s+\\:\\s+", " : ", metadata)
     metadata <- merge_lines(metadata)
-    metadata <- unlist(strsplit(metadata, "(?<!\\s:\\s)\\s{2,}(?!\\s)", perl = TRUE))
+    metadata <- unlist(strsplit(metadata, "(?<!\\s:\\s)\\s{2,}(?!\\s)",
+                                perl = TRUE))
 
     sample_info <- x[1:(sections[1]-1)]
     sample_info <- remove_blank_lines(sample_info)
@@ -90,7 +95,8 @@ read_chemstation_report <- function(file, data_format = c("chromatographr", "ori
     names(metadata) <- sapply(metadata, function(x)x[1])
     metadata <- lapply(metadata, function(x) x[2])
     peak_lists <- attach_metadata(peak_lists, metadata, format_in = metadata_format,
-                                  source_file = file, data_format = data_format, format_out = "data.frame")
+                                  source_file = path, data_format = data_format,
+                                  format_out = "data.frame")
   }
   peak_lists
 }
@@ -102,7 +108,7 @@ read_chemstation_report <- function(file, data_format = c("chromatographr", "ori
 #' @author Ethan Bass
 #' @noRd
 convert_chemstation_peaklist <- function(table, data_format =
-                                           c("chromatographr","original")){
+                                           c("chromatographr", "original")){
   markdown_table <- table[-which(table == "")]
   split.pos <- c(1,gregexpr("\\|",markdown_table[4])[[1]])
   header1 <- sapply(seq_len(length(split.pos)-1), function(i){
@@ -125,7 +131,7 @@ convert_chemstation_peaklist <- function(table, data_format =
   df <- data.frame(matrix(unlist(rows), nrow = length(rows), byrow = TRUE),
                    stringsAsFactors = FALSE)
   colnames(df) <- header
-  df2 <- as.data.frame(purrr::map_df(df[,-c(which(colnames(df)=="Type"))],
+  df2 <- as.data.frame(purrr::map_df(df[,-c(which(colnames(df) == "Type"))],
                                      as.numeric))
   df2 <- cbind(df2, df[, "Type", drop = FALSE])
   if (data_format == "chromatographr"){

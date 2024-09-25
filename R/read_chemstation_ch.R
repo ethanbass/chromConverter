@@ -9,7 +9,8 @@
 #'
 #' @importFrom bitops bitAnd bitShiftL
 #' @param path Path to \code{.ch} file
-#' @param format_out Matrix or data.frame.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
@@ -23,21 +24,22 @@
 #' be returned with retention times as rows and a single column for the intensity.
 #' If \code{long} format is requested, two columns will be returned: one for the
 #' retention time and one for the intensity. The \code{format_out} argument
-#' determines whether the chromatogram is returned as a \code{matrix} or
-#' \code{data.frame}. Metadata can be attached to the chromatogram as
-#' \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+#' determines whether the chromatogram is returned as a \code{matrix},
+#' \code{data.frame}, or \code{data.table}. Metadata can be attached to the
+#' chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' (&copy James Dillon 2014).
 #' @export
 #' @md
 
-read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
+read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
+                                                     "data.table"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
                                 scale = TRUE){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, chromconverter = "chemstation",
@@ -74,11 +76,6 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
                     "181" = decode_double_delta,
                     "179_4b" = decode_double_array_4byte,
                     "179_8b" = decode_double_array_8byte)
-
-  # Sample Info
-  # offsets <- list(sample = 858, description = 1369, method = 2574,
-  #                 operator = 1880, date = 2391, instrument = 2533,
-  #                inlet = 2492, units = 4172)
 
   seek(f, 264, "start")
   offset <- (readBin(f, "integer", n = 1, endian = "big", size = 4) - 1) * 512
@@ -117,15 +114,10 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
     if (scale){
       data <- data * scaling_factor + intercept
     }
+    data <- format_2d_chromatogram(rt = times, int = data,
+                                   data_format = data_format,
+                                   format_out = format_out)
 
-    if (data_format == "wide"){
-      data <- data.frame(Intensity = data, row.names = times)
-    } else if (data_format == "long"){
-      data <- data.frame(RT = times, Intensity = data)
-    }
-    if (format_out == "matrix"){
-      data <- as.matrix(data)
-    }
     if (read_metadata){
       meta_slots <- switch(version, "8" = 10,
                                     "81" = 10,
@@ -152,7 +144,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame"),
     meta$date <- regmatches(meta$date, gregexpr(datetime_regex, meta$date))[[1]]
     data <- attach_metadata(data, meta, format_in = metadata_format,
                             data_format = data_format, format_out = format_out,
-                            parser = "chromconverter", source_file = path)
+                            parser = "chromconverter", source_file = path,
+                            scale = scale)
   }
   data
 }
@@ -174,7 +167,7 @@ cc_collapse <- function(x){
 }
 
 #' @noRd
-cc_trim_str <- function(x, len=2){
+cc_trim_str <- function(x, len = 2){
   substr(x, len, nchar(x))
 }
 
@@ -182,7 +175,7 @@ cc_trim_str <- function(x, len=2){
 #' @noRd
 get_chemstation_dir_name <- function(path){
   dir <- gsub(basename(path), "", path)
-  sp <- str_split_fixed(dir, "/", stringr::str_count(dir,"/")+1)[1,]
+  sp <- str_split_fixed(dir, "/", stringr::str_count(dir, "/") + 1)[1,]
   grep("\\.D|\\.d$", sp, ignore.case = TRUE, value = TRUE)
 }
 
@@ -197,9 +190,7 @@ get_nchar <- function(f){
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
 #' @noRd
-
 decode_double_delta <- function(file, offset){
-
   seek(file, 0, 'end')
   fsize <- seek(file, NA, "current")
 
@@ -268,7 +259,6 @@ decode_double_array_8byte <- function(file, offset){
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
 #' @noRd
-
 decode_delta <- function(file, offset){
     seek(file, 0, 'end')
     fsize <- seek(file, NA, "current")
@@ -445,7 +435,8 @@ get_agilent_offsets <- function(version){
 #' @importFrom utils unzip
 #' @param path Path to \code{.dx} file.
 #' @param path_out Path to directory to export unzipped files.
-#' @param format_out Matrix or data.frame.
+#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
+#' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
@@ -454,10 +445,10 @@ get_agilent_offsets <- function(version){
 #' @author Ethan Bass
 #' @export
 read_agilent_dx <-  function(path, path_out = NULL,
-                             format_out = c("matrix","data.frame"),
+                             format_out = c("matrix", "data.frame", "data.table"),
                               data_format = c("wide","long"),
                               read_metadata = TRUE){
-    format_out <- match.arg(format_out, c("matrix","data.frame"))
+    format_out <- check_format_out(format_out)
     data_format <- match.arg(data_format, c("wide","long"))
     files <- unzip(path, list = TRUE)
     files.idx <- grep(".ch$", files$Name, ignore.case = TRUE)

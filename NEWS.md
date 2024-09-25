@@ -1,6 +1,45 @@
+## chromConverter 0.7.0
+
+### Major features
+
+* Added preliminary support for 'Varian Worktation' (`.sms`) format through `read_varian_sms` function.
+* Added preliminary support for 'Shimadzu QGD' GCMS files through the `read_shimadzu_qgd` function.
+* Added preliminary support for 'Allotrope Simple Model' (ASM) 2D chromatography date files.
+* Added support for reading multiple files from 'Agilent' `.D` directories through `read_agilent_d` function.
+* Added option to write mzML files (MS1 and DAD).
+
+### UI changes
+
+* Changed order of arguments in `read_chroms` so that `format_in` comes second after `path`.
+* Removed extraneous `export` argument from `read_chroms`. To export files, you now only need to provide an argument to `export_format`.
+* Updated handling of multiple chromatograms by `read_shimadzu_lcd`. The function now returns a list of named chromatograms if `data_format == "wide"` and returns multiple chromatograms in a single `data.frame` if `data_format == "long"`.
+* Added `scale` argument to `read_chemstation_uv` and `read_shimadzu_ascii` to toggle scaling of chromatograms.
+* Harmonized file path arguments across parser functions by changing `file` arguments to `path`.
+* Harmonized column names in output across parsers.
+* Small changes in `read_cdf` UI: `what` now defaults to `NULL` and defaults are coded into downstream `read_andi_chrom` and `read_andi_ms` functions.
+* Added extra verbosity in `read_chroms` when `verbose` is `TRUE`.
+
+### Other improvements
+
+* Fixed bug causing reticulate to attempt reinstallation of Aston every time the package is loaded (due to case sensitivity of packages names in `reticulate::configure_environment`).
+* Added `data.table` as an option for `format_out`.
+* Improved speed of `read_shimadzu_lcd` by dealing with twos-complements more sensibly.
+* Start 'Shimadzu LCD' chromatogram retention times at dwell time (DLT).
+* Give temp files generated from Shimadzu OLE files informative names.
+* Use 'Output Date' field instead of 'Type' to find 'Shimadzu' ASCII delimiter. (This seems to be a more generalizable solution since some files do not contain the 'Type' field).
+* Allow relative paths for `path_out` when using 'ThermoRawFileParser' and 'OpenChrom' parsers.
+* Allow creation of new directories by `read_chroms` if `path_out` does not exist.
+* Fixed bug affecting some `mdf` files lacking null bytes after the file header.
+* Eliminated 'magrittr' dependency by using xpath to parse XML in a more straightforward fashion.
+* Fixed bug causing truncation of sample names at the first period by `read_chroms`.
+* Modified `export_csv` function to label first column for wide-format chromatograms.
+* Improved handling of metadata from rainbow parsers.
+* Fixed error when providing single chromatogram to \code{extract_metadata}.
+* Added metadata field for source checksum (SHA1).
+
 ## chromConverter 0.6.4
 
-* Added support for Agilent ChemStation' version 8 (`.ch`) files through `read_chemstation_ch`.
+* Added support for 'Agilent ChemStation' version 8 (`.ch`) files through `read_chemstation_ch`.
 * Fixed failure to return units in some `Agilent Chemstation` files due to typo.
 * Fixed bug causing "spill-over" of Agilent metadata fields.
 * Fixed bug causing failure to read `ChemStation` CSV files on (some) mac machines by specifying little-endian format in call to `read.csv`.

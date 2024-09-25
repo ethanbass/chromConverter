@@ -6,7 +6,7 @@
 \usage{
 read_mzml(
   path,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("long", "wide"),
   parser = c("RaMS", "mzR"),
   what = c("MS1", "MS2", "BPC", "TIC", "DAD", "chroms", "metadata", "everything"),
@@ -17,9 +17,9 @@ read_mzml(
 \arguments{
 \item{path}{path to file}
 
-\item{format_out}{R format. Only applies if \code{mzR} is selected.
-Either \code{matrix} or \code{data.frame}. \code{RaMS} will return
-a list of data.tables regardless of what is selected here.}
+\item{format_out}{Class of output. Only applies if \code{mzR} is selected.
+Either \code{matrix}, \code{data.frame}, or \code{data.table}. \code{RaMS}
+will return a list of data.tables regardless of what is selected here.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
@@ -43,7 +43,7 @@ value of \code{format_out}.
 Extracts data from \code{mzML} files using parsers from either RaMS or mzR.
 The RaMS parser (default) will only return data in tidy (long) format. The
 mzR parser will return data in wide format. Currently the mzR-based parser
-only returns DAD data.
+is configured to return only DAD data.
 }
 \author{
 Ethan Bass

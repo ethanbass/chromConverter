@@ -5,13 +5,13 @@
 \title{Read 'Agilent ChemStation' Reports}
 \usage{
 read_chemstation_reports(
-  files,
+  paths,
   data_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw")
 )
 }
 \arguments{
-\item{files}{Paths to 'ChemStation' report files.}
+\item{paths}{Paths to 'ChemStation' report files.}
 
 \item{data_format}{Format to output data. Either \code{chromatographr} or
 \code{chemstation}.}
