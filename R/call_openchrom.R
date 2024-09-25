@@ -116,7 +116,7 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 #' @param export_format Either \code{csv}, \code{cdf}, \code{mzml}, or \code{animl}.
 #' @return Returns path to newly created xml batch file.
 #' @author Ethan Bass
-
+#' @noRd
 write_openchrom_batchfile <- function(files, path_out,
                                       format_in = c("msd", "csd", "wsd"),
                                       export_format = c("csv", "cdf", "mzml",

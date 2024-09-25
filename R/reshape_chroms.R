@@ -10,7 +10,7 @@
 #' @param ... Additional arguments to \code{reshape_chrom}.
 #' @return A list of chromatographic matrices in long format.
 #' @author Ethan Bass
-
+#' @noRd
 reshape_chroms <- function(x, idx, sample_var = "sample", lambdas = NULL,
                            data_format, combine = TRUE, ...){
   if (missing(data_format)){

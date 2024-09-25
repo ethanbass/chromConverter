@@ -11,6 +11,7 @@
 #' @param scale Whether the data has been scaled.
 #' @return A chromatogram with attached metadata.
 #' @author Ethan Bass
+#' @noRd
 
 attach_metadata <- function(x, meta, format_in, format_out, data_format,
                             parser = NULL, source_file, scale = NULL){
