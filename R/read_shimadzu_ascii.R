@@ -103,7 +103,7 @@ read_shimadzu <- function(path, what = "chroms",
     names(chroms) <- names(chrom.idx)
     if (data_format == "long"){
       # how to merge metadata appropriately?
-      if (inherits(chromatogram[[1]],"list")){
+      if (inherits(chroms[[1]],"list")){
         chroms <- unlist(chroms, recursive = FALSE)
       }
       chroms <- do.call(rbind, chroms)

@@ -11,6 +11,10 @@ test_that("read_chroms can read 'Agilent' MS files", {
 
   skip_if_not(file.exists(path))
 
+  tmp <- tempdir()
+  path_mzml <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzML")
+  on.exit(unlink(path_mzml))
+
   x <- read_chroms(path, parser = "entab", progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(95471, 3))
@@ -18,9 +22,13 @@ test_that("read_chroms can read 'Agilent' MS files", {
   expect_equal(colnames(x), c("rt", "mz", "intensity"))
 
   x1 <- read_chroms(path, parser = "entab", format_out = "data.table",
-                   progress_bar = FALSE)[[1]]
+                   progress_bar = FALSE,
+                   export_format = "mzML", path_out=tmp)[[1]]
   expect_s3_class(x1, "data.table")
   expect_equal(attr(x1, "format_out"), "data.table")
+
+  xx <- read_mzml(path_mzml)
+  expect_equal(x1, xx$MS1[,-4], ignore_attr = TRUE)
 
   x1 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, precision = 0)[[1]]
@@ -29,8 +37,9 @@ test_that("read_chroms can read 'Agilent' MS files", {
 
   x2 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, data_format = "long",
+                    format_out = "data.table",
                     precision = 0)[[1]]
-  expect_equal(class(x2)[1], "matrix")
+  expect_s3_class(x2, "data.table")
   expect_equal(dim(x2), c(2131094, 3))
   expect_equal(colnames(x2), c("rt", "mz", "intensity"))
 })
@@ -63,8 +72,8 @@ test_that("read_chroms can write mzML files", {
                    progress_bar = FALSE,
                    export_format = "mzml", path_out = tmp,
                    force = TRUE)[[1]]
-  x1 <- read_mzml(path_mzml, what = c("MS1","metadata"))
-  expect_equal(x1$MS1[,c(1:3)], as.data.frame(x), ignore_attr = TRUE)
+  x1 <- read_mzml(path_mzml, what = c("MS1", "metadata"))
+  expect_equal(x1$MS1[, c(1:3)], as.data.frame(x), ignore_attr = TRUE)
   expect_equal(x1$metadata$source_file, basename(attr(x,"source_file")))
   # expect_equal(x1$metadata$timestamp, attr(x,"run_datetime"))
 })
@@ -402,7 +411,7 @@ test_that("read_chroms can read 'Waters RAW' files", {
 
   x <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
                    precision = 0)[[1]]
-  expect_equal(names(x), c("MS","UV","CAD"))
+  expect_equal(names(x), c("MS", "UV", "CAD"))
   expect_equal(dim(x$MS), c(725, 740))
   expect_equal(attr(x$MS, "parser"), "rainbow")
   expect_equal(attr(x$MS, "data_format"), "wide")
@@ -545,9 +554,9 @@ test_that("read_chroms can read 2D chromatograms from 'Shimadzu' LCD files", {
   skip_if_not(file.exists(path_lcd))
 
   x <- read_chroms(path_ascii, format_in = "shimadzu_ascii", progress_bar = FALSE,
-                   what = "chromatogram")[[1]][["lc"]]
+                   what = "chroms")[[1]][["lc"]]
 
-  x1 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
+  x1 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                     progress_bar = FALSE)[[1]]
 
   expect_equal(class(x1)[1], "matrix")
@@ -557,7 +566,7 @@ test_that("read_chroms can read 2D chromatograms from 'Shimadzu' LCD files", {
             tolerance = .0001)
 
   # unscaled
-  x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
+  x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                     progress_bar = FALSE, scale = FALSE)[[1]]
   all.equal(x[-1, 1], x2[, 1] * attr(x2, "intensity_multiplier"),
             check.attributes = FALSE)
@@ -610,7 +619,7 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
 
   x <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                     progress_bar = FALSE)[[1]]
-  x1 <- read_chroms(path_asc, format_in = "shimadzu_ascii", what = "chromatogram",
+  x1 <- read_chroms(path_asc, format_in = "shimadzu_ascii", what = "chroms",
                    progress_bar = FALSE)[[1]]
 
   # check intensities
@@ -645,9 +654,9 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
                attr(x1[[1]], "intensity_multiplier"))
 
   # check long format
-  x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chromatogram",
+  x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                     data_format = "long", progress_bar = FALSE)[[1]]
-  # x3 <- read_chroms(path_asc, format_in = "shimadzu_ascii", what = "chromatogram",
+  # x3 <- read_chroms(path_asc, format_in = "shimadzu_ascii", what = "chroms",
   #                   data_format = "long", progress_bar = FALSE)[[1]]
 
   expect_s3_class(x2, "data.frame")

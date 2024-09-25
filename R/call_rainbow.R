@@ -35,7 +35,7 @@ call_rainbow <- function(path,
                                        "chemstation_fid"),
                          format_out = c("matrix", "data.frame", "data.table"),
                          data_format = c("wide", "long"),
-                         by = c("detector","name"), what = NULL,
+                         by = c("detector", "name"), what = NULL,
                          read_metadata = TRUE,
                          metadata_format = c("chromconverter", "raw"),
                          collapse = TRUE, precision = 1){

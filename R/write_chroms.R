@@ -133,6 +133,8 @@ export_mzml <- function(data, path_out, force = FALSE,
   laplee <- choose_apply_fnc(show_progress)
 
   laplee(seq_along(data), function(i){
+    if (is.null(attr(data[[i]],"sample_name")))
+      attr(data[[i]], "sample_name") <- fs::path_ext_remove(basename(names(data)[i]))
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".mzml")))
     try(write_mzml(data[[i]], path_out = fs::path(path_out, names(data)[i],
                                                   ext = "mzML"),

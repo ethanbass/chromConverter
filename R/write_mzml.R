@@ -43,11 +43,9 @@ write_mzml <- function(data, path_out, what = NULL,
   if (!inherits(data, "list")){
     data <- list(MS1 = data)
   }
-  # sapply(data[what], nrow)
-  # check_for_pkg("data.table")
 
   if (is.null(what)){
-    what <- names(data[sapply(data,nrow) > 0])
+    what <- names(data[sapply(data, nrow) > 0])
   }
   what <- match.arg(toupper(what), c("MS1", "MS2", "TIC", "BPC", "DAD"),
                     several.ok = TRUE)
@@ -67,7 +65,6 @@ write_mzml <- function(data, path_out, what = NULL,
   n_scan <- sum(sapply(what[what %in% c("MS1","MS2","DAD")], function(i){
     tryCatch(length(unique(data[[i]][,"rt"])), error = function(cond) NA)
   }), na.rm = TRUE)
-
   write_mzml_header(con, meta = attributes(data$MS1), n_scan = n_scan,
                     indexed = indexed, instrument_info = instrument_info,
                     sample_name = attr(data$MS1,"sample_name"))
