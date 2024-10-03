@@ -34,8 +34,6 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
   data_format <- match.arg(data_format, c("wide", "long"))
   format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format,
-                            chromconverter = "cdf", raw = "raw")
   nc <- ncdf4::nc_open(path)
   if ("ordinate_values" %in% names(nc$var)){
     format <- "chrom"
@@ -74,8 +72,10 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
 read_andi_chrom <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                             data_format = c("wide", "long"),
                             what = "chroms", read_metadata = TRUE,
-                            metadata_format = c("chromconverter", "raw"),
+                            metadata_format = "chromconverter",
                             collapse = TRUE){
+  metadata_format <- switch(metadata_format,
+                            chromconverter = "andi_chrom", raw = "raw")
   what <- if(is.null(what)) "chroms" else what
   if (any(what == "chromatogram")){
     warning("The `chromatogram` argument to `what` is deprecated. Please use `chroms` instead.")
@@ -111,14 +111,15 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame", "data.t
     meta <- ncdf4::ncatt_get(nc, varid = 0)
     if (inherits(data, "list")){
       data <- lapply(data, function(xx){
-        attach_metadata(xx, meta = meta, format_in = "cdf",
+        attach_metadata(xx, meta = meta, format_in = metadata_format,
                         format_out = format_out, data_format = data_format,
                         parser = "chromconverter", source_file = path)
       })
     } else{
     data <- attach_metadata(data, meta = meta, format_in = metadata_format,
                             format_out = format_out, data_format = data_format,
-                            parser = "chromconverter", source_file = path)
+                            parser = "chromconverter", source_file = path,
+                            source_file_format = "andi_chrom")
     }
   }
   data
@@ -151,8 +152,10 @@ read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
                          what = c("MS1", "TIC"),
                          ms_format = c("data.frame", "list"),
                          read_metadata = TRUE,
-                         metadata_format = c("chromconverter", "raw"),
+                         metadata_format = "chromconverter",
                          collapse = TRUE){
+  metadata_format <- switch(metadata_format,
+                            chromconverter = "andi_ms", raw = "raw")
   ms_format <- match.arg(ms_format, c("data.frame", "list"))
   what <- if(is.null(what)) c("MS1", "TIC") else what
   what <- match.arg(toupper(what), c("MS1", "TIC"), several.ok = TRUE)
@@ -175,12 +178,13 @@ read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
     int <- ncdf4::ncvar_get(nc, "intensity_values")
     mz <- ncdf4::ncvar_get(nc, "mass_values")
     scan_idx <- ncdf4::ncvar_get(nc, "scan_index")
-    rt <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
+    rt <- ncdf4::ncvar_get(nc, "time_values")
+    n_scans <- ncdf4::ncvar_get(nc, "point_count")
+    rt_scan <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
     zeros <- as.list(rep(NA, length(which(scan_idx == 0)) - 1))
     if (ms_format == "data.frame"){
-      n_scans <- diff(c(scan_idx, length(mz)))
-      rts <- unlist(sapply(seq_along(rt), function(i){
-        rep(rt[i], n_scans[i])
+      rts <- unlist(sapply(seq_along(rt_scan), function(i){
+        rep(rt_scan[i], n_scans[i])
       }))
       MS1 <- data.frame(rt = rts, mz = mz, intensity = int)
     } else if (ms_format == "list"){
@@ -188,7 +192,7 @@ read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
         cbind(mz = x, int = y)
       }, split_at(mz, scan_idx + 1), split_at(int, scan_idx + 1))
       MS1 <- c(zeros, scans)
-      names(MS1) <- rt
+      names(MS1) <- rt_scan
     }
   }
 
@@ -196,16 +200,19 @@ read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
   if (collapse) data <- collapse_list(data)
   if (read_metadata){
     meta <- ncdf4::ncatt_get(nc, varid = 0)
+    meta$detector <- "MS"
     if (inherits(data, "list")){
       data <- lapply(data, function(xx){
-        attach_metadata(xx, meta = meta, format_in = "cdf",
+        attach_metadata(xx, meta = meta, format_in = metadata_format,
                         format_out = format_out, data_format = data_format,
-                        parser = "chromconverter", source_file = path)
+                        parser = "chromconverter", source_file = path,
+                        source_file_format = "andi_ms")
       })
     } else{
       data <- attach_metadata(data, meta = meta, format_in = metadata_format,
                               format_out = format_out, data_format = data_format,
-                              parser = "chromconverter", source_file = path)
+                              parser = "chromconverter", source_file = path,
+                              source_file_format = "andi_ms")
     }
   }
   data
