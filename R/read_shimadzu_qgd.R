@@ -51,7 +51,8 @@
 #' @export
 
 read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
-                              format_out = c("matrix", "data.frame", "data.table"),
+                              format_out = c("matrix", "data.frame",
+                                             "data.table"),
                               data_format = c("wide", "long"),
                               read_metadata = TRUE,
                               metadata_format = c("chromconverter", "raw"),
@@ -68,7 +69,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
   }
 
   if ("TIC" %in% what){
-    TIC <- read_qgc_tic(path, format_out = format_out,
+    TIC <- read_qgd_tic(path, format_out = format_out,
                         data_format = data_format)
   }
   if ("MS1" %in% what){
@@ -79,19 +80,21 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
     dat <- collapse_list(dat)
   if (read_metadata){
     meta <- try(read_qgd_fp(path))
+    meta$time.unit <- "Minutes"
     dat <- lapply(dat, function(x){
       attach_metadata(x, meta, format_in = metadata_format,
-                         source_file = path, data_format = data_format,
-                         format_out = format_out)
+                      source_file = path, source_file_format = "shimadzu_qgd",
+                      data_format = data_format,
+                      format_out = format_out)
     })
   }
   dat
 }
 
-#' Read QGC total ion chromatogram
+#' Read QGD total ion chromatogram
 #' @author Ethan Bass
 #' @noRd
-read_qgc_tic <- function(path, format_out = "data.frame",
+read_qgd_tic <- function(path, format_out = "data.frame",
                         data_format = c("wide", "long"),
                         read_metadata = TRUE){
 
@@ -152,6 +155,7 @@ read_qgd_ms_block <- function(f){
     )
   }
   mat[,3] <- mat[,3]/20
+  mat[,"rt"] <- mat[,"rt"]/60000
   mat
 }
 
@@ -170,7 +174,7 @@ read_qgd_retention_times <- function(path){
   n_val <- last_byte/4
   seek(f, 0, origin = "start")
   rts <- readBin(f, what = "integer", size = 4, n = n_val, endian = "little")
-  rts
+  rts/60000
 }
 
 #' Read 'Shimadzu' QGD MS stream
