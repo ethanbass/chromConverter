@@ -29,7 +29,8 @@
 #' \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
 #' @export
 
-read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame", "data.table"),
+read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
+                                                     "data.table"),
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
@@ -113,9 +114,12 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame", "da
     meta$signal <- as.numeric(c(lambda_start, lambda_end))
     meta$time_range = as.numeric(c(head(rownames(data), 1), tail(rownames(data), 1)))
     meta$intensity_multiplier <- scaling_value
+    meta$detector <- "DAD"
+    meta$detector_x_unit <- "nm"
     data <- attach_metadata(data, meta, format_in = metadata_format,
                     data_format = data_format, format_out = format_out,
                     parser = "chromconverter", source_file = path,
+                    source_file_format = paste0("chemstation_", version),
                     scale = scale)
   }
   data

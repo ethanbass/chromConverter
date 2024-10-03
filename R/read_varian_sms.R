@@ -104,7 +104,7 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
     dat <- lapply(dat, function(x){
       attach_metadata(x, meta, format_in = "varian_sms",
                            format_out = format_out, data_format = "long",
-                           source_file = path)
+                           source_file = path, source_file_format = "varian_sms")
     })
   }
   dat
@@ -154,6 +154,7 @@ read_mod_metadata <- function(f, offsets, meta){
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @author Ethan Bass
 #' @noRd
+
 read_varian_chromatograms <- function(f, n_time, format_out = "data.frame",
                                       data_format = "wide"){
   dat <- matrix(NA, nrow = n_time, ncol = 5)

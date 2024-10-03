@@ -192,7 +192,8 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
     meta <- c(meta, DI)
     dat <- attach_metadata(dat, meta, format_in = metadata_format,
                            source_file = path, data_format = data_format,
-                           format_out = format_out)
+                           format_out = format_out,
+                           source_file_format = "shimadzu_lcd")
   }
   dat
 }
@@ -282,7 +283,8 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
     if (read_metadata){
       dat <- attach_metadata(dat, c(meta, DI), format_in = metadata_format,
                              source_file = path, data_format = data_format,
-                             format_out = format_out, scale = scale)
+                             format_out = format_out, scale = scale,
+                             source_file_format = "shimadzu_lcd")
     }
     dat
   })

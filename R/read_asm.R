@@ -52,9 +52,11 @@ read_asm <- function(path, data_format = c("wide", "long"),
     meta$time_unit <- msd[["chromatogram data cube"]][["cube-structure"]][["dimensions"]][[1]][["unit"]]
     meta$detector_unit <- msd[["chromatogram data cube"]][["cube-structure"]][["measures"]][[1]][["unit"]]
     dat <- lapply(dat, function(x){
-      attach_metadata(x, meta, format_in = metadata_format, format_out = format_out,
-                           data_format = data_format, parser = "chromconverter",
-                           source_file = path, scale = FALSE)
+      attach_metadata(x, meta, format_in = metadata_format,
+                      format_out = format_out, data_format = data_format,
+                      parser = "chromconverter", source_file = path,
+                      source_file_format = "allotrope_simple_model",
+                      scale = FALSE)
     })
   }
   if (collapse) dat <- collapse_list(dat)

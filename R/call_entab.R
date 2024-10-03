@@ -51,9 +51,13 @@ call_entab <- function(path, data_format = c("wide", "long"),
   if (read_metadata){
     meta <- r$metadata()
     meta$run_date <- as.POSIXct(eval(meta$run_date))
-    meta <- rename_list(meta, c("detector" = "instrument", "method" = "method",
+    meta$detector <- toupper(strsplit(file_format,"_")[[1]][2])
+    meta <- rename_list(meta, c("detector_model" = "instrument", "method" = "method",
                         "operator" = "operator", "date" = "run_date",
-                        "sample_name" = "sample"))
+                        "sample_name" = "sample",
+                        "detector_y_units" = "y_units",
+                        "intensity_multiplier" = "mult_correction",
+                        "intensity_offset" = "offset_correction"))
 
     if (grepl("chemstation", format_in)){
       metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
@@ -65,7 +69,7 @@ call_entab <- function(path, data_format = c("wide", "long"),
     }
     x <- attach_metadata(x, meta, format_in = format_in, format_out = format_out,
                          data_format = data_format, parser = "entab",
-                         source_file = path)
+                         source_file = path, source_file_format = file_format)
   }
   x
 }

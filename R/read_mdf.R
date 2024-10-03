@@ -65,7 +65,8 @@ read_mdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
   if (read_metadata){
     data <- attach_metadata(x = data, meta = meta, format_in = "mdf",
                             format_out = format_out, data_format = data_format,
-                            parser = "chromconverter", source_file = path)
+                            parser = "chromconverter", source_file = path,
+                            source_file_format = "lumex_mdf")
   }
   data
 }

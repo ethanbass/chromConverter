@@ -145,6 +145,7 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
     data <- attach_metadata(data, meta, format_in = metadata_format,
                             data_format = data_format, format_out = format_out,
                             parser = "chromconverter", source_file = path,
+                            source_file_format = paste0("chemstation_", version),
                             scale = scale)
   }
   data
@@ -304,7 +305,7 @@ get_agilent_offsets <- function(version){
                      sample_name = 858,
                      operator = 1880,
                      date = 2391,
-                     detector = 2492,
+                     detector_model = 2492,
                      method = 2574,
                      software = 3089,
                      units = 3093,
@@ -338,7 +339,7 @@ get_agilent_offsets <- function(version){
               sample_name = 24,
               operator = 148,
               date = 178,
-              detector = 208,
+              detector_model = 208,
               instrument = 218,
               method = 228,
               # unknown = 260,
@@ -396,7 +397,7 @@ get_agilent_offsets <- function(version){
       sample_name = 24, # utf16
       operator = 148, # utf16
       date = 178, # utf16
-      detector = 208, # utf16'
+      detector_model = 208, # utf16'
       instrument = 218,
       method = 228, # utf16
       software = 322, # 'utf16'
@@ -415,7 +416,7 @@ get_agilent_offsets <- function(version){
                     description = 86,
                     operator = 148,
                     date = 178,
-                    detector = 208,
+                    detector_model = 208,
                     instrument = 218,
                     method = 228,
                     units = 580,
