@@ -1,4 +1,5 @@
-utils::globalVariables(names = c('.', "rt"))
+# global variables for data.table operations
+utils::globalVariables(names = c('.', "rt", "mz"))
 
 #' Check Format Out Argument
 #' @noRd

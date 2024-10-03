@@ -1,4 +1,43 @@
-#' Write CDF file from chromatogram
+#' Export chromatograms
+#' @param chrom_list A list of chromatograms.
+#' @param path_out Path to directory for writing files.
+#' @param export_format Format to export files: either \code{mzml}, \code{cdf},
+#' or \code{csv}.
+#' @param what What to write. Either \code{MS1} or \code{chrom}.
+#' @param force Logical. Whether to overwrite existing files. Defaults to \code{TRUE}.
+#' @param show_progress Logical. Whether to show progress bar. Defaults to \code{TRUE}.
+#' @param verbose Logical. Whether to print verbose output.
+#' @author Ethan Bass
+#' @export
+
+write_chroms <- function(chrom_list, path_out,
+                         export_format = c("mzml", "cdf", "csv"),
+                         what = "", force = FALSE,
+                         show_progress = TRUE,
+                         verbose = getOption("verbose")){
+  export_format <- match.arg(export_format, c("mzml", "cdf", "csv"))
+  path_out <- fs::path_expand(path_out)
+  if (!dir.exists(path_out)){
+    ans <- readline("Export directory not found. Create directory (y/n)?")
+    if (ans %in% c("y", "Y", "yes", "Yes", "YES")){
+      fs::dir_create(path_out)
+    } else
+      stop(paste0("The export directory '", path_out, "' could not be found."))
+  }
+
+  writer <- switch(export_format,
+                   csv = export_csvs,
+                   cdf = purrr::partial(export_cdf, what = what,
+                                        show_progress = show_progress),
+                   mzml = purrr::partial(export_mzml,
+                                         show_progress = show_progress))
+  if (verbose){
+    message(sprintf("Writing to %s...", toupper(export_format)))
+  }
+  writer(chrom_list, path_out = path_out, force = force, verbose = verbose)
+}
+
+#' Write ANDI chrom CDF file from chromatogram
 #'
 #' Exports a chromatogram in ANDI (Analytical Data Interchange) chromatography
 #' format (ASTM E1947-98). This format can only accommodate unidimensional data.
@@ -23,10 +62,10 @@
 #' \code{sample_name} attribute will be used if it exists.
 #' @export
 
-write_cdf <- function(x, path_out, sample_name, lambda = NULL, force = FALSE){
+write_andi_chrom <- function(x, path_out, sample_name = NULL, lambda = NULL, force = FALSE){
   check_for_pkg("ncdf4")
-  if (missing(sample_name)){
-    sample_name <- attr(x,"sample_name")
+  if (is.null(sample_name)){
+    sample_name <- attr(x, "sample_name")
     if (is.null(sample_name)){
       stop("Sample name must be provided.")
     }
@@ -46,16 +85,10 @@ write_cdf <- function(x, path_out, sample_name, lambda = NULL, force = FALSE){
     x1 <- data.frame(RT = as.numeric(rownames(x)), Intensity = x[, lambda])
     x <- transfer_metadata(x1, x)
   }
-  filename <- fs::path_ext_remove(fs::path_file(sample_name))
-  file_out <- fs::path(path_out, filename, ext = "cdf")
-  if (fs::file_exists(file_out)){
-    if (!force){
-      return(warning(paste("File", sQuote(basename(file_out)),
-                           "already exists and will not be overwritten.")))
-    } else{
-      fs::file_delete(file_out)
-    }
-  }
+
+  file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
+                           force = force, ext = "cdf")
+
   # define dimensions
   point_number <- ncdf4::ncdim_def("point_number", "",
                                    vals = seq_along(x[,1]),
@@ -97,6 +130,27 @@ write_cdf <- function(x, path_out, sample_name, lambda = NULL, force = FALSE){
   ncdf4::nc_close(nc)
 }
 
+#' Get filename
+#' @author Ethan Bass
+#' @noRd
+get_filepath <- function(path_out, sample_name, ext, force = FALSE,
+                         replacement = "_"){
+  path_out <- fs::path_expand(path_out)
+  sample_name <- gsub(" ", replacement, sample_name)
+  # filename <- fs::path_ext_remove(fs::path_file(sample_name))
+  file_out <- fs::path(path_out, sample_name, ext = ext)
+  if (fs::file_exists(file_out)){
+    if (!force){
+      return(warning(sprintf("File %s already exists. Set 'force = TRUE' to
+                               overwrite the existing file.",
+                             sQuote(basename(file_out)))))
+    } else{
+      fs::file_delete(file_out)
+    }
+  }
+  file_out
+}
+
 #' Export chromatograms as CSVs
 #' @author Ethan Bass
 #' @noRd
@@ -115,14 +169,47 @@ export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE,
 #' Export chromatograms as ANDI netCDF files
 #' @author Ethan Bass
 #' @noRd
-export_cdf <- function(data, path_out, force = FALSE,
+export_cdf <- function(data, path_out, what = "", force = FALSE,
                        show_progress = TRUE, verbose = getOption("verbose")){
+  if (!inherits(data, "list")){
+    data <- list(data)
+  }
   laplee <- choose_apply_fnc(show_progress)
-  laplee(seq_along(data), function(i){
+  if (what == ""){
+    if (get_metadata_field2(data[[1]], "detector", null_val = FALSE) == "MS" ||
+        inherits(data[[1]], "list")){
+      what <- "MS1"
+    } else what <- "chrom"
+  }
+  what <- match.arg(what, c("MS1", "chrom"))
+
+  write_fn <- switch(what, "MS1" = write_andi_ms,
+                     write_andi_chrom)
+  data <- infer_sample_names(data)
+  x <- laplee(seq_along(data), function(i){
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".cdf")))
-    try(write_cdf(data[[i]], path_out = path_out, sample_name = names(data)[i],
-                  force = force))
+    try(write_fn(data[[i]], path_out = path_out, force = force))
   })
+}
+
+#' @noRd
+infer_sample_names <- function(data){
+  dat <- lapply(seq_along(data), function(i){
+    if (inherits(data[[i]], "list")){
+      smpl_name <- attr(data[[i]][[1]], "sample_name")
+      if (is.null(smpl_name) || is.na(smpl_name)){
+        attr(data[[i]][[1]], "sample_name") <- basename(names(data)[i])
+      }
+    } else{
+      smpl_name <- attr(data[[i]], "sample_name")
+      if (is.null(smpl_name) || is.na(smpl_name)){
+        attr(data[[i]], "sample_name") <- basename(names(data)[i])
+      }
+    }
+    data[[i]]
+  })
+  names(dat) <- names(data)
+  dat
 }
 
 #' Export chromatograms as mzML files
@@ -132,12 +219,11 @@ export_mzml <- function(data, path_out, force = FALSE,
                         show_progress = TRUE, verbose = getOption("verbose")){
   laplee <- choose_apply_fnc(show_progress)
 
+  data <- infer_sample_names(data)
+
   laplee(seq_along(data), function(i){
-    if (is.null(attr(data[[i]],"sample_name")))
-      attr(data[[i]], "sample_name") <- fs::path_ext_remove(basename(names(data)[i]))
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".mzml")))
-    try(write_mzml(data[[i]], path_out = fs::path(path_out, names(data)[i],
-                                                  ext = "mzML"),
+    try(write_mzml(data[[i]], path_out = path_out,
                    show_progress = FALSE, force = force))
   })
 }
@@ -148,10 +234,17 @@ nc_add_global_attributes <- function(nc, meta, sample_name){
   sapply(seq_along(meta), function(i){
     ncdf4::ncatt_put(nc = nc, varid = 0,
                      attname = names(meta)[i], attval = meta[[i]],
-                     prec = ifelse(names(meta)[i] %in%
-                                     c("sample_amount",
-                                       "sample_injection_volume"),
-                                   "float", "text"))
+                     prec = switch(names(meta)[i],
+                                   "sample_amount" = "float",
+                                   "sample_injection_volume" = "float",
+                                    "test_emission_current" = "float",
+                                    "raw_data_nscans" = "int",
+                                    "raw_data_starting_scan_no" = "int",
+                                    "raw_data_mass_factor" = "float",
+                                    "raw_data_time_factor" = "float",
+                                    "raw_data_intensity_factor" = "float",
+                                    "raw_data_intensity_offset" = "float",
+                                    "text"))
   })
   if (!is.null(sample_name)){
     ncdf4::ncatt_put(nc = nc, varid = 0,
@@ -165,36 +258,35 @@ nc_add_global_attributes <- function(nc, meta, sample_name){
 #' @author Ethan Bass
 #' @noRd
 format_metadata_for_cdf <- function(x){
-  # datetime_str <- x[which(x$Property=="Time"),"Value"]
-  # datetime_standard <- as.POSIXct(datetime_str, format = "%d.%m.%Y %H:%M:%S")
   datetime <- format(attr(x, "run_datetime"), "%Y%m%d%H%M%S%z")
-  # rt_units <- x[which(x$Group=="Interval Time" & x$Property == "Units"), "Value"]
   rt_units <- attr(x, "time_unit")
   rt_units <- ifelse(!is.null(rt_units), tolower(rt_units), NA)
   rt_units <- switch(tolower(rt_units),
                      "sec" = "Seconds", "seconds" = "Seconds",
                      "min" = "Minutes", "minutes" = "Minutes",
                      "default" = "Minutes")
-  get_nc_version <- switch(.Platform$OS.type, "windows" = )
+  # get_nc_version <- switch(.Platform$OS.type, "windows" = )
   meta <- list(dataset_completeness = "C1",
              aia_template_revision = "1.0",
              protocol_template_revision = "1.0",
-             netcdf_revision = paste("netCDF", stringr::str_extract(ncdf4::nc_version(),
-                                                             "(?<=library version\\s)\\d+\\.\\d+\\.\\d+")),
-             administrative_comments = paste("Collected on", attr(x, "instrument")),
+             netcdf_revision = paste("netCDF",
+                                     stringr::str_extract(ncdf4::nc_version(),
+                                        "(?<=library version\\s)\\d+\\.\\d+\\.\\d+")),
+             administrative_comments = paste("Collected on",
+                                             attr(x, "instrument")),
              languages = "English only",
              converter_name = "chromconverter",
              converter_description = "AIA/ANDI netCDF Chromatography",
-             converter_input_source = attr(x,"source_file"),
+             converter_input_source = attr(x, "source_file"),
              date_time_stamp = datetime,
              dataset_date_time_stamp = datetime,
              injection_date_time_stamp = datetime,
-             detector_units = attr(x,"detector_unit"),
-             detector_unit = attr(x,"detector_unit"),
+             detector_units = attr(x, "detector_unit"),
+             detector_unit = attr(x, "detector_unit"),
              retention_units = rt_units,
              retention_unit = rt_units,
              sample_id_comments = "",
-             detector_name = attr(x,"detector"),
+             detector_name = attr(x, "detector"),
              # experiment_title = "",
              sample_amount = as.numeric(attr(x, "sample_amount")),
              sample_injection_volume = as.numeric(attr(x, "sample_injection_volume")),

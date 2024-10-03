@@ -182,7 +182,7 @@ read_chroms <- function(paths,
   if (all(!exists)){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
-  if (parser == "openchrom" || format_in == "thermoraw" || export_format != ""){
+  if (export_format != "" || parser == "openchrom" || format_in == "thermoraw"){
     export <- TRUE
   } else export <- FALSE
   if (export){
@@ -371,7 +371,7 @@ read_chroms <- function(paths,
                        sapply(file_names, function(n){
                          ifelse(any(grepl("\\.[Dd]", n)),
                                 yes = grep("\\.[Dd]", n, value = TRUE),
-                                no = tail(n,1))
+                                no = tail(n, 1))
                        }))
   } else {
     file_names <- fs::path_ext_remove(basename(files))
@@ -409,7 +409,7 @@ read_chroms <- function(paths,
                      csv = export_csvs,
                      chemstation_csv = purrr::partial(export_csvs,
                                                       fileEncoding = "utf16"),
-                     cdf = export_cdf,
+                     cdf = purrr::partial(export_cdf, show_progress = progress_bar),
                      mzml = purrr::partial(export_mzml,
                                            show_progress = progress_bar))
     if (verbose)

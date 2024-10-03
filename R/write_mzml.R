@@ -36,38 +36,41 @@
 #' @author Ethan Bass
 #' @export
 
-write_mzml <- function(data, path_out, what = NULL,
+write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
                       instrument_info = NULL, compress = TRUE, indexed = TRUE,
                       force = FALSE, show_progress = TRUE,
                        verbose = getOption("verbose")) {
   if (!inherits(data, "list")){
     data <- list(MS1 = data)
   }
-
+  # lapply(data, function(x){
+  #   if (attr(x,"data_format") == "wide"){
+  #     reshape_chrom_long(x)
+  #   } else x
+  # })
   if (is.null(what)){
     what <- names(data[sapply(data, nrow) > 0])
   }
   what <- match.arg(toupper(what), c("MS1", "MS2", "TIC", "BPC", "DAD"),
                     several.ok = TRUE)
-
-  if (fs::file_exists(path_out)){
-    if (force){
-      fs::file_delete(path_out)
-    } else{
-      stop("File already exists and will not be overwritten. To overwrite files set `force == TRUE`.")
-    }
+  if (is.null(sample_name)){
+    sample_name <- ifelse(inherits(data, "list"),
+                          attr(data[[1]], "sample_name"),
+                          attr(data, "sample_name"))
   }
+  file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
+                           force = force, ext = "mzML")
 
   # Create a connection to write the file
-  con <- file(path_out, "wt")
+  con <- file(file_out, "wt")
   on.exit(close(con))
 
-  n_scan <- sum(sapply(what[what %in% c("MS1","MS2","DAD")], function(i){
+  n_scan <- sum(sapply(what[what %in% c("MS1", "MS2", "DAD")], function(i){
     tryCatch(length(unique(data[[i]][,"rt"])), error = function(cond) NA)
   }), na.rm = TRUE)
   write_mzml_header(con, meta = attributes(data$MS1), n_scan = n_scan,
                     indexed = indexed, instrument_info = instrument_info,
-                    sample_name = attr(data$MS1,"sample_name"))
+                    sample_name = attr(data$MS1, "sample_name"))
 
   if (any(what == "MS1")){
     if ("MS1" %in% names(data)){
@@ -106,7 +109,7 @@ write_mzml <- function(data, path_out, what = NULL,
     }
     cat('\t</index>\n</indexList>\n', file = con)
 
-    content <- readLines(path_out)
+    content <- readLines(file_out)
     checksum <- digest::digest(content, algo="sha1", serialize = FALSE)
 
     # Write final tags
@@ -115,7 +118,7 @@ write_mzml <- function(data, path_out, what = NULL,
     <fileChecksum>%s</fileChecksum>\n
   </indexedmzML>', indexListOffset, checksum), file = con)
 }
-  return(invisible(path_out))
+  return(invisible(file_out))
 }
 
 
@@ -232,7 +235,7 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
                             "DAD" = create_mzml_dad_spectrum)
 
   # Write spectra and build index
-  if (!is.null(data$TIC) && attr(data$TIC,"data_format") == "wide"){
+  if (!is.null(data$TIC) && attr(data$TIC, "data_format") == "wide"){
     data$TIC <- data.frame(rt = as.numeric(rownames(data$TIC)),
                            intensity = data$TIC[,"intensity"])
   }

@@ -7,6 +7,7 @@
 write_mzml(
   data,
   path_out,
+  sample_name = NULL,
   what = NULL,
   instrument_info = NULL,
   compress = TRUE,

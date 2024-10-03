@@ -55,7 +55,8 @@ reshape_chrom <- function(x, data_format, ...){
 #' @return A chromatographic matrix in long format.
 #' @author Ethan Bass
 #' @noRd
-reshape_chrom_long <- function(x, lambdas = NULL, format_out = NULL, names_to = "lambda"){
+reshape_chrom_long <- function(x, lambdas = NULL, format_out = NULL,
+                               names_to = "lambda"){
   if (!is.null(attr(x, "data_format")) && attr(x, "data_format") == "long"){
     warning("The data already appear to be in long format!", immediate. = TRUE)
   }
@@ -63,15 +64,15 @@ reshape_chrom_long <- function(x, lambdas = NULL, format_out = NULL, names_to = 
     format_out <- class(x)[1]
   }
 
-  format_out <- match.arg(format_out, c("data.frame", "matrix"))
+  format_out <- check_format_out(format_out)
   xx <- as.data.frame(x)
 
   if (ncol(x) == 1){
-    data <- data.frame(rt = as.numeric(rownames(xx)), int = xx[,1],
+    data <- data.frame(rt = as.numeric(rownames(xx)), intensity = xx[,1],
                row.names = NULL)
   } else {
     if (!is.null(lambdas)){
-      xx <- xx[,lambdas, drop = FALSE]
+      xx <- xx[, lambdas, drop = FALSE]
     }
     data <- data.frame(tidyr::pivot_longer(data.frame(rt = rownames(xx), xx,
                                                       check.names = FALSE),
