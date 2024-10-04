@@ -7,6 +7,7 @@
 * Added preliminary support for 'Allotrope Simple Model' (ASM) 2D chromatography date files.
 * Added support for reading multiple files from 'Agilent' `.D` directories through `read_agilent_d` function.
 * Added option to write mzML files (MS1 and DAD).
+* Added option to write ANDI MS netCDF files.
 
 ### UI changes
 
@@ -35,7 +36,9 @@
 * Modified `export_csv` function to label first column for wide-format chromatograms.
 * Improved handling of metadata from rainbow parsers.
 * Fixed error when providing single chromatogram to \code{extract_metadata}.
-* Added metadata field for source checksum (SHA1).
+* Added metadata field for source checksum (SHA1) and source file format.
+* Other minor changes to metadata fields.
+* Return all times in Coordinated Univeral Time (UTC) for consistency across systems.
 
 ## chromConverter 0.6.4
 
