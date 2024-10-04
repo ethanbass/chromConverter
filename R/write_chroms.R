@@ -7,6 +7,7 @@
 #' @param force Logical. Whether to overwrite existing files. Defaults to \code{TRUE}.
 #' @param show_progress Logical. Whether to show progress bar. Defaults to \code{TRUE}.
 #' @param verbose Logical. Whether to print verbose output.
+#' @param ... Additional arguments to write function.
 #' @author Ethan Bass
 #' @export
 
@@ -14,7 +15,7 @@ write_chroms <- function(chrom_list, path_out,
                          export_format = c("mzml", "cdf", "csv"),
                          what = "", force = FALSE,
                          show_progress = TRUE,
-                         verbose = getOption("verbose")){
+                         verbose = getOption("verbose"), ...){
   export_format <- match.arg(export_format, c("mzml", "cdf", "csv"))
   path_out <- fs::path_expand(path_out)
   if (!dir.exists(path_out)){
@@ -34,7 +35,7 @@ write_chroms <- function(chrom_list, path_out,
   if (verbose){
     message(sprintf("Writing to %s...", toupper(export_format)))
   }
-  writer(chrom_list, path_out = path_out, force = force, verbose = verbose)
+  writer(chrom_list, path_out = path_out, force = force, verbose = verbose, ...)
 }
 
 #' Write ANDI chrom CDF file from chromatogram
@@ -218,7 +219,8 @@ infer_sample_names <- function(data){
 #' @author Ethan Bass
 #' @noRd
 export_mzml <- function(data, path_out, force = FALSE,
-                        show_progress = TRUE, verbose = getOption("verbose")){
+                        show_progress = TRUE, verbose = getOption("verbose"),
+                        ...){
   laplee <- choose_apply_fnc(show_progress)
 
   data <- infer_sample_names(data)
@@ -226,7 +228,7 @@ export_mzml <- function(data, path_out, force = FALSE,
   laplee(seq_along(data), function(i){
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".mzml")))
     try(write_mzml(data[[i]], path_out = path_out,
-                   show_progress = FALSE, force = force))
+                   show_progress = FALSE, force = force, ...))
   })
 }
 

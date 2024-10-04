@@ -219,7 +219,7 @@ test_that("read_chroms exports CSV files correctly", {
   skip_on_cran()
   path_out <-  tempdir(check = TRUE)
   on.exit(unlink(c(fs::path(path_out, "dad1", ext = "csv"), path_out)))
-  x1 <- read_chroms(paths = path_uv, export = TRUE, path_out = path_out,
+  x1 <- read_chroms(paths = path_uv, path_out = path_out,
                     export_format = "csv", format_out = "data.frame",
                     progress_bar = FALSE)
   x1_out <- read.csv(fs::path(path_out, "dad1", ext = "csv"), row.names = 1)

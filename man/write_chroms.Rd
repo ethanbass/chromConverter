@@ -11,7 +11,8 @@ write_chroms(
   what = "",
   force = FALSE,
   show_progress = TRUE,
-  verbose = getOption("verbose")
+  verbose = getOption("verbose"),
+  ...
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ or \code{csv}.}
 \item{show_progress}{Logical. Whether to show progress bar. Defaults to \code{TRUE}.}
 
 \item{verbose}{Logical. Whether to print verbose output.}
+
+\item{...}{Additional arguments to write function.}
 }
 \description{
 Export chromatograms
