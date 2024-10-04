@@ -149,7 +149,7 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 ### Further analysis
 
-For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release).
+For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release). There is also a vignette providing an introduction to some basic syntax for [plotting mass spectrometry data](https://ethanbass.github.io/chromConverter/articles/plot_ms.html) returned by chromConverter in various R dialects.
 
 ### Contributing
 
