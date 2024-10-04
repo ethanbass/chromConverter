@@ -361,10 +361,10 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 
 configure_python_environment <- function(parser, return_boolean = FALSE){
   install <- FALSE
-  if (!dir.exists(miniconda_path())){
-    install <- readline("It is recommended to install miniconda in your R library to use rainbow parsers. Install miniconda now? (y/n)")
+  if (!dir.exists(reticulate::miniconda_path())){
+    install <- readline(sprintf("It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)", parser))
     if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-      install_miniconda()
+      reticulate::install_miniconda()
     }
   }
   env <- reticulate::configure_environment("chromConverter")
@@ -372,8 +372,8 @@ configure_python_environment <- function(parser, return_boolean = FALSE){
     reqs <- get_parser_reqs(parser)
     reqs_available <- sapply(reqs, reticulate::py_module_available)
     if (!all(reqs_available)){
-      conda_install(envname = "chromConverter", reqs[which(!reqs_available)],
-                    pip = TRUE)
+      reticulate::conda_install(envname = "chromConverter",
+                                reqs[which(!reqs_available)], pip = TRUE)
     }
   }
   assign_fn <- switch(parser, aston = assign_trace_file,
@@ -388,7 +388,7 @@ configure_python_environment <- function(parser, return_boolean = FALSE){
 #' Get required python packages for a parser
 #' @noRd
 get_parser_reqs <- function(parser){
-  switch(parser, "aston" = c("pandas", "scipy", "numpy", "aston"),
+  switch(parser, "aston" = c("pandas", "scipy", "numpy", "Aston"),
          "olefile" = c("olefile"),
          "rainbow" = c("numpy", "rainbow-api"))
 }
