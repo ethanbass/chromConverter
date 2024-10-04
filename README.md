@@ -91,7 +91,7 @@ The `read_chroms` function will attempt to determine an appropriate parser to us
 
 ###### Exporting files
 
-If you'd like to automatically export the files, include the argument `export = TRUE` along with the path where you'd like to export the files (`path_out`) and the desired file format (`export_format`). Some parsers (e.g. `OpenChrom` and `ThermoRawFileParser`) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to `path_out`.
+If you'd like to automatically export the files, include the desired file format (`export_format`) and the path where you'd like to export the files (`path_out`). Some parsers (e.g. `OpenChrom` and `ThermoRawFileParser`) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to `path_out`.
 
 ```
 library(chromConverter)
