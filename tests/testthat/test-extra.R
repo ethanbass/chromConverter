@@ -32,20 +32,6 @@ test_that("read_chroms can read 'Agilent' MS files", {
   xx <- read_mzml(path_mzml)
   expect_equal(x1, xx$MS1[,-4], ignore_attr = TRUE)
 
-  # export as CDF
-  path_cdf <- fs::path(tmp, gsub(" ", "_", attr(x,"sample_name")), ext = "cdf")
-  on.exit(unlink(path_cdf))
-
-  x2 <- read_chroms(path, parser = "entab", format_out = "data.table",
-                    progress_bar = FALSE,
-                    export_format = "cdf", path_out = tmp)[[1]]
-  x2 <- x2[order(rt, mz)]
-
-  xx <- read_cdf(path_cdf, format_out = "data.table")
-  expect_equal(x2$rt, xx$MS1$rt/60, ignore_attr = TRUE)
-  expect_equal(x2$intensity, xx$MS1$intensity, ignore_attr = TRUE)
-  expect_equal(x2$mz, xx$MS1$mz, ignore_attr = TRUE, tolerance = .000001)
-
   # rainbow
   x1 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, precision = 0)[[1]]
@@ -59,6 +45,32 @@ test_that("read_chroms can read 'Agilent' MS files", {
   expect_s3_class(x2, "data.table")
   expect_equal(dim(x2), c(2131094, 3))
   expect_equal(colnames(x2), c("rt", "mz", "intensity"))
+})
+
+test_that("read_chroms can export 'Agilent' MS files as ANDI MS cdf", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_not_installed("entab")
+  skip_if_not_installed("ncdf4")
+
+  path <- system.file("chemstation_MSD.MS",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  # export as CDF
+  tmp <- tempdir()
+  x2 <- read_chroms(path, parser = "entab", format_out = "data.table",
+                    progress_bar = FALSE,
+                    export_format = "cdf", path_out = tmp)[[1]]
+  x2 <- x2[order(rt, mz)]
+
+  path_cdf <- fs::path(tmp, gsub(" ", "_", attr(x2,"sample_name")), ext = "cdf")
+  on.exit(unlink(path_cdf))
+
+  xx <- read_cdf(path_cdf, format_out = "data.table")
+  expect_equal(x2$rt, xx$MS1$rt/60, ignore_attr = TRUE)
+  expect_equal(x2$intensity, xx$MS1$intensity, ignore_attr = TRUE)
+  expect_equal(x2$mz, xx$MS1$mz, ignore_attr = TRUE, tolerance = .000001)
 })
 
 test_that("read_chroms can write mzML files", {
@@ -942,12 +954,26 @@ test_that("read_chroms can read Varian SMS", {
   # attr(x$MS1, "run_datetime") # should be 8/8/2014 8:50 PM - 9:20 PM
   expect_equal(x2$metadata$source_file, basename(attr(x$MS1,"source_file")))
   # expect_equal(x2$metadata$timestamp, attr(x$MS1,"run_datetime")[1])
+})
+
+test_that("read_chroms can write Varian SMS to CDF", {
 
   # write CDF
+  skip_if_not_installed("ncdf4")
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_sms <- system.file("STRD15.SMS", package = "chromConverterExtraTests")
+  skip_if_not(fs::file_exists(path_sms))
+
+  tmp <- tempdir()
+
   path_cdf <- fs::path(tmp, fs::path_ext_remove(basename(path_sms)), ext = "cdf")
   on.exit(unlink(path_cdf))
-  write_chroms(list(x), path_out = tmp, export_format = "cdf",
-               show_progress = FALSE)
+
+  x <- read_chroms(path_sms, path_out = tmp, export_format = "cdf",
+               progress_bar = FALSE)[[1]]
+
   x3 <- read_cdf(path_cdf, data_format = "long", format_out = "data.frame")
   x3$MS1$rt <- x3$MS1$rt/60
   x3$TIC$rt <- x3$TIC$rt/60
@@ -959,6 +985,7 @@ test_that("read_chroms can read Varian SMS", {
   expect_equal(attr(x3$MS1, "detector"), "MS")
   expect_equal(attr(x3$MS1, "sample_name"), "STRD15")
 })
+
 
 test_that("read_chroms can read ASM LC format", {
   skip_on_cran()

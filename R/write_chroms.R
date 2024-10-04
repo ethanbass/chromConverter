@@ -172,6 +172,7 @@ export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE,
 #' @noRd
 export_cdf <- function(data, path_out, what = "", force = FALSE,
                        show_progress = TRUE, verbose = getOption("verbose")){
+  check_for_pkg("ncdf4")
   if (!inherits(data, "list")){
     data <- list(data)
   }
