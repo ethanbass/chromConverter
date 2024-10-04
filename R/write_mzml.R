@@ -255,7 +255,7 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
     scan_data <- spectra_data[rt == rts[i]]
 
     # Create and write spectrum
-    spectrum_xml <- create_spectrum(scan = i, index = i + idx_start - 1,
+    spectrum_xml <- create_spectrum(scan_data = scan_data, scan = i, index = i + idx_start - 1,
                                     rt = rts[i],
                                     tic = ifelse(!is.null(data$TIC),
                                                  data$TIC[[i, "intensity"]],
@@ -264,8 +264,7 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
                                     bpc = ifelse(!is.null(data$BPC),
                                                  data$BPC[[i, "intensity"]],
                                                  ifelse(length(scan_data$intensity) == 0,
-                                                        0, max(scan_data$intensity))),
-                                    scan_data = scan_data)
+                                                        0, max(scan_data$intensity))))
     writeLines(spectrum_xml, con)
     if (indexed)
       list(id = paste0("scan=", i), offset = offset)
@@ -290,12 +289,17 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
 #' @author Ethan Bass
 #' @noRd
 
-create_mzml_ms1_spectrum <- function(scan, index, rt, scan_data, ms_level = 1,
+create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
                                 compress = TRUE, tic = NULL, bpc = NULL) {
 
   # Encode mz and intensity data
-  mz_encoded <- encode_data(scan_data$mz, compress = compress)
-  int_encoded <- encode_data(scan_data$intensity, compress)
+  if (nrow(scan_data) > 0){
+    mz_encoded <- encode_data(scan_data$mz, compress = compress)
+    int_encoded <- encode_data(scan_data$intensity, compress)
+  } else{
+    mz_encoded <- list(base64 = "", compression_param = "<cvParam cvRef=\"MS\" accession=\"MS:1000574\" name=\"zlib compression\" />")
+    int_encoded <- list(base64 = "", compression_param = "<cvParam cvRef=\"MS\" accession=\"MS:1000574\" name=\"zlib compression\" />")
+  }
 
   sprintf('<spectrum id="scan=%d" index="%d" defaultArrayLength="%d">
     <cvParam cvRef="MS" accession="MS:1000580" name="MSn spectrum"/>
@@ -348,7 +352,7 @@ create_mzml_ms1_spectrum <- function(scan, index, rt, scan_data, ms_level = 1,
 #' @author Ethan Bass
 #' @noRd
 
-create_mzml_dad_spectrum <- function(scan, index, rt, scan_data, tic = NULL,
+create_mzml_dad_spectrum <- function(scan_data, scan, index, rt, tic = NULL,
                                      bpc = NULL, compress = TRUE) {
   # Encode wavelength and intensity data
   wavelength_encoded <- encode_data(scan_data$lambda, compress = compress)
