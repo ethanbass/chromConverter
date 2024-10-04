@@ -22,6 +22,7 @@ test_that("chromConverter can read `Agilent Chemstation` .csv file", {
 
 test_that("Aston parser can read `Agilent Chemstation` 131 files", {
   skip_if_missing_dependencies()
+  skip_on_cran()
 
   paths <- rep(path_uv, 2)
 
