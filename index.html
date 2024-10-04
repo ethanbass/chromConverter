@@ -155,7 +155,7 @@
 <div class="section level6">
 <h6 id="exporting-files">Exporting files<a class="anchor" aria-label="anchor" href="#exporting-files"></a>
 </h6>
-<p>If you’d like to automatically export the files, include the argument <code>export = TRUE</code> along with the path where you’d like to export the files (<code>path_out</code>) and the desired file format (<code>export_format</code>). Some parsers (e.g. <code>OpenChrom</code> and <code>ThermoRawFileParser</code>) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to <code>path_out</code>.</p>
+<p>If you’d like to automatically export the files, include the desired file format (<code>export_format</code>) and the path where you’d like to export the files (<code>path_out</code>). Some parsers (e.g. <code>OpenChrom</code> and <code>ThermoRawFileParser</code>) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to <code>path_out</code>.</p>
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ethanbass.github.io/chromConverter">chromConverter</a></span><span class="op">)</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, path_out<span class="op">=</span><span class="st">"temp"</span>, export<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre>
 </div>
