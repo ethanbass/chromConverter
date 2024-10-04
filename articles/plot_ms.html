@@ -86,12 +86,16 @@ the <code>chromConverterExtraTests</code> package.</p>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path_sms</span>, format_in <span class="op">=</span> <span class="st">"varian_sms"</span>, format_out <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in read_chroms(path_sms, format_in = "varian_sms", format_out = "data.frame"): The provided files do not match the expected file extension.</span></span>
 <span><span class="co">#&gt;         Please confirm that the specified format ('format_in') is correct.</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="plot-tic-and-mass-spectra-use-base-r-syntax">Plot TIC and mass spectra use base R syntax<a class="anchor" aria-label="anchor" href="#plot-tic-and-mass-spectra-use-base-r-syntax"></a>
+</h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">MS1</span></span>
 <span></span>
-<span><span class="co"># using aggregate</span></span>
+<span><span class="co"># derive TIC using aggregate</span></span>
 <span><span class="va">tic</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">intensity</span> <span class="op">~</span> <span class="va">rt</span>, data <span class="op">=</span> <span class="va">x</span>, FUN <span class="op">=</span> <span class="va">sum</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># plot TIC</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="va">tic</span><span class="op">$</span><span class="va">rt</span>, <span class="va">tic</span><span class="op">$</span><span class="va">intensity</span>, type <span class="op">=</span> <span class="st">'l'</span>,</span>
 <span>        ylab <span class="op">=</span> <span class="st">"Total intensity"</span>, xlab <span class="op">=</span> <span class="st">"Time (min)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="plot_ms_files/figure-html/plot_tic_base-1.png" width="700"></p>
@@ -111,8 +115,9 @@ mass spectrum of the first scan, you could do:</p>
 <span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[</span><span class="va">x</span><span class="op">$</span><span class="va">rt</span> <span class="op">==</span> <span class="va">times</span><span class="op">[</span><span class="fl">100</span><span class="op">]</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="fu">plot_spec</span><span class="op">(</span><span class="va">spec</span><span class="op">)</span></span></code></pre></div>
 <p><img src="plot_ms_files/figure-html/plot_spectrum_base-1.png" width="700"></p>
+</div>
 <div class="section level3">
-<h3 id="obtain-tic-and-mass-spectra-using-dplyr-syntax">Obtain TIC and mass spectra using dplyr syntax<a class="anchor" aria-label="anchor" href="#obtain-tic-and-mass-spectra-using-dplyr-syntax"></a>
+<h3 id="plot-tic-and-mass-spectra-using-dplyr-syntax">Plot TIC and mass spectra using <em>dplyr</em> syntax<a class="anchor" aria-label="anchor" href="#plot-tic-and-mass-spectra-using-dplyr-syntax"></a>
 </h3>
 <p>Plot TIC with dplyr:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -127,9 +132,10 @@ mass spectrum of the first scan, you could do:</p>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">mz</span>, <span class="va">intensity</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">plot_spec</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="plot_ms_files/figure-html/plot_spectrum_dplyr-1.png" width="700"></p>
-<div class="section level4">
-<h4 id="obtain-tic-and-mass-spectra-using-data-table-syntax">Obtain TIC and mass spectra using data.table syntax<a class="anchor" aria-label="anchor" href="#obtain-tic-and-mass-spectra-using-data-table-syntax"></a>
-</h4>
+</div>
+<div class="section level3">
+<h3 id="plot-tic-and-mass-spectra-using-data-table-syntax">Plot TIC and mass spectra using <em>data.table</em> syntax<a class="anchor" aria-label="anchor" href="#plot-tic-and-mass-spectra-using-data-table-syntax"></a>
+</h3>
 <p>Convert to <code>data.table</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
@@ -155,9 +161,8 @@ before:</p>
 <code class="sourceCode R"><span><span class="fu">plot_spec</span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="va">rt</span> <span class="op">==</span> <span class="fl">7.26355</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'mz'</span>,<span class="st">'intensity'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p><img src="plot_ms_files/figure-html/spectrum_dt-1.png" width="700"></p>
 </div>
-</div>
 <div class="section level3">
-<h3 id="plot-tic-and-mass-spectra-using-ggplot">Plot TIC and mass spectra using ggplot<a class="anchor" aria-label="anchor" href="#plot-tic-and-mass-spectra-using-ggplot"></a>
+<h3 id="plot-tic-and-mass-spectra-using-ggplot">Plot TIC and mass spectra using <em>ggplot</em><a class="anchor" aria-label="anchor" href="#plot-tic-and-mass-spectra-using-ggplot"></a>
 </h3>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
@@ -180,6 +185,53 @@ before:</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"m/z"</span>, y <span class="op">=</span> <span class="st">"Intensity"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="plot_ms_files/figure-html/plot_spectrum_ggplot-1.png" width="700"></p>
+</div>
+<div class="section level2">
+<h2 id="session-information">Session Information<a class="anchor" aria-label="anchor" href="#session-information"></a>
+</h2>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; R version 4.4.1 (2024-06-14)</span></span>
+<span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 22.04.5 LTS</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Matrix products: default</span></span>
+<span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
+<span><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so;  LAPACK version 3.10.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; locale:</span></span>
+<span><span class="co">#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
+<span><span class="co">#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
+<span><span class="co">#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
+<span><span class="co">#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; time zone: UTC</span></span>
+<span><span class="co">#&gt; tzcode source: system (glibc)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attached base packages:</span></span>
+<span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; other attached packages:</span></span>
+<span><span class="co">#&gt; [1] data.table_1.16.0    ggplot2_3.5.1        chromConverter_0.7.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span><span class="co">#&gt;  [1] rappdirs_0.3.3    generics_0.1.3    sass_0.4.9        utf8_1.2.4       </span></span>
+<span><span class="co">#&gt;  [5] bitops_1.0-9      xml2_1.3.6        stringi_1.8.4     lattice_0.22-6   </span></span>
+<span><span class="co">#&gt;  [9] digest_0.6.37     magrittr_2.0.3    evaluate_1.0.0    grid_4.4.1       </span></span>
+<span><span class="co">#&gt; [13] fastmap_1.2.0     rprojroot_2.0.4   cellranger_1.1.0  jsonlite_1.8.9   </span></span>
+<span><span class="co">#&gt; [17] Matrix_1.7-0      purrr_1.0.2       fansi_1.0.6       scales_1.3.0     </span></span>
+<span><span class="co">#&gt; [21] RaMS_1.4.0        pbapply_1.7-2     textshaping_0.4.0 jquerylib_0.1.4  </span></span>
+<span><span class="co">#&gt; [25] cli_3.6.3         rlang_1.1.4       bit64_4.5.2       munsell_0.5.1    </span></span>
+<span><span class="co">#&gt; [29] withr_3.0.1       base64enc_0.1-3   cachem_1.1.0      yaml_2.3.10      </span></span>
+<span><span class="co">#&gt; [33] parallel_4.4.1    tools_4.4.1       dplyr_1.1.4       colorspace_2.1-1 </span></span>
+<span><span class="co">#&gt; [37] here_1.0.1        reticulate_1.39.0 vctrs_0.6.5       R6_2.5.1         </span></span>
+<span><span class="co">#&gt; [41] png_0.1-8         lifecycle_1.0.4   stringr_1.5.1     fs_1.6.4         </span></span>
+<span><span class="co">#&gt; [45] bit_4.5.0         ragg_1.3.3        pkgconfig_2.0.3   desc_1.4.3       </span></span>
+<span><span class="co">#&gt; [49] pkgdown_2.1.1     bslib_0.8.0       pillar_1.9.0      gtable_0.3.5     </span></span>
+<span><span class="co">#&gt; [53] glue_1.8.0        Rcpp_1.0.13       systemfonts_1.1.0 highr_0.11       </span></span>
+<span><span class="co">#&gt; [57] tidyselect_1.2.1  xfun_0.48         tibble_3.2.1      knitr_1.48       </span></span>
+<span><span class="co">#&gt; [61] farver_2.1.2      htmltools_0.5.8.1 labeling_0.4.3    rmarkdown_2.28   </span></span>
+<span><span class="co">#&gt; [65] compiler_4.4.1    entab_0.3.1       readxl_1.4.3</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
