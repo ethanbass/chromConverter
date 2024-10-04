@@ -40,6 +40,7 @@
 <li>Added preliminary support for ‘Allotrope Simple Model’ (ASM) 2D chromatography date files.</li>
 <li>Added support for reading multiple files from ‘Agilent’ <code>.D</code> directories through <code>read_agilent_d</code> function.</li>
 <li>Added option to write mzML files (MS1 and DAD).</li>
+<li>Added option to write ANDI MS netCDF files.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="ui-changes-0-7-0">UI changes<a class="anchor" aria-label="anchor" href="#ui-changes-0-7-0"></a></h3>
@@ -68,7 +69,9 @@
 <li>Modified <code>export_csv</code> function to label first column for wide-format chromatograms.</li>
 <li>Improved handling of metadata from rainbow parsers.</li>
 <li>Fixed error when providing single chromatogram to .</li>
-<li>Added metadata field for source checksum (SHA1).</li>
+<li>Added metadata field for source checksum (SHA1) and source file format.</li>
+<li>Other minor changes to metadata fields.</li>
+<li>Return all times in Coordinated Univeral Time (UTC) for consistency across systems.</li>
 </ul></div>
 </div>
     <div class="section level2">

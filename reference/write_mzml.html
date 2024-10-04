@@ -53,6 +53,7 @@ XML structures or large-scale modifications after writing has begun.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">write_mzml</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">path_out</span>,</span>
+<span>  sample_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  what <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  instrument_info <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  compress <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -72,7 +73,12 @@ XML structures or large-scale modifications after writing has begun.</p>
 
 
 <dt id="arg-path-out">path_out<a class="anchor" aria-label="anchor" href="#arg-path-out"></a></dt>
-<dd><p>Path to write mzML file.</p></dd>
+<dd><p>The path to write the file.</p></dd>
+
+
+<dt id="arg-sample-name">sample_name<a class="anchor" aria-label="anchor" href="#arg-sample-name"></a></dt>
+<dd><p>The name of the file. If a name is not provided, the name
+will be derived from the <code>sample_name</code> attribute.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
