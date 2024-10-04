@@ -7,8 +7,8 @@
 write_chroms(
   chrom_list,
   path_out,
-  what = "",
   export_format = c("mzml", "cdf", "csv"),
+  what = "",
   force = FALSE,
   show_progress = TRUE,
   verbose = getOption("verbose")
@@ -19,10 +19,10 @@ write_chroms(
 
 \item{path_out}{Path to directory for writing files.}
 
-\item{what}{What to write. Either \code{MS1} or \code{TIC}.}
-
 \item{export_format}{Format to export files: either \code{mzml}, \code{cdf},
 or \code{csv}.}
+
+\item{what}{What to write. Either \code{MS1} or \code{chrom}.}
 
 \item{force}{Logical. Whether to overwrite existing files. Defaults to \code{TRUE}.}
 

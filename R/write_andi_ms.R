@@ -4,14 +4,14 @@
 #' @author Ethan Bass
 #' @noRd
 
-write_andi_ms <- function(x, path_out, sample_name, force = FALSE){
+write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE){
   if (!inherits(x, "list")){
     x1 <- data.table::as.data.table(x)
-    x1 <- list(MS1 = x1, TIC = x1[, .(intensity = sum(intensity)), by = rt])
+    x1 <- list(MS1 = x1, TIC = x1[, list(intensity = sum(intensity)), by = rt])
     x <- lapply(x1, function(xx) transfer_metadata(xx, x))
   }
   dat <- x$MS1
-  if (missing(sample_name)){
+  if (is.null(sample_name)){
     sample_name <- attr(x[["MS1"]], "sample_name")
     if (is.null(sample_name)){
       stop("Sample name must be provided.")

@@ -20,7 +20,10 @@ write_mzml(
 \arguments{
 \item{data}{List of data.frames or data.tables containing spectral data.}
 
-\item{path_out}{Path to write mzML file.}
+\item{path_out}{The path to write the file.}
+
+\item{sample_name}{The name of the file. If a name is not provided, the name
+will be derived from the \code{sample_name} attribute.}
 
 \item{what}{Which streams to write to mzML: \code{"ms1"}, \code{"ms2"},
 \code{"tic"}, \code{"bpc"}, and/or \code{"dad"}.}

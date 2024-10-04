@@ -48,7 +48,8 @@ write_chroms <- function(chrom_list, path_out,
 #' @author Ethan Bass
 #' @param x A chromatogram in (wide) format.
 #' @param path_out The path to write the file.
-#' @param sample_name The name of the file.
+#' @param sample_name The name of the file. If a name is not provided, the name
+#' will be derived from the \code{sample_name} attribute.
 #' @param lambda The wavelength to export (for 2-dimensional chromatograms).
 #' Must be a string matching one the columns in \code{x} or the index of the
 #' column to export.
@@ -141,9 +142,9 @@ get_filepath <- function(path_out, sample_name, ext, force = FALSE,
   file_out <- fs::path(path_out, sample_name, ext = ext)
   if (fs::file_exists(file_out)){
     if (!force){
-      return(warning(sprintf("File %s already exists. Set 'force = TRUE' to
+      stop(sprintf("File %s already exists. Set 'force = TRUE' to
                                overwrite the existing file.",
-                             sQuote(basename(file_out)))))
+                             sQuote(basename(file_out))))
     } else{
       fs::file_delete(file_out)
     }
@@ -187,7 +188,7 @@ export_cdf <- function(data, path_out, what = "", force = FALSE,
                      write_andi_chrom)
   data <- infer_sample_names(data)
   x <- laplee(seq_along(data), function(i){
-    if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".cdf")))
+    if (verbose) message(sprintf("Writing %s", paste0(names(data)[i], ".cdf")))
     try(write_fn(data[[i]], path_out = path_out, force = force))
   })
 }

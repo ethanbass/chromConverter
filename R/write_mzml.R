@@ -19,7 +19,9 @@
 #'
 #' @importFrom utils packageVersion
 #' @param data List of data.frames or data.tables containing spectral data.
-#' @param path_out Path to write mzML file.
+#' @param path_out The path to write the file.
+#' @param sample_name The name of the file. If a name is not provided, the name
+#' will be derived from the \code{sample_name} attribute.
 #' @param what Which streams to write to mzML: \code{"ms1"}, \code{"ms2"},
 #' \code{"tic"}, \code{"bpc"}, and/or \code{"dad"}.
 #' @param instrument_info Instrument info to write to mzML file.
@@ -239,16 +241,19 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
     data$TIC <- data.frame(rt = as.numeric(rownames(data$TIC)),
                            intensity = data$TIC[,"intensity"])
   }
-  rts <- if (!is.null(data$TIC)) data$TIC[,"rt"] else unique(spectra_data$rt)
+  rts <- unique(spectra_data$rt)
   n_scan <- ifelse(!is.null(data$TIC), nrow(data$TIC),
                    length(unique(spectra_data$rt)))
+  extra_vals <- n_scan - length(rts)
+  if (extra_vals > 0)
+    rts <- c(data$TIC[seq_len(extra_vals)], rts)
   laplee(seq_len(n_scan), function(i) {
-
     if (indexed){
       offset <- seek(con, NA)
     }
 
     scan_data <- spectra_data[rt == rts[i]]
+
     # Create and write spectrum
     spectrum_xml <- create_spectrum(scan = i, index = i + idx_start - 1,
                                     rt = rts[i],

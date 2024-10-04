@@ -11,7 +11,8 @@ write_andi_chrom(x, path_out, sample_name = NULL, lambda = NULL, force = FALSE)
 
 \item{path_out}{The path to write the file.}
 
-\item{sample_name}{The name of the file.}
+\item{sample_name}{The name of the file. If a name is not provided, the name
+will be derived from the \code{sample_name} attribute.}
 
 \item{lambda}{The wavelength to export (for 2-dimensional chromatograms).
 Must be a string matching one the columns in \code{x} or the index of the
