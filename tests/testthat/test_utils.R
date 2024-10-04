@@ -1,7 +1,7 @@
 test_that("check_parser works as expected", {
-  expect_equal(check_parser(format_in = "msd", parser=NULL, find = TRUE), "openchrom")
-  expect_equal(check_parser(format_in = "wsd", parser=NULL, find = TRUE), "openchrom")
-  expect_equal(check_parser(format_in = "csd", parser=NULL, find = TRUE), "openchrom")
+  expect_equal(check_parser(format_in = "msd", parser = NULL, find = TRUE), "openchrom")
+  expect_equal(check_parser(format_in = "wsd", parser = NULL, find = TRUE), "openchrom")
+  expect_equal(check_parser(format_in = "csd", parser = NULL, find = TRUE), "openchrom")
   expect_equal(check_parser(format_in = "chemstation_csv", parser=NULL, find = TRUE), "chromconverter")
   expect_equal(check_parser(format_in = "shimadzu_fid", parser=NULL, find = TRUE), "chromconverter")
   expect_equal(check_parser(format_in = "shimadzu_dad", parser=NULL, find = TRUE), "chromconverter")
@@ -19,6 +19,9 @@ test_that("check for pkg returns error for fake package", {
   expect_error(check_for_pkg("made_up_package"))
 })
 
-test_that("get_filetype returns error for unknown file", {
+test_that("get_filetype returns error for unknown filetype", {
   expect_error(get_filetype("testdata/dad1.csv"))
 })
+
+path_msd <- system.file("chemstation_MSD.MS",
+            package = "chromConverterExtraTests")

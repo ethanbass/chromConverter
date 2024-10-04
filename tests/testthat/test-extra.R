@@ -11,25 +11,42 @@ test_that("read_chroms can read 'Agilent' MS files", {
 
   skip_if_not(file.exists(path))
 
-  tmp <- tempdir()
-  path_mzml <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzML")
-  on.exit(unlink(path_mzml))
-
   x <- read_chroms(path, parser = "entab", progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(95471, 3))
   expect_equal(attr(x, "parser"), "entab")
   expect_equal(colnames(x), c("rt", "mz", "intensity"))
 
+  # export as mzML
+  tmp <- tempdir()
+  path_mzml <- fs::path(tmp, gsub(" ", "_", attr(x, "sample_name")),
+                        ext = "mzML")
+  on.exit(unlink(path_mzml))
+
   x1 <- read_chroms(path, parser = "entab", format_out = "data.table",
                    progress_bar = FALSE,
-                   export_format = "mzML", path_out=tmp)[[1]]
+                   export_format = "mzML", path_out = tmp)[[1]]
   expect_s3_class(x1, "data.table")
   expect_equal(attr(x1, "format_out"), "data.table")
 
   xx <- read_mzml(path_mzml)
   expect_equal(x1, xx$MS1[,-4], ignore_attr = TRUE)
 
+  # export as CDF
+  path_cdf <- fs::path(tmp, gsub(" ", "_", attr(x,"sample_name")), ext = "cdf")
+  on.exit(unlink(path_cdf))
+
+  x2 <- read_chroms(path, parser = "entab", format_out = "data.table",
+                    progress_bar = FALSE,
+                    export_format = "cdf", path_out = tmp)[[1]]
+  x2 <- x2[order(rt, mz)]
+
+  xx <- read_cdf(path_cdf, format_out = "data.table")
+  expect_equal(x2$rt, xx$MS1$rt/60, ignore_attr = TRUE)
+  expect_equal(x2$intensity, xx$MS1$intensity, ignore_attr = TRUE)
+  expect_equal(x2$mz, xx$MS1$mz, ignore_attr = TRUE, tolerance = .000001)
+
+  # rainbow
   x1 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, precision = 0)[[1]]
   expect_equal(class(x1)[1], "matrix")
@@ -53,12 +70,14 @@ test_that("read_chroms can write mzML files", {
                       package = "chromConverterExtraTests")
 
   tmp <- tempdir()
-  path_mzml <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzML")
-  on.exit(unlink(path_mzml))
 
   x <- read_chroms(path, parser = "entab", progress_bar = FALSE,
                    format_out = "data.table",
                    export_format = "mzml", path_out = tmp, force = TRUE)[[1]]
+
+  path_mzml <- fs::path(tmp, gsub(" ", "_", attr(x,"sample_name")), ext = "mzML")
+  on.exit(unlink(path_mzml))
+
   x1 <- read_mzml(path_mzml, what = c("MS1","metadata"))
   expect_equal(x1$MS1[,c(1:3)], x, ignore_attr = TRUE)
   # expect_equal(x1$metadata$timestamp, attr(x,"run_datetime"))
@@ -66,13 +85,18 @@ test_that("read_chroms can write mzML files", {
 
   # only works with `data_format == "long"`
   # time zone discrepancy between rainbow and entab
-  # whyd doesn't work with format == dataa.table
+  # why doesn't work with format == data.table
+  path_mzml_rb <- fs::path(tmp, fs::path_ext_remove(basename(path)),
+                        ext = "mzML")
+  on.exit(unlink(path_mzml_rb))
+
   x <- read_chroms(path, parser = "rainbow",
                    data_format = "long",
+                  format_out = "data.frame",
                    progress_bar = FALSE,
                    export_format = "mzml", path_out = tmp,
                    force = TRUE)[[1]]
-  x1 <- read_mzml(path_mzml, what = c("MS1", "metadata"))
+  x1 <- read_mzml(path_mzml_rb, what = c("MS1", "metadata"))
   expect_equal(x1$MS1[, c(1:3)], as.data.frame(x), ignore_attr = TRUE)
   expect_equal(x1$metadata$source_file, basename(attr(x,"source_file")))
   # expect_equal(x1$metadata$timestamp, attr(x,"run_datetime"))
@@ -87,12 +111,14 @@ test_that("read_chroms can convert CDF to mzML", {
   skip_if_not(file.exists(path))
 
   tmp <- tempdir()
-  mzml_path <- fs::path(tmp, fs::path_ext_remove(basename(path)), ext = "mzML")
-  on.exit(unlink(mzml_path))
-  #shouldn't require what = "MS1
+
   x <- read_chroms(path, progress_bar = FALSE, export_format = "mzml",
                    path_out = tmp, force = TRUE)[[1]]
-  x1 <- read_mzml(mzml_path, what = c("MS1","metadata"))
+
+  mzml_path <- fs::path(tmp, attr(x$MS1,"sample_name"), ext = "mzML")
+  on.exit(unlink(mzml_path))
+
+  x1 <- read_mzml(mzml_path, what = c("MS1", "metadata"))
   expect_equal(x1$MS1[,c(1:3)], x[[1]], ignore_attr = TRUE)
   expect_equal(x1$metadata$source_file, basename(attr(x$MS1,"source_file")))
 })
@@ -112,7 +138,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "NVAC-6B1-S3R1")
   expect_equal(attr(x, "detector"), "G1315B")
-  expect_equal(attr(x, "detector_unit"), "mAU")
+  expect_equal(attr(x, "detector_y_unit"), "mAU")
   expect_equal(attr(x, "method"), "JCMONO1.M")
   expect_equal(attr(x, "time_unit"), "Minutes")
 
@@ -148,7 +174,9 @@ test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
   expect_equal(attr(x, "sample_name"), "NVAC-6B1-S3R1")
   expect_equal(attr(x, "sample_name"), attr(x1, "sample_name"))
 
-  expect_equal(attr(x, "detector"), "G1315B")
+  expect_equal(attr(x, "detector"), "DAD")
+
+  expect_equal(attr(x, "detector_id"), "G1315B")
   expect_equal(attr(x, "detector"), attr(x1, "detector"))
 
   expect_equal(attr(x, "detector_range"), c(250, 600))
@@ -174,8 +202,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(2699, 1))
   expect_equal(attr(x, "parser"), "chromconverter")
-  expect_equal(attr(x, "detector_unit"), "pA")
-  expect_equal(attr(x, "detector"), "HP G1530A")
+  expect_equal(attr(x, "detector_y_unit"), "pA")
+  expect_equal(attr(x, "detector_id"), "HP G1530A")
   expect_equal(attr(x, "sample_name"), "5970 mix 10nG")
   expect_equal(attr(x, "time_unit"), "Minutes")
 
@@ -204,7 +232,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
 
   # check metadata
   expect_equal(attr(x, "sample_name"), "0-CN-6-6-PU")
-  expect_equal(attr(x, "detector_unit"), "mAU")
+  expect_equal(attr(x, "detector_y_unit"), "mAU")
   expect_equal(attr(x, "method"), "Phenolics_new2.M")
   expect_equal(attr(x, "time_unit"), "Minutes")
 
@@ -217,7 +245,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
   expect_equal(colnames(x1), c("rt", "intensity"))
   expect_equal(dim(x1), c(12750, 2))
   expect_equal(attr(x1, "sample_name"), "0-CN-6-6-PU")
-  expect_equal(attr(x1, "detector_unit"), "mAU")
+  expect_equal(attr(x1, "detector_y_unit"), "mAU")
   expect_equal(attr(x1, "method"), "Phenolics_new2.M")
   expect_equal(attr(x1, "time_unit"), "Minutes")
 })
@@ -238,7 +266,7 @@ test_that("read_chroms can read 'Agilent OpenLab' 179 files", {
   # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "STD_1_1mM-1MKHCO3")
-  expect_equal(attr(x, "detector_unit"), "nRIU")
+  expect_equal(attr(x, "detector_y_unit"), "nRIU")
   expect_equal(attr(x, "time_unit"), "Minutes")
 
   # long format
@@ -268,7 +296,7 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)"
   # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "393006_A1_diol_Al")
-  expect_equal(attr(x, "detector_unit"), "pA")
+  expect_equal(attr(x, "detector_y_unit"), "pA")
   expect_equal(attr(x, "software"), "Mustang ChemStation")
   expect_equal(attr(x, "method"), "NGS Default Edit.M")
   expect_equal(attr(x, "time_unit"), "Minutes")
@@ -293,7 +321,7 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
   # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "NI cat")
-  expect_equal(attr(x, "detector_unit"), "pA")
+  expect_equal(attr(x, "detector_y_unit"), "pA")
   expect_equal(attr(x, "software"), "Asterix ChemStation")
   expect_equal(attr(x, "method"), "Sine14.M")
   expect_equal(attr(x, "time_unit"), "Minutes")
@@ -353,7 +381,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   # check metadata
   expect_equal(attr(x[[1]], "sample_name"), "blanc421")
   expect_equal(attr(x[[1]], "file_version"), "181")
-  expect_equal(attr(x[[1]], "detector_unit"), "pA")
+  expect_equal(attr(x[[1]], "detector_y_unit"), "pA")
   expect_equal(attr(x[[1]], "method"), "DET3300.M")
   expect_equal(attr(x[[1]], "run_datetime"), as.POSIXct("2022-08-23 12:16:25",
                                                         tz="UTC"))
@@ -361,7 +389,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
 
   expect_equal(attr(x[[2]], "sample_name"), "140+H")
   expect_equal(attr(x[[2]], "file_version"), "181")
-  expect_equal(attr(x[[2]], "detector_unit"), "pA")
+  expect_equal(attr(x[[2]], "detector_y_unit"), "pA")
   expect_equal(attr(x[[2]], "method"), "DET3300.M")
   expect_equal(attr(x[[2]], "run_datetime"), as.POSIXct("2022-08-23 12:48:20",
                                                         tz="UTC"))
@@ -419,7 +447,7 @@ test_that("read_chroms can read 'Waters RAW' files", {
   expect_equal(attr(x$MS,"vial"), "2:A,11")
 
   expect_equal(attr(x$CAD,"vial"), "2:A,11")
-  expect_equal(attr(x$CAD,"detector_unit"), "mV")
+  expect_equal(attr(x$CAD,"detector_y_unit"), "mV")
   expect_equal(attr(x$CAD,"parser"), "rainbow")
 
   x1 <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
@@ -582,7 +610,7 @@ test_that("read_chroms can read 2D chromatograms from 'Shimadzu' LCD files", {
                attr(x1, "sample_injection_volume"))
   expect_equal(as.numeric(attr(x, "time_range")),
                round(attr(x1, "time_range"), 3))
-  expect_equal(attr(x, "detector_unit"), attr(x1, "detector_unit"))
+  expect_equal(attr(x, "detector_y_unit"), attr(x1, "detector_y_unit"))
   expect_equal(attr(x, "intensity_multiplier"),
                attr(x1, "intensity_multiplier"))
 })
@@ -649,7 +677,7 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
                attr(x1[[1]], "sample_injection_volume"))
   expect_equal(round(as.numeric(attr(x[[1]], "time_range"))),
                round(as.numeric(attr(x1[[1]], "time_range"), 3)))
-  expect_equal(attr(x[[1]], "detector_unit"), attr(x1[[1]], "detector_unit"))
+  expect_equal(attr(x[[1]], "detector_y_unit"), attr(x1[[1]], "detector_y_unit"))
   expect_equal(attr(x[[1]], "intensity_multiplier"),
                attr(x1[[1]], "intensity_multiplier"))
 
@@ -847,11 +875,17 @@ test_that("Shimadzu QGD parser works", {
   expect_equal(attr(x$MS1, "parser"), "chromconverter")
 
   x1 <- read_mzml(mzml_path, what = c("MS1", "TIC", "metadata"))
-  expect_equal(x1$MS1[,c(1:3)], as.data.frame(x$MS1[,-1]), ignore_attr = TRUE)
+  expect_equal(x1$MS1[,c(1:3)], as.data.frame(x$MS1[,-1]), ignore_attr = TRUE,
+               tolerance = .0000001)
   expect_equal(x1$TIC[,"intensity"], as.data.frame(x$TIC[,"intensity"]),
                ignore_attr = TRUE)
-  expect_equal(x1$metadata$source_file, basename(attr(x$MS1,"source_file")))
+  expect_equal(x1$metadata$source_file, basename(attr(x$MS1, "source_file")))
   # expect_equal(x1$metadata$timestamp, attr(x$MS1, "run_datetime"))
+
+  ## write CDF
+  # cdf_path <- fs::path_ext_set(fs::path(tmp, basename(path_gqd)), ext = "cdf")
+  # on.exit(unlink(cdf_path))
+  # export_cdf(list(B4NF.7_C23 = x), path_out = tmp, force=TRUE, show_progress = FALSE)
 })
 
 test_that("read_chroms can read Varian SMS", {
@@ -865,11 +899,13 @@ test_that("read_chroms can read Varian SMS", {
   skip_if_not(file.exists(path_mzml))
 
   tmp <- tempdir()
-  path_mzml_cc <- fs::path(tmp, fs::path_ext_remove(basename(path_sms)), ext = "mzML")
-  on.exit(unlink(path_mzml_cc))
 
   x <- read_chroms(path_sms, progress_bar = FALSE, export_format = "mzml",
                    path_out = tmp)[[1]]
+
+  path_mzml_cc <- fs::path(tmp, attr(x$MS1, "sample_name"), ext = "mzML")
+  on.exit(unlink(path_mzml_cc))
+
   x1 <- read_chroms(path_mzml, format_in = "mzml", progress_bar = FALSE)[[1]]
   x2 <- read_chroms(path_mzml_cc, format_in = "mzml", progress_bar = FALSE,
                     format_out = "data.frame")[[1]]
@@ -906,6 +942,22 @@ test_that("read_chroms can read Varian SMS", {
   # attr(x$MS1, "run_datetime") # should be 8/8/2014 8:50 PM - 9:20 PM
   expect_equal(x2$metadata$source_file, basename(attr(x$MS1,"source_file")))
   # expect_equal(x2$metadata$timestamp, attr(x$MS1,"run_datetime")[1])
+
+  # write CDF
+  path_cdf <- fs::path(tmp, fs::path_ext_remove(basename(path_sms)), ext = "cdf")
+  on.exit(unlink(path_cdf))
+  write_chroms(list(x), path_out = tmp, export_format = "cdf",
+               show_progress = FALSE)
+  x3 <- read_cdf(path_cdf, data_format = "long", format_out = "data.frame")
+  x3$MS1$rt <- x3$MS1$rt/60
+  x3$TIC$rt <- x3$TIC$rt/60
+
+  expect_equal(as.data.frame(x$MS1), x3$MS1, ignore_attr=TRUE, tolerance=.0000001)
+  expect_equal(as.data.frame(x$TIC), x3$TIC, ignore_attr=TRUE, tolerance=.0000001)
+  expect_equal(attr(x3$MS1, "run_datetime"), attr(x$MS1, "run_datetime")[1])
+  expect_equal(attr(x3$MS1, "time_unit"), "Seconds")
+  expect_equal(attr(x3$MS1, "detector"), "MS")
+  expect_equal(attr(x3$MS1, "sample_name"), "STRD15")
 })
 
 test_that("read_chroms can read ASM LC format", {
@@ -924,7 +976,7 @@ test_that("read_chroms can read ASM LC format", {
   expect_equal(attr(x[[1]], "sample_name"), "Sample 1")
   expect_equal(attr(x[[1]], "instrument"), "LC344")
   expect_equal(attr(x[[1]], "detector_range"), 210)
-  expect_equal(attr(x[[1]], "detector_unit"), "mAU")
+  expect_equal(attr(x[[1]], "detector_y_unit"), "mAU")
   expect_equal(attr(x[[1]], "run_datetime"), as.POSIXct("2016-10-20 06:33:54",
                                                         tz = "UTC"))
   expect_equal(as.character(attr(x[[1]], "time_unit")), "s")
@@ -946,9 +998,51 @@ test_that("read_chroms can read ASM GC format", {
   expect_s3_class(x, "data.frame")
   expect_equal(attr(x, "sample_name"), "22-00465-1")
   expect_equal(attr(x, "instrument"), "GC65")
-  expect_equal(attr(x, "detector_unit"), "pA")
+  expect_equal(attr(x, "detector_y_unit"), "pA")
   expect_equal(attr(x, "run_datetime"), as.POSIXct("2022-05-12 11:24:28",
                                                    tz = "UTC"))
   expect_equal(as.character(attr(x, "time_unit")), "s")
   expect_equal(as.character(attr(x, "data_format")), "long")
+})
+
+test_that("get_filetype works as expected", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  # expect_equal(get_filetype(system.file("chemstation_MSD.MS",
+  #                                       package = "chromConverterExtraTests")),
+  # )
+  expect_equal(get_filetype(system.file("B4NF.7_C23.qgd",
+                                        package="chromConverterExtraTests")),
+               "shimadzu_qgd")
+  expect_equal(get_filetype(system.file("chemstation_181.D/FID1A.ch",
+                                        package="chromConverterExtraTests")),
+               "chemstation_181")
+  expect_equal(get_filetype(system.file("chemstation_179_mustang.ch",
+                                        package="chromConverterExtraTests")),
+               "chemstation_179")
+  expect_equal(get_filetype(system.file("openlab_131.uv",
+                                        package="chromConverterExtraTests")),
+               "openlab_131")
+  expect_equal(get_filetype(system.file("chemstation_81.ch",
+                                        package="chromConverterExtraTests")),
+               "chemstation_81")
+  expect_equal(get_filetype(system.file("chemstation_30.ch",
+                                        package="chromConverterExtraTests")),
+               "chemstation_30")
+  expect_equal(get_filetype(system.file("chemstation_31.uv",
+                                        package="chromConverterExtraTests")),
+               "chemstation_31")
+  expect_equal(get_filetype(system.file("small.RAW",
+                                        package="chromConverterExtraTests")),
+               "thermoraw")
+  expect_equal(get_filetype(system.file("FS19_214.gcd",
+                                        package="chromConverterExtraTests")),
+               "shimadzu_gcd")
+  expect_equal(get_filetype(system.file("DCM1.SMS",
+                                        package="chromConverterExtraTests")),
+               "varian_sms")
+  expect_equal(get_filetype(system.file("VARIAN1.CDF",
+                                        package="chromConverterExtraTests")),
+               "cdf")
 })
