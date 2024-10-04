@@ -1,0 +1,148 @@
+---
+title: "Plotting MS data"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(chromConverter)
+library(ggplot2)
+library(data.table)
+```
+
+MS chromatograms are returned by default in `long` format with three columns: retention time, m/z, and intensity.
+
+As an example, we can load the 'Varian' SMS chromatogram included in the `chromConverterExtraTests` package.
+
+```{r download_varian_sms}
+# download example file from the web
+path_sms <- tempfile()
+download.file("https://raw.github.com/ethanbass/chromConverterExtraTests/master/inst/STRD15.SMS", destfile = path_sms)
+
+dat <- read_chroms(path_sms, format_in = "varian_sms", format_out = "data.frame")
+```
+
+### Plot TIC and mass spectra use base R syntax
+
+```{r plot_tic_base}
+x <- dat[[1]]$MS1
+
+# derive TIC using aggregate
+tic <- aggregate(intensity ~ rt, data = x, FUN = sum)
+
+# plot TIC
+matplot(tic$rt, tic$intensity, type = 'l',
+        ylab = "Total intensity", xlab = "Time (min)")
+```
+
+Here is a simple plot function you could use to plot mass spectra in base R:
+
+```{r plot_mass_spectrum_function}
+plot_spec <- function(spec, lab_int=0.2, digits=1){
+  plot(spec, type = "h", xlab = "m/z", ylab = "Intensity")
+  lab.idx <- which(spec$intensity > lab_int * max(spec$intensity))
+  text(spec$mz[lab.idx], spec$intensity[lab.idx], round(spec$mz[lab.idx], 
+                    digits), offset = 0.25, pos = 3, cex = 0.5)
+}
+```
+
+You can extract mass spectra by filtering on time, e.g., to get the mass spectrum of the first scan, you could do:
+
+```{r plot_spectrum_base}
+times <- unique(x$rt)
+spec <- x[x$rt == times[100], -1]
+plot_spec(spec)
+```
+
+### Plot TIC and mass spectra using *dplyr* syntax
+
+Plot TIC with dplyr:
+
+```{r plot_tic_dplyr}
+tic <- x |> dplyr::group_by(rt) |> dplyr::summarize_at("intensity", sum)
+
+plot(intensity ~ rt, data=tic, type = 'l',
+        ylab = "Total intensity", xlab = "Time (min)")
+```
+
+Plot spectrum with dplyr:
+
+```{r plot_spectrum_dplyr}
+dplyr::filter(x, rt == 7.26355) |> 
+  dplyr::select(mz, intensity) |> 
+  plot_spec()
+```
+
+### Plot TIC and mass spectra using *data.table* syntax
+
+Convert to `data.table`:
+
+```{r convert_to_data_table}
+x <- data.table::as.data.table(x)
+```
+
+chromConverter can also return chromatograms in data.table format directly:
+
+```{r read_chroms_as_dt, eval = FALSE}
+dat <- read_chroms(path_sms, format_in = "varian_sms", format_out = "data.table")
+```
+
+Extract the total ion chromatogram:
+
+```{r tic_dt}
+tic <- x[, .(intensity = sum(intensity)), by = rt]
+matplot(tic$rt, tic$intensity, type = 'l',
+        ylab = "Total intensity", xlab = "Time (min)")
+```
+
+Extract the base ion chromatogram:
+
+```{r bpc_dt}
+bpc <- x[, .(intensity = max(intensity)), by = rt]
+matplot(bpc$rt, bpc$intensity, type = 'l',
+        ylab = "Base ion chromatogram", xlab = "Time (min)")
+```
+
+To obtain a mass spectrum we just filter by retention time as before:
+
+```{r spectrum_dt}
+plot_spec(x[rt == 7.26355, c('mz','intensity')])
+```
+
+### Plot TIC and mass spectra using *ggplot*
+
+```{r plot_tic_ggplot}
+library(ggplot2)
+ggplot(data = tic, aes(x=rt, y=intensity)) + 
+  geom_line() + 
+  xlab("Retention time (min)") +
+  ylab("Intensity")
+```
+
+Plot mass spectrum with ggplot: 
+
+```{r plot_spectrum_ggplot}
+lab_int <- 0.2
+digits <- 1
+dplyr::filter(x, rt == 7.26355) |> 
+  dplyr::select(mz, intensity) |> 
+  ggplot(aes(x = mz, y = intensity)) +
+  geom_segment(aes(xend = mz, yend = 0), linewidth = 0.5) +
+  geom_text(data = subset(spec, intensity > lab_int * max(intensity)),
+            aes(label = round(mz, digits)),
+            vjust = -0.5, size = 2) +
+  labs(x = "m/z", y = "Intensity") +
+  theme_minimal()
+```
+
+
+## Session Information
+
+```{r}
+sessionInfo()
+```
