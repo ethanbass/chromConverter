@@ -189,7 +189,7 @@ read_varian_ms_stream <- function(f, n_scans, format_out = "data.frame",
     cbind(scan = i, xx)
   })
   dat <- do.call(rbind, xx)
-  convert_chrom_format(dat, format_out = format_out)
+  dat <- convert_chrom_format(dat, format_out = format_out)
   dat
 }
 
