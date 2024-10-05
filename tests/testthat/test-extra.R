@@ -23,7 +23,8 @@ test_that("read_chroms can read 'Agilent' MS files", {
                         ext = "mzML")
   on.exit(unlink(path_mzml))
 
-  x1 <- read_chroms(path, parser = "entab", format_out = "data.table",
+  x1 <- read_chroms(path, parser = "chromconverter", what = "MS1",
+                    format_out = "data.table",
                    progress_bar = FALSE,
                    export_format = "mzML", path_out = tmp)[[1]]
   expect_s3_class(x1, "data.table")
@@ -31,12 +32,23 @@ test_that("read_chroms can read 'Agilent' MS files", {
 
   xx <- read_mzml(path_mzml)
   expect_equal(x1, xx$MS1[,-4], ignore_attr = TRUE)
+  expect_equal(x1, as.data.frame(x), ignore_attr = TRUE)
+  expect_equal(attr(x1,"sample_name"), attr(x1,"sample_name"))
+  expect_equal(attr(x1,"source_sha1"), attr(x1,"source_sha1"))
+  expect_equal(attr(x1,"time_unit"), attr(x1,"time_unit"))
+  expect_equal(attr(x1,"run_datetime"), attr(x1,"run_datetime"))
+  expect_equal(attr(x1,"operator"), attr(x1,"operator"))
+  expect_equal(attr(x1,"method"), attr(x1,"method"))
+  expect_equal(attr(x1,"detector"), attr(x1,"detector"))
 
   # rainbow
   x1 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, precision = 0)[[1]]
   expect_equal(class(x1)[1], "matrix")
   expect_equal(dim(x1), c(2534, 841))
+  expect_equal(attr(x1,"run_datetime"), attr(x1,"run_datetime"))
+  expect_equal(attr(x1,"method"), attr(x1,"method"))
+  expect_equal(attr(x1,"detector"), attr(x1,"detector"))
 
   x2 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, data_format = "long",

@@ -22,8 +22,8 @@
 #' with variable byte-length defined by the value in the header.
 #'
 #' @param path Path to 'Shimadzu' QGD file.
-#' @param what What stream to get: current options are \code{tic} or
-#' \code{ms}. If a stream is not specified, the function will return both
+#' @param what What stream to get: current options are \code{MS1} and/or
+#' \code{TIC}. If a stream is not specified, the function will return both
 #' streams.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.

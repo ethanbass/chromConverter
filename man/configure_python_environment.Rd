@@ -4,7 +4,7 @@
 \alias{configure_python_environment}
 \title{Configure python environment}
 \usage{
-configure_python_environment(parser, return_boolean = FALSE)
+configure_python_environment(parser = "all", return_boolean = FALSE)
 }
 \arguments{
 \item{parser}{Either \code{aston}, \code{rainbow}, or \code{olefile} (for

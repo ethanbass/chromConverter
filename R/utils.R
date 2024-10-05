@@ -54,14 +54,13 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
   magic <- paste(paste0("x", as.character(magic)), collapse = "/")
   # magic
   filetype <- switch(magic,
-                     "x01/x32/x00/x00" = "AgilentChemstationMS",
+                     "x01/x32/x00/x00" = "chemstation_ms",
                      "x02/x02/x00/x00" = "AgilentMasshunterDADHeader",
-                     # "x02/x33/x30/x00" = "AgilentChemstationMWD",
-                     "x02/x32/x00/x00" = "AgilentChemstationMWD",
+                     "x02/x32/x00/x00" = "chemstation_mwd",
                      # "x02/x33/x00/x00" = "AgilentChemstationMWD",
                      # "x03/x31/x00/x00" = "AgilentChemstationMWD2"
                      # "x01/x32/x00/x00" = "AgilentChemstationMS"
-                     "x03/x02/x00/x00" = "AgilentMasshunterDAD",
+                     "x03/x02/x00/x00" = "masshunter_dad",
                      "x02/x33/x30/x00" = "chemstation_30",
                      "x02/x33/x31/x00" = "chemstation_31",
                      "x03/x31/x33/x30" = "chemstation_130", #130
@@ -94,7 +93,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
     #        "67108975" = "shimadzu_gcd")
   }
   format_in <- switch(filetype,
-                      "AgilentChemstationMS" = "chemstation",
+                      "AgilentChemstationMS" = "chemstation_ms",
                       "AgilentChemstationCH" = "chemstation_ch",
                       "AgilentChemstationFID" = "chemstation_ch",
                       # "chemstation_31" = "chemstation_uv",
@@ -115,6 +114,7 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                              "cdf", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
+                                             "chemstation_2", "chemstation_ms",
                                              "chemstation_30", "chemstation_31",
                                              "chemstation_130", "chemstation_131",
                                              "openlab_131", "chemstation_179",
@@ -128,12 +128,14 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                              "waters_chro"),
                           aston = c("chemstation_uv", "chemstation_131",
                                     "masshunter_dad", "other"),
-                          entab = c("chemstation", "chemstation_ch",
+                          entab = c("chemstation_ms", "chemstation_mwd",
+                                    "chemstation_ch",
                                     "chemstation_30", "chemstation_31",
                                     "chemstation_131", "chemstation_fid",
                                     "chemstation_uv", "masshunter_dad",
                                     "thermoraw", "other"),
-                          rainbow = c("chemstation", "chemstation_ch",
+                          rainbow = c("chemstation", "chemstation_ms",
+                                      "chemstation_ch",
                                       "chemstation_130","chemstation_131",
                                       "chemstation_fid", "chemstation_179",
                                       "chemstation_uv", "waters_raw",
@@ -215,6 +217,8 @@ format_to_extension <- function(format_in){
   switch(format_in,
          "agilent_d" = "\\.d$",
          "agilent_dx" = "\\.dx$",
+         "chemstation_ms" = "\\.ms$",
+         "chemstation_2" = "\\.ms$",
          "chemstation_uv" = "\\.uv$",
          "chemstation_31" = "\\.uv$",
          "chemstation_131" = "\\.uv$",
@@ -359,10 +363,12 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 #' @keywords internal
 #' @export
 
-configure_python_environment <- function(parser, return_boolean = FALSE){
+configure_python_environment <- function(parser = "all", return_boolean = FALSE){
+  parser <- match.arg(tolower(parser), c("all", "aston", "olefile", "rainbow"))
   install <- FALSE
   if (!dir.exists(reticulate::miniconda_path())){
-    install <- readline(sprintf("It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)", parser))
+    install <- readline(sprintf("It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)",
+                                ifelse(parser == "all", "python-based", parser)))
     if (install %in% c('y', "Y", "YES", "yes", "Yes")){
       reticulate::install_miniconda()
     }
@@ -376,9 +382,9 @@ configure_python_environment <- function(parser, return_boolean = FALSE){
                                 reqs[which(!reqs_available)], pip = TRUE)
     }
   }
-  assign_fn <- switch(parser, aston = assign_trace_file,
-                      rainbow = assign_rb_read,
-                      olefile = function(...){})
+  assign_fn <- switch(parser, aston = assign_trace_file(),
+                      rainbow = assign_rb_read(),
+                      function(){})
   assign_fn()
   if (return_boolean){
     env
@@ -388,7 +394,8 @@ configure_python_environment <- function(parser, return_boolean = FALSE){
 #' Get required python packages for a parser
 #' @noRd
 get_parser_reqs <- function(parser){
-  switch(parser, "aston" = c("pandas", "scipy", "numpy", "Aston"),
+  switch(tolower(parser), "aston" = c("pandas", "scipy", "numpy", "Aston"),
          "olefile" = c("olefile"),
-         "rainbow" = c("numpy", "rainbow-api"))
+         "rainbow" = c("numpy", "rainbow-api"),
+         "all" = c("pandas","scipy","numpy","Aston","olefile","numpy","rainbow-api"))
 }

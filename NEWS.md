@@ -6,6 +6,7 @@
 * Added preliminary support for 'Shimadzu QGD' GCMS files through the `read_shimadzu_qgd` function.
 * Added preliminary support for 'Allotrope Simple Model' (ASM) 2D chromatography date files.
 * Added support for reading multiple files from 'Agilent' `.D` directories through `read_agilent_d` function.
+* Added internal parser for 'Agilent ChemStation' MS files through `read_agilent_ms`.
 * Added option to write mzML files (MS1 and DAD).
 * Added option to write ANDI MS netCDF files.
 

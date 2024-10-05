@@ -56,12 +56,12 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
   offsets <- get_agilent_offsets(version)
   if (version == "179"){
     seek(f, 347)
-    filetype <- substr(read_cs_string(f, type = 2),1,2)
+    filetype <- substr(read_cs_string(f, type = 2), 1, 2)
     if (filetype == "OL"){
       bytes = "8b"
     } else if (filetype == "GC"){
       seek(f, offsets$software)
-      soft <- read_cs_string(f, type=2)
+      soft <- read_cs_string(f, type = 2)
       chemstation_version <- strsplit(soft, " ")[[1]][1]
       bytes <- ifelse(chemstation_version == "Mustang", "8b", "4b")
     }
@@ -153,12 +153,16 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
 
 #' Read ChemStation string
 #' @noRd
-read_cs_string <- function(f, type = 1){
+read_cs_string <- function(f, type = 1, pos = NULL){
+  if (!is.null(pos)){
+    seek(f, where = pos, origin = "start")
+  }
   n <- get_nchar(f)
   if (type == 1){
-    rawToChar(readBin(f, what = "raw", n = n))
+    tryCatch(rawToChar(readBin(f, what = "raw", n = n)), error = function(e) NA)
   } else if (type == 2){
-    rawToChar(readBin(f, what = "raw", n = n*2)[c(TRUE, FALSE)])
+    tryCatch(rawToChar(readBin(f, what = "raw", n = n*2)[c(TRUE, FALSE)]),
+             error = function(e) NA)
   }
 }
 
@@ -347,6 +351,23 @@ get_agilent_offsets <- function(version){
               scaling_factor = 318,
               units = 326,
               data_start = 512
+            )
+  } else if (version == "2"){
+    offsets <- list(version = 0,
+              file_type = 4,
+              sample_name = 40,
+              operator = 148,
+              date = 178,
+              detector_model = 208,
+              instrument = 218,
+              method = 228,
+              # unknown = 260,
+              signal = 326,
+              header_length = 266,
+              num_times = 280, # big-endian
+              start_time = 282, #big-endian, 4 bytes
+              end_time = 286 #big-endian, 4 bytes
+              # scaling_factor = 318,
             )
   } else if (version %in% c("179","179_4b", "179_8b", "181")){
     offsets <- list(

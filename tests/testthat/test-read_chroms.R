@@ -35,10 +35,6 @@ test_that("Aston parser can read `Agilent Chemstation` 131 files", {
   expect_equal(class(x1[[1]])[1], "matrix")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
   expect_equal(names(x1), c("dad1", "dad1"))
-
-  # x2 <- read_chroms(paths, format_in = "chemstation_uv", parser = "aston",
-  #                   format_out = "data.table", progress_bar = FALSE)[[1]]
-  # expect_s3_class(x2, "data.table")
 })
 
 x1 <- read_chroms(path_uv, format_in = "chemstation_uv",
@@ -73,10 +69,10 @@ test_that("extract_metadata function works", {
   expect_equal(meta$detector_y_unit, "mAU")
   expect_equal(meta$detector_x_unit, "nm")
   expect_equal(meta$detector, "DAD")
-  # expect_equal(meta$detector_range1, 200)
-  # expect_equal(meta$detector_unit, "mAU")
+  expect_equal(meta$detector_range1, "200")
   expect_equal(meta$method, "ETHAN_PA_SHORT8_2_PREP_30UL.M")
-  # expect_equal(meta$time_unit, "Minutes")
+  expect_equal(meta$time_unit, "Minutes")
+  expect_equal(meta$run_datetime, as.POSIXct(1648668556, tz="UTC"))
 
   meta <- extract_metadata(x1, format_out = "tibble")
   expect_equal(class(meta)[1], "tbl_df")

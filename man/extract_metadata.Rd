@@ -7,9 +7,10 @@
 extract_metadata(
   chrom_list,
   what = c("instrument", "detector", "detector_id", "software", "method", "batch",
-    "operator", "run_date", "sample_name", "sample_id", "injection_volume", "time_range",
-    "time_interval", "detector_range", "detector_y_unit", "detector_x_unit",
-    "data_format", "parser", "format_out"),
+    "operator", "run_datetime", "sample_name", "sample_id", "injection_volume",
+    "time_range", "time_interval", "time_unit", "detector_range", "detector_y_unit",
+    "detector_x_unit", "intensity_multiplier", "scaled", "source_file",
+    "source_file_format", "source_sha1", "data_format", "parser", "format_out"),
   format_out = c("data.frame", "tibble")
 )
 }

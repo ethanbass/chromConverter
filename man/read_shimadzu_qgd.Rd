@@ -17,8 +17,8 @@ read_shimadzu_qgd(
 \arguments{
 \item{path}{Path to 'Shimadzu' QGD file.}
 
-\item{what}{What stream to get: current options are \code{tic} or
-\code{ms}. If a stream is not specified, the function will return both
+\item{what}{What stream to get: current options are \code{MS1} and/or
+\code{TIC}. If a stream is not specified, the function will return both
 streams.}
 
 \item{format_out}{Matrix or data.frame.}

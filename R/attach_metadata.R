@@ -55,14 +55,15 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                   intensity_multiplier = NA,
                   source_file = source_file,
                   source_file_format = source_file_format,
-                  source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+                  source_sha1 = digest::digest(source_file, algo = "sha1",
+                                               file = TRUE),
                   data_format = data_format,
                   parser = parser,
                   format_out = format_out)
     }, "rainbow" = {
       meta$date <- convert_timestamp(meta$date, datetime_formats =
                           c("%d %b %y %I:%M %p %z", "%d-%b-%Y %H:%M:%S",
-                                                        "%d-%b-%y, %H:%M:%S"))
+                            "%d-%b-%y, %H:%M:%S", "%d %b %y %I:%M %p"))
       structure(x,
                 sample_name = ifelse(is.null(meta$notebook),
                                      fs::path_ext_remove(basename(source_file)),
@@ -669,7 +670,6 @@ read_masshunter_metadata <- function(file){
   meta_sample
 }
 
-
 #' @name read_chromeleon_metadata
 #' @return A list containing extracted metadata.
 #' @author Ethan Bass
@@ -710,11 +710,13 @@ read_waters_metadata <- function(file){
 extract_metadata <- function(chrom_list,
                              what = c("instrument", "detector", "detector_id",
                                       "software", "method", "batch", "operator",
-                                      "run_date",
+                                      "run_datetime",
                                       "sample_name", "sample_id",
                                       "injection_volume", "time_range",
-                                      "time_interval", "detector_range",
+                                      "time_interval", "time_unit", "detector_range",
                                       "detector_y_unit", "detector_x_unit",
+                                      "intensity_multiplier", "scaled", "source_file",
+                                      "source_file_format", "source_sha1",
                                       "data_format", "parser", "format_out"),
                              format_out = c("data.frame", "tibble")
                                                   ){
@@ -725,10 +727,12 @@ extract_metadata <- function(chrom_list,
   what <- match.arg(what, several.ok = TRUE)
   format_out <- match.arg(format_out, c("data.frame", "tibble"))
   metadata <- purrr::map_df(chrom_list, function(chrom){
-    unlist(sapply(what, function(x){
-      attr(chrom, which = x)
+    unlist(sapply(what, function(w){
+      attr(chrom, which = w)
     }, simplify = FALSE))
   })
+
+  metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime),tz = "UTC")
   if (use_names && format_out == "tibble"){
     metadata <- tibble::add_column(.data = metadata,
                                    data.frame(name = names(chrom_list)),
@@ -739,7 +743,6 @@ extract_metadata <- function(chrom_list,
   }
   metadata
 }
-
 
 #' Transfer metadata
 #'@noRd
@@ -762,7 +765,6 @@ get_sz_wv <- function(meta){
     get_metadata_field(meta, "ADN")
   }
 }
-
 
 #' Extract ASM wavelength from metadata list
 #' @author Ethan Bass

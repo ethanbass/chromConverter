@@ -7,10 +7,10 @@
 read_chroms(
   paths,
   format_in = c("agilent_d", "agilent_dx", "asm", "chemstation", "chemstation_fid",
-    "chemstation_ch", "chemstation_csv", "chemstation_uv", "masshunter_dad",
-    "chromeleon_uv", "mzml", "mzxml", "mdf", "shimadzu_ascii", "shimadzu_dad",
-    "shimadzu_fid", "shimadzu_gcd", "shimadzu_qgd", "shimadzu_lcd", "thermoraw",
-    "varian_sms", "waters_arw", "waters_raw", "msd", "csd", "wsd", "other"),
+    "chemstation_ch", "chemstation_csv", "chemstation_ms", "chemstation_uv",
+    "masshunter_dad", "chromeleon_uv", "mzml", "mzxml", "mdf", "shimadzu_ascii",
+    "shimadzu_dad", "shimadzu_fid", "shimadzu_gcd", "shimadzu_qgd", "shimadzu_lcd",
+    "thermoraw", "varian_sms", "waters_arw", "waters_raw", "msd", "csd", "wsd", "other"),
   find_files,
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
@@ -35,6 +35,7 @@ read_chroms(
 \item{format_in}{Format of files to be imported/converted. Current options
 include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
 \code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
+\code{chemstation_ms},
 \code{masshunter}, \code{masshunter_dad}, \code{chromeleon_uv},
 \code{shimadzu_ascii}, \code{shimadzu_fid}, \code{shimadzu_dad},
 \code{thermoraw}, \code{waters_arw}, \code{waters_raw}, \code{mzml},
