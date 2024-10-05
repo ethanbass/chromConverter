@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Plotting MS data • chromConverter</title>
+<title>Intro to plotting mass spectrometry data • chromConverter</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Plotting MS data">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Intro to plotting mass spectrometry data">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -39,7 +39,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/plot_ms.html">Plotting MS data</a></li>
+<li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +61,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Plotting MS data</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Intro to plotting mass spectrometry data</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/vignettes/articles/plot_ms.Rmd" class="external-link"><code>vignettes/articles/plot_ms.Rmd</code></a></small>
@@ -80,12 +80,10 @@ with three columns: retention time, m/z, and intensity.</p>
 the <code>chromConverterExtraTests</code> package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># download example file from the web</span></span>
-<span><span class="va">path_sms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">path_sms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".sms"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span><span class="st">"https://raw.github.com/ethanbass/chromConverterExtraTests/master/inst/STRD15.SMS"</span>, destfile <span class="op">=</span> <span class="va">path_sms</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path_sms</span>, format_in <span class="op">=</span> <span class="st">"varian_sms"</span>, format_out <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in read_chroms(path_sms, format_in = "varian_sms", format_out = "data.frame"): The provided files do not match the expected file extension.</span></span>
-<span><span class="co">#&gt;         Please confirm that the specified format ('format_in') is correct.</span></span></code></pre></div>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path_sms</span>, format_in <span class="op">=</span> <span class="st">"varian_sms"</span>, format_out <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="plot-tic-and-mass-spectra-use-base-r-syntax">Plot TIC and mass spectra use base R syntax<a class="anchor" aria-label="anchor" href="#plot-tic-and-mass-spectra-use-base-r-syntax"></a>
 </h3>

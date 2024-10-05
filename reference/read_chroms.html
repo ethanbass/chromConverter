@@ -30,7 +30,7 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Plotting MS data</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -63,10 +63,10 @@ internal parser or bindings to an external library, such as
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_chroms</span><span class="op">(</span></span>
 <span>  <span class="va">paths</span>,</span>
 <span>  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"agilent_d"</span>, <span class="st">"agilent_dx"</span>, <span class="st">"asm"</span>, <span class="st">"chemstation"</span>, <span class="st">"chemstation_fid"</span>,</span>
-<span>    <span class="st">"chemstation_ch"</span>, <span class="st">"chemstation_csv"</span>, <span class="st">"chemstation_uv"</span>, <span class="st">"masshunter_dad"</span>,</span>
-<span>    <span class="st">"chromeleon_uv"</span>, <span class="st">"mzml"</span>, <span class="st">"mzxml"</span>, <span class="st">"mdf"</span>, <span class="st">"shimadzu_ascii"</span>, <span class="st">"shimadzu_dad"</span>,</span>
-<span>    <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_gcd"</span>, <span class="st">"shimadzu_qgd"</span>, <span class="st">"shimadzu_lcd"</span>, <span class="st">"thermoraw"</span>,</span>
-<span>    <span class="st">"varian_sms"</span>, <span class="st">"waters_arw"</span>, <span class="st">"waters_raw"</span>, <span class="st">"msd"</span>, <span class="st">"csd"</span>, <span class="st">"wsd"</span>, <span class="st">"other"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"chemstation_ch"</span>, <span class="st">"chemstation_csv"</span>, <span class="st">"chemstation_ms"</span>, <span class="st">"chemstation_uv"</span>,</span>
+<span>    <span class="st">"masshunter_dad"</span>, <span class="st">"chromeleon_uv"</span>, <span class="st">"mzml"</span>, <span class="st">"mzxml"</span>, <span class="st">"mdf"</span>, <span class="st">"shimadzu_ascii"</span>,</span>
+<span>    <span class="st">"shimadzu_dad"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_gcd"</span>, <span class="st">"shimadzu_qgd"</span>, <span class="st">"shimadzu_lcd"</span>,</span>
+<span>    <span class="st">"thermoraw"</span>, <span class="st">"varian_sms"</span>, <span class="st">"waters_arw"</span>, <span class="st">"waters_raw"</span>, <span class="st">"msd"</span>, <span class="st">"csd"</span>, <span class="st">"wsd"</span>, <span class="st">"other"</span><span class="op">)</span>,</span>
 <span>  <span class="va">find_files</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  parser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"chromconverter"</span>, <span class="st">"aston"</span>, <span class="st">"entab"</span>, <span class="st">"thermoraw"</span>, <span class="st">"openchrom"</span>, <span class="st">"rainbow"</span><span class="op">)</span>,</span>
@@ -98,6 +98,7 @@ internal parser or bindings to an external library, such as
 <dd><p>Format of files to be imported/converted. Current options
 include: <code>agilent_d</code>, <code>agilent_dx</code>, <code>chemstation</code>,
 <code>chemstation_uv</code>, <code>chemstation_ch</code>, <code>chemstation_csv</code>,
+<code>chemstation_ms</code>,
 <code>masshunter</code>, <code>masshunter_dad</code>, <code>chromeleon_uv</code>,
 <code>shimadzu_ascii</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>,
 <code>thermoraw</code>, <code>waters_arw</code>, <code>waters_raw</code>, <code>mzml</code>,
