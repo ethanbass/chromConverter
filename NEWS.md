@@ -1,3 +1,7 @@
+## chromConverter 0.7.1
+
+* Fix automatic file detection for directories (e.g., Waters `.raw` and Agilent `.D`)
+
 ## chromConverter 0.7.0
 
 ### Major features

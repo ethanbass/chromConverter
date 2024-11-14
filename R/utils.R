@@ -258,7 +258,8 @@ format_to_extension <- function(format_in){
 #' @noRd
 find_files <- function(paths, pattern){
   files <- unlist(lapply(paths, function(path){
-    files <- list.files(path = path, pattern = pattern,
+    dirs <- ifelse(pattern %in% c("\\.raw$", "\\.d$"), TRUE, FALSE)
+    files <- list.files(path = path, pattern = pattern, include.dirs = dirs,
                         full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
     if (length(files)==0){
       if (!dir.exists(path)){
