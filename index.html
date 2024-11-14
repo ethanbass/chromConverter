@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -219,7 +219,7 @@
 </h6>
 <p><a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> is open source chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you’d still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below:</p>
 <ol style="list-style-type: decimal">
-<li>Download <a href="https://lablicate.com/platform/openchrom/download" class="external-link">OpenChrom</a> (<strong>version 1.4.x only</strong>) and place it into a directory of your choice.<br>
+<li>Download <a href="https://lablicate.com/platform/openchrom/download" class="external-link">OpenChrom</a> (<strong>version ≤ 1.4</strong>) and place it into a directory of your choice.<br>
 </li>
 <li>If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.</li>
 <li>Call <code>read_chroms</code> with <code>parser = "openchrom"</code>. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line. Alternatively, the command-line option can be activated from R by calling <code>configure_openchrom(cli = "true")</code> or following the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> to manually activate the CLI. This process can be reversed using the same function: e.g. <code>configure_openchrom(cli = "false"). To specify an OpenChrom executable in a non-standard location, call</code>configure_openchrom<code>with the</code>path<code>argument, e.g.</code>configure_openchrom(cli = “true”, path = “path_to_openchrom_executable”).</li>
