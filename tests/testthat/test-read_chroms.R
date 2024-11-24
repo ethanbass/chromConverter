@@ -11,8 +11,8 @@ test_that("chromConverter can read `Agilent Chemstation` .csv file", {
                tolerance = .0001, ignore_attr = TRUE)
   expect_equal(head(rownames(x), n = 3), c("0.002", "0.0086666666667",
                                            "0.0153333333333"))
-  x1 <- read_chroms(path_csv, format_in="chemstation_csv",
-                    format_out="data.table", progress_bar = FALSE)[[1]]
+  x1 <- read_chroms(path_csv, format_in = "chemstation_csv",
+                    format_out = "data.table", progress_bar = FALSE)[[1]]
   expect_s3_class(x1, "data.table")
 
   x2 <- read_chroms(path_csv, format_in="chemstation_csv",

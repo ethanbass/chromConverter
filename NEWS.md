@@ -1,6 +1,9 @@
 ## chromConverter 0.7.1
 
-* Fix automatic file detection for directories (e.g., Waters `.raw` and Agilent `.D`)
+* Fixed automatic file detection for directories (e.g., Waters `.raw` and Agilent `.D`)
+* Fixed bug preventing extraction of `Waters` chromatograms with lowercase filenames.
+* Added support for extracting metadata from 'Waters' `.raw` header files.
+* Added support for extraction of detector units from 'Waters' chromatograms.
 
 ## chromConverter 0.7.0
 
