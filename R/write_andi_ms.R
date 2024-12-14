@@ -4,7 +4,11 @@
 #' @author Ethan Bass
 #' @noRd
 
-write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE){
+write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
+                          ms_params = list(ionization_mode = "Electron Impact",
+                                        ionization_polarity = "Positive Polarity",
+                                        detector_type = "Electron Multiplier")
+                          ){
   if (!inherits(x, "list")){
     x1 <- data.table::as.data.table(x)
     x1 <- list(MS1 = x1, TIC = x1[, list(intensity = sum(intensity)), by = rt])
@@ -83,8 +87,9 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE){
                   "time_range_min", "time_range_max")
   # char_vars <- c("source_data_file_reference", instrument_vars)
 
-  range_vars <- lapply(range_vars, function(x) ncdf4::ncvar_def(x, "", dim = scan_number,
-                                                                prec = "double"))
+  range_vars <- lapply(range_vars, function(x){
+    ncdf4::ncvar_def(x, "", dim = scan_number, prec = "double")
+  })
   instrument_vars <- lapply(instrument_vars, function(x){
     ncdf4::ncvar_def(x, units = "", dim = list(string32, instrument_number),
                      prec = "char")
@@ -98,11 +103,13 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE){
   nc <- ncdf4::nc_open(file_out, write = TRUE)
 
   # write data to file
-  ncdf4::ncvar_put(nc = nc, varid = "scan_acquisition_time", vals = x$TIC[["rt"]])
+  ncdf4::ncvar_put(nc = nc, varid = "scan_acquisition_time",
+                   vals = x$TIC[["rt"]])
   ncdf4::ncvar_put(nc = nc, varid = "time_values", vals = dat[["rt"]])
   ncdf4::ncatt_put(nc = nc, varid="time_values", attname = "units",
                    attval = "Seconds")
-  ncdf4::ncvar_put(nc = nc, varid = "intensity_values", vals = dat[["intensity"]])
+  ncdf4::ncvar_put(nc = nc, varid = "intensity_values",
+                   vals = dat[["intensity"]])
   ncdf4::ncatt_put(nc = nc, varid = "intensity_values", attname = "units",
                    attval = "Arbitrary Intensity Units")
 
@@ -128,26 +135,22 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE){
   lapply(instrument_vars, function(v) ncdf4::ncvar_put(nc = nc, varid = v$name,
                                                        vals = ""))
   # write metadata as global attributes
-  meta <- format_metadata_for_andi_ms(x$MS1, intensity_format = intensity_format)
+  meta <- format_metadata_for_andi_ms(x$MS1, intensity_format = intensity_format,
+                                      ms_params = ms_params)
   nc_add_global_attributes(nc = nc, meta = meta, sample_name = sample_name)
 
   # finish writing file
   ncdf4::nc_close(nc)
 }
 
-simple_cap <- function(x) {
-  s <- strsplit(x, " ")[[1]]
-  paste(toupper(substring(s, 1, 1)), substring(s, 2),
-        sep = "", collapse = " ")
-}
-
 #' Format metadata for ANDI MS
 #' @author Ethan Bass
 #' @noRd
-format_metadata_for_andi_ms <- function(x, intensity_format){
+format_metadata_for_andi_ms <- function(x, intensity_format, ms_params){
   datetime <- format(attr(x, "run_datetime"), "%Y%m%d%H%M%S%z")[1]
   rt_units <- attr(x, "time_unit")
-  rt_units <- ifelse(!is.null(rt_units) && !is.na(rt_units), tolower(rt_units), NA)
+  rt_units <- ifelse(!is.null(rt_units) && !is.na(rt_units),
+                     tolower(rt_units), NA)
   rt_units <- switch(tolower(rt_units),
                      "sec" = "Seconds", "seconds" = "Seconds",
                      "min" = "Minutes", "minutes" = "Minutes",
@@ -155,8 +158,9 @@ format_metadata_for_andi_ms <- function(x, intensity_format){
   rt_units <- ifelse(!is.null(rt_units), rt_units, "")
   meta <- list(dataset_completeness = "C1",
                ms_template_revision = "1.0.1",
-               netcdf_revision = paste("netCDF", stringr::str_extract(ncdf4::nc_version(),
-                                                                      "(?<=library version\\s)\\d+\\.\\d+\\.\\d+")),
+               netcdf_revision = paste("netCDF",
+                                       stringr::str_extract(ncdf4::nc_version(),
+                                        "(?<=library version\\s)\\d+\\.\\d+\\.\\d+")),
                netcdf_file_date_time_stamp = format(Sys.time(),"%Y%m%d%H%M%S%z"),
                administrative_comments = paste("Collected on", attr(x, "instrument")),
                languages = "English only",
@@ -176,16 +180,16 @@ format_metadata_for_andi_ms <- function(x, intensity_format){
                # test_source_temperature,
                # test_filament_current,
                # test_emission_current = attr(x, "ms_params")$emission_current,
-               test_ionization_mode = "Electron Impact",
-               test_ionization_polarity = "Positive Polarity",
-               test_detector_type = "Electron Multiplier",
+               test_ionization_mode = ms_params$ionization_mode,
+               test_ionization_polarity = ms_params$ionization_polarity,
+               test_detector_type = ms_params$detector_type,
                # test_resolution_type,
                # test_scan_function,
                # test_scan_direction,
                # test_scan_law,
                # test_source_temperature,
                # injection_date_time_stamp = datetime,
-               raw_data_nscans = get_metadata_field2(x, "no_scans",class = "int",
+               raw_data_nscans = get_metadata_field2(x, "no_scans", class = "int",
                                                      null_val = ""),
                raw_data_starting_scan_no = as.integer(1),
                raw_data_mass_factor = 1,
@@ -204,7 +208,8 @@ format_metadata_for_andi_ms <- function(x, intensity_format){
                # experiment_title = "",
                sample_amount = get_metadata_field2(x, "sample_amount", class = "float",
                                                    null_val = ""),
-               sample_injection_volume = get_metadata_field2(x, "sample_injection_volume", class = "float",
+               sample_injection_volume = get_metadata_field2(x, "sample_injection_volume",
+                                                             class = "float",
                                                              null_val = ""),
                sample_type = get_metadata_field2(x, "sample_type",
                                                  null_val = ""),
@@ -213,4 +218,13 @@ format_metadata_for_andi_ms <- function(x, intensity_format){
                raw_data_intensity_format = simple_cap(intensity_format)
   )
   meta
+}
+
+
+#' Utility function to capitalize first letter of string
+#' @noRd
+simple_cap <- function(x) {
+  s <- strsplit(x, " ")[[1]]
+  paste(toupper(substring(s, 1, 1)), substring(s, 2),
+        sep = "", collapse = " ")
 }
