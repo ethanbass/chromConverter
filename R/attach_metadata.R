@@ -288,6 +288,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                                    fs::path_ext_remove(basename(source_file)),
                                    meta[["SampleInfo.smpl_name"]]),
               sample_id = get_metadata_field(meta, "SampleInfo.smpl_id"),
+              vial = get_metadata_field(meta, 'SampleInfo.smpl_vial'),
               sample_type = get_metadata_field(meta, "SampleInfo.smpl_type"),
               sample_dilution = get_metadata_field(meta, "SampleInfo.dil_factor"),
               sample_injection_volume = get_metadata_field(meta, "SampleInfo.inj_vol"),
@@ -309,52 +310,73 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
              parser = "chromconverter",
              format_out = format_out)
     }, "chromeleon" = {
-    datetime.idx <- unlist(sapply(c("Date$", "Time$"), function(str){
-        grep(str, names(meta))
-      })
-    )
-    datetime <- unlist(meta[datetime.idx])
-    if (length(datetime > 1)){
-      datetime <- paste(datetime, collapse = " ")
-    }
-    datetime <- as.POSIXct(datetime, format = c("%m/%d/%Y %H:%M:%S",
-                                                "%d.%m.%Y %H:%M:%S",
-                                                "%m/%d/%Y %H:%M:%S %p %z"),
-                           tz = "UTC")
-    datetime <- datetime[!is.na(datetime)]
+      if (is.null(meta$`Inject Time`)){
+        datetime.idx <- unlist(sapply(c("Date$", "Time$"), function(str){
+          grep(str, names(meta))
+        })
+        )
+        datetime <- unlist(meta[datetime.idx])
+        if (length(datetime > 1)){
+          datetime <- paste(datetime, collapse = " ")
+        }
+        datetime <- as.POSIXct(datetime, format = c("%m/%d/%Y %H:%M:%S",
+                                                    "%d.%m.%Y %H:%M:%S",
+                                                    "%m/%d/%Y %H:%M:%S %p %z"),
+                               tz = "UTC")
+        datetime <- datetime[!is.na(datetime)]
+      } else {
+        datetime <- sub("(\\+\\d{2}):(\\d{2})$", "\\1\\2", meta$`Inject Time`)
+        datetime <- as.POSIXct(strptime(datetime, format = "%d/%m/%Y %H:%M:%S %z"),
+                               tz="UTC")
+
+      }
     time_interval_unit <- tryCatch({
       get_time_unit(grep("Average Step", names(meta), value = TRUE)[1],
                     format_in = "chromeleon")}, error = function(err) NA)
     time_unit <- tryCatch({
       get_time_unit(grep("Time Min.", names(meta), value = TRUE)[1],
                     format_in = "chromeleon")}, error = function(err) NA)
+    if (is.null(meta$Name) && !is.null(meta$Injection)){
+      meta$Name <- meta$Injection
+    }
+    if (is.null(meta$`Signal Unit`)){
+      unit <- grep("Signal Min", names(meta), value = TRUE)
+      unit <- sub(".*(?:\\((.*)\\)).*|.*", "\\1", unit)
+      meta$`Signal Unit` <- unit
+    }
+
     structure(x, instrument = NA,
               detector = meta$Detector,
               software = meta$`Generating Data System`,
               method = meta$`Instrument Method`,
-              batch = NA,
+              batch = meta$Sequence,
               operator = meta$`Operator`,
               run_datetime = datetime,
-              # run_date = meta$`Injection Date`,
-              # run_time = meta$`Injection Time`,
-              sample_name = ifelse(is.null(meta$Injection),
+              sample_name = ifelse(is.null(meta$Name),
                                    fs::path_ext_remove(basename(source_file)),
-                                   meta$Injection),
+                                   meta$Name),
               sample_id = NA,
-              sample_injection_volume = meta$`Injection Volume`,
-              sample_amount =  meta$`Injection Volume`,
-              time_range = c(meta$`Time Min. (min)`, meta$`Time Max. (min)`),
-              # start_time = meta$`Time Min. (min)`,
-              # end_time = meta$`Time Max. (min)`,
-              time_interval = meta[[grep("Average Step", names(meta))]],
+              vial = meta$Position,
+              sample_injection_volume = meta[[which(grepl("Volume",names(meta)))]],
+              sample_amount = NA,
+              sample_dilution = meta$`Dilution Factor`,
+              sample_type = get_metadata_field(meta, "Type"),
+              time_range = c(get_metadata_field(meta, "Time Min. (min)"),
+                             get_metadata_field(meta, "Time Max. (min)")),
+              time_interval = tryCatch({
+                meta[[grep("Average Step", names(meta))]]
+                }, error = function(err) NA),
               time_interval_unit = time_interval_unit,
               time_unit = time_unit,
-              # uniform_sampling = meta$`Min. Step (s)` == meta$`Max. Step (s)`,
-              detector_range = NA,
+              detector_range = ifelse(meta$`Spectral Field` == "3DFIELD",
+                                      c(get_metadata_field(meta, "Scan Min. (nm)"),
+                                        get_metadata_field(meta, "Scan Max. (nm)")),
+                                      NA),
               detector_y_unit = meta$`Signal Unit`,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+              source_sha1 = digest::digest(source_file, algo = "sha1",
+                                           file = TRUE),
               format_out = format_out,
               data_format = data_format,
               parser = "chromconverter"
@@ -696,18 +718,6 @@ read_masshunter_metadata <- function(file){
     }
   }
   meta_sample
-}
-
-#' @name read_chromeleon_metadata
-#' @return A list containing extracted metadata.
-#' @author Ethan Bass
-#' @noRd
-read_chromeleon_metadata <- function(x){
-  meta_fields <- grep("Information:", x)
-  meta <- do.call(rbind, strsplit(x[(meta_fields[1] + 1):(meta_fields[length(meta_fields)] - 1)], "\t"))
-  rownames(meta) <- meta[, 1]
-  meta <- as.list(meta[, -1])
-  meta
 }
 
 #' @name read_waters_metadata

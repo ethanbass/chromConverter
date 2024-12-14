@@ -17,17 +17,17 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 
 ### Formats
 
-##### ChromConverter
+##### ChromConverter (internal parsers)
 - 'Agilent ChemStation' & 'OpenLab' `.uv` files (versions 131, 31)
 - 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 30, 130, 8, 81, 179, 181)
 - Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
-- ÅNDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
+- ANDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
 - 'Allotrope Simple Model' (ASM) 2D chromatograms.
-- mzML (`.mzml`) & mzXML (.`mzxml`) (via RaMS).
+- mzML (`.mzml`) & mzXML (.`mzxml`) (via *RaMS*).
 - 'Shimadzu LabSolutions' ascii (`.txt`)
 - 'Shimadzu GCsolution' data files (`.gcd`)
 - 'Shimadzu GCMSsolution' data files (`.qgd`) 
-- 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA and chromatogram streams)
+- 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA, chromatogram, and peak table streams)
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Varian Workstation' (`.SMS`)
 - 'Waters Empower' ascii (`.arw`)
@@ -149,7 +149,7 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 
 ### Further analysis
 
-For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release). There is also a vignette providing an introduction to some basic syntax for [plotting mass spectrometry data](https://ethanbass.github.io/chromConverter/articles/plot_ms.html) returned by chromConverter in various R dialects.
+For downstream analyses of chromatographic data, you can also check out my package [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, you can check out my new package [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release). There is also a vignette providing an introduction to some basic syntax for [plotting mass spectrometry data](https://ethanbass.github.io/chromConverter/articles/plot_ms.html) returned by chromConverter in various R dialects (e.g., base R, tidyverse, and data.table).
 
 ### Contributing
 
@@ -157,7 +157,7 @@ Contributions of source code, ideas, or documentation are always welcome. Please
 
 - You've found an actual bug.  
 - You're getting a cryptic error message that you don't understand.  
-- You have a file format you'd like to read that isn't currently supported by chromConverter.  (Please make sure to attach example files or a link to the files.)  
+- You have a file format you'd like to read that isn't currently supported by chromConverter.  (Please make sure to attach example files or a link to the files).  
 - There's another new feature you'd like to see implemented.  
 
 **Note: Before filing a bug report, please make sure to install the latest development version of chromConverter from GitHub**, in case your bug has already been patched. After installing the latest version, you may also need to refresh your R session to remove the older version from the cache.

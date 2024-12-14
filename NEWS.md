@@ -1,3 +1,10 @@
+## chromConverter 0.7.2
+
+* Added preliminary support for extraction of peak tables from 'Shimadzu' `.lcd` files.
+* Added support for inference of retention times from 'Shimadzu' `.lcd` files lacking `Data Item` streams.
+* Added support for raw format File Properties stream in 'Shimadzu' `.lcd` files.
+* Added support for parsing 3D data field from 'Chromeleon' ascii files.
+
 ## chromConverter 0.7.1
 
 * Fixed automatic file detection for directories (e.g., Waters `.raw` and Agilent `.D`)
@@ -10,7 +17,7 @@
 ### Major features
 
 * Added preliminary support for 'Varian Worktation' (`.sms`) format through `read_varian_sms` function.
-* Added preliminary support for 'Shimadzu QGD' GCMS files through the `read_shimadzu_qgd` function.
+* Added preliminary support for 'Shimadzu QGD' GC-MS files through the `read_shimadzu_qgd` function.
 * Added preliminary support for 'Allotrope Simple Model' (ASM) 2D chromatography date files.
 * Added support for reading multiple files from 'Agilent' `.D` directories through `read_agilent_d` function.
 * Added internal parser for 'Agilent ChemStation' MS files through `read_agilent_ms`.

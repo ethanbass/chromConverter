@@ -1,3 +1,4 @@
+
 #' Chromeleon ASCII reader
 #'
 #' Reads 'Thermo Fisher Chromeleon™ CDS' files into R.
@@ -15,7 +16,8 @@
 #' @author Ethan Bass
 #' @export
 
-read_chromeleon <- function(path, format_out = c("matrix", "data.frame", "data.table"),
+read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
+                                                 "data.table"),
                             data_format = c("wide", "long"),
                             read_metadata = TRUE,
                             metadata_format = c("chromconverter", "raw")){
@@ -27,10 +29,11 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame", "data.t
   xx <- readLines(path)
   xx <- remove_unicode_chars(xx)
   start <- tail(grep("Data:", xx), 1)
-  x <- read.csv(path, skip = start, sep = "\t", row.names = NULL)
-  x <- x[,-2, drop = FALSE]
-  x <- x[,colSums(is.na(x)) < nrow(x)]
-  if (any(grepl(",",as.data.frame(x)[-1, 2]))){
+  x <- read.csv(path, skip = start, sep = "\t", row.names = NULL,
+                check.names = FALSE)
+  x <- x[, -2, drop = FALSE]
+  x <- x[, colSums(is.na(x)) < nrow(x)]
+  if (any(grepl(",", as.data.frame(x)[-1, 2]))){
     decimal_separator <- ","
     x <- apply(x, 2, function(x) gsub("\\.", "", x))
     x <- apply(x, 2, function(x) gsub(",", ".", x))
@@ -38,10 +41,17 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame", "data.t
     decimal_separator <- "."
   }
   x <- apply(x, 2, as.numeric)
-  colnames(x) <- c("rt", "intensity")
+  if (ncol(x) == 2){
+    colnames(x) <- c("rt", "intensity")
+  }
   if (data_format == "wide"){
-    rownames(x) <- x[,1]
-    x <- x[, 2, drop = FALSE]
+    rownames(x) <- x[, 1]
+    x <- x[, -1, drop = FALSE]
+  }
+  if (data_format == "long" && ncol(x) > 2){
+    rownames(x) <- x[, 1]
+    x <- x[, -1, drop = FALSE]
+    x <- reshape_chrom(x, data_format = "long")
   }
   x <- convert_chrom_format(x, format_out = format_out)
   if (read_metadata){
@@ -56,4 +66,18 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame", "data.t
     }
   }
   x
+}
+
+#' @name read_chromeleon_metadata
+#' @return A list containing extracted metadata.
+#' @author Ethan Bass
+#' @noRd
+read_chromeleon_metadata <- function(x){
+  start <- tail(grep("Data:", x), 1)
+  meta <- strsplit(x[seq_len(start - 1)], split = '\t')
+  meta <- meta[which(sapply(meta,length) == 2)]
+  meta <- do.call(rbind, meta)
+  rownames(meta) <- meta[, 1]
+  meta <- as.list(meta[, -1])
+  meta
 }
