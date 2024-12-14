@@ -48,22 +48,16 @@ Defaults to \code{FALSE}.}
 Invisibly returns the path to the written mzML file.
 }
 \description{
-This function constructs mzML files using a streaming XML-writing approach,
-generating and writing XML content directly to a file connection. This method
-is memory-efficient and fast, making it well-suited for large mzML files.
-However, it may be less flexible than DOM-based methods for handling complex
-XML structures or large-scale modifications after writing has begun.
+This function constructs mzML files by writing XML strings directly to a file
+connection. While this approach is fast, it may be less flexible than
+DOM-based methods.
 }
 \details{
-This function constructs mzML files by writing XML strings directly to a file
-connection. While this approach is memory-efficient and fast, it may be less
-flexible for handling complex XML structures.
-
 The function supports writing various types of spectral data including MS1,
-MS2, TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
-(Diode Array Detector) data.
+TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
+(Diode Array Detector) data. Support for MS2 may be added in a future release.
 
-If indexed = TRUE, the function will create an indexed mzML file, which
+If \code{indexed = TRUE}, the function will generate an indexed mzML file, which
 allows faster random access to spectra.
 }
 \author{

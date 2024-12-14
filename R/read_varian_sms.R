@@ -430,4 +430,3 @@ read_varian_offsets <- function(f){
   data.frame(start = as.numeric(mat[,1]), end = as.numeric(mat[,2]),
              number = as.numeric(mat[,3]), name = mat[,4])
 }
-
