@@ -33,8 +33,9 @@
 #'
 #' @param path Path to LCD file.
 #' @param what What stream to get: current options are \code{pda}, chromatograms
-#' \code{chroms}, or \code{tic}. If a stream is not specified,
-#' the function will default to \code{pda} if the PDA stream is present.
+#' (\code{chroms}), \code{tic}, or peak lists (\code{peak_table}). If a stream
+#' is not specified, the function will default to \code{pda} if the PDA stream
+#' is present.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
@@ -79,7 +80,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
     warning("The `chromatogram` argument to `what` is deprecated. Please use `chroms` instead.")
     what[which(what == "chromatogram")] <- "chroms"
   }
-  what <- match.arg(tolower(what), c("pda", "chroms", "tic"),
+  what <- match.arg(tolower(what), c("pda", "chroms", "tic", "peak_table"),
                     several.ok = TRUE)
 
   olefile_installed <- reticulate::py_module_available("olefile")
@@ -106,9 +107,12 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                           read_metadata = read_metadata,
                           metadata_format = metadata_format)
   }
+  if (any(what == "peak_table")){
+    peak_table <- read_sz_tables(path, format_out = format_out)
+  }
   dat <- mget(what, ifnotfound = NA)
   null <- sapply(dat, is.null)
-  if (any(null))   dat <- dat[-which(sapply(dat, is.null))]
+  if (any(null)) dat <- dat[-which(sapply(dat, is.null))]
   if (collapse) dat <- collapse_list(dat)
   dat
 }
@@ -266,13 +270,18 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
     dat <- read_sz_chrom(path, stream = stream)
 
     idx <- as.numeric(gsub("\\D", "", stream[2]))
-    DI <- read_sz_2DDI(path, idx = idx)
-
-    times <- seq(DI$DLT, DI$AT, length.out = nrow(dat))
-    rownames(dat) <- times
-
-    if (scale){
-      dat <- dat*DI$detector.vf
+    data_item_exists <- check_stream(path,c('LSS Data Processing', '2D Data Item'))
+    if (data_item_exists){
+      DI <- read_sz_2DDI(path, idx = idx)
+      times <- seq(DI$DLT, DI$AT, length.out = nrow(dat))
+      rownames(dat) <- times
+      if (scale){
+        dat <- dat*DI$detector.vf
+      }
+    } else{
+      DI <- data.frame(DETN=sapply(existing_streams,"[",2),
+                       DSCN=NA, ADN=NA, detector.unit=NA)
+      times <- rownames(dat)
     }
     if (data_format == "long"){
       dat <- data.frame(rt = times, intensity = dat$int, detector = DI$DETN,
@@ -288,12 +297,16 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
     }
     dat
   })
-
-  names(dat) <- sapply(dat, function(x){
-    det <- gsub("Detector ", "", attr(x, "detector"))
-    wv <- attr(x, "wavelength")
-    ifelse(wv == "", det, paste(det, wv, sep = ", "))
-  })
+  if (!is.null(attr(dat[[1]],"detector")) |
+      !is.null(attr(dat[[1]], "wavelength"))){
+    names(dat) <- sapply(dat, function(x){
+      det <- gsub("Detector ", "", attr(x, "detector"))
+      wv <- attr(x, "wavelength")
+      ifelse(wv == "", det, paste(det, wv, sep = ", "))
+    })
+  } else{
+    names(dat) <-  sapply(existing_streams, "[", 2)
+  }
 
   if (data_format == "long"){
     dat <- do.call(rbind, c(dat, make.row.names = FALSE))
@@ -376,7 +389,13 @@ read_sz_chrom <- function(path, stream){
   path_raw <- export_stream(path, stream = stream)
   f <- file(path_raw, "rb")
   on.exit(close(f))
-  data.frame(intensity = decode_sz_block(f))
+  dat <- data.frame(intensity = decode_sz_block(f))
+  seek(f,4)
+  seek(f,4)
+  interval <- readBin(f, "integer", size = 4,endian = "little")
+  times <- seq(from = 0, by = 500, length.out=nrow(dat))/60000
+  rownames(dat) <- times
+  dat
 }
 
 #' Read 'Shimadzu' "Method" stream
@@ -637,7 +656,45 @@ sz_decode_sto <- Vectorize(
 #' @noRd
 read_sz_file_properties <- function(path){
   path_prop <- export_stream(path, "File Property")
-  raw_xml <- readLines(path_prop, skipNul = TRUE)
+  header <- readBin(path_prop, "raw", n = 9)
+  if (readBin(header[5:9],"character") == "<?xml"){
+    meta <- read_sz_file_properties_xml(path_prop)
+  } else{
+    meta <- read_sz_file_properties_raw(path_prop)
+  }
+  meta
+}
+
+#' Read Shimadzu File Properties RAW
+#' @noRd
+read_sz_file_properties_raw <- function(path){
+  f <- file(path, "rb")
+  on.exit(close(f))
+  offsets <- c(SampleInfo.operator_name = 20,
+               DataFileProperty.szVersion = 150,
+               SampleInfo.smpl_vial = 196,
+               SampleInfo.smpl_type = 210,
+               SampleInfo.smpl_name = 242,
+               SampleInfo.smpl_id = 306,
+               SampleInfoFile.methodfile = 908,
+               SampleInfoFile.batchfile = 1677)
+
+  meta <- as.list(sapply(offsets, function(pos){
+    seek(f, pos)
+    readBin(f, "character")
+  }))
+
+  seek(f, 548)
+  acquired1 <- readBin(f, "integer", size = 4, endian = "little")
+  acquired2 <- readBin(f, "integer", size = 4, endian = "little")
+  meta$time_acq <- sztime_to_unixtime(acquired1, acquired2)
+  meta
+}
+
+#' Read Shimadzu File Properties XML
+#' @noRd
+read_sz_file_properties_xml <- function(path){
+  raw_xml <- readLines(path, skipNul = TRUE, warn = FALSE)
   raw_xml <- sub("^\037\004|^o\004", "", raw_xml)
   xml_headers <- grep("xml version", raw_xml)
 
@@ -775,4 +832,63 @@ decode_sz_val <- function(hex) {
   } else {
     return(value)
   }
+}
+
+#' Read Shimadzu Peak Tables
+#' @author Ethan Bass
+#' @noRd
+read_sz_tables <- function(path, format_out = "data.frame"){
+  existing_streams <- check_streams(path, what = "peaks")
+  if (length(existing_streams) == 0){
+    stop("Peak table streams could not be detected.")
+  }
+  pktab <- lapply(existing_streams, function(stream){
+    read_sz_table(path, stream)
+  })
+  names(pktab) <- sapply(existing_streams, `[[`, 2)
+  pktab
+}
+
+#' Read Shimadzu Peak Table
+#' @noRd
+read_sz_table <- function(path, stream, format_out = "data.frame"){
+  path_raw <- export_stream(path, stream)
+  f <- file(path_raw, "rb")
+  on.exit(close(f))
+  rows <- readBin(f, "integer", size = 4)
+  readBin(f, "integer", size = 8) #skip
+  tab <- do.call(rbind, lapply(seq_len(rows), function(i){
+    read_sz_table_block(f)
+  }))
+  if (format_out == "data.frame"){
+    tab <- as.data.frame(tab)
+  }
+  tab
+}
+
+#' Read Shimadzu Table Block
+#' @author Ethan Bass
+#' @noRd
+read_sz_table_block <- function(f){
+  R.time <- readBin(f, "integer", size = 4, endian="little")/60000
+  Area <- readBin(f, "numeric", size=8, endian="little")
+  readBin(f, "numeric", size=8, endian="little")
+  Height <- readBin(f, "numeric", size=8, endian="little")
+  readBin(f, "numeric", size=8, endian="little")
+  unknown_ints <- readBin(f, "integer", size=4, n=4, endian="little")
+  unknown_ints
+  I.time <- readBin(f, "integer", size=4, endian="little")/60000
+  F.time <- readBin(f, "integer", size=4, endian="little")/60000
+  AH <- readBin(f, "integer", size=4, endian="little")/1000
+  seek(f,148,"current")
+  Plate.no <- readBin(f, "numeric", size=8, endian="little")
+  Plate.ht <- readBin(f, "numeric", size=8, endian="little")
+  Tailing <- readBin(f, "numeric", size=8, endian="little")
+  Resolution <- readBin(f, "numeric", size=8, endian="little")
+  Sep.factor <- readBin(f, "numeric", size=8, endian="little")
+  Conc.percent <- readBin(f, "numeric", size=8, endian="little")
+  Conc.norm <- readBin(f, "numeric", size=8, endian="little")
+  unknown_ints <- readBin(f, "integer", size=4, n=3, endian="little")
+  data.frame(R.time, Area,Height,I.time,F.time,AH,Plate.no,Plate.ht,Tailing,
+             Resolution,Sep.factor)
 }

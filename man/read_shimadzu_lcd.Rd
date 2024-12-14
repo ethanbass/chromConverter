@@ -19,8 +19,9 @@ read_shimadzu_lcd(
 \item{path}{Path to LCD file.}
 
 \item{what}{What stream to get: current options are \code{pda}, chromatograms
-\code{chroms}, or \code{tic}. If a stream is not specified,
-the function will default to \code{pda} if the PDA stream is present.}
+(\code{chroms}), \code{tic}, or peak lists (\code{peak_table}). If a stream
+is not specified, the function will default to \code{pda} if the PDA stream
+is present.}
 
 \item{format_out}{Matrix or data.frame.}
 
