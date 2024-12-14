@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,19 +77,19 @@
 <h3 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
 </h3>
 <div class="section level5">
-<h5 id="chromconverter">ChromConverter<a class="anchor" aria-label="anchor" href="#chromconverter"></a>
+<h5 id="chromconverter-internal-parsers">ChromConverter (internal parsers)<a class="anchor" aria-label="anchor" href="#chromconverter-internal-parsers"></a>
 </h5>
 <ul>
 <li>‘Agilent ChemStation’ &amp; ‘OpenLab’ <code>.uv</code> files (versions 131, 31)</li>
 <li>‘Agilent ChemStation’ &amp; ‘OpenLab’ <code>.ch</code> files (versions 30, 130, 8, 81, 179, 181)</li>
 <li>Allotrope® Simple Model (ASM) 2D chromatograms (<code>.asm</code>)</li>
-<li>ÅNDI (Analytical Data Interchange) Chromatography &amp; MS formats (<code>.cdf</code>)</li>
+<li>ANDI (Analytical Data Interchange) Chromatography &amp; MS formats (<code>.cdf</code>)</li>
 <li>‘Allotrope Simple Model’ (ASM) 2D chromatograms.</li>
-<li>mzML (<code>.mzml</code>) &amp; mzXML (.<code>mzxml</code>) (via RaMS).</li>
+<li>mzML (<code>.mzml</code>) &amp; mzXML (.<code>mzxml</code>) (via <em>RaMS</em>).</li>
 <li>‘Shimadzu LabSolutions’ ascii (<code>.txt</code>)</li>
 <li>‘Shimadzu GCsolution’ data files (<code>.gcd</code>)</li>
 <li>‘Shimadzu GCMSsolution’ data files (<code>.qgd</code>)</li>
-<li>‘Shimadzu LabSolutions’<code>.lcd</code> (<em>provisional support</em> for PDA and chromatogram streams)</li>
+<li>‘Shimadzu LabSolutions’<code>.lcd</code> (<em>provisional support</em> for PDA, chromatogram, and peak table streams)</li>
 <li>‘Thermo Scientific Chromeleon’ ascii (<code>.txt</code>)</li>
 <li>‘Varian Workstation’ (<code>.SMS</code>)</li>
 <li>‘Waters Empower’ ascii (<code>.arw</code>)</li>
@@ -231,7 +231,7 @@
 <div class="section level3">
 <h3 id="further-analysis">Further analysis<a class="anchor" aria-label="anchor" href="#further-analysis"></a>
 </h3>
-<p>For downstream analyses of chromatographic data, you can also check out my package <a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a>. For interactive visualization of chromatograms, you can check out my new package <a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release). There is also a vignette providing an introduction to some basic syntax for <a href="https://ethanbass.github.io/chromConverter/articles/plot_ms.html">plotting mass spectrometry data</a> returned by chromConverter in various R dialects.</p>
+<p>For downstream analyses of chromatographic data, you can also check out my package <a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a>. For interactive visualization of chromatograms, you can check out my new package <a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release). There is also a vignette providing an introduction to some basic syntax for <a href="https://ethanbass.github.io/chromConverter/articles/plot_ms.html">plotting mass spectrometry data</a> returned by chromConverter in various R dialects (e.g., base R, tidyverse, and data.table).</p>
 </div>
 <div class="section level3">
 <h3 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
@@ -242,7 +242,7 @@
 </li>
 <li>You’re getting a cryptic error message that you don’t understand.<br>
 </li>
-<li>You have a file format you’d like to read that isn’t currently supported by chromConverter. (Please make sure to attach example files or a link to the files.)<br>
+<li>You have a file format you’d like to read that isn’t currently supported by chromConverter. (Please make sure to attach example files or a link to the files).<br>
 </li>
 <li>There’s another new feature you’d like to see implemented.</li>
 </ul>

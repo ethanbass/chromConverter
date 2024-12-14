@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Shimadzu LCD parser</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.7.1/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
       <div class="d-none name"><code>read_shimadzu_lcd.Rd</code></div>
     </div>
 
@@ -64,8 +64,9 @@
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>What stream to get: current options are <code>pda</code>, chromatograms
-<code>chroms</code>, or <code>tic</code>. If a stream is not specified,
-the function will default to <code>pda</code> if the PDA stream is present.</p></dd>
+(<code>chroms</code>), <code>tic</code>, or peak lists (<code>peak_table</code>). If a stream
+is not specified, the function will default to <code>pda</code> if the PDA stream
+is present.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
