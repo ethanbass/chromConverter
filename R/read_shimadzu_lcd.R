@@ -390,10 +390,10 @@ read_sz_chrom <- function(path, stream){
   f <- file(path_raw, "rb")
   on.exit(close(f))
   dat <- data.frame(intensity = decode_sz_block(f))
-  seek(f,4)
-  seek(f,4)
-  interval <- readBin(f, "integer", size = 4,endian = "little")
-  times <- seq(from = 0, by = 500, length.out=nrow(dat))/60000
+  seek(f, 4)
+  seek(f, 4)
+  interval <- readBin(f, "integer", size = 4, endian = "little")
+  times <- seq(from = 0, by = interval, length.out = nrow(dat))/60000
   rownames(dat) <- times
   dat
 }
