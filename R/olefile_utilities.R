@@ -1,4 +1,3 @@
-
 #' Export OLE stream
 #' This function is called internally by \code{read_shimadzu_lcd}.
 #' Use olefile to export te specified stream.
@@ -37,15 +36,17 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
 
 
 #' Check OLE stream size
+#' @param min_size Minimum stream size in bytes. Defaults to 552.
 #' @noRd
-check_streams <- function(path, what = c("pda", "chroms", "tic", ""),
+check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
                           stream = NULL,
-                          boolean = FALSE){
-  what <- match.arg(what, c("pda", "chroms", "tic", ""))
+                          boolean = FALSE,
+                          min_size = 552){
+  what <- match.arg(what, c("pda", "chroms", "tic", "peaks", ""))
   olefile <- reticulate::import("olefile")
   ole <- olefile$OleFileIO(path)
   if (what == "pda"){
-    pda_exists <- ole$get_size("PDA 3D Raw Data/3D Raw Data") > 0
+    pda_exists <- ole$get_size("PDA 3D Raw Data/3D Raw Data") > min_size
     if (boolean){
       return(pda_exists)
     } else if (!pda_exists){
@@ -54,16 +55,38 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", ""),
   } else {
     streams <- ole$listdir()
     what <- switch(what, "chroms" = "Chromatogram Ch",
-                   "tic" = "Centroid SumTIC")
+                   "tic" = "Centroid SumTIC",
+                   "peaks" = "Peak Table")
     selected_streams <- streams[grep(what, streams)]
     sizes <- sapply(selected_streams, function(x){
       ole$get_size(paste0(x, collapse = "/"))})
     if (boolean){
-      return(any(sizes > 0))
+      return(any(sizes > min_size))
     } else{
-      selected_streams[which(sizes > 0)]
+      selected_streams <- selected_streams[which(sizes > min_size)]
+      selected_streams[!duplicated(sapply(selected_streams, `[[`, 2))]
     }
   }
+}
+
+#' Check OLE stream by name
+#' @noRd
+check_stream <- function(path, stream = NULL,
+                          boolean = FALSE){
+  olefile <- reticulate::import("olefile")
+  ole <- olefile$OleFileIO(path)
+  python_stream <- paste0(stream, collapse="/")
+  pda_exists <- tryCatch(ole$get_size(python_stream), error=function(e) 0) > 0
+  pda_exists
+}
+
+
+#' List OLE streams
+#' @noRd
+ole_list_streams <- function(path){
+  olefile <- reticulate::import("olefile")
+  ole <- olefile$OleFileIO(path)
+  ole$listdir()
 }
 
 
