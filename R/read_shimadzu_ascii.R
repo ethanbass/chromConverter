@@ -306,8 +306,8 @@ read_shimadzu_peaktable <- function(path, x, idx, sep, format_in, format_out){
     t1 <- strsplit(x = x[[table_start + 3]], split = sep)[[1]][time_column]
     decimal_separator <- ifelse(grepl(",", t1), ",", ".")
 
-    peak_tab <- read.csv(path, skip = table_start-1, sep = sep, nrows = nrows,
-                         dec = decimal_separator)
+    peak_tab <- read.csv(path, skip = (table_start-1), sep = sep, nrows = nrows,
+                         dec = decimal_separator, check.names = FALSE)
     if (format_out == "chromatographr"){
       column_names <- switch(format_in, "MC" = c("Ret.Time", "Proc.From",
                                                  "Proc.To", "Area", "Height"),
