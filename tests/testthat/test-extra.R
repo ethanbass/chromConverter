@@ -592,6 +592,38 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
                round(attr(x2, "time_range"), 3))
 })
 
+test_that("Shimadzu Anthocyanin peak tables match", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_ascii <- system.file("shimadzuDAD_Anthocyanin.txt",
+                            package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_ascii))
+
+  path_lcd <- system.file("Anthocyanin.lcd",
+                          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lcd))
+
+  x <- read_peaklist(path_ascii, format_in = "shimadzu_dad",
+                     data_format = "original",
+                   progress_bar = FALSE)[[1]]
+
+  x1 <- read_shimadzu_lcd(path_lcd, what="peak_table")
+  x1 <- read_peaklist(path_lcd, format_in = "shimadzu_lcd", progress_bar=FALSE)[[1]]
+
+  expect_equal(x[[1]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[1]][,-1], tolerance=.001,
+            ignore_attr=TRUE)
+  expect_equal(x[[2]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[3]][,-1], tolerance=.001,
+               ignore_attr=TRUE)
+  expect_equal(x[[3]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[4]][,-1], tolerance=.001,
+               ignore_attr=TRUE)
+  expect_equal(x[[4]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[5]][,-1], tolerance=.001,
+               ignore_attr=TRUE)
+  expect_equal(x[[5]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[6]][,-1], tolerance=.001,
+               ignore_attr=TRUE)
+})
+
+
 test_that("read_chroms can read 2D chromatograms from 'Shimadzu' LCD files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
@@ -728,6 +760,36 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
 
   expect_equal(x2[x2$lambda == "", "intensity"], x[["B"]], ignore_attr = TRUE)
 })
+
+test_that("Shimadzu multichannel peak tables match", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_asc <- system.file("multichannel_chrom.txt",
+                          package = "chromConverterExtraTests")
+
+  skip_if_not(file.exists(path_asc))
+
+  path_lcd <- system.file("multichannel_chrom.lcd",
+                          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lcd))
+
+  x <- read_peaklist(path_asc, format_in = "shimadzu_dad",
+                     data_format = "original",
+                     progress_bar = FALSE)[[1]]
+
+  x1 <- read_peaklist(path_lcd, format_in = "shimadzu_lcd",
+                      progress_bar=FALSE)[[1]]
+
+
+  expect_equal(x[[1]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[1]][,-1], tolerance=.01,
+               ignore_attr=TRUE)
+  expect_equal(x[[2]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[2]][,-1], tolerance=.001,
+               ignore_attr=TRUE)
+  expect_equal(x[[3]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[3]][,-1], tolerance=.001,
+               ignore_attr=TRUE)
+})
+
 
 test_that("read_chroms can read 'Agilent' .dx files", {
   skip_on_cran()
@@ -873,6 +935,26 @@ test_that("Shimadzu GCD parser works", {
   expect_equal(attr(x, "sample_injection_volume"), attr(txt, "sample_injection_volume"))
   expect_equal(as.numeric(attr(txt, "time_range")), round(attr(x, "time_range"), 3))
 })
+
+test_that("Shimadzu FID peak tables match", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_asc <- test_path("testdata/ladder.txt")
+
+  path_gcd <- system.file("FS19_214.gcd", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_gcd))
+
+  x <- read_peaklist(path_asc, format_in = "shimadzu_dad",
+                     data_format = "original",
+                     progress_bar = FALSE)[[1]]
+
+  x1 <- read_peaklist(path_gcd, format_in = "shimadzu_gcd", progress_bar=FALSE)
+
+  expect_equal(x[,c(3,6:7,4:5,8:9,11,13:18,21:22)], x1[[1]][,-1], tolerance=.001,
+               ignore_attr=TRUE)
+})
+
 
 test_that("Shimadzu QGD parser works", {
   skip_on_cran()

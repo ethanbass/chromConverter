@@ -298,10 +298,10 @@ test_that("read_peaklist can read `Shimadzu` fid files", {
   expect_equal(x[[1]][[1,"sample"]], "ladder")
   expect_equal(x[[1]][[1,"sample"]], "ladder")
   expect_equal(colnames(x[[1]]),
-               c("sample","Peak.","R.Time","I.Time","F.Time","Area","Height",
-                 "A.H","Conc.","Mark","ID.","Name", "k.", "Plate..", "Plate.Ht.",
-                 "Tailing", "Resolution", "Sep.Factor", "Area.Ratio", "Height.Ratio",
-                 "Conc...", "Norm.Conc."))
+               c("sample","Peak#","R.Time","I.Time","F.Time","Area","Height",
+                 "A/H","Conc.","Mark","ID#","Name", "k'", "Plate #", "Plate Ht.",
+                 "Tailing", "Resolution", "Sep.Factor", "Area Ratio", "Height Ratio",
+                 "Conc. %", "Norm Conc."))
   expect_equal(attr(x, "class"), "peak_list")
 })
 

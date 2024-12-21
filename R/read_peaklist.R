@@ -106,10 +106,10 @@ read_peaklist <- function(paths, find_files,
     data <- lapply(seq_along(data), function(i){
       if (inherits(data[[i]], "list")){
         lapply(data[[i]], function(xx){
-          cbind(Sample = file_names[i], xx)
+          cbind(sample = file_names[i], xx)
         })
       } else {
-        cbind(Sample = file_names[i], data[[i]])
+        cbind(sample = file_names[i], data[[i]])
       }
     })
     class(data) <- "peak_list"
