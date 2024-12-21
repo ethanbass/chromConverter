@@ -21,8 +21,9 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
     reticulate::py_run_string('data = st.read()')
 
     if (missing(path_out)){
-      path_out <- fs::file_temp(pattern =
-                                  gsub(" ", "_", paste(c(fs::path_ext_remove(basename(path)), stream),
+      path_out <- fs::file_temp(pattern = gsub(" ", "_",
+                                               paste(c(fs::path_ext_remove(
+                                                 basename(path)), stream),
                                                        collapse="_")))
     }
     if (remove_null_bytes){
@@ -41,7 +42,7 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
 check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
                           stream = NULL,
                           boolean = FALSE,
-                          min_size = 552){
+                          min_size = 1200){
   what <- match.arg(what, c("pda", "chroms", "tic", "peaks", ""))
   olefile <- reticulate::import("olefile")
   ole <- olefile$OleFileIO(path)
@@ -56,7 +57,7 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
     streams <- ole$listdir()
     what <- switch(what, "chroms" = "Chromatogram Ch",
                    "tic" = "Centroid SumTIC",
-                   "peaks" = "Peak Table")
+                   "peaks" = "Peak Table|PT")
     selected_streams <- streams[grep(what, streams)]
     sizes <- sapply(selected_streams, function(x){
       ole$get_size(paste0(x, collapse = "/"))})
@@ -72,21 +73,39 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
 #' Check OLE stream by name
 #' @noRd
 check_stream <- function(path, stream = NULL,
-                          boolean = FALSE){
+                          boolean = FALSE, min_size = 552){
   olefile <- reticulate::import("olefile")
   ole <- olefile$OleFileIO(path)
-  python_stream <- paste0(stream, collapse="/")
-  pda_exists <- tryCatch(ole$get_size(python_stream), error=function(e) 0) > 0
+  python_stream <- paste0(stream, collapse = "/")
+  pda_exists <- tryCatch(ole$get_size(python_stream),
+                         error=function(e) 0) > min_size
   pda_exists
 }
 
 
 #' List OLE streams
 #' @noRd
-ole_list_streams <- function(path){
+ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
+                             min_size = 552){
   olefile <- reticulate::import("olefile")
   ole <- olefile$OleFileIO(path)
-  ole$listdir()
+  streams <- ole$listdir()
+  if (!is.null(pattern)){
+    idx <- grep(streams, pattern = pattern, ignore.case = ignore.case)
+    if (length(idx)==0)
+      return(message("No streams found matching the specified pattern."))
+    streams <- streams[idx]
+  }
+  if (!is.null(min_size)){
+    idx <- which(sapply(streams, function(stream){
+      check_stream(path, stream, min_size=min_size)
+    }))
+    if (length(idx)==0)
+      return(message(sprintf("All streams matching the specified pattern are smaller than %g bytes.",
+                             min_size)))
+    streams <- streams[idx]
+  }
+  streams
 }
 
 

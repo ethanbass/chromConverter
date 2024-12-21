@@ -6,14 +6,20 @@
 \usage{
 read_shimadzu_gcd(
   path,
+  what = "chroms",
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
-  metadata_format = c("chromconverter", "raw")
+  metadata_format = c("chromconverter", "raw"),
+  collapse = TRUE
 )
 }
 \arguments{
 \item{path}{Path to GCD file.}
+
+\item{what}{What stream to get: current options are chromatograms
+(\code{chroms}) and/or peak lists (\code{peak_table}). If a stream
+is not specified, the function will default to \code{chroms}.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
 or \code{data.table}.}
@@ -24,6 +30,9 @@ or \code{data.table}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
+
+\item{collapse}{Logical. Whether to collapse lists that only contain a single
+element.}
 }
 \value{
 A 2D chromatogram from the chromatogram stream in \code{matrix} or
