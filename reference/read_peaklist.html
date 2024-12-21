@@ -45,7 +45,8 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_peaklist</span><span class="op">(</span></span>
 <span>  <span class="va">paths</span>,</span>
 <span>  <span class="va">find_files</span>,</span>
-<span>  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chemstation"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_dad"</span><span class="op">)</span>,</span>
+<span>  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chemstation"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_dad"</span>, <span class="st">"shimadzu_lcd"</span>,</span>
+<span>    <span class="st">"shimadzu_gcd"</span><span class="op">)</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromatographr"</span>, <span class="st">"original"</span><span class="op">)</span>,</span>
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
@@ -71,7 +72,8 @@ Otherwise, set to<code>FALSE</code>.</p></dd>
 
 <dt id="arg-format-in">format_in<a class="anchor" aria-label="anchor" href="#arg-format-in"></a></dt>
 <dd><p>Format of files to be imported/converted. Current options
-include: <code>chemstation</code> or <code>shimadzu</code>.</p></dd>
+include: <code>chemstation</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>,
+<code>shimadzu_lcd</code>, and <code>shimadzu_gcd</code>.</p></dd>
 
 
 <dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
