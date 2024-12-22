@@ -858,7 +858,7 @@ read_sz_table <- function(path, stream, format_out = "data.frame"){
   path_raw <- export_stream(path, stream)
   f <- file(path_raw, "rb")
   on.exit(close(f))
-  magic <- readBin(f, "raw", n=4)
+  magic <- readBin(f, "raw", n = 4)
   magic <- paste(paste0("x", as.character(magic)), collapse = "/")
   read_sz_table <- switch(magic,
                            "x56/x45/x52/x31" = read_sz_table_v1,
@@ -871,13 +871,13 @@ read_sz_table <- function(path, stream, format_out = "data.frame"){
 read_sz_table_v1 <- function(f, format_out = "data.frame"){
   rows <- readBin(f, "integer", size = 4)
   seek(f,0,origin = "end")
-  n_bytes <- seek(f,0,origin = "end")
+  n_bytes <- seek(f, 0, origin = "end")
   block_len <- (n_bytes - 20)/rows
   seek(f, 20)
   tab <- do.call(rbind, lapply(seq_len(rows), function(i){
     read_sz_table_block_v1(f, block_len)
   }))
-  tab$ID <- ifelse(tab$ID==0,NA,tab$ID)
+  tab$ID <- ifelse(tab$ID == 0, NA, tab$ID)
   if (format_out == "data.frame"){
     tab <- as.data.frame(tab)
   }
@@ -903,25 +903,25 @@ read_sz_table_v0 <- function(f, format_out = "data.frame"){
 #' @author Ethan Bass
 #' @noRd
 read_sz_table_block_v0 <- function(f){
-  readBin(f, "integer", size = 4, endian="little")
-  R.time <- readBin(f, "integer", size = 4, endian="little")/60000
-  Area <- readBin(f, "numeric", size=8, endian="little")
-  readBin(f, "numeric", size=8, endian="little")
-  Height <- readBin(f, "numeric", size=8, endian="little")
-  readBin(f, "numeric", size=8, endian="little")
-  unknown_ints <- readBin(f, "integer", size=4, n=4, endian="little")
-  I.time <- readBin(f, "integer", size=4, endian="little")/60000
-  F.time <- readBin(f, "integer", size=4, endian="little")/60000
-  AH <- readBin(f, "integer", size=4, endian="little")/1000
+  readBin(f, "integer", size = 4, endian = "little")
+  R.time <- readBin(f, "integer", size = 4, endian = "little")/60000
+  Area <- readBin(f, "numeric", size = 8, endian = "little")
+  readBin(f, "numeric", size = 8, endian = "little")
+  Height <- readBin(f, "numeric", size = 8, endian = "little")
+  readBin(f, "numeric", size = 8, endian = "little")
+  unknown_ints <- readBin(f, "integer", size = 4, n=4, endian = "little")
+  I.time <- readBin(f, "integer", size = 4, endian = "little")/60000
+  F.time <- readBin(f, "integer", size = 4, endian = "little")/60000
+  AH <- readBin(f, "integer", size = 4, endian = "little")/1000
   seek(f, 148, "current") #skip 148 bytes
-  Plate.no <- readBin(f, "numeric", size=8, endian="little")
-  Plate.ht <- readBin(f, "numeric", size=8, endian="little")
-  Tailing <- readBin(f, "numeric", size=8, endian="little")
-  Resolution <- readBin(f, "numeric", size=8, endian="little")
-  Sep.factor <- readBin(f, "numeric", size=8, endian="little")
-  Conc.percent <- readBin(f, "numeric", size=8, endian="little")
-  Conc.norm <- readBin(f, "numeric", size=8, endian="little")
-  unknown_ints <- readBin(f, "integer", size=4, n=2, endian="little")
+  Plate.no <- readBin(f, "numeric", size = 8, endian = "little")
+  Plate.ht <- readBin(f, "numeric", size = 8, endian = "little")
+  Tailing <- readBin(f, "numeric", size = 8, endian = "little")
+  Resolution <- readBin(f, "numeric", size = 8, endian = "little")
+  Sep.factor <- readBin(f, "numeric", size = 8, endian = "little")
+  Conc.percent <- readBin(f, "numeric", size = 8, endian = "little")
+  Conc.norm <- readBin(f, "numeric", size = 8, endian = "little")
+  unknown_ints <- readBin(f, "integer", size = 4, n=2, endian = "little")
   data.frame(R.time, Area, Height, I.time, F.time, AH, Plate.no, Plate.ht,
              Tailing, Resolution, Sep.factor)
 }
@@ -931,40 +931,39 @@ read_sz_table_block_v0 <- function(f){
 #' @noRd
 read_sz_table_block_v1 <- function(f, block_len){
   readBin(f, "integer", size = 4, endian = "little")
-  R.time <- readBin(f, "integer", size = 4, endian="little")/60000
-  Area <- readBin(f, "numeric", size=8, endian="little")
-  readBin(f, "numeric", size=8, endian="little")
-  Height <- readBin(f, "numeric", size=8, endian="little")
-  readBin(f, "numeric", size=8, endian="little")
-  unknown_ints <- readBin(f, "integer", size=4, n=4, endian="little")
-  unknown_ints
-  I.time <- readBin(f, "integer", size=4, endian="little")/60000
-  F.time <- readBin(f, "integer", size=4, endian="little")/60000
-  AH <- readBin(f, "numeric", size=8, endian="little")
+  R.time <- readBin(f, "integer", size = 4, endian = "little")/60000
+  Area <- readBin(f, "numeric", size = 8, endian = "little")
+  readBin(f, "numeric", size = 8, endian = "little")
+  Height <- readBin(f, "numeric", size = 8, endian = "little")
+  readBin(f, "numeric", size = 8, endian = "little")
+  unknown_ints <- readBin(f, "integer", size = 4, n=4, endian = "little")
+  I.time <- readBin(f, "integer", size = 4, endian = "little")/60000
+  F.time <- readBin(f, "integer", size = 4, endian = "little")/60000
+  AH <- readBin(f, "numeric", size = 8, endian = "little")
   seek(f, 104, "current")
-  Conc <- readBin(f, "numeric", size=8, endian="little")
-  ID <- readBin(f, "integer", size=4, endian="little")
+  Conc <- readBin(f, "numeric", size = 8, endian = "little")
+  ID <- readBin(f, "integer", size = 4, endian = "little")
   seek(f, 52, "current")
-  k <- readBin(f, "numeric", size=8, endian="little")
-  Plate.no <- readBin(f, "numeric", size=8, endian="little")
+  k <- readBin(f, "numeric", size = 8, endian = "little")
+  Plate.no <- readBin(f, "numeric", size = 8, endian = "little")
   seek(f, 56, "current")
-  unk1 <- readBin(f, "numeric", size=8, endian="little")
+  unk1 <- readBin(f, "numeric", size = 8, endian = "little")
   seek(f, 56, "current")
-  Plate.ht <- readBin(f, "numeric", size=8, endian="little")
+  Plate.ht <- readBin(f, "numeric", size = 8, endian = "little")
   seek(f, 56, "current")
-  unk2 <- readBin(f, "numeric", size=8, endian="little")
+  unk2 <- readBin(f, "numeric", size = 8, endian = "little")
   seek(f, 56, "current")
-  Tailing <- readBin(f, "numeric", size=8, endian="little")
-  Resolution <- readBin(f, "numeric", size=8, endian="little")
+  Tailing <- readBin(f, "numeric", size = 8, endian = "little")
+  Resolution <- readBin(f, "numeric", size = 8, endian = "little")
   seek(f, 48, "current")
-  unk3 <- readBin(f, "numeric", size=8, endian="little")
+  unk3 <- readBin(f, "numeric", size = 8, endian = "little")
   seek(f, 56, "current")
-  unk4 <- readBin(f, "numeric", size=8, endian="little")
-  Sep.factor <- readBin(f, "numeric", size=8, endian="little")
-  seek(f,64,"current")
-  Percent.conc <- readBin(f, "numeric", size=8, endian = "little")
-  Norm.conc <- readBin(f, "numeric", size=8, endian = "little")
-  seek(f, (block_len-728), "current")
-  data.frame(R.time, Area, Height, I.time, F.time, AH, Conc, ID, k, Plate.no, Plate.ht,
-             Tailing, Resolution, Sep.factor, Percent.conc, Norm.conc)
+  unk4 <- readBin(f, "numeric", size = 8, endian = "little") #Area ratio?
+  Sep.factor <- readBin(f, "numeric", size = 8, endian = "little")
+  seek(f, 64, "current")
+  Percent.conc <- readBin(f, "numeric", size = 8, endian = "little")
+  Norm.conc <- readBin(f, "numeric", size = 8, endian = "little")
+  seek(f, (block_len - 728), "current")
+  data.frame(R.time, Area, Height, I.time, F.time, AH, Conc, ID, k, Plate.no,
+             Plate.ht, Tailing, Resolution, Sep.factor, Percent.conc, Norm.conc)
 }
