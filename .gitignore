@@ -2,3 +2,4 @@
 docs
 chromConverter.Rcheck
 .Rhistory
+*.Rproj
