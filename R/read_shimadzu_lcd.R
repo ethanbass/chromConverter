@@ -177,15 +177,20 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
   dat <- read_sz_pda(path, n_lambdas = n_lambdas)
   colnames(dat) <- lambdas
 
-  DI <- read_sz_3DDI(path)
-  times <- seq(DI$DLT, DI$AT, by = DI$Rate)
-  if (length(times) != nrow(dat)){
-    times <- seq(DI$DLT, DI$AT, length.out = nrow(dat))
-    warning("Length of the inferred time axis does not match the number of rows
+  data_item_exists <- check_stream(path, c('PDA 3D Raw Data', '3D Data Item'))
+  if (data_item_exists){
+    DI <- read_sz_3DDI(path)
+    times <- seq(DI$DLT, DI$AT, by = DI$Rate)
+    if (length(times) != nrow(dat)){
+      times <- seq(DI$DLT, DI$AT, length.out = nrow(dat))
+      warning("Length of the inferred time axis does not match the number of rows
             in the data.")
-  }
-  if (inherits(times, "numeric")){
-    rownames(dat) <- times
+    }
+    if (inherits(times, "numeric")){
+      rownames(dat) <- times
+    }
+  } else{
+    DI <- data.frame(DETN=NA, DSCN=NA, ADN=NA, detector.unit=NA)
   }
   if (data_format == "long"){
     dat <- reshape_chrom(dat, data_format = "wide")
@@ -268,8 +273,8 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
 
   dat <- lapply(existing_streams, function(stream){
     dat <- read_sz_chrom(path, stream = stream)
-
-    idx <- as.numeric(gsub("\\D", "", stream[2]))
+    idx <- ifelse(stream[2] == "Max Plot", "PDA",
+                  as.numeric(gsub("\\D", "", stream[2])))
     data_item_exists <- check_stream(path,c('LSS Data Processing', '2D Data Item'))
     if (data_item_exists){
       DI <- read_sz_2DDI(path, idx = idx)
@@ -279,8 +284,8 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
         dat <- dat*DI$detector.vf
       }
     } else{
-      DI <- data.frame(DETN=sapply(existing_streams,"[",2),
-                       DSCN=NA, ADN=NA, detector.unit=NA)
+      DI <- data.frame(DETN = sapply(existing_streams,"[",2),
+                       DSCN = NA, ADN = NA, detector.unit = NA)
       times <- rownames(dat)
     }
     if (data_format == "long"){
@@ -449,21 +454,44 @@ get_sz_times <- function(sz_method, what = c("pda", "chromatogram"), nval){
   } else NA
 }
 
-#' Get number of rows from LCD 3D Data item
+#' Get number of rows and interval from 'PDA 3D Raw Data/Max Plot'
 #' @author Ethan Bass
 #' @noRd
-
-get_shimadzu_rows <- function(path){
-  metadata_path <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Data Item"))
-  if (is.na(metadata_path)){
-    warning("3D Data Item stream could not be found -- unable to infer number of rows in stream.")
-    return(NA)
-  } else {
-    meta <- xml2::read_xml(metadata_path)
-    cn_node <- xml2::xml_find_first(meta, "//CN")
-    as.numeric(xml2::xml_text(cn_node))
-  }
+get_shimadzu_axis <- function(path){
+  maxplot_path <- export_stream(path, stream =  c("PDA 3D Raw Data", "Max Plot"))
+  if (is.na(maxplot_path)){
+      warning("Unable to infer number of rows in stream.")
+      return(NA)
+    } else {
+      f <- file(maxplot_path, "rb")
+      on.exit(close(f))
+      seek(f,4)
+      interval <- readBin(f, what = "integer", n = 1, size = 4, endian = "little")
+      nrows <- readBin(f, what = "integer", n = 1, size = 4, endian = "little")
+      list(interval=interval, nrows=nrows)
+    }
 }
+# get_shimadzu_rows <- function(path){
+#   metadata_path <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Data Item"))
+#   if (is.na(metadata_path)){
+#     maxplot_path <- export_stream(path, stream =  c("PDA 3D Raw Data", "Max Plot"))
+#     if (is.na(maxplot_path)){
+#       warning("Unable to infer number of rows in stream.")
+#       return(NA)
+#     } else {
+#       f <- file(maxplot_path, "rb")
+#       on.exit(close(f))
+#       seek(f,4)
+#       interval <- readBin(f, what = "integer", n = 1, size = 4, endian = "little")
+#       n_rows <- readBin(f, what = "integer", n = 1, size = 4, endian = "little")
+#       list(interval=interval, nrows=nrows)
+#     }
+#   } else {
+#     meta <- xml2::read_xml(metadata_path)
+#     cn_node <- xml2::xml_find_first(meta, "//CN")
+#     as.numeric(xml2::xml_text(cn_node))
+#   }
+# }
 
 #' Read 'Shimadzu' LCD 3D Raw Data
 #' @author Ethan Bass
@@ -482,8 +510,8 @@ read_sz_pda <- function(path, n_lambdas = NULL){
   seek(f, 0, "start")
   seek(f, 0, "start")
 
-  nrows <- get_shimadzu_rows(path)
-  nrows <- ifelse(is.na(nrows), fsize/(n_lambdas * 1.5), nrows)
+  axis <- get_shimadzu_axis(path)
+  nrows <- ifelse(is.na(axis$nrows), fsize/(n_lambdas * 1.5), axis$nrows)
 
   mat <- matrix(NA, nrow = nrows, ncol = n_lambdas)
   i <- 1
@@ -494,6 +522,8 @@ read_sz_pda <- function(path, n_lambdas = NULL){
   if (any(is.na(mat[,1]))){
     mat <- mat[-which(is.na(mat[,1])),]
   }
+  times <- seq(from = 0, by = axis$interval, length.out = nrow(mat))/60000
+  rownames(mat) <- times
   mat
 }
 
@@ -763,6 +793,10 @@ read_sz_2DDI <- function(path, read_file = TRUE, idx = 1){
     doc <- xml2::read_xml(path_meta)
   } else{
     doc <- path
+  }
+  if (idx == "PDA"){
+    det <- xml2::xml_text(xml2::xml_find_all(doc, "//DN"))
+    idx <- which(det == "PDA")
   }
 
   nodes <- xml2::xml_child(doc, search = idx) |> xml2::xml_children()

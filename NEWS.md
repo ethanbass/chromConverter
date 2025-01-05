@@ -1,3 +1,9 @@
+## chromConverter 0.7.3
+
+* Updated `read_shimadzu_lcd` to infer retention times in Shimadzu 3D Data from `Max Plot` stream since it is always (?) present.
+* Updated `read_shimadzu_lcd` to skip parsing of metadata from 3D Data Item when it is not present.
+* Updated `read_shimadzu_lcd` to include `Max Plot` stream when parsing 2D chromatograms.
+
 ## chromConverter 0.7.2
 
 * Added preliminary support for extraction of peak tables from 'Shimadzu' `.lcd` files.

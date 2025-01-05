@@ -530,6 +530,35 @@ test_that("read_chroms can read 'Chromeleon' period-separated files", {
   expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
 })
 
+test_that("read_chroms can read 'Chromeleon' 3D data files", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("chromeleon_3D.txt",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chroms(path, format_in = "chromeleon_uv", progress_bar = FALSE)[[1]]
+  expect_equal(class(x)[1], "matrix")
+  expect_equal(dim(x), c(6000, 301))
+  expect_equal(attr(x, "parser"), "chromconverter")
+  expect_equal(attr(x, "data_format"), "wide")
+  expect_equal(attr(x, "detector"), "UV")
+  expect_equal(attr(x, "sample_name"), "MeOH_Blank")
+  expect_equal(attr(x, "vial"), "GA1")
+  expect_equal(attr(x, "sample_injection_volume"), "1.000")
+  expect_equal(attr(x, "time_unit"), "Minutes")
+  expect_equal(attr(x, "detector_y_unit"), "mAU")
+
+  x1 <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE,
+                    format_out = "data.frame", data_format = "long")[[1]]
+  expect_s3_class(x1[1], "data.frame")
+  expect_equal(colnames(x1), c("rt", "lambda", "intensity"))
+  expect_equal(as.numeric(rownames(x)), x1[x1$lambda==200,1])
+  expect_equal(nrow(x1), ncol(x)*nrow(x))
+  expect_equal(attr(x1, "data_format"), "long")
+})
+
 test_that("read_peaklist can read `Shimadzu` ASCII (PDA) files", {
   skip_on_cran()
   skip_if_missing_dependencies()
@@ -563,6 +592,7 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
 
   x <- read_chroms(path_ascii, format_in = "shimadzu_dad",
                    progress_bar = FALSE)[[1]]
+
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(4689, 328))
   expect_equal(attr(x, "parser"), "chromconverter")
@@ -571,11 +601,12 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
   x1 <- read_chroms(path_ascii, format_in = "shimadzu_dad",
                     progress_bar = FALSE, data_format = "long",
                     format_out = "data.frame")[[1]]
+
   expect_s3_class(x1[1], "data.frame")
   expect_equal(dim(x1), c(4689 * 328, 3))
 
-
   x2 <- read_chroms(path_lcd, progress_bar = FALSE)[[1]]
+
   expect_equal(dim(x2), c(4689, 328))
   expect_equal(x, x2, ignore_attr = TRUE)
 
@@ -643,32 +674,32 @@ test_that("read_chroms can read 2D chromatograms from 'Shimadzu' LCD files", {
   x1 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                     progress_bar = FALSE)[[1]]
 
-  expect_equal(class(x1)[1], "matrix")
-  expect_equal(dim(x1), c(30000, 1))
-  expect_equal(x[-1,1], x1[,1], ignore_attr = TRUE)
-  all.equal(as.numeric(rownames(x)[-1]), as.numeric(rownames(x1)),
+  expect_equal(class(x1$AD2)[1], "matrix")
+  expect_equal(dim(x1$AD2), c(30000, 1))
+  expect_equal(x[-1,1], x1$AD2[,1], ignore_attr = TRUE)
+  all.equal(as.numeric(rownames(x)[-1]), as.numeric(rownames(x1$AD2)),
             tolerance = .0001)
 
   # unscaled
   x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                     progress_bar = FALSE, scale = FALSE)[[1]]
-  all.equal(x[-1, 1], x2[, 1] * attr(x2, "intensity_multiplier"),
+  all.equal(x[-1, 1], x2$AD2[, 1] * attr(x2$AD2, "intensity_multiplier"),
             check.attributes = FALSE)
 
   # check metadata equivalence
-  expect_equal(attr(x, "software_version"), attr(x1, "software_version"))
-  expect_equal(attr(x, "method"), attr(x1, "method"))
-  expect_equal(attr(x, "batch"), attr(x1, "batch"))
-  expect_equal(attr(x, "operator"), attr(x1, "operator"))
-  expect_equal(attr(x, "sample_name"), attr(x1, "sample_name"))
-  expect_equal(attr(x, "sample_id"), attr(x1, "sample_id"))
+  expect_equal(attr(x, "software_version"), attr(x1$AD2, "software_version"))
+  expect_equal(attr(x, "method"), attr(x1$AD2, "method"))
+  expect_equal(attr(x, "batch"), attr(x1$AD2, "batch"))
+  expect_equal(attr(x, "operator"), attr(x1$AD2, "operator"))
+  expect_equal(attr(x, "sample_name"), attr(x1$AD2, "sample_name"))
+  expect_equal(attr(x, "sample_id"), attr(x1$AD2, "sample_id"))
   expect_equal(attr(x, "sample_injection_volume"),
-               attr(x1, "sample_injection_volume"))
+               attr(x1$AD2, "sample_injection_volume"))
   expect_equal(as.numeric(attr(x, "time_range")),
-               round(attr(x1, "time_range"), 3))
-  expect_equal(attr(x, "detector_y_unit"), attr(x1, "detector_y_unit"))
+               round(attr(x1$AD2, "time_range"), 3))
+  expect_equal(attr(x, "detector_y_unit"), attr(x1$AD2, "detector_y_unit"))
   expect_equal(attr(x, "intensity_multiplier"),
-               attr(x1, "intensity_multiplier"))
+               attr(x1$AD2, "intensity_multiplier"))
 })
 
 test_that("read_chroms can read 'Shimadzu' PDA comma-separated file", {

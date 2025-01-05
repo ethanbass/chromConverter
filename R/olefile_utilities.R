@@ -55,7 +55,7 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
     }
   } else {
     streams <- ole$listdir()
-    what <- switch(what, "chroms" = "Chromatogram Ch",
+    what <- switch(what, "chroms" = "Chromatogram Ch|Max Plot",
                    "tic" = "Centroid SumTIC",
                    "peaks" = "Peak Table|PT")
     selected_streams <- streams[grep(what, streams)]
