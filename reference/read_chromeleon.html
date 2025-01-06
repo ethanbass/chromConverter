@@ -47,7 +47,8 @@
 <span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span>, <span class="st">"data.table"</span><span class="op">)</span>,</span>
 <span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span><span class="op">)</span>,</span>
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span></span>
+<span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
+<span>  decimal_mark <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -75,6 +76,12 @@ or <code>data.table</code>.</p></dd>
 <dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
 <dd><p>Format to output metadata. Either <code>chromconverter</code> or
 <code>raw</code>.</p></dd>
+
+
+<dt id="arg-decimal-mark">decimal_mark<a class="anchor" aria-label="anchor" href="#arg-decimal-mark"></a></dt>
+<dd><p>Which character is used as the decimal separator in the
+file. By default, decimal mark will be detected automatically, but it can
+also be manually set as <code>"."</code> or <code>","</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

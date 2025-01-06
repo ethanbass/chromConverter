@@ -40,6 +40,8 @@
 <ul><li>Updated <code>read_shimadzu_lcd</code> to infer retention times in Shimadzu 3D Data from <code>Max Plot</code> stream since it is always (?) present.</li>
 <li>Updated <code>read_shimadzu_lcd</code> to skip parsing of metadata from 3D Data Item when it is not present.</li>
 <li>Updated <code>read_shimadzu_lcd</code> to include <code>Max Plot</code> stream when parsing 2D chromatograms.</li>
+<li>Fixed bug in <code>read_chromeleon</code> related to inference of decimal separators.</li>
+<li>Added <code>decimal_mark</code> argument to <code>read_chromeleon</code> to manually set decimal separator.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.7.2" id="chromconverter-072">chromConverter 0.7.2<a class="anchor" aria-label="anchor" href="#chromconverter-072"></a></h2>
