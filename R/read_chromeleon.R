@@ -11,6 +11,9 @@
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter} or
 #' \code{raw}.
+#' @param decimal_mark Which character is used as the decimal separator in the
+#' file. By default, decimal mark will be detected automatically, but it can
+#' also be manually set as \code{"."} or \code{","}.
 #' @return A chromatogram in the format specified by \code{format_out}.
 #' (retention time x wavelength).
 #' @author Ethan Bass
@@ -20,12 +23,16 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
                                                  "data.table"),
                             data_format = c("wide", "long"),
                             read_metadata = TRUE,
-                            metadata_format = c("chromconverter", "raw")){
+                            metadata_format = c("chromconverter", "raw"),
+                            decimal_mark = NULL){
   format_out <- check_format_out(format_out)
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, chromconverter = "chromeleon",
                            raw = raw)
+  if (!is.null(decimal_mark)){
+    decimal_mark <- match.arg(decimal_mark, c(".", ","))
+  }
   xx <- readLines(path)
   xx <- remove_unicode_chars(xx)
   start <- tail(grep("Data:", xx), 1)
@@ -33,12 +40,14 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
                 check.names = FALSE)
   x <- x[, -2, drop = FALSE]
   x <- x[, colSums(is.na(x)) < nrow(x)]
-  if (any(grepl(",", as.data.frame(x)[-1, 2]))){
-    decimal_separator <- ","
+  meta <- try(read_chromeleon_metadata(xx))
+  if (is.null(decimal_mark) && grepl(",", meta$`Dilution Factor`)){
+    decimal_mark <- ","
     x <- apply(x, 2, function(x) gsub("\\.", "", x))
     x <- apply(x, 2, function(x) gsub(",", ".", x))
   } else {
-    decimal_separator <- "."
+    decimal_mark <- "."
+    x <- apply(x, 2, function(x) gsub(",", "", x))
   }
   x <- apply(x, 2, as.numeric)
   if (ncol(x) == 2){
@@ -55,8 +64,7 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
   }
   x <- convert_chrom_format(x, format_out = format_out)
   if (read_metadata){
-    meta <- try(read_chromeleon_metadata(xx))
-    if (decimal_separator == ","){
+    if (decimal_mark == ","){
       meta <- lapply(meta, function(x) gsub(",", ".", x))
     }
     if (!inherits(meta, "try-error")){

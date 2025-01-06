@@ -9,7 +9,8 @@ read_chromeleon(
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
-  metadata_format = c("chromconverter", "raw")
+  metadata_format = c("chromconverter", "raw"),
+  decimal_mark = NULL
 )
 }
 \arguments{
@@ -24,6 +25,10 @@ or \code{data.table}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
+
+\item{decimal_mark}{Which character is used as the decimal separator in the
+file. By default, decimal mark will be detected automatically, but it can
+also be manually set as \code{"."} or \code{","}.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out}.
