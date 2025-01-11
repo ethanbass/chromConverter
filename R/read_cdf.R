@@ -178,7 +178,6 @@ read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
     int <- ncdf4::ncvar_get(nc, "intensity_values")
     mz <- ncdf4::ncvar_get(nc, "mass_values")
     scan_idx <- ncdf4::ncvar_get(nc, "scan_index")
-    rt <- ncdf4::ncvar_get(nc, "time_values")
     n_scans <- ncdf4::ncvar_get(nc, "point_count")
     rt_scan <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
     zeros <- as.list(rep(NA, length(which(scan_idx == 0)) - 1))

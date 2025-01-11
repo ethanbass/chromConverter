@@ -22,7 +22,6 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 30, 130, 8, 81, 179, 181)
 - Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
-- 'Allotrope Simple Model' (ASM) 2D chromatograms.
 - mzML (`.mzml`) & mzXML (.`mzxml`) (via *RaMS*).
 - 'Shimadzu LabSolutions' ascii (`.txt`)
 - 'Shimadzu GCsolution' data files (`.gcd`)
