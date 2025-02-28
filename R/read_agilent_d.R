@@ -24,6 +24,8 @@
 #' is returned as a \code{matrix}, \code{data.frame} or \code{data.table}.
 #' Metadata can be attached to the chromatogram as \code{\link{attributes}} if
 #' \code{read_metadata} is \code{TRUE}.
+#' @examplesIf interactive()
+#' read_agilent_d("tests/testthat/testdata/RUTIN2.D")
 #' @author Ethan Bass
 #' @family 'Agilent' parsers
 #' @export

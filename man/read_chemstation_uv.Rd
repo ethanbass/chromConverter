@@ -50,6 +50,11 @@ This function was adapted from the parser in the rainbow project
 licensed under GPL 3 by Evan Shi
 \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
 }
+\examples{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+read_chemstation_uv("tests/testthat/testdata/dad1.uv")
+\dontshow{\}) # examplesIf}
+}
 \seealso{
 Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},

@@ -25,6 +25,11 @@ Reads 'Agilent Chemstation' \code{.csv} files.
 \details{
 'Agilent Chemstation' CSV files are encoded in UTF-16.
 }
+\examples{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+read_chemstation_csv("tests/testthat/testdata/dad1.csv")
+\dontshow{\}) # examplesIf}
+}
 \seealso{
 Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},

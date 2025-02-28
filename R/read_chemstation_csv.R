@@ -11,6 +11,8 @@
 #' or \code{data.table}.
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
+#' @examplesIf interactive()
+#' read_chemstation_csv("tests/testthat/testdata/dad1.csv")
 #' @author Ethan Bass
 #' @family 'Agilent' parsers
 #' @export

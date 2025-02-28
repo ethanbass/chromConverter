@@ -23,6 +23,8 @@
 #' \code{format_out} argument determines whether the chromatogram is returned as
 #' a \code{matrix} or \code{data.frame}. Metadata can be attached to the
 #' chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+#' @examplesIf interactive()
+#' read_chemstation_uv("tests/testthat/testdata/dad1.uv")
 #' @author Ethan Bass
 #' @note This function was adapted from the parser in the rainbow project
 #' licensed under GPL 3 by Evan Shi
