@@ -16,6 +16,7 @@
 #' or \code{raw}.
 #' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
+#' @family {external parsers}
 #' @export sp_converter
 
 sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.table"),
@@ -65,7 +66,9 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
 #' or \code{raw}.
 #' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
 #' @import reticulate
+#' @family {external parsers}
 #' @export uv_converter
+
 uv_converter <- function(path, format_out = c("matrix","data.frame","data.table"),
                          data_format = c("wide","long"),
                          correction = TRUE, read_metadata = TRUE,

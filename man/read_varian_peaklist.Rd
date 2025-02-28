@@ -17,6 +17,11 @@ A data.frame containing the information from the specified report.
 Read 'Varian' peaklist.
 Read peak list(s) from 'Varian MS Workstation'.
 }
+\seealso{
+Other {'Varian' parsers}: 
+\code{\link{read_varian_sms}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Varian' parsers}}

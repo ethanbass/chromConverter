@@ -57,6 +57,7 @@
 #' \code{read_metadata} is \code{TRUE}.
 #' @note My parsing of the date-time format seems to be a little off, since
 #' the acquisition times diverge slightly from the ASCII file.
+#' @family {'Shimadzu' parsers}
 #' @export
 
 read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
@@ -160,6 +161,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #' \code{data.frame} format, according to the value of \code{format_out}.
 #' The chromatograms will be returned in \code{wide} or \code{long} format
 #' according to the value of \code{data_format}.
+#' @family {'Shimadzu' parsers}
 #' @export
 
 read_sz_lcd_3d <- function(path, format_out = "matrix",
@@ -252,6 +254,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' \code{format_out}. If multiple chromatograms are found, they will be returned
 #' as a list of matrices or data.frames. The chromatograms will be returned in
 #' \code{wide} or \code{long} format according to the value of \code{data_format}.
+#' @family {'Shimadzu' parsers}
 #' @export
 
 read_sz_lcd_2d <- function(path, format_out = "data.frame",

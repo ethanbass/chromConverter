@@ -62,6 +62,15 @@ Reads 'Shimadzu' ascii files into R. These files can be exported from
 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
 selecting \code{File Conversion:Convert to ASCII}.
 }
+\seealso{
+Other {'Shimadzu' parsers}: 
+\code{\link{read_shimadzu_gcd}()},
+\code{\link{read_shimadzu_lcd}()},
+\code{\link{read_shimadzu_qgd}()},
+\code{\link{read_sz_lcd_2d}()},
+\code{\link{read_sz_lcd_3d}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Shimadzu' parsers}}

@@ -88,6 +88,15 @@ at each position from the previous value.
 My parsing of the date-time format seems to be a little off, since
 the acquisition times diverge slightly from the ASCII file.
 }
+\seealso{
+Other {'Shimadzu' parsers}: 
+\code{\link{read_shimadzu}()},
+\code{\link{read_shimadzu_gcd}()},
+\code{\link{read_shimadzu_qgd}()},
+\code{\link{read_sz_lcd_2d}()},
+\code{\link{read_sz_lcd_3d}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Shimadzu' parsers}}

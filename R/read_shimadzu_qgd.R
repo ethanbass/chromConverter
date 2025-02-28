@@ -48,6 +48,7 @@
 #' attached to the chromatogram as \code{\link{attributes}} if
 #' \code{read_metadata} is \code{TRUE}.
 #' @author Ethan Bass
+#' @family {'Shimadzu' parsers}
 #' @export
 
 read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),

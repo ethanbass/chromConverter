@@ -30,6 +30,7 @@
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' (&copy James Dillon 2014).
+#' @family {'Agilent' parsers}
 #' @export
 #' @md
 
@@ -465,6 +466,7 @@ get_agilent_offsets <- function(version){
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
 #' @author Ethan Bass
+#' @family {'Agilent' parsers}
 #' @export
 read_agilent_dx <-  function(path, path_out = NULL,
                              format_out = c("matrix", "data.frame", "data.table"),

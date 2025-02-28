@@ -68,6 +68,15 @@ little-endian integers, while negative values are encoded as two's
 complements. The value at each position is derived by subtracting the delta
 at each position from the previous value.
 }
+\seealso{
+Other {'Shimadzu' parsers}: 
+\code{\link{read_shimadzu}()},
+\code{\link{read_shimadzu_gcd}()},
+\code{\link{read_shimadzu_lcd}()},
+\code{\link{read_shimadzu_qgd}()},
+\code{\link{read_sz_lcd_3d}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Shimadzu' parsers}}

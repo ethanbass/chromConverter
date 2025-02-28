@@ -15,6 +15,7 @@
 #' @note For now this parser only reads 1D chromatograms (not mass spectra or
 #' DAD data) and does not support parsing of metadata from 'Waters' RAW files.
 #' @author Ethan Bass
+#' @family {'Waters' parsers}
 #' @export
 
 read_waters_raw <- function(path, format_out = c("matrix", "data.frame", "data.table"),

@@ -10,6 +10,7 @@
 #' or \code{raw}.
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
+#' @family {external parsers}
 #' @export
 
 call_entab <- function(path, data_format = c("wide", "long"),

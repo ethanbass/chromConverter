@@ -27,6 +27,7 @@
 #' @return Returns a (nested) list of \code{matrices} or \code{data.frames} according to
 #' the value of \code{format_out}. Data is ordered according to the value of
 #' \code{by}.
+#' @family {external parsers}
 #' @export
 
 call_rainbow <- function(path,

@@ -58,6 +58,15 @@ and Waters (.raw) files. If \code{format_in} is \code{agilent_d} or
 \code{chemstation_uv} a \code{.uv} file should be provided. Data can be filtered
 by detector type using the \code{what} argument.
 }
+\seealso{
+Other {external parsers}: 
+\code{\link{call_entab}()},
+\code{\link{call_openchrom}()},
+\code{\link{read_thermoraw}()},
+\code{\link{sp_converter}()},
+\code{\link{uv_converter}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{external parsers}}

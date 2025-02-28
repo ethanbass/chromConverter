@@ -36,3 +36,12 @@ Converts a single chromatogram from MassHunter \code{.sp} format to R
 \details{
 Uses the \href{https://github.com/bovee/aston}{Aston} file parser.
 }
+\seealso{
+Other {external parsers}: 
+\code{\link{call_entab}()},
+\code{\link{call_openchrom}()},
+\code{\link{call_rainbow}()},
+\code{\link{read_thermoraw}()},
+\code{\link{uv_converter}()}
+}
+\concept{{external parsers}}

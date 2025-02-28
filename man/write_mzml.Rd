@@ -60,6 +60,12 @@ TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
 If \code{indexed = TRUE}, the function will generate an indexed mzML file, which
 allows faster random access to spectra.
 }
+\seealso{
+Other {write functions}: 
+\code{\link{write_andi_chrom}()},
+\code{\link{write_chroms}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{write functions}}

@@ -17,6 +17,7 @@
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
 #' @author Ethan Bass
+#' @family {'Waters' parsers}
 #' @export
 
 read_waters_arw <- function(path, format_out = c("matrix", "data.frame", "data.table"),

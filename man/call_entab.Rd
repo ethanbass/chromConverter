@@ -37,3 +37,12 @@ A chromatogram in the format specified by \code{format_out}
 Call Entab
 Converts files using Entab parsers
 }
+\seealso{
+Other {external parsers}: 
+\code{\link{call_openchrom}()},
+\code{\link{call_rainbow}()},
+\code{\link{read_thermoraw}()},
+\code{\link{sp_converter}()},
+\code{\link{uv_converter}()}
+}
+\concept{{external parsers}}

@@ -54,6 +54,15 @@ ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.
 \emph{Journal of Proteome Research} \bold{19}, no. 1 (January 3, 2020): 537–42.
 \doi{10.1021/acs.jproteome.9b00328}.
 }
+\seealso{
+Other {external parsers}: 
+\code{\link{call_entab}()},
+\code{\link{call_openchrom}()},
+\code{\link{call_rainbow}()},
+\code{\link{sp_converter}()},
+\code{\link{uv_converter}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{external parsers}}

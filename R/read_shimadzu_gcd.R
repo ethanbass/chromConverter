@@ -39,6 +39,7 @@
 #' according to the value of \code{data_format}.
 #' @note This parser is experimental and may still need some work. It is not
 #' yet able to interpret much metadata from the files.
+#' @family {'Shimadzu' parsers}
 #' @export
 
 read_shimadzu_gcd <- function(path, what = "chroms",

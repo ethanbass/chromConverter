@@ -4,6 +4,7 @@
 #' @importFrom utils read.csv
 #' @author Ethan Bass
 #' @return A data.frame containing the information from the specified report.
+#' @family {'Varian' parsers}
 #' @export
 
 read_varian_peaklist <- function(path){

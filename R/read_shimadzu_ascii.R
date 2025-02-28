@@ -31,6 +31,7 @@
 #' the value of \code{what}. Chromatograms are returned in the format specified
 #' by \code{format_out} (retention time x wavelength).
 #' @author Ethan Bass
+#' @family {'Shimadzu' parsers}
 #' @export
 
 read_shimadzu <- function(path, what = "chroms",

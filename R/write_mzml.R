@@ -30,6 +30,7 @@
 #' @param verbose Logical. Whether or not to print status messages.
 #' @return Invisibly returns the path to the written mzML file.
 #' @author Ethan Bass
+#' @family {write functions}
 #' @export
 
 write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,

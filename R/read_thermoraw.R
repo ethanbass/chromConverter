@@ -27,6 +27,7 @@
 #' ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.
 #' \emph{Journal of Proteome Research} \bold{19}, no. 1 (January 3, 2020): 537–42.
 #' \doi{10.1021/acs.jproteome.9b00328}.
+#' @family {external parsers}
 #' @export read_thermoraw
 
 read_thermoraw <- function(path, path_out = NULL,

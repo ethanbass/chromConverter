@@ -53,6 +53,16 @@ Many thanks to Evan Shi and Eugene Kwan for providing helpful
 information on the structure of these files in the
 \href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
 }
+\seealso{
+Other {'Agilent' parsers}: 
+\code{\link{read_agilent_d}()},
+\code{\link{read_agilent_dx}()},
+\code{\link{read_chemstation_ch}()},
+\code{\link{read_chemstation_csv}()},
+\code{\link{read_chemstation_reports}()},
+\code{\link{read_chemstation_uv}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Agilent' parsers}}

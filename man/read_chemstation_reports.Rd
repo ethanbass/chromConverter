@@ -26,6 +26,16 @@ A data.frame containing the information from the specified
 \description{
 Read 'Agilent ChemStation' Reports
 }
+\seealso{
+Other {'Agilent' parsers}: 
+\code{\link{read_agilent_d}()},
+\code{\link{read_agilent_dx}()},
+\code{\link{read_chemstation_ch}()},
+\code{\link{read_chemstation_csv}()},
+\code{\link{read_chemstation_ms}()},
+\code{\link{read_chemstation_uv}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Agilent' parsers}}

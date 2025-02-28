@@ -27,6 +27,7 @@
 #' @note This function was adapted from the parser in the rainbow project
 #' licensed under GPL 3 by Evan Shi
 #' \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
+#' @family {'Agilent' parsers}
 #' @export
 
 read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",

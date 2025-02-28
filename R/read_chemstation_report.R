@@ -7,6 +7,7 @@
 #' @return A data.frame containing the information from the specified
 #' 'ChemStation' report.
 #' @author Ethan Bass
+#' @family {'Agilent' parsers}
 #' @export
 
 read_chemstation_reports <- function(paths, data_format = c("chromatographr",

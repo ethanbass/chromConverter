@@ -28,6 +28,7 @@
 #' @note Many thanks to Evan Shi and Eugene Kwan for providing helpful
 #' information on the structure of these files in the
 #' \href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
+#' @family {'Agilent' parsers}
 #' @export
 
 read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),

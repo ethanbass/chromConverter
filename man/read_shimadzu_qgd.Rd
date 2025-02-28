@@ -78,6 +78,15 @@ with variable byte-length defined by the value in the header.
 This parser is experimental and may still need some work. It is not
 yet able to interpret much metadata from the files.
 }
+\seealso{
+Other {'Shimadzu' parsers}: 
+\code{\link{read_shimadzu}()},
+\code{\link{read_shimadzu_gcd}()},
+\code{\link{read_shimadzu_lcd}()},
+\code{\link{read_sz_lcd_2d}()},
+\code{\link{read_sz_lcd_3d}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Shimadzu' parsers}}

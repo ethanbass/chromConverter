@@ -83,6 +83,15 @@ Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{
 BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405.
 \doi{10.1186/1471-2105-11-405}.
 }
+\seealso{
+Other {external parsers}: 
+\code{\link{call_entab}()},
+\code{\link{call_rainbow}()},
+\code{\link{read_thermoraw}()},
+\code{\link{sp_converter}()},
+\code{\link{uv_converter}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{external parsers}}

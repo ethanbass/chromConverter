@@ -39,6 +39,12 @@ of \code{sample_name}. If no \code{sample_name} is provided, the
 \code{sample_name} attribute will be used if it exists.
 }
 
+\seealso{
+Other {write functions}: 
+\code{\link{write_chroms}()},
+\code{\link{write_mzml}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{write functions}}

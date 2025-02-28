@@ -31,6 +31,16 @@ A chromatogram in the format specified by \code{format_out}
 \description{
 Parser for reading Agilent ('.dx') files into R
 }
+\seealso{
+Other {'Agilent' parsers}: 
+\code{\link{read_agilent_d}()},
+\code{\link{read_chemstation_ch}()},
+\code{\link{read_chemstation_csv}()},
+\code{\link{read_chemstation_ms}()},
+\code{\link{read_chemstation_reports}()},
+\code{\link{read_chemstation_uv}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Agilent' parsers}}

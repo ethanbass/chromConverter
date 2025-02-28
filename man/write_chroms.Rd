@@ -36,6 +36,12 @@ or \code{csv}.}
 \description{
 Export chromatograms
 }
+\seealso{
+Other {write functions}: 
+\code{\link{write_andi_chrom}()},
+\code{\link{write_mzml}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{write functions}}

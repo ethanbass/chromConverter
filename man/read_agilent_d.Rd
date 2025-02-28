@@ -53,6 +53,16 @@ can automatically detect and read several versions of these files from
 \code{81}, \code{179}, and \code{181} which are generally produced by flame
 ionization (FID) detectors.
 }
+\seealso{
+Other {'Agilent' parsers}: 
+\code{\link{read_agilent_dx}()},
+\code{\link{read_chemstation_ch}()},
+\code{\link{read_chemstation_csv}()},
+\code{\link{read_chemstation_ms}()},
+\code{\link{read_chemstation_reports}()},
+\code{\link{read_chemstation_uv}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Agilent' parsers}}

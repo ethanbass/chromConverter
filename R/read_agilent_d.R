@@ -30,6 +30,7 @@
 #' Metadata can be attached to the chromatogram as \code{\link{attributes}} if
 #' \code{read_metadata} is \code{TRUE}.
 #' @author Ethan Bass
+#' @family {'Agilent' parsers}
 #' @export
 
 read_agilent_d <- function(path, what = c("chroms", "dad", "peak_table"),

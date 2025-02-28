@@ -53,6 +53,16 @@ This function was adapted from the
 \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 (&copy James Dillon 2014).
 }
+\seealso{
+Other {'Agilent' parsers}: 
+\code{\link{read_agilent_d}()},
+\code{\link{read_agilent_dx}()},
+\code{\link{read_chemstation_csv}()},
+\code{\link{read_chemstation_ms}()},
+\code{\link{read_chemstation_reports}()},
+\code{\link{read_chemstation_uv}()}
+}
 \author{
 Ethan Bass
 }
+\concept{{'Agilent' parsers}}
