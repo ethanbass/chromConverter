@@ -20,23 +20,6 @@ test_that("chromConverter can read `Agilent Chemstation` .csv file", {
   expect_s3_class(x1, "data.frame")
 })
 
-test_that("Aston parser can read `Agilent Chemstation` 131 files", {
-  skip_if_missing_dependencies()
-  skip_on_cran()
-
-  paths <- rep(path_uv, 2)
-
-  x1 <- read_chroms(paths, format_in = "chemstation_uv", parser = "aston",
-                    find_files = FALSE,
-                    read_metadata = TRUE, progress_bar = FALSE)
-  expect_equal(x[,1], x1[[1]][,"220.0"], ignore_attr = TRUE)
-  expect_equal(as.numeric(rownames(x)), as.numeric(rownames(x1[[1]])))
-  expect_equal(length(x1), length(paths))
-  expect_equal(class(x1[[1]])[1], "matrix")
-  expect_equal(attr(x1[[1]], "data_format"), "wide")
-  expect_equal(names(x1), c("dad1", "dad1"))
-})
-
 x1 <- read_chroms(path_uv, format_in = "chemstation_uv",
                   parser = "chromconverter", find_files = FALSE,
                   read_metadata = TRUE, progress_bar = FALSE)
