@@ -3,3 +3,4 @@ docs
 chromConverter.Rcheck
 .Rhistory
 *.Rproj
+.DS_Store
