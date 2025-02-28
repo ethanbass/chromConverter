@@ -1,3 +1,8 @@
+## chromConverter 0.7.4
+
+* Small updates to documentation.
+* Use newer syntax for reticulate (hopefully this will solve some of the issues with python environments)
+
 ## chromConverter 0.7.3
 
 * Updated `read_shimadzu_lcd` to infer retention times in Shimadzu 3D Data from `Max Plot` stream since it is always (?) present.

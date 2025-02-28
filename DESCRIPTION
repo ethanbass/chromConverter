@@ -1,6 +1,6 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.7.3
+Version: 0.7.4
 Authors@R: c(
     person(given = "Ethan", family = "Bass", email = "ethanbass@gmail.com",
                   role = c("aut", "cre"),
@@ -28,7 +28,7 @@ Imports:
     fs,
     purrr,
     readxl,
-    reticulate,
+    reticulate (>= 1.41),
     stringr,
     tidyr,
     utils,
@@ -47,12 +47,6 @@ Suggests:
     testthat (>= 3.0.0),
     mzR,
     chromConverterExtraTests
-Config/reticulate: list( packages = list(list(package = "scipy"),
-                                    list(package="numpy"),
-                                    list(package = "pandas"),
-                                    list(package="Aston", pip = TRUE),
-                                    list(package="rainbow-api", pip = TRUE),
-                                    list(package = "olefile", pip = TRUE)) )
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)

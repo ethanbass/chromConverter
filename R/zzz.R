@@ -1,5 +1,5 @@
 .onLoad <- function(libname, pkgname){
-  try(env <- reticulate::configure_environment("chromConverter"))
+  reticulate::py_require(packages = c("Aston", "olefile", "pandas", "rainbow-api", "scipy"))
   try({trace_file <<- reticulate::import("aston.tracefile", delay_load = TRUE)},
       silent = TRUE)
   try({pd <<- reticulate::import("pandas", delay_load = TRUE)}, silent = TRUE)
