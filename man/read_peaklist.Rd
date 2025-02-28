@@ -54,7 +54,7 @@ according to the value of \code{format_out}.
 Reads peak lists from specified folders or vector of paths.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 path <- "tests/testthat/testdata/dad1.uv"
 chr <- read_chroms(path, find_files = FALSE, format_in = "chemstation_uv")
 \dontshow{\}) # examplesIf}

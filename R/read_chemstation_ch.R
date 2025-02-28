@@ -33,6 +33,8 @@
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' (&copy James Dillon 2014).
 #' @family 'Agilent' parsers
+#' @examplesIf interactive()
+#' read_chemstation_ch("tests/testthat/testdata/chemstation_130.ch")
 #' @export
 #' @md
 

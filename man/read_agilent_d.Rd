@@ -48,6 +48,11 @@ Metadata can be attached to the chromatogram as \code{\link{attributes}} if
 \description{
 Reads files from 'Agilent' \code{.D} directories.
 }
+\examples{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+read_agilent_d("tests/testthat/testdata/RUTIN2.D")
+\dontshow{\}) # examplesIf}
+}
 \seealso{
 Other 'Agilent' parsers: 
 \code{\link{read_agilent_dx}()},

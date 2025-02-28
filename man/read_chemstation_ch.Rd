@@ -56,6 +56,11 @@ This function was adapted from the
 \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 (&copy James Dillon 2014).
 }
+\examples{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+read_chemstation_ch("tests/testthat/testdata/chemstation_130.ch")
+\dontshow{\}) # examplesIf}
+}
 \seealso{
 Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},
