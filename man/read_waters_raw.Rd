@@ -30,17 +30,17 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Parser for reading 'Waters MassLynx (.raw) files into R.
+Reads 'Waters MassLynx' (\code{.raw}) files into R.
 }
 \note{
 For now this parser only reads 1D chromatograms (not mass spectra or
 DAD data) and does not support parsing of metadata from 'Waters' RAW files.
 }
 \seealso{
-Other {'Waters' parsers}: 
+Other 'Waters' parsers: 
 \code{\link{read_waters_arw}()}
 }
 \author{
 Ethan Bass
 }
-\concept{{'Waters' parsers}}
+\concept{'Waters' parsers}

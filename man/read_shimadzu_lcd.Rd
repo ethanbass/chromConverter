@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_shimadzu_lcd.R
 \name{read_shimadzu_lcd}
 \alias{read_shimadzu_lcd}
-\title{Shimadzu LCD parser}
+\title{Read 'Shimadzu' LCD}
 \usage{
 read_shimadzu_lcd(
   path,
@@ -50,7 +50,7 @@ attached to the chromatogram as \code{\link{attributes}} if
 \code{read_metadata} is \code{TRUE}.
 }
 \description{
-Read 3D PDA or 2D chromatogram streams from 'Shimadzu' LCD files.
+Read 3D PDA or 2D chromatogram streams from 'Shimadzu' \code{.lcd} files.
 }
 \details{
 A parser to read data from 'Shimadzu' \code{.lcd} files. LCD files are
@@ -89,7 +89,7 @@ My parsing of the date-time format seems to be a little off, since
 the acquisition times diverge slightly from the ASCII file.
 }
 \seealso{
-Other {'Shimadzu' parsers}: 
+Other 'Shimadzu' parsers: 
 \code{\link{read_shimadzu}()},
 \code{\link{read_shimadzu_gcd}()},
 \code{\link{read_shimadzu_qgd}()},
@@ -99,4 +99,4 @@ Other {'Shimadzu' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Shimadzu' parsers}}
+\concept{'Shimadzu' parsers}

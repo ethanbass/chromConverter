@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_thermoraw.R
 \name{read_thermoraw}
 \alias{read_thermoraw}
-\title{Read ThermoRaw files into R using ThermoRawFileParser}
+\title{Read ThermoRaw}
 \usage{
 read_thermoraw(
   path,
@@ -55,7 +55,7 @@ ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.
 \doi{10.1021/acs.jproteome.9b00328}.
 }
 \seealso{
-Other {external parsers}: 
+Other external parsers: 
 \code{\link{call_entab}()},
 \code{\link{call_openchrom}()},
 \code{\link{call_rainbow}()},
@@ -65,4 +65,4 @@ Other {external parsers}:
 \author{
 Ethan Bass
 }
-\concept{{external parsers}}
+\concept{external parsers}

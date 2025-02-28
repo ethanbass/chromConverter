@@ -1,6 +1,6 @@
 #' Read 'Shimadzu' QGD
 #'
-#' Parser for 'Shimadzu GCMSsolution' \code{.qgd} files.
+#' Reads 'Shimadzu GCMSsolution' \code{.qgd} GC-MS data files.
 #'
 #' The MS data is stored in the "GCMS Raw Data" storage, which contains a
 #' \code{MS Raw Data} stream with MS scans, a \code{TIC Data} stream containing
@@ -48,7 +48,7 @@
 #' attached to the chromatogram as \code{\link{attributes}} if
 #' \code{read_metadata} is \code{TRUE}.
 #' @author Ethan Bass
-#' @family {'Shimadzu' parsers}
+#' @family 'Shimadzu' parsers
 #' @export
 
 read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),

@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_cdf.R
 \name{read_cdf}
 \alias{read_cdf}
-\title{Read CDF file}
+\title{Read CDF}
 \usage{
 read_cdf(
   path,
@@ -47,7 +47,7 @@ A chromatogram in the format specified by the \code{format_out} and
 \code{data_format} arguments.
 }
 \description{
-Parser for Analytical Data Interchange (ANDI) netCDF files.
+Reads 'Analytical Data Interchange' (ANDI) netCDF (\code{.cdf}) files.
 }
 \author{
 Ethan Bass

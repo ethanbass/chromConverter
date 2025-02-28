@@ -1,11 +1,6 @@
 #' Read files from 'ChemStation' .D directories
 #'
-#' Agilent \code{.ch} files come in several different varieties. This parser
-#' can automatically detect and read several versions of these files from
-#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
-#' \code{130}, which are generally produced by ultraviolet detectors, as well as
-#' \code{81}, \code{179}, and \code{181} which are generally produced by flame
-#' ionization (FID) detectors.
+#' Reads files from 'Agilent' \code{.D} directories.
 #'
 #' @param path Path to \code{.ch} file
 #' @param what Whether to extract chromatograms (\code{chroms}), DAD data
@@ -30,7 +25,7 @@
 #' Metadata can be attached to the chromatogram as \code{\link{attributes}} if
 #' \code{read_metadata} is \code{TRUE}.
 #' @author Ethan Bass
-#' @family {'Agilent' parsers}
+#' @family 'Agilent' parsers
 #' @export
 
 read_agilent_d <- function(path, what = c("chroms", "dad", "peak_table"),

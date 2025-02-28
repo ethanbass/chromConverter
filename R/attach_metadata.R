@@ -736,7 +736,8 @@ read_waters_metadata <- function(file){
 
 #' Extract metadata
 #'
-#' Extract metadata as a data.frame from a list of chromatograms.
+#' Extract metadata as a \code{data.frame} or \code{tibble} from a list of
+#' chromatograms.
 #'
 #' @param chrom_list A list of chromatograms with attached metadata (as returned
 #' by \code{read_chroms} with \code{read_metadata = TRUE}).

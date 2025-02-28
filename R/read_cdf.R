@@ -1,6 +1,6 @@
-#' Read CDF file
+#' Read CDF
 #'
-#' Parser for Analytical Data Interchange (ANDI) netCDF files.
+#' Reads 'Analytical Data Interchange' (ANDI) netCDF (\code{.cdf}) files.
 #'
 #' @param path Path to ANDI netCDF file.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},

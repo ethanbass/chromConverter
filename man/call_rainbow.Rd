@@ -2,7 +2,7 @@
 % Please edit documentation in R/call_rainbow.R
 \name{call_rainbow}
 \alias{call_rainbow}
-\title{Parse Agilent or Waters files with rainbow parser}
+\title{Call Rainbow parsers}
 \usage{
 call_rainbow(
   path,
@@ -59,7 +59,7 @@ and Waters (.raw) files. If \code{format_in} is \code{agilent_d} or
 by detector type using the \code{what} argument.
 }
 \seealso{
-Other {external parsers}: 
+Other external parsers: 
 \code{\link{call_entab}()},
 \code{\link{call_openchrom}()},
 \code{\link{read_thermoraw}()},
@@ -69,4 +69,4 @@ Other {external parsers}:
 \author{
 Ethan Bass
 }
-\concept{{external parsers}}
+\concept{external parsers}

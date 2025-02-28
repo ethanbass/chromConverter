@@ -1,4 +1,4 @@
-#' Read 'Agilent ChemStation' Reports
+#' Read 'Agilent ChemStation' report files.
 #' @param paths Paths to 'ChemStation' report files.
 #' @param data_format Format to output data. Either \code{chromatographr} or
 #' \code{chemstation}.
@@ -7,7 +7,7 @@
 #' @return A data.frame containing the information from the specified
 #' 'ChemStation' report.
 #' @author Ethan Bass
-#' @family {'Agilent' parsers}
+#' @family 'Agilent' parsers
 #' @export
 
 read_chemstation_reports <- function(paths, data_format = c("chromatographr",

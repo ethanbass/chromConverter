@@ -52,7 +52,7 @@
 #' Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{
 #' BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405.
 #' \doi{10.1186/1471-2105-11-405}.
-#' @family {external parsers}
+#' @family external parsers
 #' @export
 
 call_openchrom <- function(files, path_out = NULL, format_in,
@@ -173,6 +173,9 @@ write_openchrom_batchfile <- function(files, path_out,
 
 #' Configure OpenChrom parser
 #'
+#' Configures [OpenChrom](https://lablicate.com/platform/openchrom) to use
+#' command-line interface. Requires OpenChrom version prior to 0.5.0.
+#'
 #' @name configure_openchrom
 #' @param cli Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.
 #' If "false", R will disable CLI. If NULL, R will not modify the ini file.
@@ -183,6 +186,7 @@ write_openchrom_batchfile <- function(files, path_out,
 #' indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
 #' the path to OpenChrom command-line application.
 #' @author Ethan Bass
+#' @seealso [call_openchrom]
 #' @export
 
 configure_openchrom <- function(cli = c("null", "true", "false", "status"), path = NULL){

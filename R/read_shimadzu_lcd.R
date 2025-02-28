@@ -1,6 +1,6 @@
-#' Shimadzu LCD parser
+#' Read 'Shimadzu' LCD
 #'
-#' Read 3D PDA or 2D chromatogram streams from 'Shimadzu' LCD files.
+#' Read 3D PDA or 2D chromatogram streams from 'Shimadzu' \code{.lcd} files.
 #'
 #' A parser to read data from 'Shimadzu' \code{.lcd} files. LCD files are
 #' encoded as 'Microsoft' OLE documents. The parser relies on the
@@ -57,7 +57,7 @@
 #' \code{read_metadata} is \code{TRUE}.
 #' @note My parsing of the date-time format seems to be a little off, since
 #' the acquisition times diverge slightly from the ASCII file.
-#' @family {'Shimadzu' parsers}
+#' @family 'Shimadzu' parsers
 #' @export
 
 read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
@@ -118,9 +118,9 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
   dat
 }
 
-#' Shimadzu LCD 3D parser
+#' Read 'Shimadzu' LCD 3D data
 #'
-#' Read 3D PDA data stream from 'Shimadzu' LCD files.
+#' Reads 3D PDA data stream from 'Shimadzu' \code{.lcd} files.
 #'
 #' A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are
 #' encoded as 'Microsoft' OLE documents. The parser relies on the
@@ -161,7 +161,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #' \code{data.frame} format, according to the value of \code{format_out}.
 #' The chromatograms will be returned in \code{wide} or \code{long} format
 #' according to the value of \code{data_format}.
-#' @family {'Shimadzu' parsers}
+#' @family 'Shimadzu' parsers
 #' @export
 
 read_sz_lcd_3d <- function(path, format_out = "matrix",
@@ -209,9 +209,9 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
   dat
 }
 
-#' Shimadzu LCD 2D parser
+#' Read 'Shimadzu' LCD 2D data
 #'
-#' Read 2D PDA data stream from 'Shimadzu' LCD files.
+#' Reads 2D PDA data stream from 'Shimadzu' \code{.lcd} files.
 #'
 #' A parser to read chromatogram data streams from 'Shimadzu' \code{.lcd} files.
 #' LCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
@@ -254,7 +254,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' \code{format_out}. If multiple chromatograms are found, they will be returned
 #' as a list of matrices or data.frames. The chromatograms will be returned in
 #' \code{wide} or \code{long} format according to the value of \code{data_format}.
-#' @family {'Shimadzu' parsers}
+#' @family 'Shimadzu' parsers
 #' @export
 
 read_sz_lcd_2d <- function(path, format_out = "data.frame",

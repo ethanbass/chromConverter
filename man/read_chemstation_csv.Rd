@@ -20,13 +20,13 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Reads 'Agilent Chemstation' CSV files into R.
+Reads 'Agilent Chemstation' \code{.csv} files.
 }
 \details{
 'Agilent Chemstation' CSV files are encoded in UTF-16.
 }
 \seealso{
-Other {'Agilent' parsers}: 
+Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},
 \code{\link{read_agilent_dx}()},
 \code{\link{read_chemstation_ch}()},
@@ -37,4 +37,4 @@ Other {'Agilent' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Agilent' parsers}}
+\concept{'Agilent' parsers}

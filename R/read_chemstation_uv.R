@@ -1,6 +1,6 @@
-#' Read 'ChemStation' DAD files
+#' Read 'Agilent ChemStation' DAD files
 #'
-#' Agilent \code{.uv} files come in several different varieties. This parser can
+#' Agilent \code{.uv} files come in several different formats. This parser can
 #' automatically detect and read several versions of these files from
 #' 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{31} and
 #' \code{131}.
@@ -27,7 +27,7 @@
 #' @note This function was adapted from the parser in the rainbow project
 #' licensed under GPL 3 by Evan Shi
 #' \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
-#' @family {'Agilent' parsers}
+#' @family 'Agilent' parsers
 #' @export
 
 read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",

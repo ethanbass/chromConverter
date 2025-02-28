@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_ch.R
 \name{read_agilent_dx}
 \alias{read_agilent_dx}
-\title{Parser for reading Agilent ('.dx') files into R}
+\title{Read 'Agilent' DX files}
 \usage{
 read_agilent_dx(
   path,
@@ -29,10 +29,14 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Parser for reading Agilent ('.dx') files into R
+Reads 'Agilent' \code{.dx} files.
+}
+\details{
+This function unzips 'Agilent'  \code{.dx} into a temporary directory using
+\code{\link{unzip}} and calls \code{\link{read_chemstation_ch}}.
 }
 \seealso{
-Other {'Agilent' parsers}: 
+Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},
 \code{\link{read_chemstation_ch}()},
 \code{\link{read_chemstation_csv}()},
@@ -43,4 +47,4 @@ Other {'Agilent' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Agilent' parsers}}
+\concept{'Agilent' parsers}

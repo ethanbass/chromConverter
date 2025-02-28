@@ -56,7 +56,7 @@ Config/reticulate: list( packages = list(list(package = "scipy"),
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.2.9000
 Additional_repositories: https://ethanbass.github.io/drat/, https://ethanbass.r-universe.dev/
 Config/testthat/edition: 3
 Config/Needs/website: rmarkdown, ggplot2, dplyr

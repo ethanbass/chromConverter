@@ -1,6 +1,6 @@
-#' Shimadzu ascii reader
+#' Read 'Shimadzu' ASCII
 #'
-#' Reads 'Shimadzu' ascii files into R. These files can be exported from
+#' Reads 'Shimadzu' ASCII (\code{.txt}) files. These files can be exported from
 #' 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
 #' selecting \code{File Conversion:Convert to ASCII}.
 #'
@@ -31,7 +31,7 @@
 #' the value of \code{what}. Chromatograms are returned in the format specified
 #' by \code{format_out} (retention time x wavelength).
 #' @author Ethan Bass
-#' @family {'Shimadzu' parsers}
+#' @family 'Shimadzu' parsers
 #' @export
 
 read_shimadzu <- function(path, what = "chroms",

@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_waters_arw.R
 \name{read_waters_arw}
 \alias{read_waters_arw}
-\title{Waters ascii (.arw) reader}
+\title{Read 'Waters' ASCII (.arw)}
 \usage{
 read_waters_arw(
   path,
@@ -30,17 +30,17 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Reads 'Waters ARW' files.
+Reads 'Waters' ASCII \code{.arw} files.
 }
 \details{
 For help exporting files from Empower, you can consult the official
 documentation: \href{https://support.waters.com/KB_Inf/Empower_Breeze/WKB77571_How_to_export_3D_raw_data_from_Empower_to_a_Microsoft_Excel_spreadsheet}{How_to_export_3D_raw_data_from_Empower}.
 }
 \seealso{
-Other {'Waters' parsers}: 
+Other 'Waters' parsers: 
 \code{\link{read_waters_raw}()}
 }
 \author{
 Ethan Bass
 }
-\concept{{'Waters' parsers}}
+\concept{'Waters' parsers}

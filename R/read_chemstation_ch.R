@@ -1,6 +1,8 @@
-#' Read 'ChemStation' CH files
+#' Read 'Agilent ChemStation' CH files
 #'
-#' Agilent \code{.ch} files come in several different varieties. This parser
+#' Reads 'Agilent ChemStation' \code{.ch} files.
+#'
+#' Agilent \code{.ch} files come in several different formats. This parser
 #' can automatically detect and read several versions of these files from
 #' 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
 #' \code{130}, which are generally produced by ultraviolet detectors, as well as
@@ -30,7 +32,7 @@
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' (&copy James Dillon 2014).
-#' @family {'Agilent' parsers}
+#' @family 'Agilent' parsers
 #' @export
 #' @md
 
@@ -454,7 +456,13 @@ get_agilent_offsets <- function(version){
   offsets
 }
 
-#' Parser for reading Agilent ('.dx') files into R
+#' Read 'Agilent' DX files
+#'
+#' Reads 'Agilent' \code{.dx} files.
+#'
+#' This function unzips 'Agilent'  \code{.dx} into a temporary directory using
+#' \code{\link{unzip}} and calls \code{\link{read_chemstation_ch}}.
+#'
 #' @importFrom utils unzip
 #' @param path Path to \code{.dx} file.
 #' @param path_out Path to directory to export unzipped files.
@@ -466,7 +474,7 @@ get_agilent_offsets <- function(version){
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
 #' @author Ethan Bass
-#' @family {'Agilent' parsers}
+#' @family 'Agilent' parsers
 #' @export
 read_agilent_dx <-  function(path, path_out = NULL,
                              format_out = c("matrix", "data.frame", "data.table"),

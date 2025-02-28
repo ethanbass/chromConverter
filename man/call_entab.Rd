@@ -2,8 +2,7 @@
 % Please edit documentation in R/call_entab.R
 \name{call_entab}
 \alias{call_entab}
-\title{Call Entab
-Converts files using Entab parsers}
+\title{Call Entab parsers}
 \usage{
 call_entab(
   path,
@@ -34,15 +33,14 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Call Entab
-Converts files using Entab parsers
+Converts files using \href{https://github.com/bovee/entab}{Entab} parsers.
 }
 \seealso{
-Other {external parsers}: 
+Other external parsers: 
 \code{\link{call_openchrom}()},
 \code{\link{call_rainbow}()},
 \code{\link{read_thermoraw}()},
 \code{\link{sp_converter}()},
 \code{\link{uv_converter}()}
 }
-\concept{{external parsers}}
+\concept{external parsers}

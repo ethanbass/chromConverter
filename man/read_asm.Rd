@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_asm.R
 \name{read_asm}
 \alias{read_asm}
-\title{Read Allotrope Simple Model (ASM) 2D chromatograms}
+\title{Read 'Allotrope Simple Model' (ASM) 2D chromatograms}
 \usage{
 read_asm(
   path,
@@ -39,7 +39,8 @@ determines whether the chromatogram is returned as a \code{matrix} or
 \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
-A parser for reading 'Allotrope Simple Model' files into R.
+A parser for reading \href{https://www.allotrope.org/asm}{'Allotrope Simple Model'}
+files.
 }
 \author{
 Ethan Bass

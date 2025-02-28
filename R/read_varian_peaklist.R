@@ -1,10 +1,12 @@
-#' Read 'Varian' peaklist.
+#' Read 'Varian' peak list.
+#'
 #' Read peak list(s) from 'Varian MS Workstation'.
-#' @param path Path to Varian peak list file.
+#'
+#' @param path Path to 'Varian' peak list file.
 #' @importFrom utils read.csv
 #' @author Ethan Bass
 #' @return A data.frame containing the information from the specified report.
-#' @family {'Varian' parsers}
+#' @family 'Varian' parsers
 #' @export
 
 read_varian_peaklist <- function(path){

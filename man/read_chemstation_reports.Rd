@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_report.R
 \name{read_chemstation_reports}
 \alias{read_chemstation_reports}
-\title{Read 'Agilent ChemStation' Reports}
+\title{Read 'Agilent ChemStation' report files.}
 \usage{
 read_chemstation_reports(
   paths,
@@ -24,10 +24,10 @@ A data.frame containing the information from the specified
 'ChemStation' report.
 }
 \description{
-Read 'Agilent ChemStation' Reports
+Read 'Agilent ChemStation' report files.
 }
 \seealso{
-Other {'Agilent' parsers}: 
+Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},
 \code{\link{read_agilent_dx}()},
 \code{\link{read_chemstation_ch}()},
@@ -38,4 +38,4 @@ Other {'Agilent' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Agilent' parsers}}
+\concept{'Agilent' parsers}

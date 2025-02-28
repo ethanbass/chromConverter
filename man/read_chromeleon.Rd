@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chromeleon.R
 \name{read_chromeleon}
 \alias{read_chromeleon}
-\title{Chromeleon ASCII reader}
+\title{Read 'Chromeleon' ASCII files}
 \usage{
 read_chromeleon(
   path,
@@ -35,7 +35,7 @@ A chromatogram in the format specified by \code{format_out}.
 (retention time x wavelength).
 }
 \description{
-Reads 'Thermo Fisher Chromeleon™ CDS' files into R.
+Reads 'Thermo Fisher Chromeleon™ CDS' ASCII (\code{.txt}) files.
 }
 \author{
 Ethan Bass

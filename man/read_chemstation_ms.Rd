@@ -45,7 +45,7 @@ determines whether the chromatogram is returned as a \code{matrix},
 chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
-Parser to read Agilent Chemstation 'MSD Spectral Files' beginning with
+Reads 'Agilent ChemStation MSD Spectral Files' beginning with
 \code{x01/x32/x00/x00}.
 }
 \note{
@@ -54,7 +54,7 @@ information on the structure of these files in the
 \href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
 }
 \seealso{
-Other {'Agilent' parsers}: 
+Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},
 \code{\link{read_agilent_dx}()},
 \code{\link{read_chemstation_ch}()},
@@ -65,4 +65,4 @@ Other {'Agilent' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Agilent' parsers}}
+\concept{'Agilent' parsers}

@@ -1,5 +1,7 @@
-#' Call Entab
-#' Converts files using Entab parsers
+#' Call Entab parsers
+#'
+#' Converts files using [Entab](https://github.com/bovee/entab) parsers.
+#'
 #' @param path Path to file
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
@@ -10,7 +12,7 @@
 #' or \code{raw}.
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
-#' @family {external parsers}
+#' @family external parsers
 #' @export
 
 call_entab <- function(path, data_format = c("wide", "long"),

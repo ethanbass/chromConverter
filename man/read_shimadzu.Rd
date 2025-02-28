@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_shimadzu_ascii.R
 \name{read_shimadzu}
 \alias{read_shimadzu}
-\title{Shimadzu ascii reader}
+\title{Read 'Shimadzu' ASCII}
 \usage{
 read_shimadzu(
   path,
@@ -58,12 +58,12 @@ the value of \code{what}. Chromatograms are returned in the format specified
 by \code{format_out} (retention time x wavelength).
 }
 \description{
-Reads 'Shimadzu' ascii files into R. These files can be exported from
+Reads 'Shimadzu' ASCII (\code{.txt}) files. These files can be exported from
 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
 selecting \code{File Conversion:Convert to ASCII}.
 }
 \seealso{
-Other {'Shimadzu' parsers}: 
+Other 'Shimadzu' parsers: 
 \code{\link{read_shimadzu_gcd}()},
 \code{\link{read_shimadzu_lcd}()},
 \code{\link{read_shimadzu_qgd}()},
@@ -73,4 +73,4 @@ Other {'Shimadzu' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Shimadzu' parsers}}
+\concept{'Shimadzu' parsers}

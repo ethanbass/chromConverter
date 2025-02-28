@@ -19,7 +19,7 @@ indicating whether the chromConverter environment is configured correctly.
 Otherwise, there is no return value.
 }
 \description{
-Configures reticulate environment for parsers.
+Configures reticulate environment for parsers that have python dependencies.
 }
 \author{
 Ethan Bass

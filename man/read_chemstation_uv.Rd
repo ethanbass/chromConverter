@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_uv.R
 \name{read_chemstation_uv}
 \alias{read_chemstation_uv}
-\title{Read 'ChemStation' DAD files}
+\title{Read 'Agilent ChemStation' DAD files}
 \usage{
 read_chemstation_uv(
   path,
@@ -40,7 +40,7 @@ a \code{matrix} or \code{data.frame}. Metadata can be attached to the
 chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
-Agilent \code{.uv} files come in several different varieties. This parser can
+Agilent \code{.uv} files come in several different formats. This parser can
 automatically detect and read several versions of these files from
 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{31} and
 \code{131}.
@@ -51,7 +51,7 @@ licensed under GPL 3 by Evan Shi
 \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
 }
 \seealso{
-Other {'Agilent' parsers}: 
+Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},
 \code{\link{read_agilent_dx}()},
 \code{\link{read_chemstation_ch}()},
@@ -62,4 +62,4 @@ Other {'Agilent' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Agilent' parsers}}
+\concept{'Agilent' parsers}

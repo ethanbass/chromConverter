@@ -1,4 +1,4 @@
-#' Extract data from mzML files
+#' Read mzML files
 #'
 #' Extracts data from \code{mzML} files using parsers from either RaMS or mzR.
 #' The RaMS parser (default) will only return data in tidy (long) format. The

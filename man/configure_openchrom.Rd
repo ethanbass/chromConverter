@@ -19,7 +19,11 @@ indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
 the path to OpenChrom command-line application.
 }
 \description{
-Configure OpenChrom parser
+Configures \href{https://lablicate.com/platform/openchrom}{OpenChrom} to use
+command-line interface. Requires OpenChrom version prior to 0.5.0.
+}
+\seealso{
+\link{call_openchrom}
 }
 \author{
 Ethan Bass

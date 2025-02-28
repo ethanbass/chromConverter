@@ -27,5 +27,6 @@ A data.frame or tibble (according to the value of \code{format_out}),
 with samples as rows and the specified metadata elements as columns.
 }
 \description{
-Extract metadata as a data.frame from a list of chromatograms.
+Extract metadata as a \code{data.frame} or \code{tibble} from a list of
+chromatograms.
 }

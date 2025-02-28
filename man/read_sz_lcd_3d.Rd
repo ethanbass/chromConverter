@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_shimadzu_lcd.R
 \name{read_sz_lcd_3d}
 \alias{read_sz_lcd_3d}
-\title{Shimadzu LCD 3D parser}
+\title{Read 'Shimadzu' LCD 3D data}
 \usage{
 read_sz_lcd_3d(
   path,
@@ -34,7 +34,7 @@ The chromatograms will be returned in \code{wide} or \code{long} format
 according to the value of \code{data_format}.
 }
 \description{
-Read 3D PDA data stream from 'Shimadzu' LCD files.
+Reads 3D PDA data stream from 'Shimadzu' \code{.lcd} files.
 }
 \details{
 A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are
@@ -67,7 +67,7 @@ complements. The value at each position is derived by subtracting the delta
 at each position from the previous value.
 }
 \seealso{
-Other {'Shimadzu' parsers}: 
+Other 'Shimadzu' parsers: 
 \code{\link{read_shimadzu}()},
 \code{\link{read_shimadzu_gcd}()},
 \code{\link{read_shimadzu_lcd}()},
@@ -77,4 +77,4 @@ Other {'Shimadzu' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Shimadzu' parsers}}
+\concept{'Shimadzu' parsers}

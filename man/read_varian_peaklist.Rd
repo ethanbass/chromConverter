@@ -2,26 +2,24 @@
 % Please edit documentation in R/read_varian_peaklist.R
 \name{read_varian_peaklist}
 \alias{read_varian_peaklist}
-\title{Read 'Varian' peaklist.
-Read peak list(s) from 'Varian MS Workstation'.}
+\title{Read 'Varian' peak list.}
 \usage{
 read_varian_peaklist(path)
 }
 \arguments{
-\item{path}{Path to Varian peak list file.}
+\item{path}{Path to 'Varian' peak list file.}
 }
 \value{
 A data.frame containing the information from the specified report.
 }
 \description{
-Read 'Varian' peaklist.
 Read peak list(s) from 'Varian MS Workstation'.
 }
 \seealso{
-Other {'Varian' parsers}: 
+Other 'Varian' parsers: 
 \code{\link{read_varian_sms}()}
 }
 \author{
 Ethan Bass
 }
-\concept{{'Varian' parsers}}
+\concept{'Varian' parsers}

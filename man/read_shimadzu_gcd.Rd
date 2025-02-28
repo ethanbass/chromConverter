@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_shimadzu_gcd.R
 \name{read_shimadzu_gcd}
 \alias{read_shimadzu_gcd}
-\title{Shimadzu GCD parser}
+\title{Read 'Shimadzu' GCD}
 \usage{
 read_shimadzu_gcd(
   path,
@@ -41,7 +41,7 @@ The chromatograms will be returned in \code{wide} or \code{long} format
 according to the value of \code{data_format}.
 }
 \description{
-Read chromatogram data streams from 'Shimadzu' GCD files.
+Read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
 }
 \details{
 A parser to read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
@@ -70,7 +70,7 @@ This parser is experimental and may still need some work. It is not
 yet able to interpret much metadata from the files.
 }
 \seealso{
-Other {'Shimadzu' parsers}: 
+Other 'Shimadzu' parsers: 
 \code{\link{read_shimadzu}()},
 \code{\link{read_shimadzu_lcd}()},
 \code{\link{read_shimadzu_qgd}()},
@@ -80,4 +80,4 @@ Other {'Shimadzu' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Shimadzu' parsers}}
+\concept{'Shimadzu' parsers}

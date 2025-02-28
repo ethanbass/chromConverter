@@ -9,7 +9,7 @@
 #' @param verbose Logical. Whether to print verbose output.
 #' @param ... Additional arguments to write function.
 #' @author Ethan Bass
-#' @family {write functions}
+#' @family write functions
 #' @export
 
 write_chroms <- function(chrom_list, path_out,
@@ -63,7 +63,7 @@ write_chroms <- function(chrom_list, path_out,
 #' specified by \code{path_out}. The file will be named according to the value
 #' of \code{sample_name}. If no \code{sample_name} is provided, the
 #' \code{sample_name} attribute will be used if it exists.
-#' @family {write functions}
+#' @family write functions
 #' @export
 
 write_andi_chrom <- function(x, path_out, sample_name = NULL, lambda = NULL, force = FALSE){

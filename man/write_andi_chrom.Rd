@@ -40,11 +40,11 @@ of \code{sample_name}. If no \code{sample_name} is provided, the
 }
 
 \seealso{
-Other {write functions}: 
+Other write functions: 
 \code{\link{write_chroms}()},
 \code{\link{write_mzml}()}
 }
 \author{
 Ethan Bass
 }
-\concept{{write functions}}
+\concept{write functions}

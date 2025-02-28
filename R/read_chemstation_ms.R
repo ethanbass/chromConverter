@@ -1,6 +1,6 @@
 #' Read 'Agilent ChemStation' MS file.
 #'
-#' Parser to read Agilent Chemstation 'MSD Spectral Files' beginning with
+#' Reads 'Agilent ChemStation MSD Spectral Files' beginning with
 #' \code{x01/x32/x00/x00}.
 #'
 #' @param path Path to \code{.ms} file
@@ -28,7 +28,7 @@
 #' @note Many thanks to Evan Shi and Eugene Kwan for providing helpful
 #' information on the structure of these files in the
 #' \href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
-#' @family {'Agilent' parsers}
+#' @family 'Agilent' parsers
 #' @export
 
 read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),

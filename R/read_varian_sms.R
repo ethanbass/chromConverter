@@ -48,7 +48,7 @@
 #' @author Ethan Bass
 #' @note There is still only limited support for the extraction of metadata from
 #' this file format. Also, the timestamp conversions aren't quite right.
-#' @family {'Varian' parsers}
+#' @family 'Varian' parsers
 #' @export
 
 read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),

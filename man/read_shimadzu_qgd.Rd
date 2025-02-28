@@ -50,7 +50,7 @@ attached to the chromatogram as \code{\link{attributes}} if
 \code{read_metadata} is \code{TRUE}.
 }
 \description{
-Parser for 'Shimadzu GCMSsolution' \code{.qgd} files.
+Reads 'Shimadzu GCMSsolution' \code{.qgd} GC-MS data files.
 }
 \details{
 The MS data is stored in the "GCMS Raw Data" storage, which contains a
@@ -79,7 +79,7 @@ This parser is experimental and may still need some work. It is not
 yet able to interpret much metadata from the files.
 }
 \seealso{
-Other {'Shimadzu' parsers}: 
+Other 'Shimadzu' parsers: 
 \code{\link{read_shimadzu}()},
 \code{\link{read_shimadzu_gcd}()},
 \code{\link{read_shimadzu_lcd}()},
@@ -89,4 +89,4 @@ Other {'Shimadzu' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Shimadzu' parsers}}
+\concept{'Shimadzu' parsers}

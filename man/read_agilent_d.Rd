@@ -46,15 +46,10 @@ Metadata can be attached to the chromatogram as \code{\link{attributes}} if
 \code{read_metadata} is \code{TRUE}.
 }
 \description{
-Agilent \code{.ch} files come in several different varieties. This parser
-can automatically detect and read several versions of these files from
-'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
-\code{130}, which are generally produced by ultraviolet detectors, as well as
-\code{81}, \code{179}, and \code{181} which are generally produced by flame
-ionization (FID) detectors.
+Reads files from 'Agilent' \code{.D} directories.
 }
 \seealso{
-Other {'Agilent' parsers}: 
+Other 'Agilent' parsers: 
 \code{\link{read_agilent_dx}()},
 \code{\link{read_chemstation_ch}()},
 \code{\link{read_chemstation_csv}()},
@@ -65,4 +60,4 @@ Other {'Agilent' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Agilent' parsers}}
+\concept{'Agilent' parsers}

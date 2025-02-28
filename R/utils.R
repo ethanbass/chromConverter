@@ -350,7 +350,8 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 
 #' Configure python environment
 #'
-#' Configures reticulate environment for parsers.
+#' Configures reticulate environment for parsers that have python dependencies.
+#'
 #' @name configure_python_environment
 #' @param parser Either \code{aston}, \code{rainbow}, or \code{olefile} (for
 #' \code{read_shimadzu_lcd}).

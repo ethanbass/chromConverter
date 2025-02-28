@@ -1,6 +1,6 @@
 #' Read Chemstation CSV
 #'
-#' Reads 'Agilent Chemstation' CSV files into R.
+#' Reads 'Agilent Chemstation' \code{.csv} files.
 #'
 #' 'Agilent Chemstation' CSV files are encoded in UTF-16.
 #'
@@ -12,7 +12,7 @@
 #' @return A chromatogram in the format specified by \code{format_out}
 #' (retention time x wavelength).
 #' @author Ethan Bass
-#' @family {'Agilent' parsers}
+#' @family 'Agilent' parsers
 #' @export
 
 read_chemstation_csv <- function(path, format_out = c("matrix", "data.frame", "data.table")){

@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_mzml.R
 \name{read_mzml}
 \alias{read_mzml}
-\title{Extract data from mzML files}
+\title{Read mzML files}
 \usage{
 read_mzml(
   path,

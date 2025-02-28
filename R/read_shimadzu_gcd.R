@@ -1,6 +1,6 @@
-#' Shimadzu GCD parser
+#' Read 'Shimadzu' GCD
 #'
-#' Read chromatogram data streams from 'Shimadzu' GCD files.
+#' Read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
 #'
 #' A parser to read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
 #' GCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
@@ -39,7 +39,7 @@
 #' according to the value of \code{data_format}.
 #' @note This parser is experimental and may still need some work. It is not
 #' yet able to interpret much metadata from the files.
-#' @family {'Shimadzu' parsers}
+#' @family 'Shimadzu' parsers
 #' @export
 
 read_shimadzu_gcd <- function(path, what = "chroms",

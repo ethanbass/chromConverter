@@ -75,10 +75,10 @@ There is still only limited support for the extraction of metadata from
 this file format. Also, the timestamp conversions aren't quite right.
 }
 \seealso{
-Other {'Varian' parsers}: 
+Other 'Varian' parsers: 
 \code{\link{read_varian_peaklist}()}
 }
 \author{
 Ethan Bass
 }
-\concept{{'Varian' parsers}}
+\concept{'Varian' parsers}

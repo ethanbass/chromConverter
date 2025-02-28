@@ -1,4 +1,4 @@
-#' Parse Agilent or Waters files with rainbow parser
+#' Call Rainbow parsers
 #'
 #' Uses [rainbow](https://rainbow-api.readthedocs.io) parsers to read in Agilent (.D)
 #' and Waters (.raw) files. If \code{format_in} is \code{agilent_d} or
@@ -27,7 +27,7 @@
 #' @return Returns a (nested) list of \code{matrices} or \code{data.frames} according to
 #' the value of \code{format_out}. Data is ordered according to the value of
 #' \code{by}.
-#' @family {external parsers}
+#' @family external parsers
 #' @export
 
 call_rainbow <- function(path,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_ch.R
 \name{read_chemstation_ch}
 \alias{read_chemstation_ch}
-\title{Read 'ChemStation' CH files}
+\title{Read 'Agilent ChemStation' CH files}
 \usage{
 read_chemstation_ch(
   path,
@@ -41,7 +41,10 @@ determines whether the chromatogram is returned as a \code{matrix},
 chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
-Agilent \code{.ch} files come in several different varieties. This parser
+Reads 'Agilent ChemStation' \code{.ch} files.
+}
+\details{
+Agilent \code{.ch} files come in several different formats. This parser
 can automatically detect and read several versions of these files from
 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
 \code{130}, which are generally produced by ultraviolet detectors, as well as
@@ -54,7 +57,7 @@ This function was adapted from the
 (&copy James Dillon 2014).
 }
 \seealso{
-Other {'Agilent' parsers}: 
+Other 'Agilent' parsers: 
 \code{\link{read_agilent_d}()},
 \code{\link{read_agilent_dx}()},
 \code{\link{read_chemstation_csv}()},
@@ -65,4 +68,4 @@ Other {'Agilent' parsers}:
 \author{
 Ethan Bass
 }
-\concept{{'Agilent' parsers}}
+\concept{'Agilent' parsers}

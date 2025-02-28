@@ -1,7 +1,7 @@
 
-#' Chromeleon ASCII reader
+#' Read 'Chromeleon' ASCII files
 #'
-#' Reads 'Thermo Fisher Chromeleon™ CDS' files into R.
+#' Reads 'Thermo Fisher Chromeleon™ CDS' ASCII (\code{.txt}) files.
 #'
 #' @importFrom utils tail read.csv
 #' @param path Path to file
