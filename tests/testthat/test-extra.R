@@ -848,7 +848,7 @@ test_that("read_chroms can read 'Thermo' RAW files", {
   skip_if_not_installed("chromConverterExtraTests")
   skip_if_missing_thermorawfileparser()
 
-  path <- system.file("20220404_CirA_D2_04.raw",
+  path <- system.file("CirA.raw",
                       package = "chromConverterExtraTests")
   tmp <- tempdir()
   on.exit(unlink(tmp))
