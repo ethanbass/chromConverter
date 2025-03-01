@@ -1,7 +1,7 @@
 ## chromConverter 0.7.4
 
-* Small updates to documentation.
-* Use newer syntax for reticulate (hopefully this will solve some of the issues with python environments)
+* Use updated syntax for reticulate (hopefully this will solve some of the issues with python configuration failure).
+* Small updates to documentation (e.g., addition of functional families, standardization of function titles and descriptions).
 
 ## chromConverter 0.7.3
 
