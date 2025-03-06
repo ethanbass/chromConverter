@@ -850,6 +850,8 @@ test_that("read_chroms can read 'Thermo' RAW files", {
 
   path <- system.file("CirA.raw",
                       package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
   tmp <- tempdir()
   on.exit(unlink(tmp))
   x <- read_chroms(path, progress_bar = FALSE, path_out = tmp)[[1]]
