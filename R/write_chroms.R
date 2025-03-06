@@ -1,4 +1,8 @@
-#' Export chromatograms
+#' Write chromatograms
+#'
+#' Writes chromatograms to disk in the format specified by \code{export_format}:
+#' either (\code{mzml}), \code{cdf} or \code{csv}.
+#'
 #' @param chrom_list A list of chromatograms.
 #' @param path_out Path to directory for writing files.
 #' @param export_format Format to export files: either \code{mzml}, \code{cdf},
@@ -8,6 +12,10 @@
 #' @param show_progress Logical. Whether to show progress bar. Defaults to \code{TRUE}.
 #' @param verbose Logical. Whether to print verbose output.
 #' @param ... Additional arguments to write function.
+#' @return No return value. The function is called for its side effects.
+#' @section Side effects:
+#' Exports a chromatogram in the file format specified by \code{export_format}
+#' in the directory specified by \code{path_out}.
 #' @author Ethan Bass
 #' @family write functions
 #' @export
@@ -57,7 +65,7 @@ write_chroms <- function(chrom_list, path_out,
 #' column to export.
 #' @param force Whether to overwrite existing files at the specified path.
 #' Defaults to \code{FALSE}.
-#' @return No return value. The function is called for its side effects.
+#' @return Invisibly returns the path to the written CDF file.
 #' @section Side effects:
 #' Exports a chromatogram in ANDI chromatography format (netCDF) in the directory
 #' specified by \code{path_out}. The file will be named according to the value
@@ -132,6 +140,7 @@ write_andi_chrom <- function(x, path_out, sample_name = NULL, lambda = NULL, for
 
   # finish writing file
   ncdf4::nc_close(nc)
+  return(invisible(file_out))
 }
 
 #' Get filename

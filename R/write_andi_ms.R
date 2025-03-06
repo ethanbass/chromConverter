@@ -141,6 +141,7 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
 
   # finish writing file
   ncdf4::nc_close(nc)
+  return(invisible(file_out))
 }
 
 #' Format metadata for ANDI MS
@@ -218,13 +219,4 @@ format_metadata_for_andi_ms <- function(x, intensity_format, ms_params){
                raw_data_intensity_format = simple_cap(intensity_format)
   )
   meta
-}
-
-
-#' Utility function to capitalize first letter of string
-#' @noRd
-simple_cap <- function(x) {
-  s <- strsplit(x, " ")[[1]]
-  paste(toupper(substring(s, 1, 1)), substring(s, 2),
-        sep = "", collapse = " ")
 }

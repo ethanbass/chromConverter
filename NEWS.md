@@ -1,6 +1,7 @@
 ## chromConverter 0.7.4
 
 * Use updated syntax for reticulate (hopefully this will solve some of the issues with python configuration failure).
+* Invisibly return paths to exported CDF files.
 * Small updates to documentation (e.g., addition of functional families, standardization of function titles and descriptions).
 
 ## chromConverter 0.7.3

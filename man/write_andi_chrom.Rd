@@ -22,7 +22,7 @@ column to export.}
 Defaults to \code{FALSE}.}
 }
 \value{
-No return value. The function is called for its side effects.
+Invisibly returns the path to the written CDF file.
 }
 \description{
 Exports a chromatogram in ANDI (Analytical Data Interchange) chromatography

@@ -2,7 +2,7 @@
 % Please edit documentation in R/write_chroms.R
 \name{write_chroms}
 \alias{write_chroms}
-\title{Export chromatograms}
+\title{Write chromatograms}
 \usage{
 write_chroms(
   chrom_list,
@@ -33,9 +33,19 @@ or \code{csv}.}
 
 \item{...}{Additional arguments to write function.}
 }
-\description{
-Export chromatograms
+\value{
+No return value. The function is called for its side effects.
 }
+\description{
+Writes chromatograms to disk in the format specified by \code{export_format}:
+either (\code{mzml}), \code{cdf} or \code{csv}.
+}
+\section{Side effects}{
+
+Exports a chromatogram in the file format specified by \code{export_format}
+in the directory specified by \code{path_out}.
+}
+
 \seealso{
 Other write functions: 
 \code{\link{write_andi_chrom}()},
