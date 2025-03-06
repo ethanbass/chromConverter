@@ -6,6 +6,9 @@
 #' @importFrom utils read.csv
 #' @author Ethan Bass
 #' @return A data.frame containing the information from the specified report.
+#' @examples \dontrun{
+#' read_varian_peaklist(path)
+#' }
 #' @family 'Varian' parsers
 #' @export
 

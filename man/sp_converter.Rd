@@ -31,10 +31,7 @@ A chromatogram in \code{data.frame} format (retention time x wavelength).
 }
 \description{
 Converts a single chromatogram from MassHunter \code{.sp} format to R
-\code{data.frame}.
-}
-\details{
-Uses the \href{https://github.com/bovee/aston}{Aston} file parser.
+\code{data.frame} using the \href{https://github.com/bovee/aston}{Aston} file parser.
 }
 \seealso{
 Other external parsers: 

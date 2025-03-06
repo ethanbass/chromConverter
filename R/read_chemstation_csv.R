@@ -1,4 +1,4 @@
-#' Read Chemstation CSV
+#' Read 'Agilent ChemStation' CSV files
 #'
 #' Reads 'Agilent Chemstation' \code{.csv} files.
 #'

@@ -1,4 +1,4 @@
-#' Read 'Shimadzu' QGD
+#' Read 'Shimadzu' QGD files
 #'
 #' Reads 'Shimadzu GCMSsolution' \code{.qgd} GC-MS data files.
 #'
@@ -27,7 +27,7 @@
 #' streams.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
-#' @param read_metadata Logical. Whether to attach metadata.
+#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
@@ -92,7 +92,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
   dat
 }
 
-#' Read QGD total ion chromatogram
+#' Read 'Shimadzu' QGD total ion chromatogram
 #' @author Ethan Bass
 #' @noRd
 read_qgd_tic <- function(path, format_out = "data.frame",

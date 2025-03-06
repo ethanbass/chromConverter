@@ -10,7 +10,7 @@
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @param data_format Either \code{wide} (default) or \code{long}.
-#' @param read_metadata Logical. Whether to attach metadata.
+#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @param scale Whether to scale the data by the scaling factor present in the
@@ -155,7 +155,7 @@ decode_uv_delta <- function(f, nval, ncol){
   data
 }
 
-#' Decode 'Agilent' DAD array
+#' Decode 'Agilent ChemStation' DAD array
 #' @author Ethan Bass
 #' @noRd
 decode_uv_array <- function(f, nval, ncol){

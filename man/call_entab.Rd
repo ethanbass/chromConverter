@@ -2,7 +2,7 @@
 % Please edit documentation in R/call_entab.R
 \name{call_entab}
 \alias{call_entab}
-\title{Call Entab parsers}
+\title{Call Entab}
 \usage{
 call_entab(
   path,
@@ -33,7 +33,7 @@ A chromatogram in the format specified by \code{format_out}
 (retention time x wavelength).
 }
 \description{
-Converts files using \href{https://github.com/bovee/entab}{Entab} parsers.
+Converts chromatography date files using \href{https://github.com/bovee/entab}{entab} parsers.
 }
 \seealso{
 Other external parsers: 

@@ -30,6 +30,9 @@
 #' top levels are chromatograms, peak tables, and/or mass spectra according to
 #' the value of \code{what}. Chromatograms are returned in the format specified
 #' by \code{format_out} (retention time x wavelength).
+#' @examplesIf interactive()
+#' path <- "tests/testthat/testdata/ladder.txt"
+#' read_shimadzu(path)
 #' @author Ethan Bass
 #' @family 'Shimadzu' parsers
 #' @export

@@ -2,7 +2,8 @@
 % Please edit documentation in R/call_rainbow.R
 \name{call_rainbow}
 \alias{call_rainbow}
-\title{Call Rainbow parsers}
+\title{Call 'rainbow' parsers
+Parse 'Agilent' or 'Waters' files with rainbow parsers}
 \usage{
 call_rainbow(
   path,
@@ -52,10 +53,10 @@ the value of \code{format_out}. Data is ordered according to the value of
 }
 \description{
 Uses \href{https://rainbow-api.readthedocs.io}{rainbow} parsers to read in Agilent (.D)
-and Waters (.raw) files. If \code{format_in} is \code{agilent_d} or
-\code{waters_raw}, a directory of the appropriate format (\code{.d} or
-\code{.raw}) should be provided to \code{file}. If \code{format_in} is
-\code{chemstation_uv} a \code{.uv} file should be provided. Data can be filtered
+and Waters (.raw) files. If \code{format_in} is \code{"agilent_d"} or
+\code{"waters_raw"}, a directory of the appropriate format (\code{.d} or
+\code{.raw}) should be provided to the \code{file} argument. If \code{format_in} is
+\code{"chemstation_uv"} a \code{.uv} file should be provided. Data can be filtered
 by detector type using the \code{what} argument.
 }
 \seealso{

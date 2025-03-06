@@ -1,6 +1,6 @@
 #' Read 'Varian' SMS
 #'
-#' Parser for reading 'Varian Workstation' SMS file.
+#' Reads 'Varian Workstation' SMS files.
 #'
 #' Varian SMS files begin with a "DIRECTORY" with offsets for each section. The
 #' first section (in all the files I've been able to inspect) is "MSData"
@@ -48,6 +48,9 @@
 #' @author Ethan Bass
 #' @note There is still only limited support for the extraction of metadata from
 #' this file format. Also, the timestamp conversions aren't quite right.
+#' @examples \dontrun{
+#' read_varian_sms(path)
+#' }
 #' @family 'Varian' parsers
 #' @export
 

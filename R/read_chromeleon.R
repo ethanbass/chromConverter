@@ -1,4 +1,3 @@
-
 #' Read 'Chromeleon' ASCII files
 #'
 #' Reads 'Thermo Fisher Chromeleon™ CDS' ASCII (\code{.txt}) files.

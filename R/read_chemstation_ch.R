@@ -2,7 +2,7 @@
 #'
 #' Reads 'Agilent ChemStation' \code{.ch} files.
 #'
-#' Agilent \code{.ch} files come in several different formats. This parser
+#' 'Agilent' \code{.ch} files come in several different formats. This parser
 #' can automatically detect and read several versions of these files from
 #' 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
 #' \code{130}, which are generally produced by ultraviolet detectors, as well as
@@ -14,7 +14,7 @@
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Logical. Whether to attach metadata.
+#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @param scale Whether to scale the data by the scaling factor present in the
@@ -31,10 +31,10 @@
 #' chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
-#' (&copy James Dillon 2014).
-#' @family 'Agilent' parsers
+#' (© James Dillon 2014).
 #' @examplesIf interactive()
 #' read_chemstation_ch("tests/testthat/testdata/chemstation_130.ch")
+#' @family 'Agilent' parsers
 #' @export
 #' @md
 
@@ -478,6 +478,7 @@ get_agilent_offsets <- function(version){
 #' @author Ethan Bass
 #' @family 'Agilent' parsers
 #' @export
+
 read_agilent_dx <-  function(path, path_out = NULL,
                              format_out = c("matrix", "data.frame", "data.table"),
                               data_format = c("wide","long"),

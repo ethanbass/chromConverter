@@ -1,6 +1,6 @@
-#' Call Entab parsers
+#' Call Entab
 #'
-#' Converts files using [Entab](https://github.com/bovee/entab) parsers.
+#' Converts chromatography date files using [entab](https://github.com/bovee/entab) parsers.
 #'
 #' @param path Path to file
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.

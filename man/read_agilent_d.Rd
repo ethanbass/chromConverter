@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_agilent_d.R
 \name{read_agilent_d}
 \alias{read_agilent_d}
-\title{Read files from 'ChemStation' .D directories}
+\title{Read files from 'Agilent ChemStation' .D directories}
 \usage{
 read_agilent_d(
   path,
@@ -49,7 +49,7 @@ Metadata can be attached to the chromatogram as \code{\link{attributes}} if
 Reads files from 'Agilent' \code{.D} directories.
 }
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 read_agilent_d("tests/testthat/testdata/RUTIN2.D")
 \dontshow{\}) # examplesIf}
 }

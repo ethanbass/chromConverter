@@ -171,7 +171,7 @@ write_openchrom_batchfile <- function(files, path_out,
   path_xml
 }
 
-#' Configure OpenChrom parser
+#' Configure 'OpenChrom' parser
 #'
 #' Configures [OpenChrom](https://lablicate.com/platform/openchrom) to use
 #' command-line interface. Requires OpenChrom version prior to 0.5.0.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/call_openchrom.R
 \name{configure_openchrom}
 \alias{configure_openchrom}
-\title{Configure OpenChrom parser}
+\title{Configure 'OpenChrom' parser}
 \usage{
 configure_openchrom(cli = c("null", "true", "false", "status"), path = NULL)
 }

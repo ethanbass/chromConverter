@@ -1,9 +1,7 @@
 #' Converter for 'Agilent MassHunter' UV files
 #'
 #' Converts a single chromatogram from MassHunter \code{.sp} format to R
-#' \code{data.frame}.
-#'
-#' Uses the [Aston](https://github.com/bovee/aston) file parser.
+#' \code{data.frame} using the [Aston](https://github.com/bovee/aston) file parser.
 #'
 #' @name sp_converter
 #' @param path Path to file

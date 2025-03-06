@@ -27,7 +27,7 @@ is present.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
@@ -87,6 +87,11 @@ at each position from the previous value.
 \note{
 My parsing of the date-time format seems to be a little off, since
 the acquisition times diverge slightly from the ASCII file.
+}
+\examples{
+\dontrun{
+read_shimadzu_lcd(path)
+}
 }
 \seealso{
 Other 'Shimadzu' parsers: 

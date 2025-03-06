@@ -135,7 +135,7 @@ ANIML is available as an additional option.
 }
 
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 path <- "tests/testthat/testdata/dad1.uv"
 chr <- read_chroms(path, find_files = FALSE, format_in = "chemstation_uv")
 \dontshow{\}) # examplesIf}

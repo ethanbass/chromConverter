@@ -21,7 +21,7 @@ or \code{data.table}.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
@@ -51,7 +51,7 @@ licensed under GPL 3 by Evan Shi
 \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
 }
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 read_chemstation_uv("tests/testthat/testdata/dad1.uv")
 \dontshow{\}) # examplesIf}
 }

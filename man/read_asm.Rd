@@ -39,8 +39,7 @@ determines whether the chromatogram is returned as a \code{matrix} or
 \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
-A parser for reading \href{https://www.allotrope.org/asm}{'Allotrope Simple Model'}
-files.
+Reads \href{https://www.allotrope.org/asm}{'Allotrope Simple Model'} files into R.
 }
 \author{
 Ethan Bass

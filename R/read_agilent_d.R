@@ -1,4 +1,4 @@
-#' Read files from 'ChemStation' .D directories
+#' Read files from 'Agilent ChemStation' .D directories
 #'
 #' Reads files from 'Agilent' \code{.D} directories.
 #'

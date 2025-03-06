@@ -21,7 +21,7 @@ or \code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
@@ -44,7 +44,7 @@ chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
 Reads 'Agilent ChemStation' \code{.ch} files.
 }
 \details{
-Agilent \code{.ch} files come in several different formats. This parser
+'Agilent' \code{.ch} files come in several different formats. This parser
 can automatically detect and read several versions of these files from
 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
 \code{130}, which are generally produced by ultraviolet detectors, as well as
@@ -54,10 +54,10 @@ ionization (FID) detectors.
 \note{
 This function was adapted from the
 \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
-(&copy James Dillon 2014).
+(© James Dillon 2014).
 }
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 read_chemstation_ch("tests/testthat/testdata/chemstation_130.ch")
 \dontshow{\}) # examplesIf}
 }

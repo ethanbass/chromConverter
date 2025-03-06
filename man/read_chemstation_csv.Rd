@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_csv.R
 \name{read_chemstation_csv}
 \alias{read_chemstation_csv}
-\title{Read Chemstation CSV}
+\title{Read 'Agilent ChemStation' CSV files}
 \usage{
 read_chemstation_csv(
   path,
@@ -26,7 +26,7 @@ Reads 'Agilent Chemstation' \code{.csv} files.
 'Agilent Chemstation' CSV files are encoded in UTF-16.
 }
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 read_chemstation_csv("tests/testthat/testdata/dad1.csv")
 \dontshow{\}) # examplesIf}
 }

@@ -37,6 +37,7 @@ reshape_chroms <- function(x, idx, sample_var = "sample", lambdas = NULL,
   dat
 }
 
+#' Reshape chromatogram
 #' @noRd
 reshape_chrom <- function(x, data_format, ...){
   fn <- switch(data_format,
@@ -46,6 +47,7 @@ reshape_chrom <- function(x, data_format, ...){
   fn(x, ...)
 }
 
+#' Reshape chromatogram (long)
 #' Reshapes a single chromatogram from wide to long format
 #' @name reshape_chrom
 #' @importFrom stats reshape
@@ -88,6 +90,7 @@ reshape_chrom_long <- function(x, lambdas = NULL, format_out = NULL,
   data
 }
 
+#' Reshape chromatogram (wide)
 #' Reshapes a single chromatogram from long to wide format
 #' @noRd
 reshape_chrom_wide <- function(x, lambdas = NULL, lambda_var = "lambda",
@@ -111,4 +114,3 @@ reshape_chrom_wide <- function(x, lambdas = NULL, lambda_var = "lambda",
   attr(data, "data_format") <- "wide"
   data
 }
-

@@ -50,7 +50,7 @@ Invisibly returns the path to the written mzML file.
 \description{
 This function constructs mzML files by writing XML strings directly to a file
 connection. While this approach is fast, it may be less flexible than
-DOM-based methods.
+methods based on an explicit Document Object Model (DOM).
 }
 \details{
 The function supports writing various types of spectral data including MS1,

@@ -24,7 +24,7 @@ A data.frame containing the information from the specified
 'ChemStation' report.
 }
 \description{
-Read 'Agilent ChemStation' report files.
+Reads 'Agilent ChemStation' reports into R.
 }
 \seealso{
 Other 'Agilent' parsers: 

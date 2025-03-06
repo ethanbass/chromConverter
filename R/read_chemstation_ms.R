@@ -10,7 +10,7 @@
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Logical. Whether to attach metadata.
+#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
@@ -29,6 +29,9 @@
 #' information on the structure of these files in the
 #' \href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
 #' @family 'Agilent' parsers
+#' @examples \dontrun{
+#' read_chemstation_ms(path)
+#' }
 #' @export
 
 read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),

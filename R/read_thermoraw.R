@@ -18,15 +18,15 @@
 #' @section Side effects: Exports chromatograms in \code{mzML} format to the
 #' folder specified by \code{path_out}.
 #' @author Ethan Bass
-#' @examples \dontrun{
-#' read_thermoraw(path)
-#' }
 #' @references
 #' Hulstaert Niels, Jim Shofstahl, Timo Sachsenberg, Mathias Walzer,
 #' Harald Barsnes, Lennart Martens, and Yasset Perez-Riverol.
 #' ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.
 #' \emph{Journal of Proteome Research} \bold{19}, no. 1 (January 3, 2020): 537–42.
 #' \doi{10.1021/acs.jproteome.9b00328}.
+#' @examples \dontrun{
+#' read_thermoraw(path)
+#' }
 #' @family external parsers
 #' @export read_thermoraw
 

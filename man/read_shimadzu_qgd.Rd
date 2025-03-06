@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_shimadzu_qgd.R
 \name{read_shimadzu_qgd}
 \alias{read_shimadzu_qgd}
-\title{Read 'Shimadzu' QGD}
+\title{Read 'Shimadzu' QGD files}
 \usage{
 read_shimadzu_qgd(
   path,
@@ -25,7 +25,7 @@ streams.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}

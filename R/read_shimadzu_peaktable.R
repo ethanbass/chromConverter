@@ -18,8 +18,8 @@ read_sz_tables <- function(path, format_out = "data.frame"){
 
 #' Read Shimadzu Peak Table
 #'
-#' There are at least two Shimadzu peak table formats. The first (dubbed as V0),
-#' does not begin with a magic number, whereas the second (dubbed as V1) starts
+#' There are at least two Shimadzu peak table formats. The first (\code{V0}),
+#' does not begin with a magic number, whereas the second (\code{V1}) starts
 #' with the magic number \code{x56/x45/x52/x31} (which spells out 'VER1').
 #'
 #' In V0, the first 4 bytes of the stream are a 4 byte integer specifying the
@@ -27,6 +27,7 @@ read_sz_tables <- function(path, format_out = "data.frame"){
 #' the magic number.
 #'
 #' @noRd
+
 read_sz_table <- function(path, stream, format_out = "data.frame"){
   path_raw <- export_stream(path, stream)
   f <- file(path_raw, "rb")

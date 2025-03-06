@@ -4,6 +4,7 @@
 #' @param path Path to ole file.
 #' @author Ethan Bass
 #' @noRd
+
 export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
                           verbose = FALSE){
   reticulate::py_run_string('import olefile')
@@ -38,7 +39,9 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
 
 #' Check OLE stream size
 #' @param min_size Minimum stream size in bytes. Defaults to 552.
+#' @author Ethan Bass
 #' @noRd
+
 check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
                           stream = NULL,
                           boolean = FALSE,
@@ -72,6 +75,7 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
 
 #' Check OLE stream by name
 #' @noRd
+
 check_stream <- function(path, stream = NULL,
                           boolean = FALSE, min_size = 552){
   olefile <- reticulate::import("olefile")
@@ -84,7 +88,9 @@ check_stream <- function(path, stream = NULL,
 
 
 #' List OLE streams
+#' @author Ethan Bass
 #' @noRd
+
 ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
                              min_size = 552){
   olefile <- reticulate::import("olefile")
@@ -118,6 +124,7 @@ ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
 #' ASCII files exported from 'Lab Solutions'.
 #' @importFrom bit64 as.integer64
 #' @noRd
+
 sztime_to_unixtime <- function(low, high, tz = "UTC") {
   if (tz!="UTC"){
     tz <- -as.numeric(gsub("'00'", "", tz))

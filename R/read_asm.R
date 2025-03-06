@@ -1,7 +1,6 @@
 #' Read 'Allotrope Simple Model' (ASM) 2D chromatograms
 #'
-#' A parser for reading ['Allotrope Simple Model'](https://www.allotrope.org/asm)
-#' files.
+#' Reads ['Allotrope Simple Model'](https://www.allotrope.org/asm) files into R.
 #'
 #' @param path Path to ASM \code{.json} file.
 #' @param format_out Matrix or data.frame.

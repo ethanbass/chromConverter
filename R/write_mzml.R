@@ -2,7 +2,7 @@
 #'
 #' This function constructs mzML files by writing XML strings directly to a file
 #' connection. While this approach is fast, it may be less flexible than
-#' DOM-based methods.
+#' methods based on an explicit Document Object Model (DOM).
 #'
 #' The function supports writing various types of spectral data including MS1,
 #' TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
@@ -40,11 +40,6 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   if (!inherits(data, "list")){
     data <- list(MS1 = data)
   }
-  # lapply(data, function(x){
-  #   if (attr(x,"data_format") == "wide"){
-  #     reshape_chrom_long(x)
-  #   } else x
-  # })
   if (is.null(what)){
     what <- names(data[sapply(data, nrow) > 0])
   }
@@ -58,7 +53,6 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
                            force = force, ext = "mzML")
 
-  # Create a connection to write the file
   con <- file(file_out, "wt")
   on.exit(close(con))
 
@@ -396,8 +390,6 @@ create_mzml_dad_spectrum <- function(scan_data, scan, index, rt, tic = NULL,
           nchar(int_encoded$base64),
           int_encoded$compression_param, int_encoded$base64)
 }
-
-# write TIC, etc to chromlist as well
 
 #' Write mzML chromList
 #' @author Ethan Bass

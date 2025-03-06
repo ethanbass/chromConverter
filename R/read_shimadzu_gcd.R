@@ -27,7 +27,7 @@
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @param data_format Either \code{wide} (default) or \code{long}.
-#' @param read_metadata Logical. Whether to attach metadata.
+#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @param collapse Logical. Whether to collapse lists that only contain a single

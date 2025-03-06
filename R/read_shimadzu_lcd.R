@@ -38,7 +38,7 @@
 #' is present.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
-#' @param read_metadata Logical. Whether to attach metadata.
+#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
 #' @param scale Whether to scale the data by the value factor. Defaults to
@@ -57,6 +57,9 @@
 #' \code{read_metadata} is \code{TRUE}.
 #' @note My parsing of the date-time format seems to be a little off, since
 #' the acquisition times diverge slightly from the ASCII file.
+#' @examples \dontrun{
+#' read_shimadzu_lcd(path)
+#' }
 #' @family 'Shimadzu' parsers
 #' @export
 
@@ -192,7 +195,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
       rownames(dat) <- times
     }
   } else{
-    DI <- data.frame(DETN=NA, DSCN=NA, ADN=NA, detector.unit=NA)
+    DI <- data.frame(DETN = NA, DSCN = NA, ADN = NA, detector.unit = NA)
   }
   if (data_format == "long"){
     dat <- reshape_chrom(dat, data_format = "wide")
@@ -474,27 +477,6 @@ get_shimadzu_axis <- function(path){
       list(interval=interval, nrows=nrows)
     }
 }
-# get_shimadzu_rows <- function(path){
-#   metadata_path <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Data Item"))
-#   if (is.na(metadata_path)){
-#     maxplot_path <- export_stream(path, stream =  c("PDA 3D Raw Data", "Max Plot"))
-#     if (is.na(maxplot_path)){
-#       warning("Unable to infer number of rows in stream.")
-#       return(NA)
-#     } else {
-#       f <- file(maxplot_path, "rb")
-#       on.exit(close(f))
-#       seek(f,4)
-#       interval <- readBin(f, what = "integer", n = 1, size = 4, endian = "little")
-#       n_rows <- readBin(f, what = "integer", n = 1, size = 4, endian = "little")
-#       list(interval=interval, nrows=nrows)
-#     }
-#   } else {
-#     meta <- xml2::read_xml(metadata_path)
-#     cn_node <- xml2::xml_find_first(meta, "//CN")
-#     as.numeric(xml2::xml_text(cn_node))
-#   }
-# }
 
 #' Read 'Shimadzu' LCD 3D Raw Data
 #' @author Ethan Bass

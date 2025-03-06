@@ -26,7 +26,7 @@ or \code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
@@ -52,6 +52,11 @@ Reads 'Agilent ChemStation MSD Spectral Files' beginning with
 Many thanks to Evan Shi and Eugene Kwan for providing helpful
 information on the structure of these files in the
 \href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
+}
+\examples{
+\dontrun{
+read_chemstation_ms(path)
+}
 }
 \seealso{
 Other 'Agilent' parsers: 

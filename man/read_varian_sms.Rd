@@ -35,7 +35,7 @@ A chromatogram or list of chromatograms from the specified
 returned in the format specified by \code{format_out}.
 }
 \description{
-Parser for reading 'Varian Workstation' SMS file.
+Reads 'Varian Workstation' SMS files.
 }
 \details{
 Varian SMS files begin with a "DIRECTORY" with offsets for each section. The
@@ -73,6 +73,11 @@ following scheme:
 \note{
 There is still only limited support for the extraction of metadata from
 this file format. Also, the timestamp conversions aren't quite right.
+}
+\examples{
+\dontrun{
+read_varian_sms(path)
+}
 }
 \seealso{
 Other 'Varian' parsers: 

@@ -26,7 +26,7 @@ or \code{data.table}.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}

@@ -15,6 +15,11 @@ A data.frame containing the information from the specified report.
 \description{
 Read peak list(s) from 'Varian MS Workstation'.
 }
+\examples{
+\dontrun{
+read_varian_peaklist(path)
+}
+}
 \seealso{
 Other 'Varian' parsers: 
 \code{\link{read_varian_sms}()}

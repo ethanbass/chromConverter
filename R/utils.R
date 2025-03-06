@@ -401,3 +401,11 @@ get_parser_reqs <- function(parser){
          "rainbow" = c("numpy", "rainbow-api"),
          "all" = c("pandas","scipy","numpy","Aston","olefile","numpy","rainbow-api"))
 }
+
+#' Utility function to capitalize first letter of string
+#' @noRd
+simple_cap <- function(x) {
+  s <- strsplit(x, " ")[[1]]
+  paste(toupper(substring(s, 1, 1)), substring(s, 2),
+        sep = "", collapse = " ")
+}
