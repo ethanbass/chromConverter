@@ -20,7 +20,7 @@ MS chromatograms are returned by default in `long` format with three columns: re
 As an example, we can load the 'Varian' SMS chromatogram included in the `chromConverterExtraTests` package.
 
 ```{r download_varian_sms}
-# download example file from the web
+# download example Varian SMS file from the web
 path_sms <- tempfile(fileext = ".sms")
 download.file("https://raw.github.com/ethanbass/chromConverterExtraTests/master/inst/STRD15.SMS", destfile = path_sms)
 
@@ -117,11 +117,11 @@ plot_spec(x[rt == 7.26355, c('mz','intensity')])
 ### Plot TIC and mass spectra using *ggplot*
 
 ```{r plot_tic_ggplot}
-library(ggplot2)
 ggplot(data = tic, aes(x=rt, y=intensity)) + 
   geom_line() + 
   xlab("Retention time (min)") +
-  ylab("Intensity")
+  ylab("Intensity")  +
+  theme_minimal()
 ```
 
 Plot mass spectrum with ggplot: 
