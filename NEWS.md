@@ -3,6 +3,8 @@
 * Use updated syntax for reticulate (hopefully this will solve some of the issues with python configuration failure).
 * Invisibly return paths to exported CDF files.
 * Small updates to documentation (e.g., addition of functional families, standardization of function titles and descriptions).
+* Fixed Windows path issue when R is installed locally.
+* Fixed error reading Shimadzu metadata on Windows (due to "Extra content at end of document").
 
 ## chromConverter 0.7.3
 
