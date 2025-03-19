@@ -26,6 +26,13 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
                                                paste(c(fs::path_ext_remove(
                                                  basename(path)), stream),
                                                        collapse="_")))
+      if (.Platform$OS.type == "windows") {
+        path_dir <- fs::path_dir(path_out)
+        path_file <- fs::path_file(path_out)
+
+        path_dir <- fs::path_real(path_dir)
+        path_out <- fs::path(path_dir, path_file)
+      }
     }
     if (remove_null_bytes){
       reticulate::py_run_string("data = data.replace(b'\\x00', b'')")
