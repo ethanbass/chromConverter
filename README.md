@@ -73,8 +73,6 @@ or from [R Universe](https://r-universe.dev/):
 install.packages("chromConverter", repos="https://ethanbass.r-universe.dev/", type="source")
 ```
 
-**Note:** There are some changes in recent versions of RStudio that messed up the accessibility of the python bindings through `reticulate`. If you wish to access python-based parsers (e.g. aston or rainbow) through a recent version of RStudio, it is suggested to first change the default settings in RStudio. To do this, open `Tools:Global Options...:Python` and uncheck the box that says `Automatically activate project-local Python environments`. Then restart RStudio. Alternatively, this issue can be resolved by selecting the desired python interpreter in the Python settings pane. It is recommended to use a local installation of miniconda, which can be installed by running `reticulate::install_miniconda()`.
-
 ### Usage
 
 ##### Importing chromatograms
