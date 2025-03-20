@@ -351,6 +351,7 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 #' Configure python environment
 #'
 #' Configures reticulate environment for parsers that have python dependencies.
+#' Deprecated as this should no longer be necessary as of reticulate \code{v. 1.41.0}.
 #'
 #' @name configure_python_environment
 #' @param parser Either \code{aston}, \code{rainbow}, or \code{olefile} (for
@@ -366,30 +367,36 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 #' @export
 
 configure_python_environment <- function(parser = "all", return_boolean = FALSE){
-  parser <- match.arg(tolower(parser), c("all", "aston", "olefile", "rainbow"))
-  install <- FALSE
-  if (!dir.exists(reticulate::miniconda_path())){
-    install <- readline(sprintf("It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)",
-                                ifelse(parser == "all", "python-based", parser)))
-    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-      reticulate::install_miniconda()
+  warning("This function is deprecated as of chromConverter v0.7.4 as
+             miniconda should no longer be necessary to load python dependencies. Continue anyway...? (y/n)",
+          immediate. = TRUE)
+  continue <- readline()
+  if (continue %in% c('y', "Y", "YES", "yes", "Yes")){
+    parser <- match.arg(tolower(parser), c("all", "aston", "olefile", "rainbow"))
+    install <- FALSE
+    if (!dir.exists(reticulate::miniconda_path())){
+      install <- readline(sprintf("It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)",
+                                  ifelse(parser == "all", "python-based", parser)))
+      if (install %in% c('y', "Y", "YES", "yes", "Yes")){
+        reticulate::install_miniconda()
+      }
     }
-  }
-  env <- reticulate::configure_environment("chromConverter")
-  if (!env){
-    reqs <- get_parser_reqs(parser)
-    reqs_available <- sapply(reqs, reticulate::py_module_available)
-    if (!all(reqs_available)){
-      reticulate::conda_install(envname = "chromConverter",
-                                reqs[which(!reqs_available)], pip = TRUE)
+    env <- reticulate::configure_environment("chromConverter")
+    if (!env){
+      reqs <- get_parser_reqs(parser)
+      reqs_available <- sapply(reqs, reticulate::py_module_available)
+      if (!all(reqs_available)){
+        reticulate::conda_install(envname = "chromConverter",
+                                  reqs[which(!reqs_available)], pip = TRUE)
+      }
     }
-  }
-  assign_fn <- switch(parser, aston = assign_trace_file(),
-                      rainbow = assign_rb_read(),
-                      function(){})
-  assign_fn()
-  if (return_boolean){
-    env
+    assign_fn <- switch(parser, aston = assign_trace_file(),
+                        rainbow = assign_rb_read(),
+                        function(){})
+    assign_fn()
+    if (return_boolean){
+      env
+    }
   }
 }
 

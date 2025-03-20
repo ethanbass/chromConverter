@@ -28,7 +28,7 @@ Imports:
     fs,
     purrr,
     readxl,
-    reticulate (>= 1.41),
+    reticulate (>= 1.41.0),
     stringr,
     tidyr,
     utils,

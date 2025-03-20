@@ -51,7 +51,7 @@ licensed under GPL 3 by Evan Shi
 \url{https://rainbow-api.readthedocs.io/en/latest/agilent/uv.html}.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 read_chemstation_uv("tests/testthat/testdata/dad1.uv")
 \dontshow{\}) # examplesIf}
 }

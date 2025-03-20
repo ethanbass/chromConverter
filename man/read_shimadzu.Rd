@@ -63,7 +63,7 @@ Reads 'Shimadzu' ASCII (\code{.txt}) files. These files can be exported from
 selecting \code{File Conversion:Convert to ASCII}.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 path <- "tests/testthat/testdata/ladder.txt"
 read_shimadzu(path)
 \dontshow{\}) # examplesIf}

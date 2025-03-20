@@ -57,7 +57,7 @@ This function was adapted from the
 (© James Dillon 2014).
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 read_chemstation_ch("tests/testthat/testdata/chemstation_130.ch")
 \dontshow{\}) # examplesIf}
 }

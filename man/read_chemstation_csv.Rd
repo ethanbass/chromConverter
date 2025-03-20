@@ -26,7 +26,7 @@ Reads 'Agilent Chemstation' \code{.csv} files.
 'Agilent Chemstation' CSV files are encoded in UTF-16.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 read_chemstation_csv("tests/testthat/testdata/dad1.csv")
 \dontshow{\}) # examplesIf}
 }

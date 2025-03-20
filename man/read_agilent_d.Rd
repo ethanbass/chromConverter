@@ -49,7 +49,7 @@ Metadata can be attached to the chromatogram as \code{\link{attributes}} if
 Reads files from 'Agilent' \code{.D} directories.
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 read_agilent_d("tests/testthat/testdata/RUTIN2.D")
 \dontshow{\}) # examplesIf}
 }
