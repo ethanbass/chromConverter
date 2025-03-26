@@ -50,13 +50,7 @@ jobs:
           remotes::install_deps(dependencies = TRUE)
           install.packages(c("ncdf4"))
           install.packages("chromConverterExtraTests", repos = "https://ethanbass.github.io/drat/")
-          reticulate::install_miniconda()
-          reticulate::conda_create('r-reticulate', packages = c('python==3.9', 'numpy', 'scipy', 'pandas'))
-          reticulate::conda_install('r-reticulate', packages = c('aston', "olefile", "rainbow-api"), pip=TRUE)
         shell: Rscript {0}
-
-      - if: runner.os == 'macOS'
-        run: echo "options(reticulate.conda_binary = reticulate:::miniconda_conda())" >> .Rprofile
 
       - uses: r-lib/actions/check-r-package@v2
         with:
