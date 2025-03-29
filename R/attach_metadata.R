@@ -742,10 +742,13 @@ read_waters_metadata <- function(file){
 #' @param chrom_list A list of chromatograms with attached metadata (as returned
 #' by \code{read_chroms} with \code{read_metadata = TRUE}).
 #' @param what A character vector specifying the metadata elements to extract.
-#' @param format_out Format of object. Either \code{data.frame} or \code{tibble}.
-#' @return A data.frame or tibble (according to the value of \code{format_out}),
-#' with samples as rows and the specified metadata elements as columns.
+#' @param format_out Format of object. Either \code{data.frame}, \code{tibble},
+#' or \code{data.table}.
+#' @return A \code{data.frame}, \code{tibble}, or \code{data.table} (according
+#' to the value of \code{format_out}), with samples as rows and the specified
+#' metadata elements as columns.
 #' @export
+
 extract_metadata <- function(chrom_list,
                              what = c("instrument", "detector", "detector_id",
                                       "software", "method", "batch", "operator",
@@ -757,28 +760,38 @@ extract_metadata <- function(chrom_list,
                                       "intensity_multiplier", "scaled", "source_file",
                                       "source_file_format", "source_sha1",
                                       "data_format", "parser", "format_out"),
-                             format_out = c("data.frame", "tibble")
+                             format_out = c("data.frame", "data.table", "tibble")
                                                   ){
   if (inherits(chrom_list, c("matrix", "data.table", "data.frame"))){
     chrom_list <- list(chrom_list)
     use_names <- FALSE
   } else use_names <- TRUE
-  what <- match.arg(what, several.ok = TRUE)
-  format_out <- match.arg(format_out, c("data.frame", "tibble"))
+  format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
   metadata <- purrr::map_df(chrom_list, function(chrom){
     unlist(sapply(what, function(w){
       attr(chrom, which = w)
     }, simplify = FALSE))
   })
-
-  metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime),tz = "UTC")
-  if (use_names && format_out == "tibble"){
+  missing <- what[which(!(what %in% colnames(metadata)))]
+  if (nrow(metadata) == 0){
+    stop("The specified metadata elements were not found")
+  }
+  if (length(what) < 25 && length(missing) > 0){
+    warning(sprintf("The following metadata elements were not found: %s.",
+                    paste(sQuote(missing),collapse = ", ")),immediate. = TRUE)
+  }
+  if (any(colnames(metadata) == "run_datetime")){
+    metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime), tz = "UTC")
+  }
+  if (use_names){
     metadata <- tibble::add_column(.data = metadata,
                                    data.frame(name = names(chrom_list)),
-                                   .before=TRUE)
-  } else if (use_names && format_out == "data.frame"){
-    metadata <- data.frame(name = names(chrom_list), metadata,
-                           row.names = names(chrom_list))
+                                   .before = TRUE)
+  }
+  if (format_out == "data.frame"){
+    metadata <- as.data.frame(metadata, row.names = NULL)
+  } else if (format_out == "data.table"){
+    data.table::setDT(metadata)
   }
   metadata
 }

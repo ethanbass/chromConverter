@@ -11,7 +11,7 @@ extract_metadata(
     "time_range", "time_interval", "time_unit", "detector_range", "detector_y_unit",
     "detector_x_unit", "intensity_multiplier", "scaled", "source_file",
     "source_file_format", "source_sha1", "data_format", "parser", "format_out"),
-  format_out = c("data.frame", "tibble")
+  format_out = c("data.frame", "data.table", "tibble")
 )
 }
 \arguments{
@@ -20,11 +20,13 @@ by \code{read_chroms} with \code{read_metadata = TRUE}).}
 
 \item{what}{A character vector specifying the metadata elements to extract.}
 
-\item{format_out}{Format of object. Either \code{data.frame} or \code{tibble}.}
+\item{format_out}{Format of object. Either \code{data.frame}, \code{tibble},
+or \code{data.table}.}
 }
 \value{
-A data.frame or tibble (according to the value of \code{format_out}),
-with samples as rows and the specified metadata elements as columns.
+A \code{data.frame}, \code{tibble}, or \code{data.table} (according
+to the value of \code{format_out}), with samples as rows and the specified
+metadata elements as columns.
 }
 \description{
 Extract metadata as a \code{data.frame} or \code{tibble} from a list of
