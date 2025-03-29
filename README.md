@@ -32,6 +32,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - 'Waters Empower' ascii (`.arw`)
 
 ##### External Libraries
+
 ###### Aston/Entab (*Entab requires separate installation, see [instructions below](README.md#Installation)*)
 - Agilent ChemStation (`.ch`, `.fid`, `.ms`, .`mwd`, & `.uv`)
 - Agilent MassHunter DAD (`.sp`)  
@@ -43,7 +44,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - Agilent (`.ch`, `.fid`, `.ms`, .`MSProfile.bin`, & `.uv`)
 - Waters (`.raw` [UV, MS, CAD, ELSD])
 
-###### OpenChrom (*requires separate installation, see [instructions below](README.md#Installation)*)
+###### OpenChrom (*requires separate installation of an outdated OpenChrom version which is unfortunately no longer available, see [instructions below](README.md#Installation)*)
 - Shimadzu FID (`.gcd`, `.C0#`)
 - PerkinElmer FID (`.raw`)
 - Varian FID (`.run`)
@@ -136,11 +137,11 @@ remotes::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser) on the command-line. To install the ThermoRawFileParser, follow the instructions [here](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will also need to install [mono](https://www.mono-project.com/download/stable/#download-lin), following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
 
 ##### **OpenChrom** 
-###### (**Note:** Support for the commmand line interface has been removed from OpenChrom (as of `version 1.5.0`). Older versions (e.g. `1.4.x`) should still work for now. Unfortunately, OpenChrom 1.4 has been scrubbed from the internet, but OpenChrom 1.3 is still available from [SourceForge](https://sourceforge.net/projects/openchrom/files/REL-1.3.0/)).
+###### (**Note:** Support for the commmand line interface has been removed from OpenChrom (as of `version 1.5.0`). Older versions (e.g. `1.4.x`) should still work for now. Unfortunately, OpenChrom 1.4 has been scrubbed from the internet.
 
-[OpenChrom](https://lablicate.com/platform/openchrom) is open source chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
+[OpenChrom](https://lablicate.com/platform/openchrom) is a free chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you'd still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below: 
 
-1) Download [OpenChrom](https://lablicate.com/platform/openchrom/download) (**version ≤ 1.4**) and place it into a directory of your choice.  
+1) [OpenChrom](https://lablicate.com/platform/openchrom/download) **version ≤ 1.4** is unfortunately no longer available from Lablicate. If you already have version 1.4 and like using the commandline interface make sure you have it backed up!!
 2) If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.
 3) Call `read_chroms` with `parser = "openchrom"`. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  Alternatively, the command-line option can be activated from R by calling `configure_openchrom(cli = "true")` or following the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to manually activate the CLI. This process can be reversed using the same function: e.g. `configure_openchrom(cli = "false"). To specify an OpenChrom executable in a non-standard location, call `configure_openchrom` with the `path` argument, e.g. `configure_openchrom(cli = "true", path = "path_to_openchrom_executable").
 
