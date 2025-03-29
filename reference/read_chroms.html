@@ -19,7 +19,7 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read Chromatograms</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.7.4/R/read_chroms.R" class="external-link"><code>R/read_chroms.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_chroms.R" class="external-link"><code>R/read_chroms.R</code></a></small>
       <div class="d-none name"><code>read_chroms.Rd</code></div>
     </div>
 
@@ -80,7 +80,7 @@ internal parser or bindings to an external library, such as
 <span>  <span class="va">progress_bar</span>,</span>
 <span>  cl <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"verbose"</span><span class="op">)</span>,</span>
-<span>  sample_names <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sample_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"basename"</span>, <span class="st">"sample_name"</span><span class="op">)</span>,</span>
 <span>  dat <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -177,8 +177,10 @@ R console.</p></dd>
 
 
 <dt id="arg-sample-names">sample_names<a class="anchor" aria-label="anchor" href="#arg-sample-names"></a></dt>
-<dd><p>An optional character vector of sample names. Otherwise
-sample names default to the <code><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></code> of the specified files.</p></dd>
+<dd><p>Which sample names to use. Options are <code>basename</code> to
+use the filename (minus the extension) or <code>sample_name</code> to use the sample
+name encoded in the file metadata. Sample names default to the
+<code><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></code> of the specified files.</p></dd>
 
 
 <dt id="arg-dat">dat<a class="anchor" aria-label="anchor" href="#arg-dat"></a></dt>
