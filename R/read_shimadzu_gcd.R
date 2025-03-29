@@ -20,7 +20,7 @@
 #' After the header, the data are simply encoded as 64-bit (little-endian)
 #' floating-point numbers. The retention times can be (approximately?) derived
 #' from the number of values and the sampling interval encoded in the header.
-#' @param path Path to GCD file.
+#' @param path Path to 'Shimadzu' \code{.gcd} file.
 #' @param what What stream to get: current options are chromatograms
 #' (\code{chroms}) and/or peak lists (\code{peak_table}). If a stream
 #' is not specified, the function will default to \code{chroms}.

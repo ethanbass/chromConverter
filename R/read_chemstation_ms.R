@@ -3,7 +3,7 @@
 #' Reads 'Agilent ChemStation MSD Spectral Files' beginning with
 #' \code{x01/x32/x00/x00}.
 #'
-#' @param path Path to \code{.ms} file
+#' @param path Path to 'Agilent' \code{.ms} file.
 #' @param what What stream to get: current options are \code{MS1}, \code{BPC}
 #' and/or \code{TIC}. If a stream is not specified, the function will return all
 #' streams.

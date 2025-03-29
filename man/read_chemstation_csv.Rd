@@ -10,7 +10,7 @@ read_chemstation_csv(
 )
 }
 \arguments{
-\item{path}{Path to file}
+\item{path}{Path to 'Agilent' \code{.csv} file.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
 or \code{data.table}.}

@@ -33,7 +33,7 @@
 #' * d = 12-13 (C-D) -> preserve lowest 27 bits
 #' * d = 14-15 (E-F) -> preserve lowest 28 bits (?)
 #'
-#' @param path Path to \code{.SMS} files.
+#' @param path Path to 'Varian' \code{.SMS} files.
 #' @param what Whether to extract chromatograms (\code{chroms}) and/or
 #' \code{MS1} data. Accepts multiple arguments.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.

@@ -14,7 +14,7 @@ read_sz_lcd_2d(
 )
 }
 \arguments{
-\item{path}{Path to LCD file.}
+\item{path}{Path to 'Shimadzu' \code{.lcd} 2D data file.}
 
 \item{format_out}{Matrix or data.frame.}
 

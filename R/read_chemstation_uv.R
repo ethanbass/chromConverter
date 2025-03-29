@@ -6,7 +6,7 @@
 #' \code{131}.
 #'
 #' @importFrom utils head tail
-#' @param path Path to \code{.uv} file.
+#' @param path Path to 'Agilent' \code{.uv} file.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @param data_format Either \code{wide} (default) or \code{long}.

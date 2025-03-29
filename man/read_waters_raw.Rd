@@ -13,7 +13,7 @@ read_waters_raw(
 )
 }
 \arguments{
-\item{path}{Path to \code{.raw} file.}
+\item{path}{Path to Waters \code{.raw} file.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
 or \code{data.table}.}

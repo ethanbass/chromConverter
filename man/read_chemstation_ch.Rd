@@ -14,7 +14,7 @@ read_chemstation_ch(
 )
 }
 \arguments{
-\item{path}{Path to \code{.ch} file}
+\item{path}{Path to 'Agilent' \code{.ch} file.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
 or \code{data.table}.}

@@ -15,7 +15,7 @@ read_shimadzu_gcd(
 )
 }
 \arguments{
-\item{path}{Path to GCD file.}
+\item{path}{Path to 'Shimadzu' \code{.gcd} file.}
 
 \item{what}{What stream to get: current options are chromatograms
 (\code{chroms}) and/or peak lists (\code{peak_table}). If a stream

@@ -31,7 +31,7 @@
 #' complements. The value at each position is derived by subtracting the delta
 #' at each position from the previous value.
 #'
-#' @param path Path to LCD file.
+#' @param path Path to 'Shimadzu' \code{.lcd} file.
 #' @param what What stream to get: current options are \code{pda}, chromatograms
 #' (\code{chroms}), \code{tic}, or peak lists (\code{peak_table}). If a stream
 #' is not specified, the function will default to \code{pda} if the PDA stream
@@ -152,7 +152,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #' complements. The value at each position is derived by subtracting the delta
 #' at each position from the previous value.
 #'
-#' @param path Path to LCD file.
+#' @param path Path to 'Shimadzu' \code{.lcd} 3D data file.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
@@ -244,7 +244,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' complements. The value at each position is derived by subtracting the delta
 #' at each position from the previous value.
 #'
-#' @param path Path to LCD file.
+#' @param path Path to 'Shimadzu' \code{.lcd} 2D data file.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.
@@ -340,7 +340,7 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
 #' (scaled by 1000), the second integer is the scan number, and the third integer
 #' is the intensity.
 #'
-#' @param path Path to LCD file.
+#' @param path Path to 'Shimadzu' \code{.lcd} file.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either \code{wide} (default) or \code{long}.
 #' @param read_metadata Logical. Whether to attach metadata.

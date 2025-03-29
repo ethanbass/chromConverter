@@ -8,7 +8,7 @@
 #' \code{"chemstation_uv"} a \code{.uv} file should be provided. Data can be filtered
 #' by detector type using the \code{what} argument.
 #'
-#' @param path Path to file
+#' @param path Path to file.
 #' @param format_in Format of the supplied files. Either \code{agilent_d},
 #' \code{waters_raw}, or \code{chemstation}.
 #' @param format_out R format. Either \code{matrix}, \code{data.frame}, or

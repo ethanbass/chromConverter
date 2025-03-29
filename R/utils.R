@@ -351,7 +351,7 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 #' Configure python environment
 #'
 #' Configures reticulate environment for parsers that have python dependencies.
-#' Deprecated as this should no longer be necessary as of reticulate \code{v. 1.41.0}.
+#' Deprecated as this should no longer be necessary with reticulate \code{v1.41.0}.
 #'
 #' @name configure_python_environment
 #' @param parser Either \code{aston}, \code{rainbow}, or \code{olefile} (for

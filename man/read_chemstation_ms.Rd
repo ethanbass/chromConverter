@@ -15,7 +15,7 @@ read_chemstation_ms(
 )
 }
 \arguments{
-\item{path}{Path to \code{.ms} file}
+\item{path}{Path to 'Agilent' \code{.ms} file.}
 
 \item{what}{What stream to get: current options are \code{MS1}, \code{BPC}
 and/or \code{TIC}. If a stream is not specified, the function will return all

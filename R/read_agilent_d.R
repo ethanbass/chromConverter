@@ -2,7 +2,7 @@
 #'
 #' Reads files from 'Agilent' \code{.D} directories.
 #'
-#' @param path Path to \code{.ch} file
+#' @param path Path to 'Agilent' \code{.D} directory.
 #' @param what Whether to extract chromatograms (\code{chroms}), DAD data
 #' (\code{dad}) and/or peak tables \code{peak_table}. Accepts multiple arguments.
 #' \code{ms_spectra}. Accepts multiple arguments.

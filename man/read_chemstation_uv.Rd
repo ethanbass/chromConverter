@@ -14,7 +14,7 @@ read_chemstation_uv(
 )
 }
 \arguments{
-\item{path}{Path to \code{.uv} file.}
+\item{path}{Path to 'Agilent' \code{.uv} file.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
 or \code{data.table}.}

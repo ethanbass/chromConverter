@@ -3,7 +3,7 @@
 #' Reads 'Waters MassLynx' (\code{.raw}) files into R.
 #'
 #' @importFrom stats setNames
-#' @param path Path to \code{.raw} file.
+#' @param path Path to Waters \code{.raw} file.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @param data_format Either \code{wide} (default) or \code{long}.

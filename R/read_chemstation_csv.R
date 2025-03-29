@@ -6,7 +6,7 @@
 #'
 #' @name read_chemstation_csv
 #' @importFrom utils tail read.csv
-#' @param path Path to file
+#' @param path Path to 'Agilent' \code{.csv} file.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @return A chromatogram in the format specified by \code{format_out}

@@ -6,7 +6,7 @@
 #' To use this function, the ThermoRawFileParser must be manually installed.
 #'
 #' @name read_thermoraw
-#' @param path Path to file.
+#' @param path Path to 'Thermo' \code{.raw} file.
 #' @param path_out Path to directory to export \code{mzML} files. If
 #' \code{path_out} isn't specified, a temp directory will be used.
 #' @param format_out R format. Either \code{matrix} or \code{data.frame}.

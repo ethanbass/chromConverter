@@ -20,7 +20,7 @@ read_shimadzu(
 )
 }
 \arguments{
-\item{path}{Path to file.}
+\item{path}{Path to Shimadzu \code{.txt} ASCII file.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}),
 \code{peak_table}, and/or \code{ms_spectra}. Accepts multiple arguments.}

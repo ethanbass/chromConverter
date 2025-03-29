@@ -14,7 +14,7 @@ call_entab(
 )
 }
 \arguments{
-\item{path}{Path to file}
+\item{path}{Path to file.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 

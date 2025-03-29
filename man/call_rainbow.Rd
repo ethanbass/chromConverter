@@ -20,7 +20,7 @@ call_rainbow(
 )
 }
 \arguments{
-\item{path}{Path to file}
+\item{path}{Path to file.}
 
 \item{format_in}{Format of the supplied files. Either \code{agilent_d},
 \code{waters_raw}, or \code{chemstation}.}

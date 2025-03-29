@@ -15,7 +15,7 @@ read_agilent_d(
 )
 }
 \arguments{
-\item{path}{Path to \code{.ch} file}
+\item{path}{Path to 'Agilent' \code{.D} directory.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data
 (\code{dad}) and/or peak tables \code{peak_table}. Accepts multiple arguments.

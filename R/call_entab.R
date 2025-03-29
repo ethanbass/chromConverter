@@ -2,7 +2,7 @@
 #'
 #' Converts chromatography date files using [entab](https://github.com/bovee/entab) parsers.
 #'
-#' @param path Path to file
+#' @param path Path to file.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.

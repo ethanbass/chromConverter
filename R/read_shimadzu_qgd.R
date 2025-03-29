@@ -21,7 +21,7 @@
 #' is scaled by a factor of 20. Intensities are encoded as (unsigned) integers
 #' with variable byte-length defined by the value in the header.
 #'
-#' @param path Path to 'Shimadzu' QGD file.
+#' @param path Path to 'Shimadzu' \code{.qgd} file.
 #' @param what What stream to get: current options are \code{MS1} and/or
 #' \code{TIC}. If a stream is not specified, the function will return both
 #' streams.

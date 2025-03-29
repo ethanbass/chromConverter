@@ -14,7 +14,7 @@ read_thermoraw(
 )
 }
 \arguments{
-\item{path}{Path to file.}
+\item{path}{Path to 'Thermo' \code{.raw} file.}
 
 \item{path_out}{Path to directory to export \code{mzML} files. If
 \code{path_out} isn't specified, a temp directory will be used.}

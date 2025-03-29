@@ -13,7 +13,7 @@ read_waters_arw(
 )
 }
 \arguments{
-\item{path}{Path to file}
+\item{path}{Path to Waters \code{.arw} file.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
 or \code{data.table}.}

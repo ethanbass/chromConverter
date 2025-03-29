@@ -16,7 +16,7 @@ read_shimadzu_lcd(
 )
 }
 \arguments{
-\item{path}{Path to LCD file.}
+\item{path}{Path to 'Shimadzu' \code{.lcd} file.}
 
 \item{what}{What stream to get: current options are \code{pda}, chromatograms
 (\code{chroms}), \code{tic}, or peak lists (\code{peak_table}). If a stream

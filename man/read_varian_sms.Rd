@@ -14,7 +14,7 @@ read_varian_sms(
 )
 }
 \arguments{
-\item{path}{Path to \code{.SMS} files.}
+\item{path}{Path to 'Varian' \code{.SMS} files.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}) and/or
 \code{MS1} data. Accepts multiple arguments.}

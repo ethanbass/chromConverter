@@ -15,7 +15,7 @@ read_mzml(
 )
 }
 \arguments{
-\item{path}{path to file}
+\item{path}{Path to \code{.mzml} file.}
 
 \item{format_out}{Class of output. Only applies if \code{mzR} is selected.
 Either \code{matrix}, \code{data.frame}, or \code{data.table}. \code{RaMS}

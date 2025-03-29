@@ -10,7 +10,7 @@
 #' ionization (FID) detectors.
 #'
 #' @importFrom bitops bitAnd bitShiftL
-#' @param path Path to \code{.ch} file
+#' @param path Path to 'Agilent' \code{.ch} file.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.

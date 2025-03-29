@@ -2,7 +2,7 @@
 #'
 #' Reads peak lists from specified folders or vector of paths.
 #'
-#' @param paths paths to files or folders containing files.
+#' @param paths Paths to files or folders containing peaklist files.
 #' @param find_files Logical. Set to \code{TRUE} (default) if you are providing
 #' the function with a folder or vector of folders containing the files.
 #' Otherwise, set to\code{FALSE}.

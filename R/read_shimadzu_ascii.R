@@ -7,7 +7,7 @@
 #' @name read_shimadzu
 #' @importFrom utils tail read.csv
 #' @importFrom stringr str_split_fixed
-#' @param path Path to file.
+#' @param path Path to Shimadzu \code{.txt} ASCII file.
 #' @param what Whether to extract chromatograms (\code{chroms}),
 #' \code{peak_table}, and/or \code{ms_spectra}. Accepts multiple arguments.
 #' @param include Which chromatograms to include. Options are \code{fid},

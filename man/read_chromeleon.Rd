@@ -14,7 +14,7 @@ read_chromeleon(
 )
 }
 \arguments{
-\item{path}{Path to file}
+\item{path}{Path to 'Chromeleon' ASCII file.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
 or \code{data.table}.}

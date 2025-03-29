@@ -7,7 +7,7 @@
 #'
 #' @name read_mzml
 #' @importFrom RaMS grabMSdata
-#' @param path path to file
+#' @param path Path to \code{.mzml} file.
 #' @param format_out Class of output. Only applies if \code{mzR} is selected.
 #' Either \code{matrix}, \code{data.frame}, or \code{data.table}. \code{RaMS}
 #' will return a list of data.tables regardless of what is selected here.

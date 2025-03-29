@@ -20,7 +20,7 @@ Otherwise, there is no return value.
 }
 \description{
 Configures reticulate environment for parsers that have python dependencies.
-Deprecated as this should no longer be necessary as of reticulate \code{v. 1.41.0}.
+Deprecated as this should no longer be necessary with reticulate \code{v1.41.0}.
 }
 \author{
 Ethan Bass

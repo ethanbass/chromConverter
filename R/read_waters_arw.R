@@ -7,7 +7,7 @@
 #'
 #' @name read_waters_arw
 #' @importFrom utils tail read.csv
-#' @param path Path to file
+#' @param path Path to Waters \code{.arw} file.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
