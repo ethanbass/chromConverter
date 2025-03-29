@@ -29,16 +29,20 @@ test_that("read_chemstation_uv parser can read chemstation 131 files", {
   expect_equal(as.numeric(rownames(x)), as.numeric(rownames(x1[[1]])))
   expect_equal(class(x1[[1]])[1], "matrix")
   expect_equal(attr(x1[[1]], "data_format"), "wide")
+  expect_named(x1, "dad1")
 
   x2 <- read_chroms(path_uv, format_in = "chemstation_uv",
               parser = "chromconverter", format_out="data.table",
-              read_metadata = TRUE, progress_bar = FALSE)[[1]]
-  expect_s3_class(x2, class = "data.table")
-  expect_equal(attr(x2, "format_out"), "data.table")
-  expect_equal(attr(x2, "detector_y_unit"), "mAU")
-  expect_equal(attr(x2, "detector_x_unit"), "nm")
-  expect_equal(attr(x2, "detector"), "DAD")
-  expect_equal(attr(x2, "sample_name"), "las_bulk_hexE")
+              read_metadata = TRUE, progress_bar = FALSE,
+              sample_names = "sample_name")
+
+  expect_s3_class(x2[[1]], class = "data.table")
+  expect_equal(attr(x2[[1]], "format_out"), "data.table")
+  expect_equal(attr(x2[[1]], "detector_y_unit"), "mAU")
+  expect_equal(attr(x2[[1]], "detector_x_unit"), "nm")
+  expect_equal(attr(x2[[1]], "detector"), "DAD")
+  expect_equal(attr(x2[[1]], "sample_name"), "las_bulk_hexE")
+  expect_named(x2, "las_bulk_hexE")
 })
 
 test_that("extract_metadata function works", {
@@ -272,8 +276,8 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(class(x[[1]]), "list")
   expect_equal(class(x[[1]][[1]]), "data.frame")
   expect_equal(names(x[[1]]), c("254", "320", "360", "210", "230"))
-  expect_equal(x[[1]][[1]][[1,"sample"]], "RUTIN2")
-  expect_equal(x[[1]][[1]][[1,"lambda"]], "254")
+  expect_equal(x[[1]][[1]][[1, "sample"]], "RUTIN2")
+  expect_equal(x[[1]][[1]][[1, "lambda"]], "254")
   expect_equal(colnames(x[[1]][[1]]),
                c("sample", "lambda", "rt", "width", "area", "height", "type"))
   expect_equal(attr(x, "fit"), "chemstation")
@@ -305,10 +309,10 @@ test_that("read_peaklist can read `Shimadzu` fid files", {
   expect_equal(x[[1]][[1,"sample"]], "ladder")
   expect_equal(x[[1]][[1,"sample"]], "ladder")
   expect_equal(colnames(x[[1]]),
-               c("sample","Peak#","R.Time","I.Time","F.Time","Area","Height",
-                 "A/H","Conc.","Mark","ID#","Name", "k'", "Plate #", "Plate Ht.",
-                 "Tailing", "Resolution", "Sep.Factor", "Area Ratio", "Height Ratio",
-                 "Conc. %", "Norm Conc."))
+               c("sample", "Peak#", "R.Time", "I.Time", "F.Time", "Area",
+                 "Height", "A/H", "Conc.", "Mark", "ID#", "Name", "k'",
+                 "Plate #", "Plate Ht.", "Tailing", "Resolution", "Sep.Factor",
+                 "Area Ratio", "Height Ratio", "Conc. %", "Norm Conc."))
   expect_equal(attr(x, "class"), "peak_list")
 })
 

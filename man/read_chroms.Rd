@@ -24,7 +24,7 @@ read_chroms(
   progress_bar,
   cl = 1,
   verbose = getOption("verbose"),
-  sample_names = NULL,
+  sample_names = c("basename", "sample_name"),
   dat = NULL,
   ...
 )
@@ -86,8 +86,10 @@ of clusters to use or a cluster object created by
 \item{verbose}{Logical. Whether to print output from external parsers to the
 R console.}
 
-\item{sample_names}{An optional character vector of sample names. Otherwise
-sample names default to the \code{\link{basename}} of the specified files.}
+\item{sample_names}{Which sample names to use. Options are \code{basename} to
+use the filename (minus the extension) or \code{sample_name} to use the sample
+name encoded in the file metadata. Sample names default to the
+\code{\link{basename}} of the specified files.}
 
 \item{dat}{Existing list of chromatograms to append results.
 (Defaults to NULL).}

@@ -65,8 +65,10 @@
 #' \code{\link[parallel]{makeCluster}}. Defaults to 1.
 #' @param verbose Logical. Whether to print output from external parsers to the
 #' R console.
-#' @param sample_names An optional character vector of sample names. Otherwise
-#' sample names default to the \code{\link{basename}} of the specified files.
+#' @param sample_names Which sample names to use. Options are \code{basename} to
+#' use the filename (minus the extension) or \code{sample_name} to use the sample
+#' name encoded in the file metadata. Sample names default to the
+#' \code{\link{basename}} of the specified files.
 #' @param dat Existing list of chromatograms to append results.
 #' (Defaults to NULL).
 #' @param ... Additional arguments to parser.
@@ -116,12 +118,14 @@ read_chroms <- function(paths,
                         metadata_format = c("chromconverter", "raw"),
                         progress_bar, cl = 1,
                         verbose = getOption("verbose"),
-                        sample_names = NULL, dat = NULL, ...){
+                        sample_names = c("basename", "sample_name"),
+                        dat = NULL, ...){
   data_format <- match.arg(data_format, c("wide","long"))
   format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
   parser <- match.arg(tolower(parser), c("", "chromconverter", "aston","entab",
                                           "thermoraw", "openchrom", "rainbow"))
   metadata_format <- match.arg(tolower(metadata_format), c("chromconverter", "raw"))
+  sample_names <- match.arg(sample_names, c("basename", "sample_name"))
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
@@ -194,10 +198,10 @@ read_chroms <- function(paths,
     path_out <- fs::path_expand(path_out)
     if (!dir.exists(path_out)){
         ans <- readline("Export directory not found. Create directory (y/n)?")
-        if (ans %in% c("y","Y","yes","Yes","YES")){
+        if (ans %in% c("y", "Y", "yes", "Yes", "YES")){
           fs::dir_create(path_out)
         } else
-          stop(paste0("The export directory '", path_out, "' could not be found."))
+          stop(sprintf("The export directory '%s' could not be found.", path_out))
     }
   }
   if (is.null(dat)){
@@ -411,10 +415,10 @@ read_chroms <- function(paths,
   } else{
     data <- converter(files)
   }
-  if (!is.null(sample_names)){
-    names(data) <- sample_names
-  } else{
+  if (sample_names == "basename"){
     names(data) <- file_names
+  } else if (sample_names == "sample_name"){
+    names(data) <- sapply(data, attr, "sample_name")
   }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
     writer <- switch(export_format,
