@@ -4,6 +4,8 @@
 * Fixed bug in `extract_metadata` when sub-setting metadata elements.
 * Added more informative error and warning messages to `extract_metadata`.
 * Added `data.table` format option to `extract_metadata`.
+* Fixed path issue in `call_openchrom`.
+* Updated documentation in README and `call_openchrom` manual concerning OpenChrom installation.
 
 ## chromConverter 0.7.4
 

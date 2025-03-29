@@ -1,22 +1,21 @@
 #' Parse files with OpenChrom
 #'
 #' Writes `xml` batch-files and calls OpenChrom file parsers using a
-#' system call to the command-line interface. To use this function
-#' [OpenChrom](https://lablicate.com/platform/openchrom) (version 0.4.0) must be
-#' manually installed. The command line interface is no longer supported in the
-#' latest versions of OpenChrom (starting with version 0.5.0), so the function
-#' will no longer work with these newer versions. OpenChrom 1.4 has been scrubbed
-#' from the internet, but OpenChrom 1.3 is still available from
-#' [SourceForge](https://sourceforge.net/projects/openchrom/files/REL-1.3.0/).
+#' system call to the command-line interface. Unfortunately, the command-line
+#' interface is no longer supported in newer versions of OpenChrom (starting with
+#' version 1.5.0) and older versions of OpenChrom that do support
+#' the command line interface are no longer available from Lablicate. Thus, this
+#' function is deprecated since it will only work if you happen to have access
+#' to OpenChrom version 1.4.0, which has been scrubbed from the internet.
 #'
-#' The \code{call_openchrom} works by creating an \code{xml} batchfile and
-#' feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
+#' The \code{call_openchrom} function works by creating an \code{xml} batchfile
+#' and feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
 #' consist of \code{InputEntries} (the files you want to convert) and
 #' \code{ProcessEntries} (what you want to do to the files). The parsers are
 #' organized into broad categories by detector-type and output format. The
 #' detector-types are \code{msd} (mass selective detectors), \code{csd}
-#' (current selective detectors, e.g. FID, ECD, NPD), and \code{wsd}
-#' (wavelength selective detectors, e.g.  DAD, and UV/VIS). Thus, when calling
+#' (current selective detectors, e.g., FID, ECD, NPD), and \code{wsd}
+#' (wavelength selective detectors, e.g.,  DAD, and UV/VIS). Thus, when calling
 #' the OpenChrom parsers, you must select one of these three options for the
 #' input format (\code{format_in}).
 #'
@@ -26,8 +25,8 @@
 #' call from R.
 #'
 #' @import xml2
-#' @param files files to parse
-#' @param path_out directory to export converted files.
+#' @param files Path to files.
+#' @param path_out Directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame
 #' ionization data, or `wsd` for DAD/UV data.
 #' @param format_out R format. Either \code{matrix}, \code{data.frame} or
@@ -219,15 +218,16 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
     }
     writeLines(path_parser,
                con = system.file('shell/path_to_openchrom_commandline.txt',
-                                 package='chromConverter'))
+                                 package = 'chromConverter'))
   }
   path_ini <- switch(.Platform$OS.type,
-                     "unix" = paste0(gsub("MacOS/openchrom", "", path_parser),
+                     "unix" = fs::path(gsub("MacOS/openchrom", "", path_parser),
                                      "Eclipse/openchrom.ini"),
-                     "linux" = paste0(path_parser, ".uni"),
+                     "linux" = fs::path(path_parser, ".uni"),
                      "windows" = paste0(gsub(".exe", "", path_parser), ".ini"))
   ini <- readLines(path_ini)
   cli_index <- grep("-Denable.cli.support", ini)
+  if (length(cli_index) == 0) stop("OpenChrom bindings require OpenChrom version < 1.5")
   ini_split <- strsplit(ini[cli_index], "=")[[1]]
   cli_bool <- ini_split[2]
 

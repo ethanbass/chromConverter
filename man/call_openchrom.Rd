@@ -16,9 +16,9 @@ call_openchrom(
 )
 }
 \arguments{
-\item{files}{files to parse}
+\item{files}{Path to files.}
 
-\item{path_out}{directory to export converted files.}
+\item{path_out}{Directory to export converted files.}
 
 \item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame
 ionization data, or \code{wsd} for DAD/UV data.}
@@ -46,23 +46,22 @@ vector of paths to the newly created files.
 }
 \description{
 Writes \code{xml} batch-files and calls OpenChrom file parsers using a
-system call to the command-line interface. To use this function
-\href{https://lablicate.com/platform/openchrom}{OpenChrom} (version 0.4.0) must be
-manually installed. The command line interface is no longer supported in the
-latest versions of OpenChrom (starting with version 0.5.0), so the function
-will no longer work with these newer versions. OpenChrom 1.4 has been scrubbed
-from the internet, but OpenChrom 1.3 is still available from
-\href{https://sourceforge.net/projects/openchrom/files/REL-1.3.0/}{SourceForge}.
+system call to the command-line interface. Unfortunately, the command-line
+interface is no longer supported in newer versions of OpenChrom (starting with
+version 1.5.0) and older versions of OpenChrom that do support
+the command line interface are no longer available from Lablicate. Thus, this
+function is deprecated since it will only work if you happen to have access
+to OpenChrom version 1.4.0, which has been scrubbed from the internet.
 }
 \details{
-The \code{call_openchrom} works by creating an \code{xml} batchfile and
-feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
+The \code{call_openchrom} function works by creating an \code{xml} batchfile
+and feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
 consist of \code{InputEntries} (the files you want to convert) and
 \code{ProcessEntries} (what you want to do to the files). The parsers are
 organized into broad categories by detector-type and output format. The
 detector-types are \code{msd} (mass selective detectors), \code{csd}
-(current selective detectors, e.g. FID, ECD, NPD), and \code{wsd}
-(wavelength selective detectors, e.g.  DAD, and UV/VIS). Thus, when calling
+(current selective detectors, e.g., FID, ECD, NPD), and \code{wsd}
+(wavelength selective detectors, e.g.,  DAD, and UV/VIS). Thus, when calling
 the OpenChrom parsers, you must select one of these three options for the
 input format (\code{format_in}).
 }
