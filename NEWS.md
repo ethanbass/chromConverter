@@ -1,3 +1,10 @@
+## chromConverter 0.7.5
+
+* **Changes to `sample_names` argument in `read_chroms`:** This argument can no longer be supplied with a vector of names. Instead, `sample_names` can be provided with one of two arguments: `basename` or `sample_name`. The default setting (`basename`) will use the basename of the file, while `sample_name` will instead use the sample name encoded in the file's metadata.
+* Fixed bug in `extract_metadata` when sub-setting metadata elements.
+* Added more informative error and warning messages to `extract_metadata`.
+* Added `data.table` format option to `extract_metadata`.
+
 ## chromConverter 0.7.4
 
 * Use updated syntax for reticulate (hopefully this will solve some of the issues with python configuration failure).
