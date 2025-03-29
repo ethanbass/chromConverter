@@ -55,13 +55,37 @@ test_that("extract_metadata function works", {
   expect_equal(meta$detector_range1, "200")
   expect_equal(meta$method, "ETHAN_PA_SHORT8_2_PREP_30UL.M")
   expect_equal(meta$time_unit, "Minutes")
-  expect_equal(meta$run_datetime, as.POSIXct(1648668556, tz="UTC"))
+  expect_equal(meta$run_datetime, as.POSIXct(1648668556, tz = "UTC"))
+
+  expect_error(extract_metadata(x1, what = "instrument"))
 
   meta <- extract_metadata(x1, format_out = "tibble")
   expect_equal(class(meta)[1], "tbl_df")
   expect_equal(nrow(meta), 1)
   expect_equal(meta[["instrument"]], attr(x1[[1]],"instrument"))
   expect_equal(meta[["parser"]], attr(x1[[1]],"parser"))
+
+  meta <- extract_metadata(x1, format_out = "data.table")
+  expect_equal(class(meta)[1], "data.table")
+  expect_equal(nrow(meta), 1)
+  expect_equal(meta[["instrument"]], attr(x1[[1]],"instrument"))
+  expect_equal(meta[["parser"]], attr(x1[[1]],"parser"))
+
+  meta <- extract_metadata(x1, what = c("sample_name", "run_datetime"))
+  expect_named(meta, c("name", "sample_name", "run_datetime"))
+
+  meta <- extract_metadata(x1, what=c("sample_name"))
+  expect_named(meta, c("name","sample_name"))
+
+  x2 <- read_chroms(rep(path_uv, 2), parser="chromConverter",
+                    progress_bar = FALSE)
+  attr(x2[[1]],"detector") <- NULL
+  meta2 <- extract_metadata(x2)
+  expect_equal(nrow(meta2), length(x2))
+  expect_equal(meta2$detector,c(NA,"DAD"))
+  expect_equal(meta2$sample_name, rep(meta$sample_name,2))
+
+  expect_warning(extract_metadata(x2,what=c("sample_name", "instrument")))
 })
 
 test_that("entab parser can read `Agilent Chemstation` 131 files", {
