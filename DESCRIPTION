@@ -21,8 +21,9 @@ Description: Reads chromatograms from binary formats into R objects. Currently s
     'Entab' <https://github.com/bovee/entab>, 'rainbow' <https://rainbow-api.readthedocs.io/>,
     and 'ThermoRawFileParser' <https://github.com/compomics/ThermoRawFileParser>.
 License: GPL (>= 3)
-URL: https://ethanbass.github.io/chromConverter, https://github.com/ethanbass/chromConverter
-BugReports: https://github.com/ethanbass/chromConverter/issues
+URL: https://ethanbass.github.io/chromConverter/, https://github.com/ethanbass/chromConverter/
+BugReports: https://github.com/ethanbass/chromConverter/issues/
+Depends: R (>= 4.1.0)
 Imports:
     bitops,
     fs,
