@@ -1,23 +1,21 @@
-## Response to comments
-
-I've added single quotes around proper nouns in the package description, as requested by Uwe Ligges and pushed the version to 0.2.1. Thanks!
-
 ## R CMD check results
+
 There were no ERRORs or WARNINGs. 
 
-There were 2 NOTES:
+There were up to 2 NOTES (depending on the system where the package was checked):
+
+* Possibly misspelled words in DESCRIPTION:
+  chromConverter (19:42)
 
 * Suggests or Enhances not in mainstream repositories:
-  entab
+  entab, chromConverterExtraTests
 Availability using Additional_repositories specification:
-  entab   yes   https://ethanbass.github.io/drat/
+  entab                      yes   https://ethanbass.github.io/drat/
+  chromConverterExtraTests   yes   https://ethanbass.github.io/drat/
+  ?                            ?   https://ethanbass.r-universe.dev/
 
-Entab is suggested but not required. It can be downloaded from my drat repository or from its official github page https://github.com/bovee/entab.
+Uses the non-portable package: ‘mzR’
 
-* Found the following (possibly) invalid URLs:
-  URL: https://doi.org/10.1021/acs.jproteome.9b00328
-    From: man/read_thermoraw.Rd
-    Status: 503
-    Message: Service Unavailable
-    
-The URL in question appears to be perfectly valid. At least it loads in the web browser just fine.
+"chromConverter"" is the name of the package and is not mis-spelled.  
+
+Entab, mzR, and chromConverterExtraTests are not required. The Entab and chromConverterExtraTests packages can be installed from my drat repository or from my r-universe repository.

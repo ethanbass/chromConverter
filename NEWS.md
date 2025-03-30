@@ -139,7 +139,7 @@ toggle scaling of chromatograms resolving ([#30](https://github.com/ethanbass/ch
 
 ### Other Improvements
 
-* Improved automatic filetype detection by `read_chroms`.
+* Improved automatic file type detection by `read_chroms`.
 * Refactored `read_thermoraw` function to simplify paths.
 * The `thermoraw` and `openchrom` parsers now use a proper temp directory if an export directory is not specified through the `path_out` argument.
 * Re-factored `reshape_chroms`, speeding up conversion from wide to long format.

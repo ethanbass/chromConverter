@@ -7,6 +7,7 @@
 ^\.Rhistory$
 ^.Rproj*$
 [.]DS_Store$
+^\.DS_Store$
 ^CRAN-SUBMISSION$
 ^cran-comments.md
 ^_pkgdown\.yml$

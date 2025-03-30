@@ -18,7 +18,7 @@ read_peaklist(
 )
 }
 \arguments{
-\item{paths}{Paths to files or folders containing peaklist files.}
+\item{paths}{Paths to files or folders containing peak list files.}
 
 \item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
 the function with a folder or vector of folders containing the files.
