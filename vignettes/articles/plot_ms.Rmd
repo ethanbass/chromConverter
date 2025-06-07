@@ -40,7 +40,7 @@ matplot(tic$rt, tic$intensity, type = 'l',
         ylab = "Total intensity", xlab = "Time (min)")
 ```
 
-Here is a simple plot function you could use to plot mass spectra in base R:
+Here is a simple plot function you could use to plot mass spectra using base R graphics:
 
 ```{r plot_mass_spectrum_function}
 plot_spec <- function(spec, lab_int=0.2, digits=1){
@@ -51,7 +51,7 @@ plot_spec <- function(spec, lab_int=0.2, digits=1){
 }
 ```
 
-You can extract mass spectra by filtering on time, e.g., to get the mass spectrum of the first scan, you could do:
+Mass spectra can be extracted by filtering on the time column. For example to get the mass spectrum of the first scan:
 
 ```{r plot_spectrum_base}
 times <- unique(x$rt)
@@ -111,7 +111,7 @@ matplot(bpc$rt, bpc$intensity, type = 'l',
 To obtain a mass spectrum we just filter by retention time as before:
 
 ```{r spectrum_dt}
-plot_spec(x[rt == 7.26355, c('mz','intensity')])
+plot_spec(x[rt == 7.26355, c('mz', 'intensity')])
 ```
 
 ### Plot TIC and mass spectra using *ggplot*
