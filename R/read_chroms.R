@@ -224,13 +224,15 @@ read_chroms <- function(paths,
                                                     format_out = format_out,
                                                     data_format = data_format,
                                                     read_metadata = read_metadata,
-                                                    metadata_format = metadata_format),
+                                                    metadata_format = metadata_format,
+                                                    ...),
                         "rainbow" = rainbow_parser)
   } else if (format_in == "agilent_dx"){
     converter <- partial(read_agilent_dx, path_out = path_out,
                          format_out = format_out,
                          data_format = data_format,
-                         read_metadata = read_metadata)
+                         read_metadata = read_metadata,
+                         ...)
   } else if (format_in == "asm"){
     converter <- partial(read_asm, format_out = format_out,
                          data_format = data_format,

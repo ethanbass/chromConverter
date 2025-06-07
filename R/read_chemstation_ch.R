@@ -89,7 +89,6 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
 
   seek(f, where = 282, origin = "start")
   seek(f, where = 282, origin = "start")
-
   if (version %in% c("8", "30", "130")){
     xmin <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE,
                               endian = "big")) / 60000
@@ -140,7 +139,9 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
           read_cs_string(f, type = 2)
         }
       })
-    meta <- c(meta, intensity_multiplier = scaling_factor)
+    meta$intensity_multiplier <- scaling_factor
+    meta$time_range <- c(xmin, xmax)
+
     metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
     if (!inherits(metadata_from_file, "try-error")){
       meta <- c(meta, metadata_from_file)
@@ -458,47 +459,79 @@ get_agilent_offsets <- function(version){
   offsets
 }
 
-#' Read 'Agilent' DX files
-#'
-#' Reads 'Agilent' \code{.dx} files.
-#'
-#' This function unzips 'Agilent'  \code{.dx} into a temporary directory using
-#' \code{\link{unzip}} and calls \code{\link{read_chemstation_ch}}.
-#'
-#' @importFrom utils unzip
-#' @param path Path to \code{.dx} file.
-#' @param path_out Path to directory to export unzipped files.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Logical. Whether to attach metadata.
-#' @author Ethan Bass
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
-#' @author Ethan Bass
-#' @family 'Agilent' parsers
-#' @export
 
-read_agilent_dx <-  function(path, path_out = NULL,
-                             format_out = c("matrix", "data.frame", "data.table"),
-                              data_format = c("wide","long"),
-                              read_metadata = TRUE){
-    format_out <- check_format_out(format_out)
-    data_format <- match.arg(data_format, c("wide","long"))
-    files <- unzip(path, list = TRUE)
-    files.idx <- grep(".ch$", files$Name, ignore.case = TRUE)
-    # make temp directory
-    if (is.null(path_out)){
-      path_out <- tempdir()
-      on.exit(unlink(path_out), add = TRUE)
-    }
-    # copy .dx file to directory
-    file.copy(path, path_out)
-    path <- fs::path(path_out, basename(path))
-    # unzip .dx file
-    unzip(path, files = files$Name[files.idx], exdir = path_out)
-    # read in `.ch` files
-    read_chemstation_ch(fs::path(path_out, files$Name[files.idx]),
-                        format_out = format_out, data_format = data_format,
-                        read_metadata = read_metadata)
+read_chemstation_it <- function(path, format_out = c("matrix", "data.frame",
+                                                     "data.table"),
+                                data_format = c("wide", "long"),
+                                read_metadata = TRUE,
+                                metadata_format = c("chromconverter", "raw"),
+                                scale = TRUE){
+  format_out <- check_format_out(format_out)
+  data_format <- match.arg(data_format, c("wide", "long"))
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- switch(metadata_format, chromconverter = "chemstation",
+                            raw = "raw")
+
+  f <- file(path, "rb")
+  on.exit(close(f))
+
+  # HEADER
+  seek(f, 0, "start")
+  version <- read_cs_string(f)
+  if (version != "179"){
+    stop("The parser currently only supports `.IT` files in the version 179 format.")
+  }
+  offsets <- get_agilent_offsets(version)
+
+  seek(f, 347)
+  filetype <- substr(read_cs_string(f, type = 2), 1, 2)
+
+  if (filetype != "OL"){
+    stop("The parser currently only supports `.IT` files from OpenLab CDS.")
+  }
+
+  decoder <- decode_double_array_8byte
+
+  seek(f, 264, "start")
+  offset <- (readBin(f, "integer", n = 1, endian = "big", size = 4) - 1) * 512
+
+  data <- decoder(f, offset)
+  data <- split(data, seq_along(data) %% 2)
+  vals <- data[[1]]
+  rt <- data[[2]]/60000
+
+  seek(f, offsets$intercept, "start")
+  intercept <- readBin(f, "double", n = 1, endian = "big", size = 8)
+  if (is.na(intercept)){
+    intercept <- 0
+  }
+
+  seek(f, offsets$scaling_factor, "start")
+  scaling_factor <- readBin(f, "double", n = 1, endian = "big", size = 8)
+
+  if (scale){
+    vals <- vals * scaling_factor + intercept
+  }
+  data <- format_2d_chromatogram(rt = rt, int = vals,
+                                 data_format = data_format,
+                                 format_out = format_out)
+
+  if (read_metadata){
+    meta <- lapply(offsets[seq_len(10)], function(offset){
+      seek(f, where = offset, origin = "start")
+        read_cs_string(f, type = 2)
+    })
+    meta$time_range <- c(head(rt, 1), tail(rt, 1))
+    meta$units <- gsub("\xb0", "\u00b0", meta$units, useBytes = TRUE)
+    meta <- c(meta, intensity_multiplier = scaling_factor)
+    datetime_regex <- "(\\d{2}-[A-Za-z]{3}-\\d{2}, \\d{2}:\\d{2}:\\d{2})|(\\d{2}/\\d{2}/\\d{4} \\d{1,2}:\\d{2}:\\d{2} (?:AM|PM)?)"
+    meta$date <- regmatches(meta$date, gregexpr(datetime_regex, meta$date))[[1]]
+    data <- attach_metadata(data, meta, format_in = metadata_format,
+                            data_format = data_format, format_out = format_out,
+                            parser = "chromconverter", source_file = path,
+                            source_file_format = paste0("chemstation_", version),
+                            scale = scale)
+  }
+  data
 }
+

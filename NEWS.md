@@ -1,3 +1,9 @@
+## chromConverter 0.7.6
+
+* Added support for extraction of DAD and auxiliary instrumental data (stored in `.IT` files) from 'Agilent OpenLab' `.dx` files.
+* Fixed misplaced parantheses in `read_agilent_d` causing possible bug.
+* Added more informative error messages for `read_agilent_d`.
+
 ## chromConverter 0.7.5
 
 * **Changes to `sample_names` argument in `read_chroms`:** This argument can no longer be supplied with a vector of names. Instead, `sample_names` can be provided with one of two arguments: `basename` or `sample_name`. The default setting (`basename`) will use the basename of the file, while `sample_name` will instead use the sample name encoded in the file's metadata.

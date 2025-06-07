@@ -43,26 +43,37 @@ read_agilent_d <- function(path, what = c("chroms", "dad", "peak_table"),
                           ignore.case = TRUE, full.names = TRUE)
   })
   what <- what[vapply(files, length, FUN.VALUE = numeric(1)) > 0]
-  if (any(what == "chroms") && length(files$chroms > 0)){
+  if (any(what == "chroms")){
+    if (length(files$chroms) > 0){
     chroms <- lapply(files$chroms, read_chemstation_ch, format_out = format_out,
                                            data_format = data_format,
                                            read_metadata = read_metadata,
                                            metadata_format = metadata_format)
     names(chroms) <- gsub("\\.ch$", "", basename(files$chroms))
     chroms <- collapse_list(chroms)
+    } else {
+        stop("Trace data could not be found.")
+    }
   }
-  if (any(what == "dad") && length(files$dad > 0)){
-    read_chemstation_uv(files$dad)
+  if (any(what == "dad")){
+    if  (length(files$dad) > 0){
     dad <- lapply(files$dad, read_chemstation_uv, format_out = format_out,
                      data_format = data_format,
                      read_metadata = read_metadata,
                      metadata_format = metadata_format)
     names(dad) <- gsub("\\.uv$", "", basename(files$dad))
     dad <- collapse_list(dad)
+    } else {
+        stop("DAD data could not be found.")
+    }
   }
-  if (any(what == "peak_table") && length(files$peak_table > 0)){
+  if (any(what == "peak_table")){
+    if (length(files$peak_table) > 0){
     peak_table <- read_chemstation_report(files$peak_table,
                                           data_format = "chromatographR")
+    } else{
+      stop("Peak table data could not be found.")
+    }
   }
   dat <- mget(what)
   if (collapse) dat <- collapse_list(dat)
