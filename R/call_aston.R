@@ -38,7 +38,7 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
   if (read_metadata){
     meta <- read_masshunter_metadata(path)
     x <- attach_metadata(x, meta, format_in = metadata_format,
-                         format_out = format_out, data_format = "wide",
+                         format_out = format_out, data_format = data_format,
                          parser = "aston", source_file = path)
   }
   x
