@@ -6,6 +6,32 @@ test_that("python modules are available", {
   expect_true(reticulate::py_module_available("scipy"))
 })
 
+test_that("get_times works as expected", {
+  skip_on_cran()
+  path_csv <- test_path("testdata/dad1.csv")
+
+  # wide format
+  x <- read_chroms(path_csv, format_in = "chemstation_csv", progress_bar = FALSE)
+  expect_equal(head(get_times(x),1), 0.002, tolerance = .00001)
+  expect_equal(tail(get_times(x),1), 12.95533, tolerance = .00001)
+  expect_equal(head(get_times(x[[1]]),1), 0.002, tolerance = .00001)
+  expect_equal(tail(get_times(x[[1]]),1), 12.95533, tolerance = .00001)
+
+  attr(x[[1]],"data_format") <- NULL
+  expect_equal(head(get_times(x),1), 0.002, tolerance = .00001)
+  expect_equal(tail(get_times(x),1), 12.95533, tolerance = .00001)
+  expect_equal(head(get_times(x[[1]]),1), 0.002, tolerance = .00001)
+  expect_equal(tail(get_times(x[[1]]),1), 12.95533, tolerance = .00001)
+
+  # long format
+  x1 <- read_chroms(path_csv, format_in = "chemstation_csv",
+                    data_format = "long", progress_bar = FALSE)
+  expect_equal(head(get_times(x1),1), 0.002, tolerance = .00001)
+  expect_equal(tail(get_times(x1),1), 12.95533, tolerance = .00001)
+  expect_equal(head(get_times(x1[[1]]),1), 0.002, tolerance = .00001)
+  expect_equal(tail(get_times(x1[[1]]),1), 12.95533, tolerance = .00001)
+})
+
 test_that("check_parser works as expected", {
   expect_equal(check_parser(format_in = "msd", parser = NULL, find = TRUE), "openchrom")
   expect_equal(check_parser(format_in = "wsd", parser = NULL, find = TRUE), "openchrom")

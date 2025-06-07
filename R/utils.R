@@ -421,19 +421,25 @@ simple_cap <- function(x) {
 #'
 #' Get retention times from a list of chromatograms or a \code{peak_table} object.
 #'
-#' @param x A list of chromatograms or \code{peak_table} object.
-#' @param idx Index of chromatogram from which to extract times.
+#' If \code{data_format} attributes is not present, the data is assumed to be in
+#' wide format with retention times as rownames.
+#'
+#' @param x A chromatogram or list of chromatograms.
+#' @param idx Index of a chromatogram from which to extract retention times.
 #' @return Numeric vector of retention times from the chromatogram specified by
 #' \code{idx}.
 #' @family utility functions
 #' @noRd
+
 get_times <- function(x, idx = 1){
-  if (inherits(x, "peak_table")){
-    x <- get_chrom_list(x)
-  }
   if (inherits(x, "chrom_list") | inherits(x, "list")){
-    as.numeric(rownames(x[[idx]]))
-  } else if (inherits(x, "matrix")){
+    x <- x[[idx]]
+  }
+  data_format <- attr(x, "data_format")
+  data_format <- ifelse(is.null(data_format), "wide", data_format)
+  if (data_format == "long"){
+    as.numeric(x[,1])
+  } else{
     as.numeric(rownames(x))
   }
 }
