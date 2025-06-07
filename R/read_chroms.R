@@ -328,7 +328,8 @@ read_chroms <- function(paths,
                                                    read_metadata = read_metadata,
                                                    metadata_format = metadata_format))
   } else if (format_in == "chemstation_csv"){
-    converter <- partial(read_chemstation_csv, format_out = format_out)
+    converter <- partial(read_chemstation_csv, format_out = format_out,
+                         data_format = data_format, read_metadata = read_metadata)
   } else if (grepl("chemstation", format_in)){
     converter <- switch(parser,
                         "chromconverter" = partial(read_chemstation_ch,
