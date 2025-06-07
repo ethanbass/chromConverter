@@ -837,3 +837,38 @@ convert_timestamp <- function(string, datetime_formats){
     string
   })
 }
+
+#' Attach metadata minimal
+#'
+#' Attaches metadata from chromConverter function call and SHA Hashsum
+#' without providing a metadata object.
+#'
+#' @noRd
+
+attach_metadata_minimal <- function(x, format_out, data_format,
+                                    parser = NULL, source_file,
+                                    source_file_format = NA,
+                                    scale = NULL){
+  structure(x, instrument = NA,
+            detector = NA,
+            software = NA,
+            method = NA,
+            batch = NA,
+            operator = NA,
+            run_datetime = NA,
+            sample_name = fs::path_ext_remove(basename(source_file)),
+            sample_id = NA,
+            sample_injection_volume = NA,
+            sample_amount = NA,
+            time_range = NA,
+            time_interval = NA,
+            time_unit = NA,
+            detector_range = NA,
+            detector_y_unit = NA,
+            source_file = source_file,
+            source_file_format = source_file_format,
+            source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+            data_format = data_format,
+            parser = parser,
+            format_out = format_out)
+}
