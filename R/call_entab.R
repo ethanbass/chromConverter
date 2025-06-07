@@ -48,7 +48,8 @@ call_entab <- function(path, data_format = c("wide", "long"),
       x <- data.frame(row.names = x$time, intensity = x$intensity)
     }
   } else if (grepl("ms$", file_format)){
-    colnames(x)[c(1,3)] <- c("rt", "intensity")
+    colnames(x)[c(1, 3)] <- c("rt", "intensity")
+    data_format <- "long"
   }
   x <- convert_chrom_format(x, format_out = format_out)
   if (read_metadata){
