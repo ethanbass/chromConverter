@@ -416,3 +416,24 @@ simple_cap <- function(x) {
   paste(toupper(substring(s, 1, 1)), substring(s, 2),
         sep = "", collapse = " ")
 }
+
+#' Get retention times
+#'
+#' Get retention times from a list of chromatograms or a \code{peak_table} object.
+#'
+#' @param x A list of chromatograms or \code{peak_table} object.
+#' @param idx Index of chromatogram from which to extract times.
+#' @return Numeric vector of retention times from the chromatogram specified by
+#' \code{idx}.
+#' @family utility functions
+#' @noRd
+get_times <- function(x, idx = 1){
+  if (inherits(x, "peak_table")){
+    x <- get_chrom_list(x)
+  }
+  if (inherits(x, "chrom_list") | inherits(x, "list")){
+    as.numeric(rownames(x[[idx]]))
+  } else if (inherits(x, "matrix")){
+    as.numeric(rownames(x))
+  }
+}

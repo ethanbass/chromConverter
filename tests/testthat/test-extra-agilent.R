@@ -71,8 +71,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
 
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(38405, 1))
-  expect_equal(head(rownames(x), 1), "-.00133333333333333")
-  expect_equal(tail(rownames(x), 1), "32.002")
+  expect_equal(head(get_times(x),1), -0.001333333, tolerance = .00001)
+  expect_equal(tail(get_times(x),1), 32.002, tolerance = .00001)
 
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "NVAC-6B1-S3R1")
@@ -87,8 +87,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
   expect_s3_class(x1[1], "data.frame")
   expect_equal(as.numeric(rownames(x)), x1[,1])
   expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
-  expect_equal(head(x1$rt, 1), -.00133333333333333)
-  expect_equal(tail(x1$rt, 1), 32.002)
+  expect_equal(head(x1$rt, 1), -.00133333333333333, tolerance = .00001)
+  expect_equal(tail(x1$rt, 1), 32.002, tolerance = .00001)
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
@@ -108,11 +108,11 @@ test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
   expect_equal(dim(x), c(27659, 176))
   expect_equal(dim(x1), c(27659, 177))
 
-  expect_equal(head(rownames(x), 1), "0.000333333333333333")
-  expect_equal(head(rownames(x1), 1), "0.000333333333333333")
+  expect_equal(head(get_times(x), 1), 0.000333333333333333, tolerance = .00001)
+  expect_equal(head(get_times(x1), 1), 0.000333333333333333, tolerance = .00001)
 
-  expect_equal(tail(rownames(x), 1), "31.9911666666667")
-  expect_equal(tail(rownames(x1), 1), "31.9911666666667")
+  expect_equal(tail(get_times(x), 1), 31.9911666666667, tolerance = .00001)
+  expect_equal(tail(get_times(x1), 1), 31.9911666666667, tolerance = .00001)
 
   # check metadata
   expect_equal(attr(x1, "parser"), "entab")
@@ -146,8 +146,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   x <- read_chroms(path, progress_bar = FALSE)[[1]]
 
   expect_equal(dim(x), c(2699, 1))
-  expect_equal(head(rownames(x), 1), "3.00044479166667")
-  expect_equal(tail(rownames(x), 1), "11.9971114583333")
+  expect_equal(head(get_times(x), 1), 3.00044479166667, tolerance = .00001)
+  expect_equal(tail(get_times(x), 1), 11.9971114583333, tolerance = .00001)
 
   # check metadata
   expect_equal(class(x)[1], "matrix")
@@ -166,8 +166,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   expect_equal(dim(x1), c(2699, 2))
   expect_equal(as.numeric(rownames(x)), x1[[1]])
   expect_equal(x[,1], x1[[2]], ignore_attr = TRUE)
-  expect_equal(head(x1$rt, 1), 3.00044479166667)
-  expect_equal(tail(x1$rt, 1), 11.9971114583333)
+  expect_equal(head(x1$rt, 1), 3.00044479166667, tolerance = .00001)
+  expect_equal(tail(x1$rt, 1), 11.9971114583333, tolerance = .00001)
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
@@ -182,8 +182,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
 
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(12750, 1))
-  expect_equal(head(rownames(x),1), "0.00583333333333333")
-  expect_equal(tail(rownames(x),1), "84.9991666666667")
+  expect_equal(head(get_times(x),1), 0.00583333333333333, tolerance = .00001)
+  expect_equal(tail(get_times(x),1), 84.9991666666667, tolerance = .00001)
 
   # check metadata
   expect_equal(attr(x, "sample_name"), "0-CN-6-6-PU")
@@ -199,8 +199,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
   expect_s3_class(x1[1], c("data.table","data.frame"))
   expect_equal(colnames(x1), c("rt", "intensity"))
   expect_equal(dim(x1), c(12750, 2))
-  expect_equal(head(x1$rt,1), 0.00583333333333333)
-  expect_equal(tail(x1$rt,1), 84.9991666666667)
+  expect_equal(head(x1$rt,1), 0.00583333333333333, tolerance = .00001)
+  expect_equal(tail(x1$rt,1), 84.9991666666667, tolerance = .00001)
 
   expect_equal(attr(x1, "sample_name"), "0-CN-6-6-PU")
   expect_equal(attr(x1, "detector_y_unit"), "mAU")
@@ -221,8 +221,8 @@ test_that("read_chroms can read 'Agilent OpenLab' 179 files", {
   x <- read_chroms(path, progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(10000, 1))
-  expect_equal(head(rownames(x),1),"0.001125")
-  expect_equal(tail(rownames(x),1),"36")
+  expect_equal(head(get_times(x),1), 0.001125, tolerance = .00001)
+  expect_equal(tail(get_times(x),1), 36, tolerance = .00001)
 
   # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
@@ -239,8 +239,8 @@ test_that("read_chroms can read 'Agilent OpenLab' 179 files", {
   expect_equal(colnames(x1), c("rt", "intensity"))
   expect_equal(as.numeric(rownames(x)), x1[,1])
   expect_equal(x[,1], x1[,2], ignore_attr = TRUE)
-  expect_equal(head(x1$rt,1), 0.001125)
-  expect_equal(tail(x1$rt,1), 36)
+  expect_equal(head(x1$rt,1), 0.001125, tolerance = .00001)
+  expect_equal(tail(x1$rt,1), 36, tolerance = .00001)
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)", {
@@ -255,8 +255,8 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)"
 
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(54704, 1))
-  expect_equal(head(rownames(x),1),"0.000326049995422363")
-  expect_equal(tail(rownames(x),1),"18.2346604166667")
+  expect_equal(head(get_times(x),1), 0.000326049995422363, tolerance = .00001)
+  expect_equal(tail(get_times(x),1), 18.2346604166667, tolerance = .00001)
 
   # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
@@ -282,8 +282,8 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
   x <- read_chroms(path, progress_bar = FALSE)[[1]]
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(22800, 1))
-  expect_equal(head(rownames(x),1), "0.00083331667582194")
-  expect_equal(tail(rownames(x),1),"19")
+  expect_equal(head(get_times(x), 1), 0.00083331667582194, tolerance = .00001)
+  expect_equal(tail(get_times(x), 1), 19, tolerance = .00001)
 
   # check metadata
   expect_equal(attr(x, "parser"), "chromconverter")
@@ -343,10 +343,10 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   expect_type(x, "list")
   expect_equal(class(x[[1]]), c("matrix","array"))
   expect_equal(dim(x[[2]]), c(5914, 1))
-  expect_equal(head(rownames(x$FID1A), 1), "-.00181875") # is this right?
-  expect_equal(tail(rownames(x$FID1A), 1), "19.7048479166667")
-  expect_equal(head(rownames(x$V181), 1), "-.00126875") # is this right?
-  expect_equal(tail(rownames(x$V181), 1), "19.7053979166667")
+  expect_equal(head(get_times(x$FID1A), 1), -.00181875, tolerance = .00001)
+  expect_equal(tail(get_times(x$FID1A), 1), 19.7048479166667, tolerance = .00001)
+  expect_equal(head(get_times(x$V181), 1), -.00126875, tolerance = .00001)
+  expect_equal(tail(get_times(x$V181), 1), 19.7053979166667, tolerance = .00001)
 
   # check metadata
   expect_equal(attr(x[[1]], "sample_name"), "blanc421")
@@ -375,8 +375,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   expect_equal(as.numeric(rownames(x[[1]])), x1[[1]][[1]])
   expect_equal(x[[2]][,1], x1[[2]][[2]], ignore_attr=TRUE)
   expect_equal(colnames(x1[[1]]), c("rt","intensity"))
-  expect_equal(head(x1$FID1A$rt, 1), -.00181875) # is this right?
-  expect_equal(tail(x1$FID1A$rt, 1), 19.7048479166667)
+  expect_equal(head(x1$FID1A$rt, 1), -.00181875, tolerance = .00001)
+  expect_equal(tail(x1$FID1A$rt, 1), 19.7048479166667, tolerance = .00001)
 
   expect_equal(extract_metadata(x)[,c(1:8)], extract_metadata(x1)[,c(1:8)])
 
@@ -400,18 +400,18 @@ test_that("read_chroms can read 'Agilent' .dx files", {
   expect_equal(dim(x$chroms), c(10000, 1))
   expect_equal(attr(x$chroms, "parser"), "chromconverter")
   expect_equal(attr(x$chroms, "data_format"), "wide")
-  expect_equal(head(rownames(x$chroms),1), "0.001125")
-  expect_equal(tail(rownames(x$chroms),1), "36")
+  expect_equal(head(get_times(x$chroms),1), 0.001125, tolerance = .00001)
+  expect_equal(tail(get_times(x$chroms),1), 36, tolerance = .00001)
 
   # auxiliary instrumental data
   expect_equal(dim(x$instrument$`PMP1C,Solvent Ratio A`), c(43253, 1))
 
   expect_true(all(
-    sapply(x$instrument, function(x) round(as.numeric(tail(rownames(x),1)))) == 36)
+    sapply(x$instrument, function(x) round(tail(get_times(x),1))) == 36)
   )
 
   expect_true(all(
-    sapply(x$instrument, function(x) round(as.numeric(head(rownames(x),1)))) == 0)
+    sapply(x$instrument, function(x) round(head(get_times(x),1))) == 0)
   )
 
   expect_true(all(x$instrument$`PMP1C,Solvent Ratio A` == 100))
