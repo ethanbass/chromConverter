@@ -3,6 +3,9 @@
 * Added support for extraction of DAD and auxiliary instrumental data (stored in `.IT` files) from 'Agilent OpenLab' `.dx` files.
 * Fixed misplaced parantheses in `read_agilent_d` causing possible bug.
 * Added more informative error messages for `read_agilent_d`.
+* Fixed bug in `collapse` argument causing functions to return vector when `format_out` is `data.frame`.
+* Fixed bug causing elimination of retention times when `format_out` is `data.table`.
+* Allow `data.table` format in `read_shimadzu_ascii`.
 
 ## chromConverter 0.7.5
 
