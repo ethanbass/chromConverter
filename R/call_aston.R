@@ -34,7 +34,8 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
   if (data_format == "long"){
     x <- reshape_chrom(x, data_format = "long")
   }
-  x <- convert_chrom_format(x, format_out = format_out)
+  x <- convert_chrom_format(x, format_out = format_out,
+                            data_format = data_format)
   if (read_metadata){
     meta <- read_masshunter_metadata(path)
     x <- attach_metadata(x, meta, format_in = metadata_format,

@@ -37,7 +37,7 @@
 read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
                                 format_out = c("matrix", "data.frame",
                                                      "data.table"),
-                                data_format = c("wide", "long"),
+                                data_format = "long",
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
                                 collapse = TRUE){
@@ -90,7 +90,7 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
 
   dat <- mget(what)
   dat <- lapply(dat, function(x){
-    convert_chrom_format(x, format_out = format_out)
+    convert_chrom_format(x, format_out = format_out, data_format = data_format)
   })
 
   if (read_metadata){

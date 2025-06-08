@@ -107,7 +107,8 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
   if (data_format == "long"){
     data <- reshape_chrom(data)
   }
-  data <- convert_chrom_format(data, format_out = format_out)
+  data <- convert_chrom_format(data, format_out = format_out,
+                               data_format = data_format)
 
   if (read_metadata){
     metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)

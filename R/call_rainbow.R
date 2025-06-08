@@ -117,7 +117,8 @@ extract_rb_data <- function(xx, format_out = "matrix",
                                            "lambda")
     data <- reshape_chrom(data, data_format = "long", names_to = names_to)
   }
-  data <- convert_chrom_format(data, format_out = format_out)
+  data <- convert_chrom_format(data, format_out = format_out,
+                               data_format = data_format)
   if (read_metadata){
     meta <- c(meta, xx$metadata, detector = xx$detector)
     data <- attach_metadata(data, meta = meta, format_in = metadata_format,

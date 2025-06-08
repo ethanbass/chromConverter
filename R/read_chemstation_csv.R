@@ -34,7 +34,8 @@ read_chemstation_csv <- function(path, format_out = c("matrix", "data.frame",
   if (data_format == "long"){
     data <- reshape_chrom_long(data)
   }
-  data <- convert_chrom_format(data, format_out = format_out)
+  data <- convert_chrom_format(data, format_out = format_out,
+                               data_format = data_format)
   if (read_metadata){
     data <- attach_metadata_minimal(data, data_format = data_format,
                                     format_out = format_out,

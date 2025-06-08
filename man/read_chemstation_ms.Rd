@@ -8,7 +8,7 @@ read_chemstation_ms(
   path,
   what = c("MS1", "BPC", "TIC"),
   format_out = c("matrix", "data.frame", "data.table"),
-  data_format = c("wide", "long"),
+  data_format = "long",
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE

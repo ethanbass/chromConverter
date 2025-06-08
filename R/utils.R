@@ -10,7 +10,7 @@ check_format_out <- function(format_out){
 #' Convert chromatogram format
 #' @author Ethan Bass
 #' @noRd
-convert_chrom_format <- function(x, format_out){
+convert_chrom_format <- function(x, format_out, data_format){
   if (inherits(x, format_out)){
     return(x)
   } else if (format_out == "matrix"){
@@ -18,8 +18,10 @@ convert_chrom_format <- function(x, format_out){
   } else if (format_out == "data.frame"){
     return(as.data.frame(x))
   } else if (format_out == "data.table"){
-    return(data.table::as.data.table(x))
-  }
+    return(data.table::as.data.table(x, keep.rownames = ifelse(data_format == "wide",
+                                                        yes = "rt", no = FALSE))
+      )
+    }
 }
 
 #' Format 2D chromatogram
@@ -38,7 +40,8 @@ format_2d_chromatogram <- function(rt, int, data_format, format_out){
   if (format_out == "matrix"){
     dat <- as.matrix(dat)
   } else if (format_out == "data.table"){
-    data.table::setDT(dat)
+    dat <- data.table::as.data.table(dat, keep.rownames = ifelse(data_format == "wide",
+                                                        yes = "rt", no = FALSE))
   }
   dat
 }
@@ -337,7 +340,7 @@ rename_list <- function(x, new_names){
 #' Collapse list
 #' @noRd
 collapse_list <- function(x){
-  while(is.list(x) && length(x) == 1){
+  while(inherits(x, "list") && length(x) == 1){
     x <- x[[1]]
   }
   x
