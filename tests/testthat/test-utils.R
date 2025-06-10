@@ -6,6 +6,23 @@ test_that("python modules are available", {
   expect_true(reticulate::py_module_available("scipy"))
 })
 
+test_that("check_data_format works as expected", {
+  expect_equal(check_data_format("wide", format_out = "matrix"), "wide")
+  expect_equal(check_data_format("long", format_out = "matrix"), "long")
+  expect_equal(check_data_format(c("wide","long"), format_out = "matrix"), "wide")
+
+  expect_equal(check_data_format("wide", format_out = "data.frame"), "wide")
+  expect_equal(check_data_format("long", format_out = "data.frame"), "long")
+  expect_equal(check_data_format(c("wide","long"), format_out = "data.frame"), "wide")
+
+  expect_equal(check_data_format("wide", format_out = "data.table"), "long")
+  expect_equal(check_data_format("long", format_out = "data.table"), "long")
+  expect_equal(check_data_format(c("wide","long"), format_out = "data.table"), "long")
+
+  expect_error(check_data_format(data_format = "matrix", format_out = "matrix"))
+})
+
+
 test_that("get_times works as expected", {
   skip_on_cran()
   path_csv <- test_path("testdata/dad1.csv")
@@ -56,6 +73,3 @@ test_that("check for pkg returns error for fake package", {
 test_that("get_filetype returns error for unknown filetype", {
   expect_error(get_filetype("testdata/dad1.csv"))
 })
-
-path_msd <- system.file("chemstation_MSD.MS",
-            package = "chromConverterExtraTests")

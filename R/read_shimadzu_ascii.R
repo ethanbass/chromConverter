@@ -60,8 +60,8 @@ read_shimadzu <- function(path, what = "chroms",
                     several.ok = TRUE)
   include <- match.arg(include, c("fid", "lc", "dad", "uv", "tic", "status"),
                        several.ok = TRUE)
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
-  data_format <- match.arg(data_format, c("wide", "long"))
+  format_out <- check_format_out(format_out)
+  data_format <- check_data_format(data_format, format_out)
   peaktable_format <- match.arg(peaktable_format, c("chromatographr", "original"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   ms_format <- match.arg(ms_format, c("data.frame", "list"))

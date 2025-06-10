@@ -61,6 +61,8 @@ call_openchrom <- function(files, path_out = NULL, format_in,
                            return_paths = FALSE,
                            verbose = getOption("verbose")){
   format_out <- check_format_out(format_out)
+  data_format <- check_data_format(data_format, format_out)
+
   if (length(files) == 0){
     stop("Files not found.")
   }

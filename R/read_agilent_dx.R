@@ -36,7 +36,7 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
                              metadata_format = c("chromconverter", "raw"),
                              collapse = TRUE) {
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   what <- match.arg(what, c("chroms", "dad", "instrument"), several.ok = TRUE)
   files <- unzip(path, list = TRUE)

@@ -23,7 +23,7 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
                          metadata_format = c("chromconverter", "raw")){
   check_aston_configuration()
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "masshunter_dad", raw = "raw")
@@ -73,7 +73,7 @@ uv_converter <- function(path, format_out = c("matrix","data.frame","data.table"
                          metadata_format = c("chromconverter", "raw")){
   check_aston_configuration()
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide","long"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "chemstation_uv", raw = "raw")
@@ -117,7 +117,7 @@ trace_converter <- function(path, format_out = c("matrix", "data.frame"),
   check_aston_configuration()
   format_out <- check_format_out(format_out)
   format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
   x <- trace_file$TraceFile(path)

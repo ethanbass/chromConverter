@@ -26,8 +26,8 @@ read_asm <- function(path, data_format = c("wide", "long"),
                      read_metadata = TRUE,
                      metadata_format = c("chromconverter", "raw"),
                      collapse = TRUE){
-  data_format <- match.arg(data_format, c("wide", "long"))
   format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, "chromconverter" = "asm", "raw")
 
