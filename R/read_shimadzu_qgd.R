@@ -26,7 +26,9 @@
 #' \code{TIC}. If a stream is not specified, the function will return both
 #' streams.
 #' @param format_out Matrix or data.frame.
-#' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param data_format Either \code{wide} (default) or \code{long}. This argument
+#' applies only to TIC and BPC data, since MS data will always be returned in
+#' long format.
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
@@ -59,7 +61,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
                               metadata_format = c("chromconverter", "raw"),
                               collapse = TRUE){
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   what <- match.arg(toupper(what), c("MS1", "TIC"), several.ok = TRUE)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, "chromconverter" = "shimadzu_lcd",
@@ -77,17 +79,18 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
     MS1 <- read_qgd_ms_stream(path, format_out = format_out)
   }
   dat <- mget(what)
-  if (collapse)
-    dat <- collapse_list(dat)
   if (read_metadata){
     meta <- try(read_qgd_fp(path))
     meta$time.unit <- "Minutes"
-    dat <- lapply(dat, function(x){
+    dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = metadata_format,
                       source_file = path, source_file_format = "shimadzu_qgd",
-                      data_format = data_format,
+                      data_format = ifelse(h == "MS1", "long", data_format),
                       format_out = format_out)
     })
+  }
+  if (collapse){
+    dat <- collapse_list(dat)
   }
   dat
 }
