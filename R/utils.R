@@ -76,8 +76,12 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                      "xd0/xcf/x11/xe0" = "shimadzu_ole",
                      "x1c/x00/x09/x03" = "varian_sms",
                      "x80/x00/x01/x00" = "waters_raw",
-                     "x43/x44/x46/x01" = "cdf"
+                     "x43/x44/x46/x01" = "cdf",
+                     "x50/x4b/x03/x04" = "zip"
   )
+  if (filetype == "zip" && fs::path_ext(path) == "dx"){
+    filetype <- "agilent_dx"
+  }
   if (is.null(filetype)){
     stop("File type not recognized. Please specify a filetype by providing an argument to `format_in`
           or file an issue at `https://github.com/ethanbass/chromConverter/issues`.")
