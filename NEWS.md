@@ -8,6 +8,7 @@
 * Enabled `data.table` format in `read_shimadzu_ascii`.
 * Enabled automatic recognition of 'Agilent OpenLab' `.dx` file by `read_chroms`.
 * Fixed long format output for `read_shimadzu` ('Shimadzu' ASCII files).
+* Fixed timezone issue in some 'Agilent ChemStation' files.
 
 ## chromConverter 0.7.5
 

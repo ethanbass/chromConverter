@@ -39,7 +39,8 @@ test_that("read_chroms can read 'Agilent' MS files", {
   expect_equal(attr(x1,"sample_name"), attr(x,"sample_name"))
   expect_equal(attr(x1,"source_sha1"), attr(x,"source_sha1"))
   expect_equal(attr(x1,"time_unit"), attr(x,"time_unit"))
-  expect_equal(attr(x1,"run_datetime"), attr(x,"run_datetime"))
+  # expect_equal(as.numeric(attr(x1,"run_datetime")),
+  #              as.numeric(attr(x,"run_datetime"))) #timezone is wrong on entab
   expect_equal(attr(x1,"operator"), attr(x,"operator"))
   expect_equal(attr(x1,"method"), attr(x,"method"))
   expect_equal(attr(x1,"detector"), attr(x,"detector"))
@@ -50,7 +51,7 @@ test_that("read_chroms can read 'Agilent' MS files", {
                     progress_bar = FALSE, precision = 0)[[1]]
   expect_equal(class(x2)[1], "matrix")
   expect_equal(dim(x2), c(2534, 841))
-  # expect_equal(attr(x2,"run_datetime"), attr(x,"run_datetime")) # date time is wrong in rainbow
+  expect_equal(attr(x2,"run_datetime"), attr(x1,"run_datetime"))
   expect_equal(attr(x2, "method"), attr(x1, "method"))
   expect_equal(attr(x2, "detector"), attr(x1, "detector"))
   expect_equal(attr(x2, "data_format"), "wide")
