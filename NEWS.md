@@ -5,7 +5,9 @@
 * Added more informative error messages for `read_agilent_d`.
 * Fixed bug in `collapse` argument causing functions to return vector when `format_out` is `data.frame`.
 * Fixed bug causing elimination of retention times when `format_out` is `data.table`.
-* Allow `data.table` format in `read_shimadzu_ascii`.
+* Enabled `data.table` format in `read_shimadzu_ascii`.
+* Enabled automatic recognition of 'Agilent OpenLab' `.dx` file by `read_chroms`.
+* Fixed long format output for `read_shimadzu` ('Shimadzu' ASCII files).
 
 ## chromConverter 0.7.5
 
