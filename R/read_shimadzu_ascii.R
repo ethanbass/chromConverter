@@ -106,12 +106,12 @@ read_shimadzu <- function(path, what = "chroms",
       xx
     })
     names(chroms) <- names(chrom.idx)
-    if (data_format == "long"){
-      # how to merge metadata appropriately?
-      if (inherits(chroms[[1]], "list")){
-        chroms <- unlist(chroms, recursive = FALSE)
-      }
-      chroms <- do.call(rbind, chroms)
+    if (data_format == "long" && format_out != "matrix"){
+      chroms <- lapply(chroms, function(det){
+        if (inherits(det, "list")){
+          do.call(rbind, det)
+        } else det
+      })
     }
   }
 
@@ -239,15 +239,11 @@ read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
   }
 
   xx <- as.matrix(xx[!is.na(xx[, 1]), ])
-
-  if (data_format == "wide"){
-    rownames(xx) <- xx[, 1]
-    xx <- xx[, 2, drop = FALSE]
-    colnames(xx) <- "Intensity"
-  } else if (data_format == "long"){
-    xx <- data.frame(rt = xx[,1], int = xx[,2],
-               name = gsub("\\[|\\]", "", x[chrom.idx]),
-               units = meta$`Intensity Units`)
+  xx <- format_2d_chromatogram(rt = xx[,1], int = xx[,2], data_format = data_format,
+                         format_out = "data.frame")
+  if (data_format == "long" && format_out != "matrix"){
+    xx$name <- gsub("\\[|\\]", "", x[chrom.idx])
+    xx$units <- meta$`Intensity Units`
   }
   xx <- convert_chrom_format(xx, format_out = format_out, data_format = data_format)
   if (read_metadata){
