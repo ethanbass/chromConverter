@@ -7,6 +7,19 @@ check_format_out <- function(format_out){
   match.arg(format_out, c("matrix", "data.frame", "data.table"))
 }
 
+#' Check Data Format Argument
+#'
+#' Make sure that \code{data_format} argument is "long" when \code{format_out} is
+#' \code{"data.table"}.
+#' @noRd
+
+check_data_format <- function(data_format, format_out){
+  if (format_out == "data.table"){
+    data_format <- "long"
+  }
+  match.arg(data_format, c("wide", "long"))
+}
+
 #' Convert chromatogram format
 #' @author Ethan Bass
 #' @noRd

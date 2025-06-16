@@ -27,7 +27,7 @@ read_chemstation_csv <- function(path, format_out = c("matrix", "data.frame",
                                  data_format = c("wide", "long"),
                                  read_metadata = TRUE){
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out = format_out)
   data <- read.csv(path, row.names = 1, header = TRUE,
                 fileEncoding = "utf-16LE", check.names = FALSE)
 

@@ -17,7 +17,7 @@ test_that("chromConverter can read `Agilent Chemstation` .csv file", {
   x1 <- read_chroms(path_csv, format_in = "chemstation_csv",
                     format_out = "data.table", progress_bar = FALSE)[[1]]
   expect_s3_class(x1, "data.table")
-  expect_equal(colnames(x1), c("rt", "220.00000"))
+  expect_equal(colnames(x1), c("rt", "intensity"))
   expect_equal(attr(x1, "data_format"), "long")
   expect_equal(attr(x1, "format_out"), "data.table")
 
@@ -156,18 +156,16 @@ test_that("`Shimadzu` ASCII parser works", {
   expect_s3_class(x1, "data.table")
   expect_equal(attr(x1, "format_out"), "data.table")
   expect_equal(attr(x1, "data_format"), "long")
-  expect_equal(dim(x1),c(66255,2))
+  expect_equal(dim(x1),c(66255,3))
 
   x2 <- read_chroms(path, format_in = "shimadzu_fid", find_files = FALSE,
-                    progress_bar = FALSE, format_out="data.frame")[[1]]
+                    progress_bar = FALSE, format_out="data.frame",
+                    data_format = "long")[[1]]
   expect_s3_class(x2, "data.frame")
   expect_equal(attr(x2, "format_out"), "data.frame")
-  expect_equal(attr(x2, "data_format"), "wide")
-  expect_equal(dim(x2),c(66255,1))
-  expect_equal(x1,x2)
-
-  # long format doesn't work
-  # maybe because there's nothing to add?
+  expect_equal(attr(x2, "data_format"), "long")
+  expect_equal(dim(x2),c(66255,3))
+  expect_equal(x1, x2, ignore_attr=TRUE)
 })
 
 test_that("read_mzml works", {

@@ -86,7 +86,7 @@ uv_converter <- function(path, format_out = c("matrix","data.frame","data.table"
   if (data_format == "long"){
     x <- reshape_chrom(x, data_format = "long")
   }
-  x <- convert_chrom_format(x, format_out = format_out)
+  x <- convert_chrom_format(x, format_out = format_out, data_format)
   if (correction){
     # multiply by empirical correction value
     correction_value <- 0.9536743164062551070259132757200859487056732177734375
@@ -127,7 +127,7 @@ trace_converter <- function(path, format_out = c("matrix", "data.frame"),
   if (data_format == "long"){
     x <- reshape_chrom(x, data_format = "long")
   }
-  x <- convert_chrom_format(x, format_out = format_out)
+  x <- convert_chrom_format(x, format_out = format_out, data_format)
   x
 }
 
