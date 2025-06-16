@@ -40,6 +40,11 @@
 <ul><li>Added support for extraction of DAD and auxiliary instrumental data (stored in <code>.IT</code> files) from ‘Agilent OpenLab’ <code>.dx</code> files.</li>
 <li>Fixed misplaced parantheses in <code>read_agilent_d</code> causing possible bug.</li>
 <li>Added more informative error messages for <code>read_agilent_d</code>.</li>
+<li>Fixed bug in <code>collapse</code> argument causing functions to return vector when <code>format_out</code> is <code>data.frame</code>.</li>
+<li>Fixed bug causing elimination of retention times when <code>format_out</code> is <code>data.table</code>.</li>
+<li>Enabled <code>data.table</code> format in <code>read_shimadzu_ascii</code>.</li>
+<li>Enabled automatic recognition of ‘Agilent OpenLab’ <code>.dx</code> file by <code>read_chroms</code>.</li>
+<li>Fixed long format output for <code>read_shimadzu</code> (‘Shimadzu’ ASCII files).</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.7.5" id="chromconverter-075">chromConverter 0.7.5<a class="anchor" aria-label="anchor" href="#chromconverter-075"></a></h2><p class="text-muted">CRAN release: 2025-03-31</p>
