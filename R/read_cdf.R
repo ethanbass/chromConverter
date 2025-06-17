@@ -8,9 +8,10 @@
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' For 2D files, "long" format returns the retention time as the first column of
 #' the data.frame or matrix while "wide" format returns the retention time as the
-#' rownames of the object.
-#' @param what For ANDI chrom files, whether to extract \code{chroms}
-#' and/or \code{peak_table}. For ANDI ms files, whether to extract MS1 scans
+#' rownames of the object. This argument applies only to 2D chromatograms, since
+#' MS data will always be returned in long format.
+#' @param what For \code{ANDI chrom} files, whether to extract \code{chroms}
+#' and/or \code{peak_table}. For \code{ANDI ms} files, whether to extract MS1 scans
 #' (\code{MS1}) or the total ion chromatogram (\code{TIC}).
 #' @param read_metadata Whether to read metadata from file.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
@@ -31,8 +32,8 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                      metadata_format = c("chromconverter", "raw"),
                      collapse = TRUE, ...){
   check_for_pkg("ncdf4")
-  data_format <- match.arg(data_format, c("wide", "long"))
-  format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
+  format_out <- check_format_out(format_out)
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   nc <- ncdf4::nc_open(path)
   if ("ordinate_values" %in% names(nc$var)){
@@ -147,13 +148,15 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame", "data.t
 #' @author Ethan Bass
 #' @noRd
 
-read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
+read_andi_ms <- function(path,
+                         format_out = c("matrix", "data.frame", "data.table"),
                          data_format = c("wide", "long"),
                          what = c("MS1", "TIC"),
                          ms_format = c("data.frame", "list"),
                          read_metadata = TRUE,
                          metadata_format = "chromconverter",
                          collapse = TRUE){
+  format_out <- check_format_out(format_out)
   metadata_format <- switch(metadata_format,
                             chromconverter = "andi_ms", raw = "raw")
   ms_format <- match.arg(ms_format, c("data.frame", "list"))
@@ -162,17 +165,11 @@ read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
   nc <- ncdf4::nc_open(path)
   on.exit(ncdf4::nc_close(nc))
   if (any(what == "TIC")){
-    y <- ncdf4::ncvar_get(nc, "total_intensity")
     x <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
-    data = data.frame(rt = x, intensity = y)
-    if (data_format == "wide"){
-      rownames(data) <- data[, 1]
-      data <- data[, -1, drop = FALSE]
-    }
-    if (format_out == "matrix"){
-      data <- as.matrix(data)
-    }
-    TIC <- data
+    y <- ncdf4::ncvar_get(nc, "total_intensity")
+
+    TIC <- format_2d_chromatogram(rt = x, int = y, data_format = data_format,
+                           format_out = format_out)
   }
   if (any(what == "MS1")){
     int <- ncdf4::ncvar_get(nc, "intensity_values")
@@ -196,23 +193,19 @@ read_andi_ms <- function(path, format_out = c("matrix", "data.frame"),
   }
 
   data <- mget(what)
-  if (collapse) data <- collapse_list(data)
   if (read_metadata){
     meta <- ncdf4::ncatt_get(nc, varid = 0)
     meta$detector <- "MS"
-    if (inherits(data, "list")){
-      data <- lapply(data, function(xx){
-        attach_metadata(xx, meta = meta, format_in = metadata_format,
-                        format_out = format_out, data_format = data_format,
-                        parser = "chromconverter", source_file = path,
-                        source_file_format = "andi_ms")
-      })
-    } else{
-      data <- attach_metadata(data, meta = meta, format_in = metadata_format,
-                              format_out = format_out, data_format = data_format,
-                              parser = "chromconverter", source_file = path,
-                              source_file_format = "andi_ms")
-    }
+    data <- purrr::imap(data, function(x, h){
+      attach_metadata(x, meta = meta, format_in = metadata_format,
+                      format_out = format_out,
+                      data_format = ifelse(h == "MS1", "long", data_format),
+                      parser = "chromconverter", source_file = path,
+                      source_file_format = "andi_ms")
+    })
+  }
+  if (collapse){
+    data <- collapse_list(data)
   }
   data
 }
