@@ -131,19 +131,67 @@ ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
 #' ASCII files exported from 'Lab Solutions'.
 #' @importFrom bit64 as.integer64
 #' @noRd
-
 sztime_to_unixtime <- function(low, high, tz = "UTC") {
-  if (tz!="UTC"){
-    tz <- -as.numeric(gsub("'00'", "", tz))
-    if (tz > 0){
-      tz <- paste0("+",tz)
-    }
-    tz <- paste0("Etc/GMT", tz)
-  }
+  tz <- parse_shimadzu_tz(tz)
   if (low < 0) {
     low <- bit64::as.integer64(low) + 2^32
   }
   filetime <- bit64::as.integer64(high) * 2^32 + bit64::as.integer64(low)
   unix_time <- (filetime / 10000000) - 11644473600
   as.POSIXct(unix_time, origin = "1970-01-01", tz = tz)
+}
+
+parse_shimadzu_tz <- function(tz){
+  if (tz != "UTC"){
+    tz <- convert_fractional_timezone_offset(tz)
+    if (!grepl("/",tz)){
+      pattern <- "([+-])(\\d{2})'(\\d{2})"
+      captures <- regmatches(tz, regexec(pattern, tz))[[1]]
+      sign <- captures[2]
+      hours <- as.numeric(captures[3])
+      minutes <- as.numeric(captures[4])
+
+      decimal_hours <- hours + minutes/60
+
+      if (sign == "+") {
+        tz <- paste0("Etc/GMT-", decimal_hours)
+      } else {
+        tz <- paste0("Etc/GMT+", decimal_hours)
+      }
+    }
+  }
+  tz
+}
+
+#' @author Ethan Bass
+#' @noRd
+convert_fractional_timezone_offset <- function(tz) {
+  clean_offset <- gsub("'", "", tz)
+
+  timezone <- switch(clean_offset,
+                     # 30-minute offsets (positive)
+                     "+0330" = "Asia/Tehran",
+                     "+0430" = "Asia/Kabul",
+                     "+0530" = "Asia/Kolkata",
+                     "+0630" = "Asia/Yangon",
+                     "+0930" = "Australia/Adelaide",
+                     "+1030" = "Australia/Adelaide",
+                     "+1230" = "Pacific/Auckland",
+                     "+1330" = "Pacific/Chatham",
+
+                     # 30-minute offsets (negative)
+                     "-0330" = "America/St_Johns",
+                     "-0430" = "America/Caracas",
+                     "-0930" = "Pacific/Marquesas",
+
+                     # 45-minute offsets (positive)
+                     "+0545" = "Asia/Kathmandu",
+                     "+0845" = "Australia/Eucla",
+                     "+1245" = "Pacific/Chatham",
+
+                     # Return NULL for unknown offsets
+                     tz
+  )
+
+  return(timezone)
 }
