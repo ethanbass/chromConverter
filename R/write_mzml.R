@@ -213,7 +213,7 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
   if (verbose)
     message(sprintf("Writing %s spectra.", toupper(what)))
 
-  laplee <- if (show_progress) pbapply::pblapply else lapply
+  laplee <- ifelse(show_progress, pbapply::pblapply, lapply)
 
   spectra_data <- data[[toupper(what)]]
 
@@ -235,7 +235,7 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
                    length(unique(spectra_data$rt)))
   extra_vals <- n_scan - length(rts)
   if (extra_vals > 0)
-    rts <- c(data$TIC[seq_len(extra_vals)], rts)
+    rts <- c(data$TIC[seq_len(extra_vals),], rts)
   laplee(seq_len(n_scan), function(i) {
     if (indexed){
       offset <- seek(con, NA)
@@ -433,6 +433,7 @@ write_mzml_chrom <- function(con, index, data, what = c("tic", "bpc"),
   what <- match.arg(what, c("tic", "bpc"))
   if (verbose) message(sprintf("Writing %s.", toupper(what)))
   cdata <- data[[toupper(what)]]
+  cdata <- reshape_chrom_long(cdata, format_out = "data.frame")
   rt_encoded <- encode_data(cdata$rt, compress = compress)
   int_encoded <- encode_data(cdata$intensity, compress = compress)
   id <- toupper(what)
