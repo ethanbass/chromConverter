@@ -8,7 +8,7 @@ read_chemstation_ms(
   path,
   what = c("MS1", "BPC", "TIC"),
   format_out = c("matrix", "data.frame", "data.table"),
-  data_format = c("wide", "long"),
+  data_format = "long",
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE
@@ -24,7 +24,9 @@ streams.}
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
 or \code{data.table}.}
 
-\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+\item{data_format}{Either \code{wide} (default) or \code{long}. This argument
+applies only to TIC data, since MS and BPC data will always be returned in
+long format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
