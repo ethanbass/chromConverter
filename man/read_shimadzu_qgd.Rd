@@ -23,7 +23,9 @@ streams.}
 
 \item{format_out}{Matrix or data.frame.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}.}
+\item{data_format}{Either \code{wide} (default) or \code{long}. This argument
+applies only to TIC and BPC data, since MS data will always be returned in
+long format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
