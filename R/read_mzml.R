@@ -26,15 +26,15 @@
 #' @export read_mzml
 
 read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table"),
-                      data_format = c("long","wide"),
-                      parser = c("RaMS","mzR"),
-                      what = c("MS1","MS2", "BPC", "TIC", "DAD",
+                      data_format = c("wide", "long"),
+                      parser = c("RaMS", "mzR"),
+                      what = c("MS1", "MS2", "BPC", "TIC", "DAD",
                              "chroms", "metadata", "everything"),
                       verbose = FALSE,
                       ...){
   parser <- match.arg(parser, c("RaMS", "mzR"))
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("long","wide"))
+  data_format <- check_data_format(data_format, format_out)
   what <- match.arg(what, c("MS1","MS2", "BPC", "TIC", "DAD",
                             "chroms", "metadata", "everything"),
                               several.ok = TRUE)
@@ -51,7 +51,16 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
       x
     })
     if (data_format == "wide"){
-      data <- reshape_chroms(data, data_format = "wide")
+      data <- purrr::imap(data, function(x,h){
+        if (h %in% c("TIC","BPC") && nrow(x) > 0){
+          format_2d_chromatogram(x$rt,x$intensity, data_format = "wide",
+                                 format_out = format_out)
+        } else if (h == "DAD" && nrow(x) > 0){
+          data <- reshape_chroms(data, data_format = "wide")
+        } else{
+          x
+        }
+      })
     }
   } else if (parser == "mzR"){
     if (!requireNamespace("mzR", quietly = TRUE)) {

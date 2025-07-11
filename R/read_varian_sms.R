@@ -7,12 +7,12 @@
 #' generally beginning at byte 3238. This MSdata section is in turn divided into
 #' two sections. The first section (after a short header) contains chromatogram
 #'  data. Some of the information found in this section includes scan numbers,
-#' retention times, (as 64-bit
-#' floats), the total ion chromatogram (TIC), the base peak chromatogram (BPC),
-#' ion time (µsec), as well as some other unidentified information. The scan
-#' numbers and intensities for the TIC and BPC are stored at 4-byte
-#' little-endian integers. Following this section, there is a series of null
-#' bytes, followed by a series of segments containing the mass spectra.
+#' retention times, (as 64-bit floats), the total ion chromatogram (TIC), the
+#' base peak chromatogram (BPC), ion time (µsec), as well as some other
+#' unidentified information. The scan numbers and intensities for the TIC and
+#' BPC are stored at 4-byte little-endian integers. Following this section,
+#' there is a series of null bytes, followed by a series of segments containing
+#' the mass spectra.
 #'
 #' The encoding scheme for the mass spectra is somewhat more complicated. Each
 #' scan is represented by a series of values of variable length separated from
@@ -36,8 +36,11 @@
 #' @param path Path to 'Varian' \code{.SMS} files.
 #' @param what Whether to extract chromatograms (\code{chroms}) and/or
 #' \code{MS1} data. Accepts multiple arguments.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
+#' @param format_out R format. Either \code{matrix}, \code{data.frame}, or
+#' \code{data.table}.
+#' @param data_format Either \code{wide} (default) or \code{long}. This argument
+#' applies only to TIC and BPC data, since MS data will always be returned in
+#' long format.
 #' @param read_metadata Whether to read metadata from file. (This is just a
 #' placeholder for now as there is not yet support for parsing metadata).
 #' @param collapse Logical. Whether to collapse lists that only contain a single
@@ -56,12 +59,12 @@
 
 read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
                             format_out = c("matrix", "data.frame", "data.table"),
-                            data_format = c("wide", "long"),
+                            data_format = "long",
                             read_metadata = TRUE, collapse = TRUE){
 
   what <- match.arg(what, c("MS1", "TIC", "BPC", "chroms"), several.ok = TRUE)
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
 
   f <- file(path, "rb")
   on.exit(close(f))
@@ -85,17 +88,15 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
 
   if (any(what == "TIC")){
     TIC <- format_2d_chromatogram(rt = chroms[,"rt"], int = chroms[,"tic"],
-                                  data_format = "long",
+                                  data_format = data_format,
                                   format_out = format_out)
   }
   if (any(what == "BPC")){
     BPC <- format_2d_chromatogram(rt = chroms[,"rt"], int = chroms[,"bpc"],
-                                  data_format = "long",
+                                  data_format = data_format,
                                   format_out = format_out)
   }
   dat <- mget(what)
-  if (collapse)
-    dat <- collapse_list(dat)
   if (read_metadata){
     offsets <- read_varian_offsets(f)
 
@@ -105,11 +106,15 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
 
     meta <- read_mod_metadata(f, offsets, meta)
 
-    dat <- lapply(dat, function(x){
+    dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = "varian_sms",
-                           format_out = format_out, data_format = "long",
-                           source_file = path, source_file_format = "varian_sms")
+                      format_out = format_out,
+                      data_format = ifelse(h == "MS1", "long", data_format),
+                      source_file = path, source_file_format = "varian_sms")
     })
+  }
+  if (collapse){
+    dat <- collapse_list(dat)
   }
   dat
 }
@@ -174,7 +179,7 @@ read_varian_chromatograms <- function(f, n_time, format_out = "data.frame",
     readBin(f, what = "raw", n = 11) # skip 11 unidentified bytes
   }
   if (data_format == "wide"){
-    rownames(dat) <- dat[,"rt"]
+    rownames(dat) <- dat[, "rt"]
     dat <- dat[,-2]
   }
   dat <- convert_chrom_format(dat, format_out = format_out)
