@@ -235,7 +235,7 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
                    length(unique(spectra_data$rt)))
   extra_vals <- n_scan - length(rts)
   if (extra_vals > 0)
-    rts <- c(data$TIC[seq_len(extra_vals),], rts)
+    rts <- c(data$TIC[seq_len(extra_vals),"rt"], rts)
   laplee(seq_len(n_scan), function(i) {
     if (indexed){
       offset <- seek(con, NA)
@@ -248,8 +248,7 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
                                     rt = rts[i],
                                     tic = ifelse(!is.null(data$TIC),
                                                  data$TIC[[i, "intensity"]],
-                                                 ifelse(length(scan_data$intensity),
-                                                        0, sum(scan_data$intensity))),
+                                                 sum(scan_data$intensity)),
                                     bpc = ifelse(!is.null(data$BPC),
                                                  data$BPC[[i, "intensity"]],
                                                  ifelse(length(scan_data$intensity) == 0,
