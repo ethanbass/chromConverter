@@ -51,12 +51,12 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
       x
     })
     if (data_format == "wide"){
-      data <- purrr::imap(data, function(x,h){
-        if (h %in% c("TIC","BPC") && nrow(x) > 0){
-          format_2d_chromatogram(x$rt,x$intensity, data_format = "wide",
+      data <- purrr::imap(data, function(x, h){
+        if (h %in% c("TIC", "BPC") && nrow(x) > 0){
+          format_2d_chromatogram(x$rt, x$intensity, data_format = "wide",
                                  format_out = format_out)
         } else if (h == "DAD" && nrow(x) > 0){
-          data <- reshape_chroms(data, data_format = "wide")
+          reshape_chrom_wide(x)
         } else{
           x
         }
