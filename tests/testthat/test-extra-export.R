@@ -41,11 +41,13 @@ test_that("read_chroms can write mzML files", {
                    format_out = "data.table",
                    export_format = "mzml", path_out = tmp, force = TRUE)[[1]]
 
-  path_mzml <- fs::path(tmp, gsub(" ", "_", attr(x,"sample_name")), ext = "mzML")
+  path_mzml <- fs::path(tmp, gsub(" ", "_",
+                                  attr(x, "sample_name")), ext = "mzML")
   on.exit(unlink(path_mzml))
 
-  x1 <- read_mzml(path_mzml, what = c("MS1","metadata"))
-  expect_equal(x1$MS1[,c(1:3)], x, ignore_attr = TRUE)
+  x1 <- read_mzml(path_mzml, what = c("MS1", "metadata"))
+
+  expect_equal(x1$MS1[,c(1:3)], x[,c(2:4)], ignore_attr = TRUE)
   # expect_equal(x1$metadata$timestamp, attr(x,"run_datetime"))
   expect_equal(x1$metadata$source_file, basename(attr(x,"source_file")))
 
