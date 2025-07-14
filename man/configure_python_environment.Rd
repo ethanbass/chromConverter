@@ -4,24 +4,41 @@
 \alias{configure_python_environment}
 \title{Configure python environment}
 \usage{
-configure_python_environment(parser = "all", return_boolean = FALSE)
+configure_python_environment(
+  what = c("venv", "conda"),
+  envname = "chromConverter",
+  python = reticulate::virtualenv_starter(),
+  ...
+)
 }
 \arguments{
-\item{parser}{Either \code{aston}, \code{rainbow}, or \code{olefile} (for
-\code{read_shimadzu_lcd}).}
+\item{what}{What kind of virtual environment to create. A python virtual
+environment (\code{"venv"}) or a conda environment (\code{"conda"}).}
 
-\item{return_boolean}{Logical. Whether to return a Boolean value indicating
-if the chromConverter environment is correctly configured.}
+\item{envname}{The name of, or path to, a Python virtual environment.}
+
+\item{python}{Argument to \code{reticulate::virtualenv_create}, specifying
+the path to a Python interpreter.}
+
+\item{...}{Additional arguments to \link[reticulate:virtualenv-tools]{reticulate::virtualenv_create} or
+\link[reticulate:conda-tools]{reticulate::conda_create} according to the value of \code{what}.}
 }
 \value{
-If \code{return_boolean} is \code{TRUE}, returns a Boolean value
-indicating whether the chromConverter environment is configured correctly.
-Otherwise, there is no return value.
+There is no return value.
 }
 \description{
-Configures reticulate environment for parsers that have python dependencies.
-Deprecated as this should no longer be necessary with reticulate \code{v1.41.0}.
+Configures python virtual environment or conda environment for parsers that
+have python dependencies, according to the value of \code{what}. While this
+should not be necessary in most cases starting with reticulate \code{v1.41.0},
+this function can be used to create a dedicated chromConverter environment.
 }
+\section{Side effects}{
+
+Creates and configures either  a python virtual environment or conda
+environment (according to the value of \code{what}) with all the packages
+required for running chromConverter.
+}
+
 \author{
 Ethan Bass
 }
