@@ -4,11 +4,11 @@ bibentry(
   bibtype    = "manual",
   title    = "chromConverter: Chromatographic File Converter",
   author   = "Ethan Bass",
-  year     = "2024",
-  version  = "version 0.7.6",
+  year     = "2025",
+  version  = "version 0.8.0",
   doi      = "10.5281/zenodo.6792521",
   url      = "https://ethanbass.github.io/chromConverter/",
-  textVersion = paste("Bass, E. (2024).",
+  textVersion = paste("Bass, E. (2025).",
         "chromConverter: Chromatographic File Converter.",
         "http://doi.org/10.5281/zenodo.6792521.")
 )

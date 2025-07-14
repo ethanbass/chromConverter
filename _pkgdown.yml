@@ -1,4 +1,43 @@
 url: https://ethanbass.github.io/chromConverter/
 template:
   bootstrap: 5
-  
+reference:
+- title: "Core functions"
+  contents: 
+  - read_chroms
+  - read_peaklist
+  - extract_metadata
+  - write_chroms
+- title: "Agilent parsers"
+  contents: 
+  - starts_with("read_agilent")
+  - starts_with("read_chemstation")
+- title: "Shimadzu parsers"
+  contents:
+  - starts_with("read_shimadzu")
+  - starts_with("read_sz")
+- title: "Waters parsers"
+  contents:
+  - starts_with("read_waters")
+- title: "Other miscellaneous parsers"
+  contents:
+  - read_asm
+  - read_cdf
+  - read_chromeleon
+  - read_mdf
+  - read_mzml
+  - read_varian_sms
+  - read_varian_peaklist
+- title: "Bindings to external parsers"
+  contents:
+  - call_entab
+  - call_openchrom
+  - configure_openchrom
+  - read_thermoraw
+  - call_rainbow
+  - sp_converter
+  - uv_converter
+- title: "Write functions"
+  contents:
+  - write_andi_chrom
+  - write_mzml
