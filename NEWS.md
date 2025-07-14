@@ -16,6 +16,12 @@
 * Fixed error due to fractional timezones in Shimadzu metadata (e.g., India +05:30).
 * Fixed bug in `write_mzml` causing retention time shifts for BPC and TIC.
 * Rewrote `configure_python_environment` function to facilitate configuration of a chromConverter virtual environment or conda environment, though a dedicated environment is no longer required (as of chromConverter v0.7.4).
+* Fixed bug in `collapse` argument causing functions to return vector when `format_out` is `data.frame`.
+* Fixed bug causing elimination of retention times when `format_out` is `data.table`.
+* Enabled `data.table` format in `read_shimadzu_ascii`.
+* Enabled automatic recognition of 'Agilent OpenLab' `.dx` file by `read_chroms`.
+* Fixed long format output for `read_shimadzu` ('Shimadzu' ASCII files).
+* Fixed timezone issue in some 'Agilent ChemStation' files.
 
 ## chromConverter 0.7.5
 

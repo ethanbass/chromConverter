@@ -233,4 +233,7 @@ test_that("get_filetype works as expected", {
   expect_equal(get_filetype(system.file("VARIAN1.CDF",
                                         package="chromConverterExtraTests")),
                "cdf")
+  expect_equal(get_filetype(system.file("agilent.dx",
+                                        package="chromConverterExtraTests")),
+               "agilent_dx")
 })

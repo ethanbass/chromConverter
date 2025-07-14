@@ -200,7 +200,8 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
   if (data_format == "long"){
     dat <- reshape_chrom(dat, data_format = "wide")
   }
-  dat <- convert_chrom_format(dat, format_out = format_out)
+  dat <- convert_chrom_format(dat, format_out = format_out,
+                              data_format = data_format)
   if (read_metadata){
     meta <- read_sz_file_properties(path)
     meta <- c(meta, DI)
@@ -299,7 +300,8 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
                    channel = DI$DSCN, lambda = DI$ADN,
                    unit = DI$detector.unit)
     }
-    dat <- convert_chrom_format(dat, format_out = format_out)
+    dat <- convert_chrom_format(dat, format_out = format_out,
+                                data_format = data_format)
     if (read_metadata){
       dat <- attach_metadata(dat, c(meta, DI), format_in = metadata_format,
                              source_file = path, data_format = data_format,
@@ -367,7 +369,8 @@ read_sz_tic <- function(path, format_out = "data.frame",
     row.names(dat) <- dat[, "rt"]
     dat <- dat[, "intensity", drop = FALSE]
   }
-  dat <- convert_chrom_format(dat, format_out = format_out)
+  dat <- convert_chrom_format(dat, format_out = format_out,
+                              data_format = data_format)
   dat
 }
 

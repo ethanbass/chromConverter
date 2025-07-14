@@ -104,8 +104,6 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
       seek(f, where = offset, origin = "start")
       read_cs_string(f, type = 1)
     })
-    meta$date <- as.POSIXct(strptime(meta$date, format="%d %b %y %I:%M %p %z"),
-                            tz="UTC")
     meta$detector <- "MS"
     dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = metadata_format,

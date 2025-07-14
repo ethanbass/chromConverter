@@ -145,10 +145,27 @@ test_that("`Shimadzu` ASCII parser works", {
   x <- read_chroms(path, format_in = "shimadzu_fid", find_files = FALSE,
                    progress_bar = FALSE)[[1]]
 
-  expect_equal(class(x)[1], "matrix")
+  expect_true(inherits(x, "matrix"))
+  expect_equal(dim(x),c(66255,1))
   expect_equal(attr(x, "instrument"), "GC-2014")
   expect_equal(attr(x, "sample_name"), "FS19_214")
   expect_equal(attr(x, "data_format"), "wide")
+
+  x1 <- read_chroms(path, format_in = "shimadzu_fid", find_files = FALSE,
+                   progress_bar = FALSE, format_out="data.table")[[1]]
+  expect_s3_class(x1, "data.table")
+  expect_equal(attr(x1, "format_out"), "data.table")
+  expect_equal(attr(x1, "data_format"), "long")
+  expect_equal(dim(x1),c(66255,3))
+
+  x2 <- read_chroms(path, format_in = "shimadzu_fid", find_files = FALSE,
+                    progress_bar = FALSE, format_out="data.frame",
+                    data_format = "long")[[1]]
+  expect_s3_class(x2, "data.frame")
+  expect_equal(attr(x2, "format_out"), "data.frame")
+  expect_equal(attr(x2, "data_format"), "long")
+  expect_equal(dim(x2),c(66255,3))
+  expect_equal(x1, x2, ignore_attr = TRUE)
 })
 
 test_that("read_mzml works", {
@@ -254,8 +271,8 @@ test_that("read_chroms exports CDF files correctly", {
   file <- test_path("testdata/ladder.txt")
 
   x1 <- read_chroms(paths = file, format_in = "shimadzu_fid",
-                  path_out = tmp, export_format = "cdf",
-                  progress_bar = FALSE)
+                    path_out = tmp, export_format = "cdf",
+                    progress_bar = FALSE, force = TRUE)
 
   path_cdf <- fs::path(tmp, attr(x1[[1]], "sample_name"), ext = "cdf")
   on.exit(unlink(c(path_cdf, tmp)))
@@ -264,20 +281,12 @@ test_that("read_chroms exports CDF files correctly", {
 
   # check metadata equivalence
   expect_equal(x1[[1]], x1_out, ignore_attr = TRUE)
-  # expect_equal(attr(x1[[1]],"instrument"), attr(x1_out,"instrument"))
-  # expect_equal(attr(x1[[1]],"detector"), attr(x1_out,"detector"))
-  # expect_equal(attr(x1[[1]],"software_name"), attr(x1_out,"software_name")) #NA
-  # expect_equal(attr(x1[[1]],"software_version"), attr(x1_out,"software_version")) #NA
-  # expect_equal(attr(x1[[1]],"method"), attr(x1_out,"method")) #NA
-  # expect_equal(attr(x1[[1]],"operator"), attr(x1_out,"operator")) #NA
   expect_equal(attr(x1[[1]],"run_datetime"), attr(x1_out,"run_datetime"))
-  # expect_equal(attr(x1[[1]],"sample_name"), attr(x1_out,"sample_name")) #???
+  expect_equal(attr(x1[[1]],"sample_name"), attr(x1_out,"sample_name"))
   expect_equal(as.numeric(attr(x1[[1]],"sample_injection_volume")),
                attr(x1_out,"sample_injection_volume"))
   expect_equal(as.numeric(attr(x1[[1]],"sample_amount")), attr(x1_out,"sample_amount"))
-  # expect_equal(attr(x1[[1]],"time_interval"), attr(x1_out,"time_interval"))
   expect_equal(attr(x1[[1]],"time_unit"), attr(x1_out,"time_unit"))
-  # expect_equal(attr(x1[[1]],"source_file"), attr(x1_out,"source_file")) # doesn't match
 })
 
 test_that("read_peaklist can read `ChemStation` report files", {

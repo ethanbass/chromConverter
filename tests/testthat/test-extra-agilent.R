@@ -57,8 +57,6 @@ test_that("read_chroms can read 'Agilent' MS files", {
                     progress_bar = FALSE, precision = 0)[[1]]
   expect_equal(class(x2)[1], "matrix")
   expect_equal(dim(x2), c(2534, 841))
-  # date time stamp appears to be wrong in rainbow
-  # expect_equal(attr(x2,"run_datetime"), attr(x,"run_datetime"))
   expect_equal(attr(x2, "method"), attr(x1$MS1, "method"))
   expect_equal(attr(x2, "detector"), attr(x1$MS1, "detector"))
   expect_equal(attr(x2, "data_format"), "wide")
@@ -499,4 +497,71 @@ test_that("read_chroms can read 'Agilent' .dx files", {
                ignore_attr=TRUE)
   expect_equal(x1$instrument[[3]]$rt, as.numeric(rownames(x$instrument[[3]])),
                ignore_attr=TRUE)
+})
+
+test_that("read_chroms can read 'Agilent' .dx files", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("MeOH1.dx", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chroms(path, format_in = "agilent_dx", what = c("chroms","dad", "instrument"),
+                   progress_bar = FALSE)[[1]]
+  expect_true(inherits(x$chroms, "list"))
+  expect_true(inherits(x$chroms[[1]], "matrix"))
+  expect_true(inherits(x$dad, "matrix"))
+  expect_true(inherits(x$instrument, "list"))
+  expect_true(inherits(x$instrument[[1]], "matrix"))
+
+  expect_equal(vapply(x$chroms, nrow, numeric(1), USE.NAMES = FALSE), rep(4050,5))
+  expect_equal(dim(x$dad), c(4050,156))
+
+  expect_equal(colnames(x$chroms[[1]]),"intensity")
+  expect_equal(dim(x$chroms[[1]]), c(4050, 1))
+  expect_equal(attr(x$chroms[[1]], "parser"), "chromconverter")
+  expect_equal(attr(x$chroms[[1]], "data_format"), "wide")
+  expect_equal(head(get_times(x$chroms),1), 0.00125, tolerance = .00001)
+  expect_equal(head(get_times(x$dad),1), 0.00125, tolerance = .00001)
+
+  expect_equal(tail(get_times(x$chroms),1), 27, tolerance = .00001)
+  expect_equal(tail(get_times(x$dad),1), 26.9946, tolerance = .00001)
+
+  # auxiliary instrumental data
+  expect_equal(dim(x$instrument$`PMP1C,Solvent Ratio A`), c(32440.0, 1))
+
+  expect_true(all(
+    sapply(x$instrument, function(x) round(tail(get_times(x),1))) == 27)
+  )
+
+  expect_true(all(
+    sapply(x$instrument, function(x) round(head(get_times(x),1))) == 0)
+  )
+
+  expect_true(all(head(x$instrument$`PMP1C,Solvent Ratio A`) == 92))
+  expect_true(all(tail(x$instrument$`PMP1C,Solvent Ratio A`) == 10))
+  expect_true(all(x$instrument$`PMP1D,Solvent Ratio C` == 0))
+
+  expect_true(all(round(x$instrument$`THM1B,Right Temperature`) == 20))
+
+  expect_equal(head(names(x$instrument), 5), c("WPS1A,Temperature",
+                                              "THM1B,Right Temperature",
+                                              "THM1A,Left Temperature",
+                                              "DAD1V,UV Lamp Anode Voltage",
+                                              "DAD1U,Optical Unit Temperature"))
+
+  expect_equal(sapply(x$instrument, function(xx) attr(xx, "detector_y_unit")),
+               c("\u00b0C", "\u00b0C", "\u00b0C", "V", "\u00b0C", "\u00b0C",
+               "", "%", "%", "%", "%", "mL/min", "bar", "counts"),
+               ignore_attr = TRUE)
+
+  expect_equal(sapply(x$instrument, function(xx) attr(xx, "intensity_multiplier")),
+               c(1e-3, 1e-3, 1e-3, 1e-6, 1e-2, 1e-2, 1e-5, 1e-3, 1e-3, 1e-3,
+                 1e-3, 1e-6, 5e-3, 1e0),
+               ignore_attr = TRUE)
+
+  expect_true(all(
+    sapply(x$instrument, function(xx){
+      attr(xx, "run_datetime")
+    }) == 1749578656))
 })

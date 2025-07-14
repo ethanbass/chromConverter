@@ -51,7 +51,7 @@ call_entab <- function(path, data_format = c("wide", "long"),
     colnames(x)[c(1, 3)] <- c("rt", "intensity")
     data_format <- "long"
   }
-  x <- convert_chrom_format(x, format_out = format_out)
+  x <- convert_chrom_format(x, format_out = format_out, data_format)
   if (read_metadata){
     meta <- r$metadata()
     meta$run_date <- as.POSIXct(eval(meta$run_date))

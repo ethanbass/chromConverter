@@ -20,16 +20,18 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 ##### ChromConverter (internal parsers)
 - 'Agilent ChemStation' & 'OpenLab' `.uv` files (versions 131, 31)
 - 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 30, 130, 8, 81, 179, 181)
+- 'Agilent OpenLab' `.dx` files.
 - Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
 - mzML (`.mzml`) & mzXML (.`mzxml`) (via *RaMS*).
 - 'Shimadzu LabSolutions' ascii (`.txt`)
 - 'Shimadzu GCsolution' data files (`.gcd`)
 - 'Shimadzu GCMSsolution' data files (`.qgd`) 
-- 'Shimadzu LabSolutions'`.lcd` (*provisional support* for PDA, chromatogram, and peak table streams)
+- 'Shimadzu LabSolutions'`.lcd` (PDA, chromatogram, and peak table streams)
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Varian Workstation' (`.SMS`)
 - 'Waters Empower' ascii (`.arw`)
+- 'Waters Empower' `.raw` files (2D chromatograms only)
 
 ##### External Libraries
 

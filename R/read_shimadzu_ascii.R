@@ -13,7 +13,8 @@
 #' @param include Which chromatograms to include. Options are \code{fid},
 #' \code{dad}, \code{uv}, \code{tic}, and \code{status}.
 #' @param format_in This argument is deprecated and is no longer required.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out R format. Either \code{matrix}, \code{data.frame}, or
+#' \code{data.table}.
 #' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param peaktable_format Whether to return peak tables in \code{chromatographr}
 #' or \code{original} format.
@@ -40,7 +41,7 @@
 read_shimadzu <- function(path, what = "chroms",
                           format_in = NULL,
                           include =  c("fid", "lc", "dad", "uv", "tic"),
-                          format_out = c("matrix", "data.frame"),
+                          format_out = c("matrix", "data.frame", "data.table"),
                           data_format = c("wide", "long"),
                           peaktable_format = c("chromatographr", "original"),
                           read_metadata = TRUE,
@@ -105,12 +106,12 @@ read_shimadzu <- function(path, what = "chroms",
       xx
     })
     names(chroms) <- names(chrom.idx)
-    if (data_format == "long"){
-      # how to merge metadata appropriately?
-      if (inherits(chroms[[1]],"list")){
-        chroms <- unlist(chroms, recursive = FALSE)
-      }
-      chroms <- do.call(rbind, chroms)
+    if (data_format == "long" && format_out != "matrix"){
+      chroms <- lapply(chroms, function(det){
+        if (inherits(det, "list")){
+          do.call(rbind, det)
+        } else det
+      })
     }
   }
 
@@ -157,8 +158,11 @@ read_shimadzu <- function(path, what = "chroms",
       ms_spectra <- ms_list_to_dataframe(ms_spectra)
     }
   }
+  # combine results
   dat <- mget(what, ifnotfound = NA)
-  if (collapse) dat <- collapse_list(dat)
+  if (collapse){
+    dat <- collapse_list(dat)
+  }
   dat
 }
 
@@ -235,19 +239,13 @@ read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
   }
 
   xx <- as.matrix(xx[!is.na(xx[, 1]), ])
-
-  if (data_format == "wide"){
-    rownames(xx) <- xx[, 1]
-    xx <- xx[, 2, drop = FALSE]
-    colnames(xx) <- "Intensity"
-  } else if (data_format == "long"){
-    xx <- data.frame(rt = xx[,1], int = xx[,2],
-               name = gsub("\\[|\\]", "", x[chrom.idx]),
-               units = meta$`Intensity Units`)
+  xx <- format_2d_chromatogram(rt = xx[,1], int = xx[,2], data_format = data_format,
+                         format_out = "data.frame")
+  if (data_format == "long" && format_out != "matrix"){
+    xx$name <- gsub("\\[|\\]", "", x[chrom.idx])
+    xx$units <- meta$`Intensity Units`
   }
-  if (format_out == "data.frame"){
-    xx <- as.data.frame(xx)
-  }
+  xx <- convert_chrom_format(xx, format_out = format_out, data_format = data_format)
   if (read_metadata){
     xx <- attach_metadata(xx, meta, format_in = "shimadzu_chrom",
                           source_file = path, format_out = format_out,
@@ -284,9 +282,8 @@ read_shimadzu_dad <- function(path, x, chrom.idx, sep, data_format,
   if (data_format == "long"){
     xx <- reshape_chrom(xx, data_format = "long")
   }
-  if (format_out == "data.frame"){
-    xx <- as.data.frame(xx)
-  }
+  xx <- convert_chrom_format(xx, format_out = format_out,
+                             data_format = data_format)
   if (read_metadata){
     meta <- read_shimadzu_metadata(x, met = met, sep = sep)
     xx <- attach_metadata(xx, meta, format_in = "shimadzu_chrom",

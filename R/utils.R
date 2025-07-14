@@ -56,7 +56,8 @@ format_2d_chromatogram <- function(rt, int, data_format, format_out){
   if (format_out == "matrix"){
     dat <- as.matrix(dat)
   } else if (format_out == "data.table"){
-    data.table::setDT(dat)
+    dat <- data.table::as.data.table(dat, keep.rownames = ifelse(data_format == "wide",
+                                                        yes = "rt", no = FALSE))
   }
   dat
 }
@@ -91,8 +92,12 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                      "xd0/xcf/x11/xe0" = "shimadzu_ole",
                      "x1c/x00/x09/x03" = "varian_sms",
                      "x80/x00/x01/x00" = "waters_raw",
-                     "x43/x44/x46/x01" = "cdf"
+                     "x43/x44/x46/x01" = "cdf",
+                     "x50/x4b/x03/x04" = "zip"
   )
+  if (filetype == "zip" && fs::path_ext(path) == "dx"){
+    filetype <- "agilent_dx"
+  }
   if (is.null(filetype)){
     stop("File type not recognized. Please specify a filetype by providing an argument to `format_in`
           or file an issue at `https://github.com/ethanbass/chromConverter/issues`.")
@@ -355,7 +360,7 @@ rename_list <- function(x, new_names){
 #' Collapse list
 #' @noRd
 collapse_list <- function(x){
-  while(is.list(x) && length(x) == 1){
+  while(inherits(x, "list") && length(x) == 1){
     x <- x[[1]]
   }
   x

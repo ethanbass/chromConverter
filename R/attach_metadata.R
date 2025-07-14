@@ -384,7 +384,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
   }, "chemstation" = {
     meta$date <- convert_timestamp(meta$date, datetime_formats =
                         c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p",
-                          "%d/%m/%Y %I:%M:%S %p"))
+                          "%d/%m/%Y %I:%M:%S %p", "%d %b %y %I:%M %p %z",
+                          "%d %b %y %I:%M %p"))
     structure(x, sample_name = iconv(meta$sample_name, sub = ""),
               sample_id = meta$vial,
               file_version = meta$version,

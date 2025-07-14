@@ -9,7 +9,7 @@ read_shimadzu(
   what = "chroms",
   format_in = NULL,
   include = c("fid", "lc", "dad", "uv", "tic"),
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   peaktable_format = c("chromatographr", "original"),
   read_metadata = TRUE,
@@ -30,7 +30,8 @@ read_shimadzu(
 \item{include}{Which chromatograms to include. Options are \code{fid},
 \code{dad}, \code{uv}, \code{tic}, and \code{status}.}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{R format. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
 
