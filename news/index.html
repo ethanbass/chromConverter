@@ -36,15 +36,29 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.7.6" id="chromconverter-076">chromConverter 0.7.6<a class="anchor" aria-label="anchor" href="#chromconverter-076"></a></h2>
-<ul><li>Added support for extraction of DAD and auxiliary instrumental data (stored in <code>.IT</code> files) from ‘Agilent OpenLab’ <code>.dx</code> files.</li>
-<li>Fixed misplaced parantheses in <code>read_agilent_d</code> causing possible bug.</li>
+<h2 class="pkg-version" data-toc-text="0.8.0" id="chromconverter-080">chromConverter 0.8.0<a class="anchor" aria-label="anchor" href="#chromconverter-080"></a></h2>
+<ul><li>Improved support for ‘Agilent Openlab’ <code>.dx</code> files: extraction of DAD and auxiliary instrumental data (stored in <code>.IT</code> files).</li>
+<li>Refactored <code>read_shimadzu_qgd</code> for a 1.4x speedup in the parsing of Shimadzu <code>.qgd</code> files, cutting execution time by 30%.</li>
+<li>Refactored <code>read_shimadzu_lcd</code> for a 2.4x speedup in the parsing of Shimadzu <code>.lcd</code> files, cutting execution time by 60%.</li>
+<li>Refactored <code>write_mzml</code> for massive speed-up when writing mzML files, especially for large MS data.</li>
+<li>Fixed ‘Shimadzu’ metadata time zone offsets.</li>
+<li>Fixed misplaced parentheses in <code>read_agilent_d</code> causing possible bug.</li>
+<li>Fixed bug in <code>read_chemstation_uv</code> causing error for long format data.</li>
 <li>Added more informative error messages for <code>read_agilent_d</code>.</li>
+<li>Added additional tests for retention times and <code>data_format</code> attribute.</li>
+<li>Added <code>data_format</code> and <code>read_metadata</code> arguments for <code>read_chemstation_csv</code>.</li>
+<li>Fixed incorrect <code>data_format</code> attributes for MS data to reflect that they are always returned in long format.</li>
+<li>Fixed documentation to accurately reflect the fact that MS data is always returned in long format.</li>
+<li>Automatically return long format when <code>data.table</code> output is selected since data.tables do not have rownames.</li>
+<li>Fixed error due to fractional timezones in Shimadzu metadata (e.g., India +05:30).</li>
+<li>Fixed bug in <code>write_mzml</code> causing retention time shifts for BPC and TIC.</li>
+<li>Rewrote <code>configure_python_environment</code> function to facilitate configuration of a chromConverter virtual environment or conda environment, though a dedicated environment is no longer required (as of chromConverter v0.7.4).</li>
 <li>Fixed bug in <code>collapse</code> argument causing functions to return vector when <code>format_out</code> is <code>data.frame</code>.</li>
 <li>Fixed bug causing elimination of retention times when <code>format_out</code> is <code>data.table</code>.</li>
 <li>Enabled <code>data.table</code> format in <code>read_shimadzu_ascii</code>.</li>
 <li>Enabled automatic recognition of ‘Agilent OpenLab’ <code>.dx</code> file by <code>read_chroms</code>.</li>
 <li>Fixed long format output for <code>read_shimadzu</code> (‘Shimadzu’ ASCII files).</li>
+<li>Fixed timezone issue in some ‘Agilent ChemStation’ files.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.7.5" id="chromconverter-075">chromConverter 0.7.5<a class="anchor" aria-label="anchor" href="#chromconverter-075"></a></h2><p class="text-muted">CRAN release: 2025-03-31</p>
