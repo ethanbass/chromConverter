@@ -40,18 +40,18 @@ test_that("read_chemstation_uv parser can read chemstation 131 files", {
   expect_named(x1, "dad1")
 
   x2 <- read_chroms(path_uv, format_in = "chemstation_uv",
-                    parser = "chromconverter", format_out = "data.table",
-                    read_metadata = TRUE, progress_bar = FALSE,
-                    sample_names = "sample_name")
+              parser = "chromconverter", format_out = "data.table",
+              read_metadata = TRUE, progress_bar = FALSE,
+              sample_names = "sample_name")
 
   expect_s3_class(x2[[1]], class = "data.table")
+  expect_equal(colnames(x2[[1]]), c("rt","lambda","intensity"))
   expect_equal(attr(x2[[1]], "format_out"), "data.table")
   expect_equal(attr(x2[[1]], "detector_y_unit"), "mAU")
   expect_equal(attr(x2[[1]], "detector_x_unit"), "nm")
   expect_equal(attr(x2[[1]], "detector"), "DAD")
   expect_equal(attr(x2[[1]], "sample_name"), "las_bulk_hexE")
-  expect_equal(attr(x2[[1]], "data_format"), "wide")
-  expect_equal(head(colnames(x2[[1]]), n = 5), c("rt","200","202","204","206"))
+  expect_equal(attr(x2[[1]], "data_format"), "long")
   expect_named(x2, "las_bulk_hexE")
 })
 
@@ -165,7 +165,7 @@ test_that("`Shimadzu` ASCII parser works", {
   expect_equal(attr(x2, "format_out"), "data.frame")
   expect_equal(attr(x2, "data_format"), "long")
   expect_equal(dim(x2),c(66255,3))
-  expect_equal(x1, x2, ignore_attr=TRUE)
+  expect_equal(x1, x2, ignore_attr = TRUE)
 })
 
 test_that("read_mzml works", {
@@ -174,7 +174,8 @@ test_that("read_mzml works", {
   DAD_filepath <- list.files(ext_filepath, full.names = TRUE,
                              pattern = "uv_test_mini.mzML.gz")
 
-  dad_long <- read_mzml(DAD_filepath, what = "DAD", verbose = FALSE)
+  dad_long <- read_mzml(DAD_filepath, what = "DAD", verbose = FALSE,
+                        data_format = "long")
   colnames(dad_long$DAD)[3] <- "int"
   expect_equal(dad_long,
                RaMS::grabMSdata(files = DAD_filepath, grab_what = "DAD",

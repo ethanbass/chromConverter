@@ -213,7 +213,7 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
   if (verbose)
     message(sprintf("Writing %s spectra.", toupper(what)))
 
-  laplee <- if (show_progress) pbapply::pblapply else lapply
+  laplee <- ifelse(show_progress, pbapply::pblapply, lapply)
 
   spectra_data <- data[[toupper(what)]]
 
@@ -234,22 +234,26 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
   n_scan <- ifelse(!is.null(data$TIC), nrow(data$TIC),
                    length(unique(spectra_data$rt)))
   extra_vals <- n_scan - length(rts)
-  if (extra_vals > 0)
-    rts <- c(data$TIC[seq_len(extra_vals)], rts)
+  spectra_list <- split(spectra_data, spectra_data$rt)
+
+  if (extra_vals > 0){
+    rts <- c(data$TIC[seq_len(extra_vals),"rt"], rts)
+    spectra_list <- c(rep(list(spectra_list[[1]][0]), extra_vals), spectra_list)
+  }
+
   laplee(seq_len(n_scan), function(i) {
     if (indexed){
       offset <- seek(con, NA)
     }
 
-    scan_data <- spectra_data[rt == rts[i]]
+    scan_data <- spectra_list[[i]]
 
     # Create and write spectrum
     spectrum_xml <- create_spectrum(scan_data = scan_data, scan = i, index = i + idx_start - 1,
                                     rt = rts[i],
                                     tic = ifelse(!is.null(data$TIC),
                                                  data$TIC[[i, "intensity"]],
-                                                 ifelse(length(scan_data$intensity),
-                                                        0, sum(scan_data$intensity))),
+                                                 sum(scan_data$intensity)),
                                     bpc = ifelse(!is.null(data$BPC),
                                                  data$BPC[[i, "intensity"]],
                                                  ifelse(length(scan_data$intensity) == 0,
@@ -433,6 +437,7 @@ write_mzml_chrom <- function(con, index, data, what = c("tic", "bpc"),
   what <- match.arg(what, c("tic", "bpc"))
   if (verbose) message(sprintf("Writing %s.", toupper(what)))
   cdata <- data[[toupper(what)]]
+  cdata <- reshape_chrom_long(cdata, format_out = "data.frame")
   rt_encoded <- encode_data(cdata$rt, compress = compress)
   int_encoded <- encode_data(cdata$intensity, compress = compress)
   id <- toupper(what)

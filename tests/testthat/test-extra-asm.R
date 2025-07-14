@@ -21,7 +21,7 @@ test_that("read_chroms can read ASM LC format", {
   expect_equal(attr(x[[1]], "run_datetime"), as.POSIXct("2016-10-20 06:33:54",
                                                         tz = "UTC"))
   expect_equal(as.character(attr(x[[1]], "time_unit")), "s")
-  expect_equal(as.character(attr(x[[1]], "data_format")), "wide")
+  expect_equal(as.character(attr(x[[1]], "data_format")), "long")
 })
 
 test_that("read_chroms can read ASM GC format", {
@@ -45,3 +45,4 @@ test_that("read_chroms can read ASM GC format", {
   expect_equal(as.character(attr(x, "time_unit")), "s")
   expect_equal(as.character(attr(x, "data_format")), "long")
 })
+

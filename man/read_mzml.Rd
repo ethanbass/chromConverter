@@ -7,7 +7,7 @@
 read_mzml(
   path,
   format_out = c("matrix", "data.frame", "data.table"),
-  data_format = c("long", "wide"),
+  data_format = c("wide", "long"),
   parser = c("RaMS", "mzR"),
   what = c("MS1", "MS2", "BPC", "TIC", "DAD", "chroms", "metadata", "everything"),
   verbose = FALSE,

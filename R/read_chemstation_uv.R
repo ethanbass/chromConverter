@@ -39,7 +39,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
                                 metadata_format = c("chromconverter", "raw"),
                                 scale = TRUE){
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "chemstation_uv", raw = "raw")
@@ -105,7 +105,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
   colnames(data) <- lambdas
 
   if (data_format == "long"){
-    data <- reshape_chrom(data)
+    data <- reshape_chrom_long(data)
   }
   data <- convert_chrom_format(data, format_out = format_out,
                                data_format = data_format)

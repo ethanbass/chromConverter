@@ -1,8 +1,21 @@
-## chromConverter 0.7.6
+## chromConverter 0.8.0
 
-* Added support for extraction of DAD and auxiliary instrumental data (stored in `.IT` files) from 'Agilent OpenLab' `.dx` files.
-* Fixed misplaced parantheses in `read_agilent_d` causing possible bug.
+* Improved support for 'Agilent Openlab' `.dx` files: extraction of DAD and auxiliary instrumental data (stored in `.IT` files).
+* Refactored `read_shimadzu_qgd` for a 1.4x speedup in the parsing of Shimadzu `.qgd` files, cutting execution time by 30%.
+* Refactored `read_shimadzu_lcd` for a 2.4x speedup in the parsing of Shimadzu `.lcd` files, cutting execution time by 60%.
+* Refactored `write_mzml` for massive speed-up when writing mzML files, especially for large MS data.
+* Fixed 'Shimadzu' metadata time zone offsets.
+* Fixed misplaced parentheses in `read_agilent_d` causing possible bug.
+* Fixed bug in `read_chemstation_uv` causing error for long format data.
 * Added more informative error messages for `read_agilent_d`.
+* Added additional tests for retention times and `data_format` attribute.
+* Added `data_format` and `read_metadata` arguments for `read_chemstation_csv`.
+* Fixed incorrect `data_format` attributes for MS data to reflect that they are always returned in long format.
+* Fixed documentation to accurately reflect the fact that MS data is always returned in long format.
+* Automatically return long format when `data.table` output is selected since data.tables do not have rownames.
+* Fixed error due to fractional timezones in Shimadzu metadata (e.g., India +05:30).
+* Fixed bug in `write_mzml` causing retention time shifts for BPC and TIC.
+* Rewrote `configure_python_environment` function to facilitate configuration of a chromConverter virtual environment or conda environment, though a dedicated environment is no longer required (as of chromConverter v0.7.4).
 * Fixed bug in `collapse` argument causing functions to return vector when `format_out` is `data.frame`.
 * Fixed bug causing elimination of retention times when `format_out` is `data.table`.
 * Enabled `data.table` format in `read_shimadzu_ascii`.

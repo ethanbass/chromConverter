@@ -23,7 +23,10 @@ check_data_format <- function(data_format, format_out){
 #' Convert chromatogram format
 #' @author Ethan Bass
 #' @noRd
-convert_chrom_format <- function(x, format_out, data_format){
+convert_chrom_format <- function(x, format_out, data_format=NULL){
+  if (is.null(data_format)){
+    data_format <- attr(x, "data_format")
+  }
   if (inherits(x, format_out)){
     return(x)
   } else if (format_out == "matrix"){
@@ -32,9 +35,9 @@ convert_chrom_format <- function(x, format_out, data_format){
     return(as.data.frame(x))
   } else if (format_out == "data.table"){
     return(data.table::as.data.table(x, keep.rownames = ifelse(data_format == "wide",
-                                                        yes = "rt", no = FALSE))
-      )
-    }
+                                                               yes = "rt", no = FALSE))
+    )
+  }
 }
 
 #' Format 2D chromatogram
@@ -370,53 +373,62 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 
 #' Configure python environment
 #'
-#' Configures reticulate environment for parsers that have python dependencies.
-#' Deprecated as this should no longer be necessary with reticulate \code{v1.41.0}.
+#' Configures python virtual environment or conda environment for parsers that
+#' have python dependencies, according to the value of \code{what}. While this
+#' should not be necessary in most cases starting with reticulate \code{v1.41.0},
+#' this function can be used to create a dedicated chromConverter environment.
 #'
 #' @name configure_python_environment
-#' @param parser Either \code{aston}, \code{rainbow}, or \code{olefile} (for
-#' \code{read_shimadzu_lcd}).
-#' @param return_boolean Logical. Whether to return a Boolean value indicating
-#' if the chromConverter environment is correctly configured.
-#' @return If \code{return_boolean} is \code{TRUE}, returns a Boolean value
-#' indicating whether the chromConverter environment is configured correctly.
-#' Otherwise, there is no return value.
+#' @param envname The name of, or path to, a Python virtual environment.
+#' @param what What kind of virtual environment to create. A python virtual
+#' environment (\code{"venv"}) or a conda environment (\code{"conda"}).
+#' @param python Argument to \code{reticulate::virtualenv_create}, specifying
+#' the path to a Python interpreter.
+#' @param ... Additional arguments to [reticulate::virtualenv_create] or
+#' [reticulate::conda_create] according to the value of \code{what}.
+#' @return There is no return value.
+#' @section Side effects:
+#' Creates and configures either  a python virtual environment or conda
+#' environment (according to the value of \code{what}) with all the packages
+#' required for running chromConverter.
 #' @author Ethan Bass
 #' @import reticulate
 #' @keywords internal
 #' @export
+#' @md
 
-configure_python_environment <- function(parser = "all", return_boolean = FALSE){
-  warning("This function is deprecated as of chromConverter v0.7.4 as
-             miniconda should no longer be necessary to load python dependencies. Continue anyway...? (y/n)",
-          immediate. = TRUE)
-  continue <- readline()
-  if (continue %in% c('y', "Y", "YES", "yes", "Yes")){
-    parser <- match.arg(tolower(parser), c("all", "aston", "olefile", "rainbow"))
-    install <- FALSE
-    if (!dir.exists(reticulate::miniconda_path())){
-      install <- readline(sprintf("It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)",
-                                  ifelse(parser == "all", "python-based", parser)))
-      if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-        reticulate::install_miniconda()
-      }
+configure_python_environment <- function(what = c("venv", "conda"),
+                                         envname = "chromConverter",
+                                         python = reticulate::virtualenv_starter(),
+                                         ...){
+  what <- match.arg(what, c("venv", "conda"))
+  packages <- c("Aston", "olefile", "pandas", "rainbow-api", "scipy")
+  install <- FALSE
+  if (!dir.exists(reticulate::miniconda_path())){
+    install <- readline(sprintf("It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)"))
+    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
+      reticulate::install_miniconda()
     }
-    env <- reticulate::configure_environment("chromConverter")
-    if (!env){
-      reqs <- get_parser_reqs(parser)
-      reqs_available <- sapply(reqs, reticulate::py_module_available)
-      if (!all(reqs_available)){
-        reticulate::conda_install(envname = "chromConverter",
-                                  reqs[which(!reqs_available)], pip = TRUE)
-      }
-    }
-    assign_fn <- switch(parser, aston = assign_trace_file(),
-                        rainbow = assign_rb_read(),
-                        function(){})
-    assign_fn()
-    if (return_boolean){
-      env
-    }
+  }
+  check_name <- switch(what, "venv" = reticulate::virtualenv_exists,
+                       "conda" = reticulate::condaenv_exists)
+  exists <- check_name(envname)
+  if (exists){
+    stop(sprintf('The %s environment, "%s" already exists. To create a new environment,
+                 please remove the existing environment first using `%s("%s")`.',
+                 switch(what,"venv" = "virtual", "conda" = "conda"), envname,
+                 switch(what, "venv" = "reticulate::virtualenv_remove",
+                        "conda" = "reticulate::conda_remove"),
+                 envname))
+  }
+  if (what == "venv"){
+    reticulate::virtualenv_create(envname = envname, packages = packages,
+                                  python = python, ...)
+  } else if (what == "conda"){
+    reticulate::conda_create(envname = envname,
+                             packages = c("olefile", "pandas", "scipy"), ...)
+    reticulate::conda_install(envname = envname,
+                              packages=c("Aston", "rainbow-api"), pip = TRUE)
   }
 }
 

@@ -42,5 +42,6 @@ read_chemstation_csv <- function(path, format_out = c("matrix", "data.frame",
                                     parser = "chromconverter", source_file = path,
                                     source_file_format = "chemstation_csv")
   }
+  data
 }
 

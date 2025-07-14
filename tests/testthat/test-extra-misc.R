@@ -74,7 +74,7 @@ test_that("read_chroms can read ANDI MS files", {
   expect_true(all(dim(x$TIC) == c(621, 1)))
   expect_true(all(dim(x$MS1) == c(7638, 3)))
 
-  x1 <- read_chroms(path, what=c("TIC"), data_format="long",
+  x1 <- read_chroms(path, what = c("TIC"), data_format="long",
                     progress_bar = FALSE)[[1]]
   expect_equal(ncol(x1), 2)
   expect_equal(colnames(x1), c("rt", "intensity"))
@@ -98,12 +98,13 @@ test_that("read_chroms can read Varian SMS", {
   tmp <- tempdir()
 
   x <- read_chroms(path_sms, progress_bar = FALSE, export_format = "mzml",
-                   path_out = tmp)[[1]]
+                   data_format = "long", path_out = tmp)[[1]] # must be in long format to export successfully
 
   path_mzml_cc <- fs::path(tmp, attr(x$MS1, "sample_name"), ext = "mzML")
   on.exit(unlink(path_mzml_cc))
 
-  x1 <- read_chroms(path_mzml, format_in = "mzml", progress_bar = FALSE)[[1]]
+  x1 <- read_chroms(path_mzml, format_in = "mzml", data_format = "long",
+                    progress_bar = FALSE)[[1]]
   x2 <- read_chroms(path_mzml_cc, format_in = "mzml", progress_bar = FALSE,
                     format_out = "data.frame")[[1]]
 
@@ -136,6 +137,10 @@ test_that("read_chroms can read Varian SMS", {
   expect_equal(attr(x$TIC, "ms_params")$temp_manifold, 50)
   expect_equal(attr(x$TIC, "ms_params")$temp_transferline, 250)
   expect_equal(attr(x$TIC, "ms_params")$axial_modulation, 4)
+  expect_equal(attr(x$TIC, "data_format"), "long")
+  expect_equal(attr(x$BPC, "data_format"), "long")
+  expect_equal(attr(x$MS1, "data_format"), "long")
+
   # attr(x$MS1, "run_datetime") # should be 8/8/2014 8:50 PM - 9:20 PM
   expect_equal(x2$metadata$source_file, basename(attr(x$MS1,"source_file")))
   # expect_equal(x2$metadata$timestamp, attr(x$MS1,"run_datetime")[1])
@@ -155,7 +160,6 @@ test_that("read_varian_peaklist function works", {
 })
 
 test_that("read_chroms can write Varian SMS to CDF", {
-
   # write CDF
   skip_if_not_installed("ncdf4")
   skip_on_cran()
@@ -171,9 +175,10 @@ test_that("read_chroms can write Varian SMS to CDF", {
   on.exit(unlink(path_cdf))
 
   x <- read_chroms(path_sms, path_out = tmp, export_format = "cdf",
-               progress_bar = FALSE)[[1]]
+                   data_format = "long", progress_bar = FALSE)[[1]]
 
   x3 <- read_cdf(path_cdf, data_format = "long", format_out = "data.frame")
+
   x3$MS1$rt <- x3$MS1$rt/60
   x3$TIC$rt <- x3$TIC$rt/60
 

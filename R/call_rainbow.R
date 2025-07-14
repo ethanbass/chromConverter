@@ -44,7 +44,7 @@ call_rainbow <- function(path,
   check_rb_configuration()
   by <- match.arg(by, c("detector", "name"))
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(tolower(metadata_format),
                                c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, "chromconverter" = "rainbow", "")
@@ -107,7 +107,7 @@ extract_rb_data <- function(xx, format_out = "matrix",
                             metadata_format = "rainbow",
                             meta = NULL,
                             source_file){
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   data <- xx$data
   try(rownames(data) <- xx$xlabels)
   colnames(data) <- xx$ylabels

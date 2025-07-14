@@ -9,7 +9,9 @@
 #' streams.
 #' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
 #' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
+#' @param data_format Either \code{wide} (default) or \code{long}. This argument
+#' applies only to TIC data, since MS and BPC data will always be returned in
+#' long format.
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
 #' @param metadata_format Format to output metadata. Either \code{chromconverter}
 #' or \code{raw}.
@@ -42,11 +44,11 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
                                 metadata_format = c("chromconverter", "raw"),
                                 collapse = TRUE){
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, chromconverter = "chemstation",
                             raw = "raw")
-  match.arg(what, c("MS1", "BPC", "TIC"), several.ok = TRUE)
+  what <- match.arg(what, c("MS1", "BPC", "TIC"), several.ok = TRUE)
   f <- file(path, "rb")
   on.exit(close(f))
 
@@ -73,9 +75,9 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
   dat <- lapply(seq_len(n_rt), function(i){
     read_cs_ms_block(f)
   })
-  if (any(what == "MS1"))
+  if (any(what == "MS1")){
     MS1 <- do.call(rbind, lapply(dat, "[[", 1))
-
+  }
   if (any(what == "BPC")){
     BPC <- do.call(rbind, lapply(dat, "[[", 2))
     BPC[,2] <- BPC[,2]/20
@@ -85,7 +87,9 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
 
   if (any(what == "TIC")){
     TIC <- do.call(rbind, lapply(dat, "[[", 3))
-    colnames(TIC) <- c("rt", "intensity")
+    TIC <- format_2d_chromatogram(rt=TIC[,1], int = TIC[,2],
+                                  data_format = data_format,
+                                  format_out = format_out)
   }
 
   dat <- mget(what)
@@ -101,15 +105,18 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
       read_cs_string(f, type = 1)
     })
     meta$detector <- "MS"
-    dat <- lapply(dat, function(x){
+    dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = metadata_format,
-                            data_format = data_format, format_out = format_out,
-                            parser = "chromconverter", source_file = path,
-                            source_file_format = paste0("chemstation_", version),
-                            scale = FALSE)
+                      data_format = ifelse(h != "TIC", "long", data_format),
+                      format_out = format_out, parser = "chromconverter",
+                      source_file = path,
+                      source_file_format = paste0("chemstation_", version),
+                      scale = FALSE)
     })
   }
-  if (collapse) dat <- collapse_list(dat)
+  if (collapse){
+    dat <- collapse_list(dat)
+  }
   dat
 }
 
@@ -126,7 +133,8 @@ read_cs_ms_block <- function(f){
   u1 <- readBin(f, what = "integer", size = 4, endian = "big")
   n_row <- readBin(f, what = "integer", size = 4, endian = "big")
   bpc <- c(rt, readBin(f, what = "integer", n = 2, size = 2, endian = "big"))
-  mat <- matrix(NA, nrow = n_row, ncol = 2, dimnames = list(NULL, c("mz", "intensity")))
+  mat <- matrix(NA, nrow = n_row, ncol = 2,
+                dimnames = list(NULL, c("mz", "intensity")))
   for (i in seq_len(n_row)){
     mat[i,] <- readBin(f, what = "integer", size = 2, n = 2,
                        signed = FALSE, endian = "big")

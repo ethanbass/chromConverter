@@ -24,36 +24,42 @@ test_that("read_chroms can read 'Agilent' MS files", {
                         ext = "mzML")
   on.exit(unlink(path_mzml))
 
-  # chromConverter
-  x1 <- read_chroms(path, parser = "chromconverter", what = "MS1",
-                    format_out = "data.table", data_format = "long",
+  # chromConverter can read Agilent MS data and write to mzml
+  x1 <- read_chroms(path, parser = "chromconverter",
+                    format_out = "data.frame", data_format = "wide",
                     progress_bar = FALSE,
                     export_format = "mzML", path_out = tmp, force = TRUE)[[1]]
-  expect_s3_class(x1, "data.table")
-  expect_equal(attr(x1, "format_out"), "data.table")
+  expect_s3_class(x1$MS1, "data.frame")
+  expect_equal(attr(x1$MS1, "format_out"), "data.frame")
+  expect_equal(attr(x1$MS1, "data_format"), "long")
+  expect_equal(attr(x1$TIC, "data_format"), "wide")
+  expect_equal(attr(x1$BPC, "data_format"), "long")
 
-  xx <- read_mzml(path_mzml, data_format="long")
-  expect_equal(xx$MS1[,-4], x1, ignore_attr = TRUE)
+  xx <- read_mzml(path_mzml)
+  expect_equal(xx$MS1[,-4], x1$MS1, ignore_attr = TRUE)
+  expect_equal(as.data.frame(xx$TIC), x1$TIC, ignore_attr = TRUE)
+  expect_equal(rownames(xx$TIC), rownames(x1$TIC))
+  expect_equal(xx$BPC[,1], x1$BPC[,3], ignore_attr=TRUE)
+  expect_equal(as.numeric(rownames(xx$BPC)), x1$BPC$rt, tolerance = 0.00001)
 
-  expect_equal(x1, as.data.frame(x), ignore_attr = TRUE)
-  expect_equal(attr(x1,"sample_name"), attr(x,"sample_name"))
-  expect_equal(attr(x1,"source_sha1"), attr(x,"source_sha1"))
-  expect_equal(attr(x1,"time_unit"), attr(x,"time_unit"))
-  # expect_equal(as.numeric(attr(x1,"run_datetime")),
-  #              as.numeric(attr(x,"run_datetime"))) #timezone is wrong on entab
-  expect_equal(attr(x1,"operator"), attr(x,"operator"))
-  expect_equal(attr(x1,"method"), attr(x,"method"))
-  expect_equal(attr(x1,"detector"), attr(x,"detector"))
-  expect_equal(attr(x1, "data_format"), "long")
+  expect_equal(x1$MS1, as.data.frame(x), ignore_attr = TRUE)
+  expect_equal(attr(x1$MS1,"sample_name"), attr(x,"sample_name"))
+  expect_equal(attr(x1$MS1,"source_sha1"), attr(x,"source_sha1"))
+  expect_equal(attr(x1$MS1, "time_unit"), attr(x, "time_unit"))
+  # time zone inconsistency
+  # expect_equal(attr(x1$MS1,"run_datetime"), attr(x,"run_datetime"))
+  expect_equal(attr(x1$MS1,"operator"), attr(x,"operator"))
+  expect_equal(attr(x1$MS1,"method"), attr(x,"method"))
+  expect_equal(attr(x1$MS1,"detector"), attr(x,"detector"))
+  expect_equal(attr(x1$MS1, "data_format"), "long")
 
   # rainbow
   x2 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, precision = 0)[[1]]
   expect_equal(class(x2)[1], "matrix")
   expect_equal(dim(x2), c(2534, 841))
-  expect_equal(attr(x2,"run_datetime"), attr(x1,"run_datetime"))
-  expect_equal(attr(x2, "method"), attr(x1, "method"))
-  expect_equal(attr(x2, "detector"), attr(x1, "detector"))
+  expect_equal(attr(x2, "method"), attr(x1$MS1, "method"))
+  expect_equal(attr(x2, "detector"), attr(x1$MS1, "detector"))
   expect_equal(attr(x2, "data_format"), "wide")
 
   x3 <- read_chroms(path, parser = "rainbow",

@@ -120,8 +120,8 @@ read_chroms <- function(paths,
                         verbose = getOption("verbose"),
                         sample_names = c("basename", "sample_name"),
                         dat = NULL, ...){
-  data_format <- match.arg(data_format, c("wide","long"))
-  format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
+  format_out <- check_format_out(format_out)
+  data_format <- check_data_format(data_format, format_out)
   parser <- match.arg(tolower(parser), c("", "chromconverter", "aston","entab",
                                           "thermoraw", "openchrom", "rainbow"))
   metadata_format <- match.arg(tolower(metadata_format), c("chromconverter", "raw"))
@@ -311,7 +311,8 @@ read_chroms <- function(paths,
                                               verbose = verbose),
                         "entab" = entab_parser)
   } else if (format_in %in% c("mzml","mzxml")){
-    converter <- partial(read_mzml, format_out = format_out, ...)
+    converter <- partial(read_mzml, format_out = format_out,
+                         data_format = data_format, ...)
   } else if (format_in == "varian_sms"){
     converter <- partial(read_varian_sms, format_out = format_out,
                          data_format = data_format,

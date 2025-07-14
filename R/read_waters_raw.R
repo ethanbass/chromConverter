@@ -24,7 +24,7 @@ read_waters_raw <- function(path, format_out = c("matrix", "data.frame", "data.t
                              metadata_format = c("chromconverter", "raw")){
 
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(tolower(metadata_format),
                                c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
@@ -89,7 +89,7 @@ read_waters_raw <- function(path, format_out = c("matrix", "data.frame", "data.t
 read_waters_chro <- function(path, format_out = "data.frame",
                             data_format = c("wide", "long")){
 
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
 
   f <- file(path, "rb")
   on.exit(close(f))

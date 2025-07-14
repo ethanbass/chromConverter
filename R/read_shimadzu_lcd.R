@@ -70,7 +70,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                                 metadata_format = c("chromconverter", "raw"),
                                 scale = TRUE, collapse = TRUE){
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(tolower(metadata_format),
                                c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
@@ -544,7 +544,7 @@ decode_sz_block <- function(f) {
   readBin(f, what = "integer", n = 1, size = 2)
 
   n_lambda <- readBin(f, what = "integer", n = 1,
-                        size = 2, endian = "little")
+                      size = 2, endian = "little")
 
   readBin(f, what = "integer", n = 1, size = 2)
   block_length <- readBin(f, what = "integer", n = 1, size = 2)
@@ -554,33 +554,48 @@ decode_sz_block <- function(f) {
   count <- 1
   buffer <- list(0,0,0,0)
 
-  while (count < length(signal)){
+  while (count < length(signal)) {
     n_bytes <- readBin(f, "integer", n = 1, size = 2)
-    start <- seek(f, NA, "current")
     if (length(n_bytes) == 0) break
 
-    while(seek(f, NA, "current") < start + n_bytes){
-      buffer[[3]] <- readBin(f, "raw", n = 1, size = 1)
-      hex1 <- as.numeric(substr(buffer[[3]], start = 1, stop = 1))
-      hex1
-      if (buffer[[3]] == "82"){
+    raw <- readBin(f, "raw", n = n_bytes)
+
+    # Process the block in memory
+    pos <- 1
+    while (pos <= length(raw)) {
+      current_byte <- raw[pos]
+
+      if (current_byte == as.raw(0x82)) {
+        pos <- pos + 1
         next
-      } else if (buffer[[3]] == "00"){
+      } else if (current_byte == as.raw(0x00)) {
         buffer[[2]] <- 0
-      } else if (hex1 == 0){
-        buffer[[2]] <- as.integer(buffer[[3]])
-      } else if (hex1 == 1){
-        buffer[[2]] <- decode_sz_val(buffer[[3]])
-      } else if (hex1 > 1){
-        buffer[[4]] <- readBin(f, "raw", n = (hex1 %/% 2), size = 1)
-        buffer[[2]] <- decode_sz_val(c(buffer[[3]], buffer[[4]]))
-    }
+        pos <- pos + 1
+      } else {
+        hex1 <- as.numeric(current_byte) %/% 16
+
+        if (hex1 == 0) {
+          buffer[[2]] <- as.integer(current_byte)
+          pos <- pos + 1
+        } else if (hex1 == 1) {
+          buffer[[2]] <- decode_sz_val(current_byte)
+          pos <- pos + 1
+        } else if (hex1 > 1) {
+          # Read additional bytes from the block
+          extra_bytes <- hex1 %/% 2
+          buffer[[2]] <- decode_sz_val(c(current_byte, raw[(pos+1):(pos+extra_bytes)]))
+          pos <- pos + 1 + extra_bytes
+        }
+      }
+
       buffer[[1]] <- buffer[[1]] + buffer[[2]]
       signal[count] <- buffer[[1]]
       count <- count + 1
     }
+
+    # Read the end marker
     end <- readBin(f, "integer", n = 1, size = 2)
-    n_bytes == end
+    # n_bytes == end
     buffer[[1]] <- 0
   }
   signal

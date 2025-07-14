@@ -25,7 +25,7 @@ call_entab <- function(path, data_format = c("wide", "long"),
          call. = FALSE)
   }
   format_out <- check_format_out(format_out)
-  data_format <- match.arg(data_format, c("wide", "long"))
+  data_format <- check_data_format(data_format, format_out)
 
   metadata_format <- match.arg(tolower(metadata_format), c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,

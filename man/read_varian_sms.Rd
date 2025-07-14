@@ -8,7 +8,7 @@ read_varian_sms(
   path,
   what = c("MS1", "TIC", "BPC"),
   format_out = c("matrix", "data.frame", "data.table"),
-  data_format = c("wide", "long"),
+  data_format = "long",
   read_metadata = TRUE,
   collapse = TRUE
 )
@@ -19,9 +19,12 @@ read_varian_sms(
 \item{what}{Whether to extract chromatograms (\code{chroms}) and/or
 \code{MS1} data. Accepts multiple arguments.}
 
-\item{format_out}{R format. Either \code{matrix} or \code{data.frame}.}
+\item{format_out}{R format. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+\item{data_format}{Either \code{wide} (default) or \code{long}. This argument
+applies only to TIC and BPC data, since MS data will always be returned in
+long format.}
 
 \item{read_metadata}{Whether to read metadata from file. (This is just a
 placeholder for now as there is not yet support for parsing metadata).}
@@ -43,12 +46,12 @@ first section (in all the files I've been able to inspect) is "MSData"
 generally beginning at byte 3238. This MSdata section is in turn divided into
 two sections. The first section (after a short header) contains chromatogram
 data. Some of the information found in this section includes scan numbers,
-retention times, (as 64-bit
-floats), the total ion chromatogram (TIC), the base peak chromatogram (BPC),
-ion time (µsec), as well as some other unidentified information. The scan
-numbers and intensities for the TIC and BPC are stored at 4-byte
-little-endian integers. Following this section, there is a series of null
-bytes, followed by a series of segments containing the mass spectra.
+retention times, (as 64-bit floats), the total ion chromatogram (TIC), the
+base peak chromatogram (BPC), ion time (µsec), as well as some other
+unidentified information. The scan numbers and intensities for the TIC and
+BPC are stored at 4-byte little-endian integers. Following this section,
+there is a series of null bytes, followed by a series of segments containing
+the mass spectra.
 
 The encoding scheme for the mass spectra is somewhat more complicated. Each
 scan is represented by a series of values of variable length separated from
