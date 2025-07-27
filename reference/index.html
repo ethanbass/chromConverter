@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,7 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="core-functions">Core functions<a class="anchor" aria-label="anchor" href="#core-functions"></a></h2>
 
 
 
@@ -47,28 +47,16 @@
 
       <dl><dt>
 
-          <code><a href="call_entab.html">call_entab()</a></code>
+          <code><a href="read_chroms.html">read_chroms()</a></code>
 
         </dt>
-        <dd>Call Entab</dd>
+        <dd>Read Chromatograms</dd>
       </dl><dl><dt>
 
-          <code><a href="call_openchrom.html">call_openchrom()</a></code>
+          <code><a href="read_peaklist.html">read_peaklist()</a></code>
 
         </dt>
-        <dd>Parse files with OpenChrom</dd>
-      </dl><dl><dt>
-
-          <code><a href="call_rainbow.html">call_rainbow()</a></code>
-
-        </dt>
-        <dd>Call 'rainbow' parsers Parse 'Agilent' or 'Waters' files with rainbow parsers</dd>
-      </dl><dl><dt>
-
-          <code><a href="configure_openchrom.html">configure_openchrom()</a></code>
-
-        </dt>
-        <dd>Configure 'OpenChrom' parser</dd>
+        <dd>Read peak lists</dd>
       </dl><dl><dt>
 
           <code><a href="extract_metadata.html">extract_metadata()</a></code>
@@ -76,6 +64,23 @@
         </dt>
         <dd>Extract metadata</dd>
       </dl><dl><dt>
+
+          <code><a href="write_chroms.html">write_chroms()</a></code>
+
+        </dt>
+        <dd>Write chromatograms</dd>
+      </dl></div><div class="section level2">
+      <h2 id="agilent-parsers">Agilent parsers<a class="anchor" aria-label="anchor" href="#agilent-parsers"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="read_agilent_d.html">read_agilent_d()</a></code>
 
@@ -87,18 +92,6 @@
 
         </dt>
         <dd>Read 'Agilent' DX files</dd>
-      </dl><dl><dt>
-
-          <code><a href="read_asm.html">read_asm()</a></code>
-
-        </dt>
-        <dd>Read 'Allotrope Simple Model' (ASM) 2D chromatograms</dd>
-      </dl><dl><dt>
-
-          <code><a href="read_cdf.html">read_cdf()</a></code>
-
-        </dt>
-        <dd>Read CDF</dd>
       </dl><dl><dt>
 
           <code><a href="read_chemstation_ch.html">read_chemstation_ch()</a></code>
@@ -129,37 +122,18 @@
 
         </dt>
         <dd>Read 'Agilent ChemStation' DAD files</dd>
-      </dl><dl><dt>
+      </dl></div><div class="section level2">
+      <h2 id="shimadzu-parsers">Shimadzu parsers<a class="anchor" aria-label="anchor" href="#shimadzu-parsers"></a></h2>
 
-          <code><a href="read_chromeleon.html">read_chromeleon()</a></code>
 
-        </dt>
-        <dd>Read 'Chromeleon' ASCII files</dd>
-      </dl><dl><dt>
 
-          <code><a href="read_chroms.html">read_chroms()</a></code>
 
-        </dt>
-        <dd>Read Chromatograms</dd>
-      </dl><dl><dt>
+    </div><div class="section level2">
 
-          <code><a href="read_mdf.html">read_mdf()</a></code>
 
-        </dt>
-        <dd>Read 'Lumex' MDF</dd>
-      </dl><dl><dt>
 
-          <code><a href="read_mzml.html">read_mzml()</a></code>
 
-        </dt>
-        <dd>Read mzML files</dd>
-      </dl><dl><dt>
-
-          <code><a href="read_peaklist.html">read_peaklist()</a></code>
-
-        </dt>
-        <dd>Read peak lists</dd>
-      </dl><dl><dt>
+      <dl><dt>
 
           <code><a href="read_shimadzu.html">read_shimadzu()</a></code>
 
@@ -195,25 +169,18 @@
 
         </dt>
         <dd>Read 'Shimadzu' LCD 3D data</dd>
-      </dl><dl><dt>
+      </dl></div><div class="section level2">
+      <h2 id="waters-parsers">Waters parsers<a class="anchor" aria-label="anchor" href="#waters-parsers"></a></h2>
 
-          <code><a href="read_thermoraw.html">read_thermoraw()</a></code>
 
-        </dt>
-        <dd>Read ThermoRaw</dd>
-      </dl><dl><dt>
 
-          <code><a href="read_varian_peaklist.html">read_varian_peaklist()</a></code>
 
-        </dt>
-        <dd>Read 'Varian' peak list.</dd>
-      </dl><dl><dt>
+    </div><div class="section level2">
 
-          <code><a href="read_varian_sms.html">read_varian_sms()</a></code>
 
-        </dt>
-        <dd>Read 'Varian' SMS</dd>
-      </dl><dl><dt>
+
+
+      <dl><dt>
 
           <code><a href="read_waters_arw.html">read_waters_arw()</a></code>
 
@@ -225,6 +192,100 @@
 
         </dt>
         <dd>Read 'Waters' RAW</dd>
+      </dl></div><div class="section level2">
+      <h2 id="other-miscellaneous-parsers">Other miscellaneous parsers<a class="anchor" aria-label="anchor" href="#other-miscellaneous-parsers"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="read_asm.html">read_asm()</a></code>
+
+        </dt>
+        <dd>Read 'Allotrope Simple Model' (ASM) 2D chromatograms</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_cdf.html">read_cdf()</a></code>
+
+        </dt>
+        <dd>Read CDF</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_chromeleon.html">read_chromeleon()</a></code>
+
+        </dt>
+        <dd>Read 'Chromeleon' ASCII files</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_mdf.html">read_mdf()</a></code>
+
+        </dt>
+        <dd>Read 'Lumex' MDF</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_mzml.html">read_mzml()</a></code>
+
+        </dt>
+        <dd>Read mzML files</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_varian_sms.html">read_varian_sms()</a></code>
+
+        </dt>
+        <dd>Read 'Varian' SMS</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_varian_peaklist.html">read_varian_peaklist()</a></code>
+
+        </dt>
+        <dd>Read 'Varian' peak list.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="bindings-to-external-parsers">Bindings to external parsers<a class="anchor" aria-label="anchor" href="#bindings-to-external-parsers"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="call_entab.html">call_entab()</a></code>
+
+        </dt>
+        <dd>Call Entab</dd>
+      </dl><dl><dt>
+
+          <code><a href="call_openchrom.html">call_openchrom()</a></code>
+
+        </dt>
+        <dd>Parse files with OpenChrom</dd>
+      </dl><dl><dt>
+
+          <code><a href="configure_openchrom.html">configure_openchrom()</a></code>
+
+        </dt>
+        <dd>Configure 'OpenChrom' parser</dd>
+      </dl><dl><dt>
+
+          <code><a href="read_thermoraw.html">read_thermoraw()</a></code>
+
+        </dt>
+        <dd>Read ThermoRaw</dd>
+      </dl><dl><dt>
+
+          <code><a href="call_rainbow.html">call_rainbow()</a></code>
+
+        </dt>
+        <dd>Call 'rainbow' parsers Parse 'Agilent' or 'Waters' files with rainbow parsers</dd>
       </dl><dl><dt>
 
           <code><a href="sp_converter.html">sp_converter()</a></code>
@@ -237,7 +298,18 @@
 
         </dt>
         <dd>Converter for 'Agilent ChemStation' UV files</dd>
-      </dl><dl><dt>
+      </dl></div><div class="section level2">
+      <h2 id="write-functions">Write functions<a class="anchor" aria-label="anchor" href="#write-functions"></a></h2>
+
+
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="write_andi_chrom.html">write_andi_chrom()</a></code>
 
@@ -245,18 +317,13 @@
         <dd>Write ANDI chrom CDF file from chromatogram</dd>
       </dl><dl><dt>
 
-          <code><a href="write_chroms.html">write_chroms()</a></code>
-
-        </dt>
-        <dd>Write chromatograms</dd>
-      </dl><dl><dt>
-
           <code><a href="write_mzml.html">write_mzml()</a></code>
 
         </dt>
         <dd>Write mzML</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
