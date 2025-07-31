@@ -3,9 +3,12 @@
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/chromConverter)](https://cran.r-project.org/package=chromConverter)
 [![chromConverter status badge](https://ethanbass.r-universe.dev/badges/chromConverter)](https://ethanbass.r-universe.dev/chromConverter)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6944342.svg)](https://doi.org/10.5281/zenodo.6944342)
+[![Last commit](https://img.shields.io/github/last-commit/ethanbass/chromConverter)]()
+<br>
 [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/grand-total/chromConverter?color=blue)](https://r-pkg.org/pkg/chromConverter)
 [![metacran downloads](https://cranlogs.r-pkg.org/badges/last-month/chromConverter)](https://cran.r-project.org/package=chromConverter)
+<br>
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6944342.svg)](https://doi.org/10.5281/zenodo.6944342)
 <!-- badges: end -->
 
 **Table of contents:** [Overview](.#Overview) -
