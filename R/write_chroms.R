@@ -274,6 +274,9 @@ nc_add_global_attributes <- function(nc, meta, sample_name){
 #' @noRd
 format_metadata_for_cdf <- function(x){
   datetime <- format(attr(x, "run_datetime"), "%Y%m%d%H%M%S%z")
+  if (length(datetime) == 0) {
+    datetime <- ""
+  }
   rt_units <- attr(x, "time_unit")
   rt_units <- ifelse(!is.null(rt_units), tolower(rt_units), NA)
   rt_units <- switch(tolower(rt_units),
@@ -312,6 +315,7 @@ format_metadata_for_cdf <- function(x){
     ifelse(length(meta$sample_amount) != 0, meta$sample_amount, 1)
   meta$sample_injection_volume <-
     ifelse(length(meta$sample_injection_volume) != 0, meta$sample_injection_volume, 1)
+  meta[sapply(meta, length) == 0] <- ""
   meta[sapply(meta, is.null)] <- ""
   meta[sapply(meta, is.na)] <- ""
   meta
