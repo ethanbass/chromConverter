@@ -1,3 +1,9 @@
+## chromConverter (development version)
+
+* Fixed bug causing failure to write chromatograms with missing attributes to `.cdf` (thanks to @pbulsink for PR #37).
+* Added more metadata fields to exported CDF files.
+* Added additional test for writing CDF files with missing attributes.
+
 ## chromConverter 0.8.0
 
 * Improved support for 'Agilent Openlab' `.dx` files: extraction of DAD and auxiliary instrumental data (stored in `.IT` files).
