@@ -195,6 +195,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
 test_that("read_chroms can write 'Agilent ChemStation' version 81 files to CDF", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
+  skip_if_not_installed("ncdf4")
 
   path <- system.file("chemstation_81.ch",
                       package = "chromConverterExtraTests")
