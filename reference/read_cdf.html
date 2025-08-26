@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,12 +71,13 @@ or <code><a href="https://rdatatable.gitlab.io/data.table/reference/data.table.h
 <dd><p>Whether to return data in <code>wide</code> or <code>long</code> format.
 For 2D files, "long" format returns the retention time as the first column of
 the data.frame or matrix while "wide" format returns the retention time as the
-rownames of the object.</p></dd>
+rownames of the object. This argument applies only to 2D chromatograms, since
+MS data will always be returned in long format.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>For ANDI chrom files, whether to extract <code>chroms</code>
-and/or <code>peak_table</code>. For ANDI ms files, whether to extract MS1 scans
+<dd><p>For <code>ANDI chrom</code> files, whether to extract <code>chroms</code>
+and/or <code>peak_table</code>. For <code>ANDI ms</code> files, whether to extract MS1 scans
 (<code>MS1</code>) or the total ion chromatogram (<code>TIC</code>).</p></dd>
 
 
