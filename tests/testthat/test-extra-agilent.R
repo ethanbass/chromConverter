@@ -192,6 +192,27 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   expect_equal(attr(x1, "data_format"), "long")
 })
 
+test_that("read_chroms can write 'Agilent ChemStation' version 81 files to CDF", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("chemstation_81.ch",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+  path_out <- tempdir()
+  x <- read_chroms(path, progress_bar = FALSE, export_format = "cdf",
+                   path_out = path_out, force=TRUE)[[1]]
+
+  xx <- read_chroms(fs::path(path_out, "5970_mix_10nG.cdf"),
+                    progress_bar = FALSE)[[1]]
+  expect_equal(x, xx, ignore_attr=TRUE, tolerance=1e-7)
+  expect_equal(get_times(x), get_times(xx))
+  fields <-c("sample_name", "detector", "detector_id", "detector_y_unit",
+             "method", "operator", "time_interval", "time_unit", "run_datetime")
+  expect_equal(attributes(x)[fields], attributes(xx)[fields],
+               ignore_attr = TRUE)
+})
+
 test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
@@ -384,8 +405,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   expect_equal(attr(x[[1]], "file_version"), "181")
   expect_equal(attr(x[[1]], "detector_y_unit"), "pA")
   expect_equal(attr(x[[1]], "method"), "DET3300.M")
-  expect_equal(attr(x[[1]], "run_datetime"), as.POSIXct("2022-8-23 12:16:25",
-                                                        tz = "UTC"))
+  expect_equal(attr(x[[1]], "run_datetime"),
+               as.numeric(as.POSIXct("2022-8-23 12:16:25", tz = "UTC")))
   expect_equal(attr(x[[1]], "time_unit"), "Minutes")
   expect_equal(attr(x[[1]], "data_format"), "wide")
 
@@ -393,8 +414,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   expect_equal(attr(x[[2]], "file_version"), "181")
   expect_equal(attr(x[[2]], "detector_y_unit"), "pA")
   expect_equal(attr(x[[2]], "method"), "DET3300.M")
-  expect_equal(attr(x[[2]], "run_datetime"), as.POSIXct("2022-8-23 12:48:20",
-                                                        tz = "UTC"))
+  expect_equal(attr(x[[2]], "run_datetime"),
+               as.numeric(as.POSIXct("2022-8-23 12:48:20", tz = "UTC")))
   expect_equal(attr(x[[2]], "time_unit"), "Minutes")
 
   # long format
