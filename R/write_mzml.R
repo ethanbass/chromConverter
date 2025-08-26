@@ -146,7 +146,7 @@ write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
   } else {
     cat('      <cvParam cvRef="MS" accession="MS:1000031" name="instrument model"/>\n', file = con)
   }
-
+  date_time <- tryCatch(format(meta$run_datetime[1], "%Y-%m-%dT%H:%M:%SZ"), error = function(err) NA)
   cat(sprintf('    </instrumentConfiguration>
   </instrumentConfigurationList>
   <dataProcessingList count="1">
@@ -158,7 +158,8 @@ write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
   </dataProcessingList>
   <run id="run1" defaultInstrumentConfigurationRef="IC" startTimeStamp="%s">
     <spectrumList count="%d" defaultDataProcessingRef="%s">\n',
-              format(meta$run_datetime[1], "%Y-%m-%dT%H:%M:%SZ"), n_scan,
+              date_time,
+              n_scan,
               "chromConverter_processing"),
       file = con, sep = "")
 }

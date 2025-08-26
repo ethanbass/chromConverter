@@ -82,7 +82,7 @@ write_andi_chrom <- function(x, path_out, sample_name = NULL, lambda = NULL, for
       stop("Sample name must be provided.")
     }
   }
-  if (is.null(attr(x,"data_format"))){
+  if (is.null(attr(x, "data_format"))){
     is_long <- is.null(rownames(x)) || all(rownames(x) == seq_len(nrow(x)))
     attr(x, "data_format") <- ifelse(is_long, "long", "wide")
   }
@@ -273,7 +273,8 @@ nc_add_global_attributes <- function(nc, meta, sample_name){
 #' @author Ethan Bass
 #' @noRd
 format_metadata_for_cdf <- function(x){
-  datetime <- format(attr(x, "run_datetime"), "%Y%m%d%H%M%S%z")
+  datetime <- tryCatch({format(attr(x, "run_datetime"), "%Y%m%d%H%M%S%z")},
+                       error = function(err) NA)
   if (length(datetime) == 0) {
     datetime <- ""
   }
@@ -297,18 +298,23 @@ format_metadata_for_cdf <- function(x){
              converter_description = "AIA/ANDI netCDF Chromatography",
              converter_input_source = attr(x, "source_file"),
              date_time_stamp = datetime,
-             dataset_date_time_stamp = datetime,
              injection_date_time_stamp = datetime,
-             detector_units = attr(x, "detector_unit"),
-             detector_unit = attr(x, "detector_unit"),
+             dataset_date_time_stamp = datetime,
+             operator_name = attr(x, "operator"),
+             detector_units = attr(x, "detector_y_unit"),
+             detector_unit = attr(x, "detector_y_unit"),
              retention_units = rt_units,
              retention_unit = rt_units,
+             sample_name = attr(x, "sample_name"),
              sample_id_comments = "",
-             detector_name = attr(x, "detector"),
+             detector = attr(x, "detector"),
+             detector_name = attr(x, "detector_id"),
+             detector_method_commends = attr(x, "detector_range"),
              # experiment_title = "",
              sample_amount = as.numeric(attr(x, "sample_amount")),
              sample_injection_volume = as.numeric(attr(x, "sample_injection_volume")),
-             sample_type = attr(x, "sample_type")
+             sample_type = attr(x, "sample_type"),
+             instrument_method_filename = attr(x, "method")
   )
   meta$sample_type <- ifelse(!is.null(meta$sample_type), meta$sample_type, "unknown")
   meta$sample_amount <-
