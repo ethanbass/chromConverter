@@ -469,8 +469,9 @@ get_times <- function(x, idx = 1){
   }
   data_format <- attr(x, "data_format")
   data_format <- ifelse(is.null(data_format), "wide", data_format)
+  x <- as.data.frame(x)
   if (data_format == "long"){
-    as.numeric(x[,1])
+    unique(as.numeric(x[,1]))
   } else{
     as.numeric(rownames(x))
   }
