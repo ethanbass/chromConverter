@@ -148,7 +148,7 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
 #' @author Ethan Bass
 #' @noRd
 format_metadata_for_andi_ms <- function(x, intensity_format, ms_params){
-  datetime <- format(attr(x, "run_datetime"), "%Y%m%d%H%M%S%z")[1]
+  datetime <- format(as.POSIXct(as.POSIXct(attr(x, "run_datetime")), tz = "UTC"), "%Y%m%d%H%M%S%z")[1]
   rt_units <- attr(x, "time_unit")
   rt_units <- ifelse(!is.null(rt_units) && !is.na(rt_units),
                      tolower(rt_units), NA)

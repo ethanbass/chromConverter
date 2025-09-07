@@ -96,9 +96,9 @@ test_that("read_chroms can read Varian SMS", {
   skip_if_not(file.exists(path_mzml))
 
   tmp <- tempdir()
-
+  # must be in long format to export successfully
   x <- read_chroms(path_sms, progress_bar = FALSE, export_format = "mzml",
-                   data_format = "long", path_out = tmp)[[1]] # must be in long format to export successfully
+                   data_format = "long", path_out = tmp, force = TRUE)[[1]]
 
   path_mzml_cc <- fs::path(tmp, attr(x$MS1, "sample_name"), ext = "mzML")
   on.exit(unlink(path_mzml_cc))
@@ -113,7 +113,7 @@ test_that("read_chroms can read Varian SMS", {
   ms1_mzml$rt <- ms1_mzml$rt / 1000
   expect_equal(as.data.frame(x$MS1), ms1_mzml, tolerance = .0000001,
                ignore_attr = TRUE)
-  expect_equal(as.data.frame(x$MS1), x2$MS1[,c(1:3)], ignore_attr=TRUE)
+  expect_equal(as.data.frame(x$MS1), x2$MS1[,c(1:3)], ignore_attr = TRUE)
 
   # check equality of TIC
   expect_equal(x$TIC[, "rt"], x1$TIC$rt/1000, tolerance = .000001)

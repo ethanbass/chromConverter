@@ -73,3 +73,4 @@ test_that("check for pkg returns error for fake package", {
 test_that("get_filetype returns error for unknown filetype", {
   expect_error(get_filetype("testdata/dad1.csv"))
 })
+
