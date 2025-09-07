@@ -25,8 +25,8 @@ write_mzml(
 \item{sample_name}{The name of the file. If a name is not provided, the name
 will be derived from the \code{sample_name} attribute.}
 
-\item{what}{Which streams to write to mzML: \code{"ms1"}, \code{"ms2"},
-\code{"tic"}, \code{"bpc"}, and/or \code{"dad"}.}
+\item{what}{Which streams to write to mzML: \code{"MS1"}, \code{"MS2"},
+\code{"TIC"}, \code{"BPC"}, and/or \code{"DAD"}.}
 
 \item{instrument_info}{Instrument info to write to mzML file.}
 
@@ -55,7 +55,10 @@ methods based on an explicit Document Object Model (DOM).
 \details{
 The function supports writing various types of spectral data including MS1,
 TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
-(Diode Array Detector) data. Support for MS2 may be added in a future release.
+(Diode Array Detector) data. DAD spectra are written as electromagnetic
+radiation spectra (MS:1000804) using Thermo's naming convention with
+\code{controllerType=4} in the spectrum ID for compatibility with existing
+tools. Support for MS2 may be added in a future release.
 
 If \code{indexed = TRUE}, the function will generate an indexed mzML file, which
 allows faster random access to spectra.

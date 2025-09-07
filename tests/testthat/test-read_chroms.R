@@ -179,7 +179,7 @@ test_that("read_mzml works", {
   colnames(dad_long$DAD)[3] <- "int"
   expect_equal(dad_long,
                RaMS::grabMSdata(files = DAD_filepath, grab_what = "DAD",
-                                verbosity = FALSE)
+                                verbosity = FALSE), ignore_attr =TRUE
   )
   dad_wide <- read_mzml(DAD_filepath, what = "DAD", verbose = FALSE,
                         data_format = "wide")

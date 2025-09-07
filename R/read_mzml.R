@@ -62,6 +62,13 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
         }
       })
     }
+    data <- data <- purrr::imap(data, function(x, h){
+      attach_metadata_minimal(x, format_out = format_out,
+                              data_format = ifelse(grepl("MS", h), "long",
+                                                   data_format),
+                              parser = "RaMS", source_file = path,
+                              source_file_format = "mzML", scale = NULL)
+      })
   } else if (parser == "mzR"){
     if (!requireNamespace("mzR", quietly = TRUE)) {
       stop(

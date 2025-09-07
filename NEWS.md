@@ -1,6 +1,9 @@
 ## chromConverter (development version)
 
+* Fixed `write_mzml` to write DAD spectra correctly.
+* Added chromatograms to mzML files written by `write_mzml`.
 * Fixed bug causing failure to write chromatograms with missing attributes to `.cdf` (thanks to @pbulsink for PR #37).
+* Fixed bug causing failure to write existing timestamp data to `.cdf` files.
 * Added more metadata fields to exported CDF files.
 * Added additional test for writing CDF files with missing attributes.
 

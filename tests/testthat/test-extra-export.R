@@ -15,7 +15,7 @@ test_that("read_chroms can export 'Agilent' MS files as ANDI MS cdf", {
   tmp <- tempdir()
   x2 <- read_chroms(path, parser = "entab", format_out = "data.table",
                     progress_bar = FALSE,
-                    export_format = "cdf", path_out = tmp)[[1]]
+                    export_format = "cdf", path_out = tmp, force=TRUE)[[1]]
   x2 <- x2[order(rt, mz)]
 
   path_cdf <- fs::path(tmp, gsub(" ", "_", attr(x2,"sample_name")), ext = "cdf")
@@ -88,5 +88,5 @@ test_that("read_chroms can convert CDF to mzML", {
 
   x1 <- read_mzml(mzml_path, what = c("MS1", "metadata"))
   expect_equal(x1$MS1[,c(1:3)], x[[1]], ignore_attr = TRUE)
-  expect_equal(x1$metadata$source_file, basename(attr(x$MS1,"source_file")))
+  expect_equal(x1$metadata$source_file, basename(attr(x$MS1, "source_file")))
 })
