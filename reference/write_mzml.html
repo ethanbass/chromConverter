@@ -80,8 +80,8 @@ will be derived from the <code>sample_name</code> attribute.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>Which streams to write to mzML: <code>"ms1"</code>, <code>"ms2"</code>,
-<code>"tic"</code>, <code>"bpc"</code>, and/or <code>"dad"</code>.</p></dd>
+<dd><p>Which streams to write to mzML: <code>"MS1"</code>, <code>"MS2"</code>,
+<code>"TIC"</code>, <code>"BPC"</code>, and/or <code>"DAD"</code>.</p></dd>
 
 
 <dt id="arg-instrument-info">instrument_info<a class="anchor" aria-label="anchor" href="#arg-instrument-info"></a></dt>
@@ -120,7 +120,10 @@ Defaults to <code>FALSE</code>.</p></dd>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The function supports writing various types of spectral data including MS1,
 TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
-(Diode Array Detector) data. Support for MS2 may be added in a future release.</p>
+(Diode Array Detector) data. DAD spectra are written as electromagnetic
+radiation spectra (MS:1000804) using Thermo's naming convention with
+<code>controllerType=4</code> in the spectrum ID for compatibility with existing
+tools. Support for MS2 may be added in a future release.</p>
 <p>If <code>indexed = TRUE</code>, the function will generate an indexed mzML file, which
 allows faster random access to spectra.</p>
     </div>

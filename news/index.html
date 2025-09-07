@@ -37,7 +37,10 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="chromconverter-development-version">chromConverter (development version)<a class="anchor" aria-label="anchor" href="#chromconverter-development-version"></a></h2>
-<ul><li>Fixed bug causing failure to write chromatograms with missing attributes to <code>.cdf</code> (thanks to <a href="https://github.com/pbulsink" class="external-link">@pbulsink</a> for PR <a href="https://github.com/ethanbass/chromConverter/issues/37" class="external-link">#37</a>).</li>
+<ul><li>Fixed <code>write_mzml</code> to write DAD spectra correctly.</li>
+<li>Added chromatograms to mzML files written by <code>write_mzml</code>.</li>
+<li>Fixed bug causing failure to write chromatograms with missing attributes to <code>.cdf</code> (thanks to <a href="https://github.com/pbulsink" class="external-link">@pbulsink</a> for PR <a href="https://github.com/ethanbass/chromConverter/issues/37" class="external-link">#37</a>).</li>
+<li>Fixed bug causing failure to write existing timestamp data to <code>.cdf</code> files.</li>
 <li>Added more metadata fields to exported CDF files.</li>
 <li>Added additional test for writing CDF files with missing attributes.</li>
 </ul></div>
