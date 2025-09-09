@@ -35,7 +35,7 @@
 read_peaklist <- function(paths, find_files,
                         format_in = c("chemstation", "shimadzu_fid",
                                       "shimadzu_dad", "shimadzu_lcd",
-                                      "shimadzu_gcd"),
+                                      "shimadzu_gcd", "chromatotec"),
                         pattern = NULL,
                         data_format = c("chromatographr", "original"),
                         metadata_format = c("chromconverter", "raw"),
@@ -43,7 +43,7 @@ read_peaklist <- function(paths, find_files,
   data_format <- match.arg(tolower(data_format), c("chromatographr", "original"))
   format_in <- match.arg(tolower(format_in),
                          c("chemstation", "shimadzu_fid", "shimadzu_dad",
-                           "shimadzu_lcd", "shimadzu_gcd"))
+                           "shimadzu_lcd", "shimadzu_gcd", "chromatotec"))
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
@@ -72,11 +72,18 @@ read_peaklist <- function(paths, find_files,
                          read_metadata = read_metadata,
                          peaktable_format = data_format)
   } else if (format_in == "shimadzu_lcd"){
+    pattern <- ifelse(is.null(pattern), "\\.lcd$", pattern)
     parser <- partial(read_shimadzu_lcd, what = "peak_table",
                       data_format="wide", read_metadata=read_metadata)
   } else if (format_in == "shimadzu_gcd"){
+    pattern <- ifelse(is.null(pattern), "\\.gcd$", pattern)
     parser <- partial(read_shimadzu_gcd, what = "peak_table",
                       data_format="wide", read_metadata=read_metadata)
+  } else if (format_in == "chromatotec"){
+    pattern <- ifelse(is.null(pattern), "\\.Chrom$", pattern)
+    parser <- partial(read_chromatotec, what = "peak_table",
+                      read_metadata = read_metadata,
+                      metadata_format = metadata_format)
   }
 
   if (find_files){
