@@ -41,8 +41,7 @@
 #' @param data_format Either \code{wide} (default) or \code{long}. This argument
 #' applies only to TIC and BPC data, since MS data will always be returned in
 #' long format.
-#' @param read_metadata Whether to read metadata from file. (This is just a
-#' placeholder for now as there is not yet support for parsing metadata).
+#' @param read_metadata Whether to read metadata from the file.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
 #' element.
 #' @return A chromatogram or list of chromatograms from the specified

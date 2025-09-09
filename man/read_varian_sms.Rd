@@ -26,8 +26,7 @@ read_varian_sms(
 applies only to TIC and BPC data, since MS data will always be returned in
 long format.}
 
-\item{read_metadata}{Whether to read metadata from file. (This is just a
-placeholder for now as there is not yet support for parsing metadata).}
+\item{read_metadata}{Whether to read metadata from the file.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element.}
