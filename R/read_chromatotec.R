@@ -1,6 +1,6 @@
 #' Read 'Chromatotec' file
 #'
-#' Reads 'Chromatotec' \code{.Chrom} files
+#' Reads 'Chromatotec' \code{.Chrom} files.
 #'
 #' @param path Path to 'Chromatotec' \code{.Chrom} file.
 #' @param what Whether to extract chromatograms (\code{chrom}) and/or

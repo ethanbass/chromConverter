@@ -39,7 +39,7 @@ A chromatogram and/or peak table from the specified
 returned in the format specified by \code{format_out}.
 }
 \description{
-Reads 'Chromatotec' \code{.Chrom} files
+Reads 'Chromatotec' \code{.Chrom} files.
 }
 \note{
 This function is a work in progress and the accuracy of the results is
