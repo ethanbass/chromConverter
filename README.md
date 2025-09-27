@@ -76,7 +76,7 @@ remotes::install_github("https://github.com/ethanbass/chromConverter/")
 or from [R Universe](https://r-universe.dev/):
 
 ```
-install.packages("chromConverter", repos="https://ethanbass.r-universe.dev/", type="source")
+install.packages("chromConverter", repos="https://ethanbass.r-universe.dev/")
 ```
 
 ### Usage

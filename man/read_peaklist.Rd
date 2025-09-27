@@ -8,7 +8,7 @@ read_peaklist(
   paths,
   find_files,
   format_in = c("chemstation", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
-    "shimadzu_gcd"),
+    "shimadzu_gcd", "chromatotec"),
   pattern = NULL,
   data_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),

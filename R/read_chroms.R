@@ -97,7 +97,7 @@ read_chroms <- function(paths,
                                       "chemstation_ch", "chemstation_csv",
                                       "chemstation_ms", "chemstation_uv",
                                       "masshunter_dad", "chromeleon_uv",
-                                      "mzml", "mzxml", "mdf",
+                                      "chromatotec", "mzml", "mzxml", "mdf",
                                       "shimadzu_ascii", "shimadzu_dad",
                                       "shimadzu_fid", "shimadzu_gcd",
                                       "shimadzu_qgd", "shimadzu_lcd",
@@ -163,8 +163,9 @@ read_chroms <- function(paths,
                            "masshunter_dad", "shimadzu_ascii", "shimadzu_dad",
                            "shimadzu_fid", "shimadzu_gcd", "shimadzu_lcd",
                            "shimadzu_qgd", "varian_sms", "chromeleon_uv",
-                           "thermoraw", "mzml", "mzxml", "waters_arw",
-                           "waters_raw", "msd", "csd", "wsd", "mdf", "cdf",
+                           "chromatotec", "thermoraw", "mzml", "mzxml",
+                           "waters_arw", "waters_raw",
+                           "msd", "csd", "wsd", "mdf", "cdf",
                            "other"))
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
@@ -269,6 +270,12 @@ read_chroms <- function(paths,
                                                    ...),
                         "entab" = entab_parser,
                         "rainbow" = rainbow_parser)
+  } else if (format_in == "chromatotec"){
+    converter <- partial(read_chromatotec, what = "chrom",
+                         format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata,
+                         metadata_format = metadata_format)
   } else if (format_in == "chromeleon_uv"){
     converter <- partial(read_chromeleon, format_out = format_out,
                          data_format = data_format,

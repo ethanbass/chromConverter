@@ -6,6 +6,7 @@
 * Fixed bug causing failure to write existing timestamp data to `.cdf` files.
 * Added more metadata fields to exported CDF files.
 * Added additional test for writing CDF files with missing attributes.
+* Added preliminary support for reading "Chromatotec" `.Chrom` files through the `read_chromatotec` function.
 
 ## chromConverter 0.8.0
 

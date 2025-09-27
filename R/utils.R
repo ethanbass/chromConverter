@@ -88,6 +88,7 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                      "x02/x38/x31/x00" = "chemstation_81", #81
                      "x01/x38/x00/x00" = "chemstation_8", #81
                      "x03/x31/x38/x31" = "chemstation_181", #181
+                     "x43/x48/x52/x4f" = "chromatotec",
                      "x01/xa1/x46/x00" = "ThermoRAW",
                      "xd0/xcf/x11/xe0" = "shimadzu_ole",
                      "x1c/x00/x09/x03" = "varian_sms",
@@ -137,6 +138,7 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                              "cdf", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
+                                             "chromatotec",
                                              "chemstation_2", "chemstation_ms",
                                              "chemstation_30", "chemstation_31",
                                              "chemstation_130", "chemstation_131",
@@ -262,6 +264,7 @@ format_to_extension <- function(format_in){
          "shimadzu_gcd" = "\\.gcd$",
          "shimadzu_qgd" = "\\.qgd",
          "chromeleon_uv" = "\\.txt$",
+         "chromatotec" = "\\.Chrom$",
          "thermoraw" = "\\.raw$",
          "cdf" = "\\.cdf$",
          "mzml" = "\\.mzml$",
