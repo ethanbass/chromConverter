@@ -3,13 +3,13 @@ template:
   bootstrap: 5
 reference:
 - title: "Core functions"
-  contents: 
+  contents:
   - read_chroms
   - read_peaklist
   - extract_metadata
   - write_chroms
 - title: "Agilent parsers"
-  contents: 
+  contents:
   - starts_with("read_agilent")
   - starts_with("read_chemstation")
 - title: "Shimadzu parsers"
@@ -23,6 +23,7 @@ reference:
   contents:
   - read_asm
   - read_cdf
+  - read_chromatotec
   - read_chromeleon
   - read_mdf
   - read_mzml
