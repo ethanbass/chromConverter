@@ -43,7 +43,7 @@ call_entab <- function(path, data_format = c("wide", "long"),
       x <- reshape_chrom_wide(x, time_var = "rt", lambda_var = "lambda",
                               value_var = "intensity")
       }
-  } else if (grepl("fid$", file_format)){
+  } else if (grepl("fid$|mwd$", file_format)){
     if (data_format == "wide"){
       x <- data.frame(row.names = x$time, intensity = x$intensity)
     }
