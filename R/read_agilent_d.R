@@ -38,10 +38,18 @@ read_agilent_d <- function(path, what = c("chroms", "dad", "peak_table"),
                            collapse = TRUE){
   what <- match.arg(what, c("chroms", "dad", "peak_table"), several.ok = TRUE)
   exts <- c(chroms = "\\.ch$", dad = "\\.uv$", peak_table = "Report.TXT")
+  exts <- exts[what]
   files <- lapply(exts, function(ext){
     list.files(path, pattern = ext,
                           ignore.case = TRUE, full.names = TRUE)
   })
+  files_found <- vapply(files, length, FUN.VALUE = numeric(1)) > 0
+  if (!any(files_found)){
+    missing <- names(files)[!files_found]
+    stop("No files found for any requested type(s): ",
+         paste(missing, collapse = ", "),
+         "\nSearched in: ", path)
+  }
   what <- what[vapply(files, length, FUN.VALUE = numeric(1)) > 0]
   if (any(what == "chroms")){
     if (length(files$chroms) > 0){

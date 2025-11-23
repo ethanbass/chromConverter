@@ -8,6 +8,7 @@
 * Added additional test for writing CDF files with missing attributes.
 * Added preliminary support for reading "Chromatotec" `.Chrom` files through the `read_chromatotec` function.
 * Fixed entab parser so it translates `.ch` files to wide format as appropriate.
+* Fixed bug in `read_agilent_d` when subsetting data with the `what` argument.
 
 ## chromConverter 0.8.0
 
