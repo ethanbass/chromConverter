@@ -44,6 +44,8 @@
 <li>Added more metadata fields to exported CDF files.</li>
 <li>Added additional test for writing CDF files with missing attributes.</li>
 <li>Added preliminary support for reading “Chromatotec” <code>.Chrom</code> files through the <code>read_chromatotec</code> function.</li>
+<li>Fixed entab parser so it translates <code>.ch</code> files to wide format as appropriate.</li>
+<li>Fixed bug in <code>read_agilent_d</code> when subsetting data with the <code>what</code> argument.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.8.0" id="chromconverter-080">chromConverter 0.8.0<a class="anchor" aria-label="anchor" href="#chromconverter-080"></a></h2>
@@ -372,7 +374,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
