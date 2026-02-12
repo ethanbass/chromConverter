@@ -80,7 +80,6 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
   n_scans <- nrow(chroms) - acq_delay
   if ("MS1" %in% what){
     MS1 <- read_varian_ms_stream(f, n_scans = n_scans, format_out = format_out)
-
     MS1[,1] <- chroms[(MS1[,1] + acq_delay), "rt"]
     colnames(MS1) <- c("rt", "mz", "intensity")
   }
@@ -192,6 +191,7 @@ read_varian_chromatograms <- function(f, n_time, format_out = "data.frame",
 #' @noRd
 read_varian_ms_stream <- function(f, n_scans, format_out = "data.frame",
                                   data_format = "wide"){
+  format_out <- ifelse(format_out == "matrix", "data.frame", format_out)
   xx <- lapply(seq_len(n_scans), function(i){
     xx <- read_varian_ms_block(f)
     cbind(scan = i, xx)
