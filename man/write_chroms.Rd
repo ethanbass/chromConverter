@@ -7,7 +7,7 @@
 write_chroms(
   chrom_list,
   path_out,
-  export_format = c("mzml", "cdf", "csv"),
+  export_format = c("mzml", "cdf", "csv", "arw"),
   what = "",
   force = FALSE,
   show_progress = TRUE,
@@ -20,10 +20,11 @@ write_chroms(
 
 \item{path_out}{Path to directory for writing files.}
 
-\item{export_format}{Format to export files: either \code{mzml}, \code{cdf},
-or \code{csv}.}
+\item{export_format}{Format to export files: either \code{"mzml"}, \code{"cdf"},
+\code{"csv"}, or \code{"arw"}.}
 
-\item{what}{What to write. Either \code{MS1} or \code{chrom}.}
+\item{what}{What to write. Argument to \code{write_cdf} and \code{write_mzml}.
+Either \code{"MS1"} or \code{"chrom"}.}
 
 \item{force}{Logical. Whether to overwrite existing files. Defaults to \code{TRUE}.}
 
@@ -38,7 +39,7 @@ No return value. The function is called for its side effects.
 }
 \description{
 Writes chromatograms to disk in the format specified by \code{export_format}:
-either (\code{mzml}), \code{cdf} or \code{csv}.
+either (\code{mzml}), \code{cdf}, \code{csv}, or \code{arw}.
 }
 \section{Side effects}{
 

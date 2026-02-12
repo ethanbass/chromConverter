@@ -1,13 +1,14 @@
 #' Write chromatograms
 #'
 #' Writes chromatograms to disk in the format specified by \code{export_format}:
-#' either (\code{mzml}), \code{cdf} or \code{csv}.
+#' either (\code{mzml}), \code{cdf}, \code{csv}, or \code{arw}.
 #'
 #' @param chrom_list A list of chromatograms.
 #' @param path_out Path to directory for writing files.
-#' @param export_format Format to export files: either \code{mzml}, \code{cdf},
-#' or \code{csv}.
-#' @param what What to write. Either \code{MS1} or \code{chrom}.
+#' @param export_format Format to export files: either \code{"mzml"}, \code{"cdf"},
+#' \code{"csv"}, or \code{"arw"}.
+#' @param what What to write. Argument to \code{write_cdf} and \code{write_mzml}.
+#' Either \code{"MS1"} or \code{"chrom"}.
 #' @param force Logical. Whether to overwrite existing files. Defaults to \code{TRUE}.
 #' @param show_progress Logical. Whether to show progress bar. Defaults to \code{TRUE}.
 #' @param verbose Logical. Whether to print verbose output.
@@ -21,11 +22,11 @@
 #' @export
 
 write_chroms <- function(chrom_list, path_out,
-                         export_format = c("mzml", "cdf", "csv"),
+                         export_format = c("mzml", "cdf", "csv", "arw"),
                          what = "", force = FALSE,
                          show_progress = TRUE,
                          verbose = getOption("verbose"), ...){
-  export_format <- match.arg(export_format, c("mzml", "cdf", "csv"))
+  export_format <- match.arg(export_format, c("mzml", "cdf", "csv", "arw"))
   path_out <- fs::path_expand(path_out)
   if (!dir.exists(path_out)){
     ans <- readline("Export directory not found. Create directory (y/n)?")
@@ -35,16 +36,22 @@ write_chroms <- function(chrom_list, path_out,
       stop(paste0("The export directory '", path_out, "' could not be found."))
   }
 
+  make_exporter <- function(fn, ...) {
+    purrr::partial(fn, ..., force = force, show_progress = show_progress,
+                   verbose = verbose)
+  }
+
   writer <- switch(export_format,
-                   csv = export_csvs,
-                   cdf = purrr::partial(export_cdf, what = what,
-                                        show_progress = show_progress),
-                   mzml = purrr::partial(export_mzml,
-                                         show_progress = show_progress))
+         csv = make_exporter(export_csvs),
+         cdf = make_exporter(export_cdf, what = what),
+         mzml = make_exporter(export_mzml, what = what),
+         arw = make_exporter(export_arw)
+  )
+
   if (verbose){
     message(sprintf("Writing to %s...", toupper(export_format)))
   }
-  writer(chrom_list, path_out = path_out, force = force, verbose = verbose, ...)
+  writer(chrom_list, path_out = path_out, ...)
 }
 
 #' Write ANDI chrom CDF file from chromatogram
@@ -320,9 +327,76 @@ format_metadata_for_cdf <- function(x){
   meta$sample_amount <-
     ifelse(length(meta$sample_amount) != 0, meta$sample_amount, 1)
   meta$sample_injection_volume <-
-    ifelse(length(meta$sample_injection_volume) != 0, meta$sample_injection_volume, 1)
+    ifelse(length(meta$sample_injection_volume) != 0,
+           meta$sample_injection_volume, 1)
   meta[sapply(meta, length) == 0] <- ""
   meta[sapply(meta, is.null)] <- ""
   meta[sapply(meta, is.na)] <- ""
   meta
+}
+
+#' Export chromatograms as Waters ARW files
+#'
+#' This is a simple file format originally developed by Waters Corporation. It
+#' is useful for importing WSD (wavelength spectral detector) data into
+#' OpenChrom, since there is no option to import WSD data as a CSV
+#' (as of Dec. 2025).
+#'
+#' @author Ethan Bass
+#' @noRd
+
+export_arw <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE,
+                        force = FALSE, verbose = getOption("verbose"),
+                        show_progress = TRUE){
+  laplee <- choose_apply_fnc(show_progress)
+  file_paths <- laplee(seq_along(data), function(i){
+    if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".arw")))
+    if (attr(data[[i]], "data_format") == "long"){
+      data[[i]] <- reshape_chrom_wide(data[[i]])
+    }
+    write_arw(data[[i]], path_out, force = force)
+  })
+  return(invisible(file_paths))
+}
+
+#' Write ARW
+#'
+#' Write 2D and 3D WSD chromatograms to ARW format
+#'
+#' ARW a simple file format originally developed by Waters Corporation. It
+#' is useful for importing WSD (wavelength spectral detector) data into
+#' OpenChrom, since there is no option to import WSD data as a CSV
+#' (as of Dec. 2025).
+#'
+#' @author Ethan Bass
+#' @noRd
+
+write_arw <- function(data, path_out, sample_name = NULL, force = FALSE){
+  format <- ifelse(ncol(data) == 1, "2D", "3D")
+  if (is.null(sample_name)){
+    sample_name <- attr(data, "sample_name")
+    if (is.null(sample_name)){
+      stop("Sample name must be provided.")
+    }
+  }
+  file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
+                           ext = "arw", force = force)
+  if (format == "3D") {
+    wavelength_row <- colnames(data)
+    output <- rbind(
+      c("Wavelength", wavelength_row),
+      c("Time", rep("",ncol(data))),
+      cbind(rownames(data), data)
+    )
+  } else if (format == "2D") {
+    output <- cbind(rownames(data), data[, 1])
+    colnames(output) <- c("Time", "Intensity")
+  }
+  write.table(output,
+              file = file_out,
+              sep = "\t",
+              quote = FALSE,
+              row.names = FALSE,
+              col.names = FALSE)
+  return(invisible(file_out))
 }

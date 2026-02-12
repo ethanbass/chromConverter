@@ -49,9 +49,8 @@
 #' @param path_out Path for exporting files. If path not specified, files will
 #' export to current working directory.
 #' @param export_format Export format. Currently the options include \code{.csv},
-#' \code{chemstation_csv} (utf-16 encoding), and \code{cdf}, unless you are
-#' using OpenChrom parsers, where there are two additional options: \code{mzml},
-#' and \code{animl}.
+#' \code{chemstation_csv} (utf-16 encoding), \code{cdf}, \code{mzml},
+#' \code{animl}, and \code{arw}.
 #' @param force Logical. Whether to overwrite files when exporting. Defaults to
 #' \code{FALSE}.
 #' @param read_metadata Logical, whether to attach metadata (if it's available).
@@ -80,8 +79,8 @@
 #' @section Side effects: If an \code{export_format} is provided, chromatograms
 #' will be exported in the specified format specified into the folder
 #' specified by \code{path_out}. Files can currently be converted to \code{csv},
-#' \code{mzml}, or \code{cdf} format. If an \code{openchrom} parser is selected,
-#' ANIML is available as an additional option.
+#' \code{mzml}, \code{cdf} format, or \code{arw}. If an \code{openchrom} parser
+#' is selected, ANIML is available as an additional option.
 #' @import reticulate
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial
@@ -112,7 +111,7 @@ read_chroms <- function(paths,
                         data_format = c("wide", "long"),
                         path_out = NULL,
                         export_format = c("", "csv", "chemstation_csv", "cdf",
-                                          "mzml", "animl"),
+                                          "mzml", "animl", "arw"),
                         force = FALSE,
                         read_metadata = TRUE,
                         metadata_format = c("chromconverter", "raw"),
@@ -177,7 +176,7 @@ read_chroms <- function(paths,
 
   export_format <- match.arg(tolower(export_format),
                              choices = c("", "csv", "chemstation_csv",
-                                          "cdf", "mzml", "animl"))
+                                          "cdf", "mzml", "animl", "arw"))
   if (export_format == "" && parser == "openchrom"){
     export_format <- "mzml"
   }
@@ -432,16 +431,22 @@ read_chroms <- function(paths,
     names(data) <- sapply(data, attr, "sample_name")
   }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
+    make_exporter <- function(fn, ...) {
+      purrr::partial(fn, ..., force = force, show_progress = progress_bar,
+                     verbose = verbose)
+    }
     writer <- switch(export_format,
-                     csv = export_csvs,
-                     chemstation_csv = purrr::partial(export_csvs,
-                                                      fileEncoding = "utf16"),
-                     cdf = purrr::partial(export_cdf, show_progress = progress_bar),
-                     mzml = purrr::partial(export_mzml,
-                                           show_progress = progress_bar))
-    if (verbose)
+                     csv = make_exporter(export_csvs),
+                     chemstation_csv = make_exporter(export_csvs,
+                                                     fileEncoding = "utf16"),
+                     cdf = make_exporter(export_cdf, what = what),
+                     mzml = make_exporter(export_mzml, what = what),
+                     arw = make_exporter(export_arw)
+    )
+    if (verbose){
       message(sprintf("Writing to %s...", toupper(export_format)))
-    writer(data, path_out = path_out, force = force, verbose = verbose)
+    }
+    writer(data, path_out = path_out)
   }
   dat <- append(dat, data)
   dat

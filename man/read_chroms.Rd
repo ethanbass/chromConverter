@@ -18,7 +18,7 @@ read_chroms(
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   path_out = NULL,
-  export_format = c("", "csv", "chemstation_csv", "cdf", "mzml", "animl"),
+  export_format = c("", "csv", "chemstation_csv", "cdf", "mzml", "animl", "arw"),
   force = FALSE,
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
@@ -64,9 +64,8 @@ or \code{\link[data.table]{data.table}}.}
 export to current working directory.}
 
 \item{export_format}{Export format. Currently the options include \code{.csv},
-\code{chemstation_csv} (utf-16 encoding), and \code{cdf}, unless you are
-using OpenChrom parsers, where there are two additional options: \code{mzml},
-and \code{animl}.}
+\code{chemstation_csv} (utf-16 encoding), \code{cdf}, \code{mzml},
+\code{animl}, and \code{arw}.}
 
 \item{force}{Logical. Whether to overwrite files when exporting. Defaults to
 \code{FALSE}.}
@@ -133,8 +132,8 @@ providing paths to directories, the file format must be specified using the
  If an \code{export_format} is provided, chromatograms
 will be exported in the specified format specified into the folder
 specified by \code{path_out}. Files can currently be converted to \code{csv},
-\code{mzml}, or \code{cdf} format. If an \code{openchrom} parser is selected,
-ANIML is available as an additional option.
+\code{mzml}, \code{cdf} format, or \code{arw}. If an \code{openchrom} parser
+is selected, ANIML is available as an additional option.
 }
 
 \examples{

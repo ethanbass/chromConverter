@@ -90,3 +90,15 @@ test_that("read_chroms can convert CDF to mzML", {
   expect_equal(x1$MS1[,c(1:3)], x[[1]], ignore_attr = TRUE)
   expect_equal(x1$metadata$source_file, basename(attr(x$MS1, "source_file")))
 })
+
+test_that("read_chroms can convert Agilent 131 to ARW", {
+  skip_on_cran()
+  path_uv <- test_path("testdata/dad1.uv")
+  tmp <- tempdir()
+  x <- read_chroms(path_uv, format_in = "chemstation_uv", export_format="arw",
+              path_out = tmp, force = TRUE, progress_bar=FALSE)[[1]]
+  arw_path <- fs::path(tmp, attr(x,"sample_name"), ext = "arw")
+  on.exit(unlink(arw_path))
+  x1 <- read_chroms(arw_path, format_in = "waters_arw", progress_bar = FALSE)[[1]]
+  expect_equal(x, x1, ignore_attr = TRUE)
+})
