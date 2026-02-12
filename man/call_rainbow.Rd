@@ -8,7 +8,7 @@ Parse 'Agilent' or 'Waters' files with rainbow parsers}
 call_rainbow(
   path,
   format_in = c("agilent_d", "waters_raw", "masshunter", "chemstation", "chemstation_uv",
-    "chemstation_fid"),
+    "chemstation_fid", "chemstation_ms"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   by = c("detector", "name"),
@@ -16,7 +16,8 @@ call_rainbow(
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
-  precision = 1
+  precision = 1,
+  sparse = TRUE
 )
 }
 \arguments{
@@ -45,6 +46,10 @@ or \code{raw}.}
 element.}
 
 \item{precision}{Number of decimals to round mz values. Defaults to 1.}
+
+\item{sparse}{Logical. Whether to return MS data in sparse format (excluding
+zeros). Defaults to \code{TRUE}. Applies only when data are requested in
+\code{long} format.}
 }
 \value{
 Returns a (nested) list of \code{matrices} or \code{data.frames} according to

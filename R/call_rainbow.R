@@ -24,6 +24,9 @@
 #' @param collapse Logical. Whether to collapse lists that only contain a single
 #' element.
 #' @param precision Number of decimals to round mz values. Defaults to 1.
+#' @param sparse Logical. Whether to return MS data in sparse format (excluding
+#' zeros). Defaults to \code{TRUE}. Applies only when data are requested in
+#' \code{long} format.
 #' @author Ethan Bass
 #' @return Returns a (nested) list of \code{matrices} or \code{data.frames} according to
 #' the value of \code{format_out}. Data is ordered according to the value of
@@ -34,13 +37,13 @@
 call_rainbow <- function(path,
                          format_in = c("agilent_d", "waters_raw", "masshunter",
                                        "chemstation", "chemstation_uv",
-                                       "chemstation_fid"),
+                                       "chemstation_fid", "chemstation_ms"),
                          format_out = c("matrix", "data.frame", "data.table"),
                          data_format = c("wide", "long"),
                          by = c("detector", "name"), what = NULL,
                          read_metadata = TRUE,
                          metadata_format = c("chromconverter", "raw"),
-                         collapse = TRUE, precision = 1){
+                         collapse = TRUE, precision = 1, sparse = TRUE){
   check_rb_configuration()
   by <- match.arg(by, c("detector", "name"))
   format_out <- check_format_out(format_out)
@@ -76,7 +79,8 @@ call_rainbow <- function(path,
       dtr_dat <- lapply(dtr, function(xx){
         extract_rb_data(xx, format_out = format_out, data_format = data_format,
                         read_metadata = read_metadata, meta = x$metadata,
-                        metadata_format = metadata_format, source_file = path)
+                        metadata_format = metadata_format, source_file = path,
+                        sparse = sparse)
       })
       names(dtr_dat) <- extract_rb_names(dtr)
       if (collapse) dtr_dat <- collapse_list(dtr_dat)
@@ -86,13 +90,15 @@ call_rainbow <- function(path,
     xx <- lapply(x$datafiles, function(xx){
       extract_rb_data(xx, format_out = format_out, data_format = data_format,
                       read_metadata = read_metadata, meta = x$metadata,
-                      metadata_format = metadata_format, source_file = path)
+                      metadata_format = metadata_format, source_file = path,
+                      sparse = sparse)
     })
     names(xx) <- names(x$by_name)
   } else{
     xx <- extract_rb_data(x, format_out = format_out, data_format = data_format,
                           read_metadata = read_metadata, meta = x$metadata,
-                          metadata_format = metadata_format, source_file = path)
+                          metadata_format = metadata_format, source_file = path,
+                          sparse = sparse)
   }
   xx
 }
@@ -106,7 +112,7 @@ extract_rb_data <- function(xx, format_out = "matrix",
                             read_metadata = TRUE,
                             metadata_format = "rainbow",
                             meta = NULL,
-                            source_file){
+                            source_file, sparse = TRUE){
   data_format <- check_data_format(data_format, format_out)
   data <- xx$data
   try(rownames(data) <- xx$xlabels)
@@ -115,7 +121,9 @@ extract_rb_data <- function(xx, format_out = "matrix",
     names_to <- switch(xx$detector, "MS" = "mz",
                                     "UV" = "lambda",
                                            "lambda")
-    data <- reshape_chrom(data, data_format = "long", names_to = names_to)
+    sparse <- ifelse(sparse && xx$detector=="MS", TRUE, FALSE)
+    data <- reshape_chrom(data, data_format = "long", names_to = names_to,
+                          sparse = sparse)
   }
   data <- convert_chrom_format(data, format_out = format_out,
                                data_format = data_format)
