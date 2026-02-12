@@ -29,7 +29,9 @@ read_waters_arw <- function(path, format_out = c("matrix", "data.frame", "data.t
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "waters_arw", raw = "raw")
-  x <- read.csv(path, sep = "\t", skip = 2, header = FALSE, row.names = 1)
+  includes_metadata <- grepl('"', readLines(path, n = 1, encoding="latin1"))
+  skip <- ifelse(includes_metadata, 2, 0)
+  x <- read.csv(path, sep = "\t", skip = skip, header = FALSE, row.names = 1)
   # PDA (3D)
   if (rownames(x)[1] == "Wavelength"){
     colnames(x) <- x[1,]
@@ -48,7 +50,7 @@ read_waters_arw <- function(path, format_out = c("matrix", "data.frame", "data.t
     }
   }
   x <- convert_chrom_format(x, format_out = format_out)
-  if (read_metadata){
+  if (read_metadata && includes_metadata){
     meta <- try(read_waters_metadata(path))
     if (!inherits(meta, "try-error")){
       x <- attach_metadata(x, meta, format_in = metadata_format,
