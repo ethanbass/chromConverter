@@ -29,10 +29,10 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
                             chromconverter = "masshunter_dad", raw = "raw")
 
   x <- trace_file$agilent_uv$AgilentDAD(path)
-  x <- pd$DataFrame(x$data$values, columns = x$data$columns,
-                    index = x$data$index)
+  x <- setNames(data.frame(x$data$values,
+                           row.names = x$data$index), x$data$columns)
   if (data_format == "long"){
-    x <- reshape_chrom(x, data_format = "long")
+    x <- reshape_chrom(x, data_format = "long", format_out = format_out)
   }
   x <- convert_chrom_format(x, format_out = format_out,
                             data_format = data_format)
@@ -81,8 +81,8 @@ uv_converter <- function(path, format_out = c("matrix","data.frame","data.table"
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
   x <- trace_file$TraceFile(path)
-  x <- pd$DataFrame(x$data$values, columns=x$data$columns,
-                    index=x$data$index)
+  x <- setNames(data.frame(x$data$values,
+                           row.names = x$data$index), x$data$columns)
   if (data_format == "long"){
     x <- reshape_chrom(x, data_format = "long")
   }
@@ -122,8 +122,8 @@ trace_converter <- function(path, format_out = c("matrix", "data.frame"),
   trace_file <- reticulate::import("aston.tracefile")
   pd <- reticulate::import("pandas")
   x <- trace_file$TraceFile(path)
-  x <- pd$DataFrame(x$data$values, columns = x$data$columns,
-                    index = x$data$index)
+  x <- setNames(data.frame(x$data$values,
+                           row.names = x$data$index), nm = x$data$columns)
   if (data_format == "long"){
     x <- reshape_chrom(x, data_format = "long")
   }
