@@ -2,6 +2,9 @@
 #'
 #' Reads files from 'Agilent' \code{.D} directories.
 #'
+#' Currently this function is limited to reading \code{.uv}, \code{.ch} and
+#' \code{peak_table} elements.
+#'
 #' @param path Path to 'Agilent' \code{.D} directory.
 #' @param what Whether to extract chromatograms (\code{chroms}), DAD data
 #' (\code{dad}) and/or peak tables \code{peak_table}. Accepts multiple arguments.
@@ -30,13 +33,13 @@
 #' @family 'Agilent' parsers
 #' @export
 
-read_agilent_d <- function(path, what = c("chroms", "dad", "peak_table"),
+read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table"),
                            format_out = c("matrix", "data.frame", "data.table"),
                            data_format = c("wide", "long"),
                            read_metadata = TRUE,
                            metadata_format = c("chromconverter", "raw"),
                            collapse = TRUE){
-  what <- match.arg(what, c("chroms", "dad", "peak_table"), several.ok = TRUE)
+  what <- match.arg(tolower(what), c("dad", "chroms", "peak_table"), several.ok = TRUE)
   exts <- c(chroms = "\\.ch$", dad = "\\.uv$", peak_table = "Report.TXT")
   exts <- exts[what]
   files <- lapply(exts, function(ext){

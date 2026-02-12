@@ -6,7 +6,7 @@
 \usage{
 read_agilent_d(
   path,
-  what = c("chroms", "dad", "peak_table"),
+  what = c("dad", "chroms", "peak_table"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -47,6 +47,10 @@ Metadata can be attached to the chromatogram as \code{\link{attributes}} if
 }
 \description{
 Reads files from 'Agilent' \code{.D} directories.
+}
+\details{
+Currently this function is limited to reading \code{.uv}, \code{.ch} and
+\code{peak_table} elements.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
