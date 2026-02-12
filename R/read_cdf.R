@@ -70,7 +70,8 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
 #' \code{data_format} arguments (retention time x wavelength).
 #' @author Ethan Bass
 #' @noRd
-read_andi_chrom <- function(path, format_out = c("matrix", "data.frame", "data.table"),
+read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
+                                                 "data.table"),
                             data_format = c("wide", "long"),
                             what = "chroms", read_metadata = TRUE,
                             metadata_format = "chromconverter",
@@ -183,6 +184,9 @@ read_andi_ms <- function(path,
         rep(rt_scan[i], n_scans[i])
       }))
       MS1 <- data.frame(rt = rts, mz = mz, intensity = int)
+      if (format_out == "data.table"){
+        data.table::setDT(MS1)
+      }
     } else if (ms_format == "list"){
       scans <- mapply(function(x, y){
         cbind(mz = x, int = y)
@@ -191,7 +195,6 @@ read_andi_ms <- function(path,
       names(MS1) <- rt_scan
     }
   }
-
   data <- mget(what)
   if (read_metadata){
     meta <- ncdf4::ncatt_get(nc, varid = 0)
