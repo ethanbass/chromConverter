@@ -81,7 +81,8 @@ write_chroms <- function(chrom_list, path_out,
 #' @family write functions
 #' @export
 
-write_andi_chrom <- function(x, path_out, sample_name = NULL, lambda = NULL, force = FALSE){
+write_andi_chrom <- function(x, path_out, sample_name = NULL,
+                             lambda = NULL, force = FALSE){
   check_for_pkg("ncdf4")
   if (is.null(sample_name)){
     sample_name <- attr(x, "sample_name")
@@ -174,20 +175,32 @@ get_filepath <- function(path_out, sample_name, ext, force = FALSE,
 #' Export chromatograms as CSVs
 #' @author Ethan Bass
 #' @noRd
-export_csvs <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE,
-                        force = FALSE, verbose = getOption("verbose")){
-  sapply(seq_along(data), function(i){
+export_csvs <- function(data, path_out, fileEncoding = "utf8",
+                        force = FALSE, show_progress = TRUE,
+                        verbose = getOption("verbose")){
+  laplee <- choose_apply_fnc(show_progress)
+  file_paths <- sapply(seq_along(data), function(i){
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".csv")))
-    if (attr(data[[i]], "data_format") == "wide"){
-      data[[i]] <- data.frame(rt = rownames(data[[i]]), data[[i]])
+    data_format <- attr(data[[i]], "data_format")
+    if (is.null(data_format)){
+      warning("Data format attribute not found. Assuming data are in wide format.",
+              immediate. = TRUE)
+      data_format <- "wide"
     }
-    write.csv(data[[i]], file = fs::path(path_out, names(data)[i], ext = "csv"),
+    if (data_format == "wide"){
+      data[[i]] <- data.frame(rt = rownames(data[[i]]), data[[i]], check.names = FALSE)
+    }
+    full_path <- fs::path(path_out, names(data)[i], ext = "csv")
+    write.csv(data[[i]], file = full_path,
               fileEncoding = fileEncoding, row.names = FALSE)
+    full_path
   })
+  return(invisible(unlist(file_paths)))
 }
 
 #' Export chromatograms as ANDI netCDF files
 #' @author Ethan Bass
+#' @return Invisibly returns the path to the written CDF files.
 #' @noRd
 export_cdf <- function(data, path_out, what = "", force = FALSE,
                        show_progress = TRUE, verbose = getOption("verbose")){
@@ -207,10 +220,19 @@ export_cdf <- function(data, path_out, what = "", force = FALSE,
   write_fn <- switch(what, "MS1" = write_andi_ms,
                      write_andi_chrom)
   data <- infer_sample_names(data)
-  x <- laplee(seq_along(data), function(i){
+  file_paths <- laplee(seq_along(data), function(i){
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i], ".cdf")))
-    try(write_fn(data[[i]], path_out = path_out, force = force))
+    tryCatch({
+      write_fn(data[[i]], path_out = path_out, force = force)
+      }, error = function(e){
+          warning(sprintf("`%s` failed for index %d: %s",
+                          switch(what, "MS1" = "write_andi_ms",
+                                 "write_andi_chrom"), i, conditionMessage(e)),
+                  call. = FALSE)
+          NA
+      })
   })
+  return(invisible(unlist(file_paths)))
 }
 
 #' @noRd
@@ -235,6 +257,7 @@ infer_sample_names <- function(data){
 
 #' Export chromatograms as mzML files
 #' @author Ethan Bass
+#' @return Invisibly returns the path to the written mzML files.
 #' @noRd
 export_mzml <- function(data, path_out, force = FALSE,
                         show_progress = TRUE, verbose = getOption("verbose"),
@@ -243,11 +266,20 @@ export_mzml <- function(data, path_out, force = FALSE,
 
   data <- infer_sample_names(data)
 
-  laplee(seq_along(data), function(i){
+  file_paths <- laplee(seq_along(data), function(i){
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".mzml")))
-    try(write_mzml(data[[i]], path_out = path_out,
-                   show_progress = FALSE, force = force, ...))
+    tryCatch({
+      write_mzml(data[[i]], path_out = path_out,
+                   show_progress = FALSE, force = force, ...)
+             }, error = function(e){
+               warning(sprintf("write_mzml failed for index %d: %s",
+                               i, conditionMessage(e)),
+                       call. = FALSE)
+               NA
+             }
+      )
   })
+  return(invisible(unlist(file_paths)))
 }
 
 #' Add global attributes to CDF file
@@ -356,7 +388,7 @@ export_arw <- function(data, path_out, fileEncoding = "utf8", row.names = TRUE,
     }
     write_arw(data[[i]], path_out, force = force)
   })
-  return(invisible(file_paths))
+  return(invisible(unlist(file_paths)))
 }
 
 #' Write ARW
