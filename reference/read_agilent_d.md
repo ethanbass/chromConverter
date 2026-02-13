@@ -7,7 +7,7 @@ Reads files from 'Agilent' `.D` directories.
 ``` r
 read_agilent_d(
   path,
-  what = c("chroms", "dad", "peak_table"),
+  what = c("dad", "chroms", "peak_table"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -59,6 +59,11 @@ whether the chromatogram is returned as a `matrix`, `data.frame` or
 `data.table`. Metadata can be attached to the chromatogram as
 [`attributes`](https://rdrr.io/r/base/attributes.html) if
 `read_metadata` is `TRUE`.
+
+## Details
+
+Currently this function is limited to reading `.uv`, `.ch` and
+`peak_table` elements.
 
 ## See also
 

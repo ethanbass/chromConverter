@@ -12,9 +12,11 @@
 
 chromConverter aims to facilitate the conversion of chromatography data
 from various proprietary formats so it can be easily read into R for
-further analysis. It includes a number of parsers written directly in R
-as well as bindings to various external libraries including
-[Aston](https://github.com/bovee/aston),
+further analysis. By promoting data interoperability and reducing
+dependence on vendor-specific software, chromConverter supports open
+science and reproducible research. It includes a number of parsers
+written directly in R as well as bindings to various external libraries
+including [Aston](https://github.com/bovee/aston),
 [Entab](https://github.com/bovee/entab),
 [rainbow](https://rainbow-api.readthedocs.io/), the
 [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser),
@@ -259,7 +261,7 @@ welcome. Please get in touch (preferable by opening a GitHub
 any suggestions or to file a bug report. Some good reasons to file an
 issue:
 
-- You’ve found an actual bug.  
+- You think you’ve found a bug.  
 - You’re getting a cryptic error message that you don’t understand.  
 - You have a file format you’d like to read that isn’t currently
   supported by chromConverter. (Please make sure to attach example files

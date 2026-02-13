@@ -1,7 +1,7 @@
 # Write chromatograms
 
 Writes chromatograms to disk in the format specified by `export_format`:
-either (`mzml`), `cdf` or `csv`.
+either (`mzml`), `cdf`, `csv`, or `arw`.
 
 ## Usage
 
@@ -9,7 +9,7 @@ either (`mzml`), `cdf` or `csv`.
 write_chroms(
   chrom_list,
   path_out,
-  export_format = c("mzml", "cdf", "csv"),
+  export_format = c("mzml", "cdf", "csv", "arw"),
   what = "",
   force = FALSE,
   show_progress = TRUE,
@@ -30,11 +30,12 @@ write_chroms(
 
 - export_format:
 
-  Format to export files: either `mzml`, `cdf`, or `csv`.
+  Format to export files: either `"mzml"`, `"cdf"`, `"csv"`, or `"arw"`.
 
 - what:
 
-  What to write. Either `MS1` or `chrom`.
+  What to write. Argument to `write_cdf` and `write_mzml`. Either
+  `"MS1"` or `"chrom"`.
 
 - force:
 

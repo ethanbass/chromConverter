@@ -18,14 +18,14 @@ read_chroms(
     "masshunter_dad", "chromeleon_uv", "chromatotec", "mzml", "mzxml", "mdf",
     "shimadzu_ascii", "shimadzu_dad", "shimadzu_fid", "shimadzu_gcd", "shimadzu_qgd",
     "shimadzu_lcd", "thermoraw", "varian_sms", "waters_arw", "waters_raw", "msd", "csd",
-    "wsd", "other"),
+    "wsd", "csv", "other"),
   find_files,
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   path_out = NULL,
-  export_format = c("", "csv", "chemstation_csv", "cdf", "mzml", "animl"),
+  export_format = c("", "csv", "chemstation_csv", "cdf", "mzml", "animl", "arw"),
   force = FALSE,
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
@@ -72,7 +72,7 @@ read_chroms(
 - format_out:
 
   Class of output. Either `matrix`, `data.frame`, or
-  [`data.table`](https://rdatatable.gitlab.io/data.table/reference/data.table.html).
+  [`data.table`](https://rdrr.io/pkg/data.table/man/data.table.html).
 
 - data_format:
 
@@ -87,8 +87,7 @@ read_chroms(
 - export_format:
 
   Export format. Currently the options include `.csv`, `chemstation_csv`
-  (utf-16 encoding), and `cdf`, unless you are using OpenChrom parsers,
-  where there are two additional options: `mzml`, and `animl`.
+  (utf-16 encoding), `cdf`, `mzml`, `animl`, and `arw`.
 
 - force:
 
@@ -169,9 +168,9 @@ the `format_in` argument.
 
 If an `export_format` is provided, chromatograms will be exported in the
 specified format specified into the folder specified by `path_out`.
-Files can currently be converted to `csv`, `mzml`, or `cdf` format. If
-an `openchrom` parser is selected, ANIML is available as an additional
-option.
+Files can currently be converted to `csv`, `mzml`, `cdf` format, or
+`arw`. If an `openchrom` parser is selected, ANIML is available as an
+additional option.
 
 ## Author
 

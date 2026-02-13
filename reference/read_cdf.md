@@ -26,7 +26,7 @@ read_cdf(
 - format_out:
 
   Class of output. Either `matrix`, `data.frame`, or
-  [`data.table`](https://rdatatable.gitlab.io/data.table/reference/data.table.html).
+  [`data.table`](https://rdrr.io/pkg/data.table/man/data.table.html).
 
 - data_format:
 

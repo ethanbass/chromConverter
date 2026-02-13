@@ -7,8 +7,8 @@ Reads 'Agilent Chemstation' `.csv` files.
 ``` r
 read_chemstation_csv(
   path,
-  format_out = c("matrix", "data.frame", "data.table"),
-  data_format = c("wide", "long"),
+  format_out = "matrix",
+  data_format = "wide",
   read_metadata = TRUE
 )
 ```

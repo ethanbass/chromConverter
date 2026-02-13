@@ -60,7 +60,7 @@ by detector type using the <code>what</code> argument.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">call_rainbow</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"agilent_d"</span>, <span class="st">"waters_raw"</span>, <span class="st">"masshunter"</span>, <span class="st">"chemstation"</span>, <span class="st">"chemstation_uv"</span>,</span>
-<span>    <span class="st">"chemstation_fid"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"chemstation_fid"</span>, <span class="st">"chemstation_ms"</span><span class="op">)</span>,</span>
 <span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span>, <span class="st">"data.table"</span><span class="op">)</span>,</span>
 <span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"detector"</span>, <span class="st">"name"</span><span class="op">)</span>,</span>
@@ -68,7 +68,8 @@ by detector type using the <code>what</code> argument.</p>
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
 <span>  collapse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  precision <span class="op">=</span> <span class="fl">1</span></span>
+<span>  precision <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  sparse <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -120,6 +121,12 @@ element.</p></dd>
 
 <dt id="arg-precision">precision<a class="anchor" aria-label="anchor" href="#arg-precision"></a></dt>
 <dd><p>Number of decimals to round mz values. Defaults to 1.</p></dd>
+
+
+<dt id="arg-sparse">sparse<a class="anchor" aria-label="anchor" href="#arg-sparse"></a></dt>
+<dd><p>Logical. Whether to return MS data in sparse format (excluding
+zeros). Defaults to <code>TRUE</code>. Applies only when data are requested in
+<code>long</code> format.</p></dd>
 
 </dl></div>
     <div class="section level2">
