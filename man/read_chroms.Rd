@@ -11,7 +11,7 @@ read_chroms(
     "masshunter_dad", "chromeleon_uv", "chromatotec", "mzml", "mzxml", "mdf",
     "shimadzu_ascii", "shimadzu_dad", "shimadzu_fid", "shimadzu_gcd", "shimadzu_qgd",
     "shimadzu_lcd", "thermoraw", "varian_sms", "waters_arw", "waters_raw", "msd", "csd",
-    "wsd", "other"),
+    "wsd", "csv", "other"),
   find_files,
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),

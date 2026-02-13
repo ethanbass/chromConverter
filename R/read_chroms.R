@@ -102,7 +102,7 @@ read_chroms <- function(paths,
                                       "shimadzu_qgd", "shimadzu_lcd",
                                       "thermoraw", "varian_sms",
                                       "waters_arw", "waters_raw",
-                                      "msd", "csd", "wsd", "other"),
+                                      "msd", "csd", "wsd", "csv", "other"),
                         find_files,
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
@@ -164,7 +164,7 @@ read_chroms <- function(paths,
                            "shimadzu_qgd", "varian_sms", "chromeleon_uv",
                            "chromatotec", "thermoraw", "mzml", "mzxml",
                            "waters_arw", "waters_raw",
-                           "msd", "csd", "wsd", "mdf", "cdf",
+                           "msd", "csd", "wsd", "mdf", "cdf", "csv",
                            "other"))
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
@@ -347,6 +347,9 @@ read_chroms <- function(paths,
                                                    ...),
                         "rainbow" = rainbow_parser,
                         "entab" = entab_parser)
+  }  else if (format_in == "csv"){
+    converter <- partial(read_csv, format_out = format_out,
+                         data_format = data_format, read_metadata = read_metadata)
   } else if (format_in %in% c("msd", "csd", "wsd")){
     if (is.null(pattern) & find_files){
       stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
@@ -439,8 +442,8 @@ read_chroms <- function(paths,
                      csv = make_exporter(export_csvs),
                      chemstation_csv = make_exporter(export_csvs,
                                                      fileEncoding = "utf16"),
-                     cdf = make_exporter(export_cdf, what = what),
-                     mzml = make_exporter(export_mzml, what = what),
+                     cdf = make_exporter(export_cdf),
+                     mzml = make_exporter(export_mzml),
                      arw = make_exporter(export_arw)
     )
     if (verbose){
