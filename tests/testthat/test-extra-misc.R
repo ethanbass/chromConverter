@@ -175,7 +175,7 @@ test_that("read_chroms can write Varian SMS to CDF", {
   on.exit(unlink(path_cdf))
 
   x <- read_chroms(path_sms, path_out = tmp, export_format = "cdf",
-                   data_format = "long", progress_bar = FALSE)[[1]]
+                   data_format = "long", progress_bar = FALSE, force = TRUE)[[1]]
 
   x3 <- read_cdf(path_cdf, data_format = "long", format_out = "data.frame")
 

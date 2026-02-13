@@ -65,13 +65,25 @@ test_that("read_chroms can read 'Agilent' MS files", {
   x3 <- read_chroms(path, parser = "rainbow",
                     progress_bar = FALSE, data_format = "long",
                     format_out = "data.table",
-                    precision = 0)[[1]]
+                    precision = 0, sparse = FALSE)[[1]]
   expect_s3_class(x3, "data.table")
   expect_equal(dim(x3), c(2131094, 3))
   expect_equal(colnames(x3), c("rt", "mz", "intensity"))
   expect_equal(attr(x3, "method"), attr(x2, "method"))
   expect_equal(attr(x3, "detector"), attr(x2, "detector"))
   expect_equal(attr(x3, "data_format"), "long")
+
+  x4 <- read_chroms(path, parser = "rainbow",
+                    progress_bar = FALSE, data_format = "long",
+                    format_out = "data.table",
+                    precision = 0, sparse = TRUE)[[1]]
+  expect_s3_class(x4, "data.table")
+  expect_equal(dim(x4), c(92466.0, 3))
+  expect_equal(colnames(x3), c("rt", "mz", "intensity"))
+  expect_equal(attr(x3, "method"), attr(x2, "method"))
+  expect_equal(attr(x3, "detector"), attr(x2, "detector"))
+  expect_equal(attr(x3, "data_format"), "long")
+  expect_equal(x3[intensity!=0], x4)
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
@@ -214,7 +226,7 @@ test_that("read_chroms can write 'Agilent ChemStation' version 81 files to CDF",
                ignore_attr = TRUE)
 })
 
-test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
+test_that("read_chroms can read 'Agilent ChemStation' version 131 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -356,7 +368,6 @@ test_that("read_chroms can read 'Agilent MassHunter' dad files", {
                    progress_bar = FALSE)[[1]]
   x1 <- read_chroms(path, format_in = "masshunter_dad", parser = "aston",
                     progress_bar = FALSE)[[1]]
-
   expect_equal(dim(x), c(240, 276))
   expect_equal(class(x)[1], "matrix")
   expect_equal(x, x1, ignore_attr = TRUE)
@@ -381,7 +392,6 @@ test_that("read_chroms can read 'Agilent MassHunter' dad files", {
   expect_equal(attr(x, "data_format"), "long")
   expect_equal(attr(x1, "data_format"), "long")
 })
-
 
 test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   skip_on_cran()
@@ -441,7 +451,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
 
 })
 
-test_that("read_chroms can read 'Agilent' .dx files", {
+test_that("read_chroms can read 'Agilent' .dx files with OL179", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -522,14 +532,15 @@ test_that("read_chroms can read 'Agilent' .dx files", {
                ignore_attr=TRUE)
 })
 
-test_that("read_chroms can read 'Agilent' .dx files", {
+test_that("read_chroms can read 'Agilent' .dx files with OL130", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
   path <- system.file("MeOH1.dx", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, format_in = "agilent_dx", what = c("chroms","dad", "instrument"),
+  x <- read_chroms(path, format_in = "agilent_dx",
+                   what = c("chroms", "dad", "instrument"),
                    progress_bar = FALSE)[[1]]
   expect_true(inherits(x$chroms, "list"))
   expect_true(inherits(x$chroms[[1]], "matrix"))

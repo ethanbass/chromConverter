@@ -48,7 +48,8 @@ test_that("read_chroms can read 'Waters RAW' files", {
   # attr(x1$CAD, "parser")
 
   x2 <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
-                    what = "MS", data_format = "long", precision = 0)[[1]]
+                    what = "MS", data_format = "long", precision = 0,
+                    sparse = FALSE)[[1]]
   expect_equal(nrow(x2$MS), nrow(x$MS)*ncol(x$MS))
   expect_equal(colnames(x2$MS), c("rt", "mz", "intensity"))
 })
