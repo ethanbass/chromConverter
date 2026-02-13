@@ -10,35 +10,50 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
                                         detector_type = "Electron Multiplier")
                           ){
   if (!inherits(x, "list")){
-    x1 <- data.table::as.data.table(x)
-    x1 <- list(MS1 = x1, TIC = x1[, list(intensity = sum(intensity)), by = rt])
-    x <- lapply(x1, function(xx) transfer_metadata(xx, x))
+    x <- list(MS1 = x)
   }
-  dat <- x$MS1
+    MS_idx <- grep("MS", names(x))
+    if (length(MS_idx) == 0){
+      stop("MS data could not be found.")
+    }
+    dat <- x[[MS_idx]]
+    if (attr(dat, "data_format") == "wide"){
+      dat <- reshape_chrom(dat, data_format = "long", names_to = "mz",
+                           format_out="data.table", sparse = TRUE)
+    }
   if (is.null(sample_name)){
-    sample_name <- attr(x[["MS1"]], "sample_name")
+    sample_name <- attr(dat, "sample_name")
     if (is.null(sample_name)){
       stop("Sample name must be provided.")
     }
   }
   file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
                            ext = "cdf", force = force)
-
+  if (is.null(x$TIC)){
+    x$TIC <- data.table::as.data.table(dat)[,list(intensity=sum(intensity)),
+                                            by = rt]
+    x$TIC <- transfer_metadata(x$TIC, x$MS1)
+  }
   x$TIC <- as.data.frame(x$TIC)
   if (ncol(x$TIC) == 1){
     x$TIC <- reshape_chrom_long(x$TIC, format_out = "data.frame")
   }
+  # convert units to seconds as required by ANDI MS specification
+  # what to do if units are unknown?
   if (grepl("min", attr(dat, "time_unit"), ignore.case = TRUE)){
     dat[, "rt"] <- dat[, "rt"]*60
     x$TIC[, "rt"] <- x$TIC[, "rt"]*60
-    attr(x$MS1, "time_unit") = "Seconds"
+    attr(dat, "time_unit") <- "Seconds"
   }
-  dat <- data.table::as.data.table(dat)
+  if (is.matrix(dat)){
+    dat <- as.data.frame(dat)
+  }
+  dat <- data.table::setDT(dat)
   dat <- dat[order(rt, mz)]
 
-
   extra_vals <- nrow(x$TIC) - length(unique(dat[["rt"]]))
-  x$TIC$scan_index <- as.integer(c(rep(0, extra_vals), which(!duplicated(dat[["rt"]]))-1))
+  x$TIC$scan_index <- as.integer(c(rep(0, extra_vals),
+                                   which(!duplicated(dat[["rt"]])) - 1))
   x$TIC$points <- c(rep(0, extra_vals), table(cumsum(!duplicated(dat[["rt"]]))))
   intensity_format <- ifelse(all(floor(dat$intensity) - dat$intensity == 0),
                              "integer", "float")
@@ -54,29 +69,34 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
   point_number <- ncdf4::ncdim_def("point_number", "",
                                    vals = seq_len(nrow(dat)),
                                    create_dimvar = FALSE)
+
   scan_number <- ncdf4::ncdim_def("scan_number", "",
                                   vals = seq_len(nrow(x$TIC)),
                                   create_dimvar = FALSE)
+
   instrument_number <- ncdf4::ncdim_def("instrument_number", "",
                                   vals = seq_len(1),
                                   create_dimvar = FALSE)
+
   string32 <- ncdf4::ncdim_def("_32_byte_string", "",
                                vals = seq_len(32),
                                create_dimvar = FALSE)
-  # define variables
+
   nc_scan_time <- ncdf4::ncvar_def("scan_acquisition_time", "",
                                    dim = scan_number, prec = "double")
+
   nc_tic <- ncdf4::ncvar_def("total_intensity", "", dim = scan_number,
                              prec = "double")
+
   nc_scan <- ncdf4::ncvar_def("scan_index", "", dim = scan_number,
                               prec = "integer")
+
   nc_points <- ncdf4::ncvar_def("point_count", "", dim = scan_number,
                                 prec = "integer")
-  # nc_flags <- ncdf4::ncvar_def("flag_count", "", dim = scan_number,
-  #                               prec = "integer")
 
   nc_time <- ncdf4::ncvar_def("time_values", "", dim = point_number,
                               prec = "float")
+
   nc_intensity <- ncdf4::ncvar_def("intensity_values", "", dim = point_number,
                                    prec = intensity_format)
   nc_mz <- ncdf4::ncvar_def("mass_values", "", dim = point_number,
@@ -85,7 +105,6 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
                        "instrument_sw_version", "instrument_os_version")
   range_vars <- c("mass_range_min", "mass_range_max",
                   "time_range_min", "time_range_max")
-  # char_vars <- c("source_data_file_reference", instrument_vars)
 
   range_vars <- lapply(range_vars, function(x){
     ncdf4::ncvar_def(x, "", dim = scan_number, prec = "double")
@@ -95,26 +114,22 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
                      prec = "char")
   })
 
-  # write netcdf file
   ncdf4::nc_create(file_out, c(list(nc_time, nc_mz, nc_intensity,
                                     nc_scan_time, nc_tic, nc_scan, nc_points),
                                range_vars, instrument_vars))
-  # open netcdf file
+
   nc <- ncdf4::nc_open(file_out, write = TRUE)
 
-  # write data to file
   ncdf4::ncvar_put(nc = nc, varid = "scan_acquisition_time",
                    vals = x$TIC[["rt"]])
   ncdf4::ncvar_put(nc = nc, varid = "time_values", vals = dat[["rt"]])
-  ncdf4::ncatt_put(nc = nc, varid="time_values", attname = "units",
+  ncdf4::ncatt_put(nc = nc, varid = "time_values", attname = "units",
                    attval = "Seconds")
   ncdf4::ncvar_put(nc = nc, varid = "intensity_values",
                    vals = dat[["intensity"]])
   ncdf4::ncatt_put(nc = nc, varid = "intensity_values", attname = "units",
                    attval = "Arbitrary Intensity Units")
 
-  # ncdf4::ncatt_put(nc, varid="ordinate_values",
-  #                  attname = "uniform_sampling_flag", attval = "Y")
   ncdf4::ncvar_put(nc = nc, varid = "mass_values", vals = dat[["mz"]])
   ncdf4::ncatt_put(nc = nc, varid = "mass_values", attname = "units",
                    attval = "M/Z")
@@ -131,15 +146,14 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
   ncdf4::ncvar_put(nc = nc, varid = "time_range_min",
                    vals = rep(min(dat[["rt"]]), scan_number$len))
   ncdf4::ncvar_put(nc = nc, varid = "time_range_max",
-                   vals = rep(min(dat[["rt"]]), scan_number$len))
+                   vals = rep(max(dat[["rt"]]), scan_number$len))
   lapply(instrument_vars, function(v) ncdf4::ncvar_put(nc = nc, varid = v$name,
                                                        vals = ""))
-  # write metadata as global attributes
-  meta <- format_metadata_for_andi_ms(x$MS1, intensity_format = intensity_format,
+
+  meta <- format_metadata_for_andi_ms(dat, intensity_format = intensity_format,
                                       ms_params = ms_params)
   nc_add_global_attributes(nc = nc, meta = meta, sample_name = sample_name)
 
-  # finish writing file
   ncdf4::nc_close(nc)
   return(invisible(file_out))
 }
@@ -148,7 +162,8 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
 #' @author Ethan Bass
 #' @noRd
 format_metadata_for_andi_ms <- function(x, intensity_format, ms_params){
-  datetime <- format(as.POSIXct(as.POSIXct(attr(x, "run_datetime")), tz = "UTC"), "%Y%m%d%H%M%S%z")[1]
+  datetime <- format(as.POSIXct(as.POSIXct(attr(x, "run_datetime")), tz = "UTC"),
+                     "%Y%m%d%H%M%S%z")[1]
   rt_units <- attr(x, "time_unit")
   rt_units <- ifelse(!is.null(rt_units) && !is.na(rt_units),
                      tolower(rt_units), NA)
