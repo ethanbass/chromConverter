@@ -41,8 +41,12 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
                       force = FALSE, show_progress = TRUE,
                        verbose = getOption("verbose")) {
   if (!inherits(data, "list")){
-    data <- list(MS1 = data)
+    detector <- attr(data,"detector")
+    detector <- switch(detector, "UV" = "DAD", "MS" = "MS1", "DAD" = "DAD")
+    data <- setNames(list(data), detector)
+    what <- detector
   }
+  names(data) <- toupper(names(data))
   if (is.null(what)){
     what <- names(data[sapply(data, nrow) > 0])
   }
@@ -64,10 +68,12 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
       tryCatch(length(unique(data[[i]][,"rt"])), error = function(cond) NA)
     }), na.rm = TRUE)
   } else n_scan <- 0
-
-  write_mzml_header(con, meta = attributes(data$MS1), n_scan = n_scan,
+  if ("MS1" %in% what){
+    meta <- attributes(data$MS1)
+    } else meta <- attributes(data$DAD)
+  write_mzml_header(con, meta = meta, n_scan = n_scan,
                     indexed = indexed, instrument_info = instrument_info,
-                    sample_name = attr(data$MS1, "sample_name"))
+                    sample_name = meta$sample_name)
   spectrum_indices <- c()
   if (any(what == "MS1")){
     if ("MS1" %in% names(data)){
@@ -197,10 +203,10 @@ write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
 create_mzml_sample_list <- function(meta){
   sprintf(
   '<sampleList count="1">
-    <sample id="%d" name="%s">
+    <sample id="%s" name="%s">
     </sample>
   </sampleList>
-          ', meta$sample_id, meta$sample_name)
+          ', paste0("s", meta$sample_id), meta$sample_name)
 }
 
 create_mzml_file_description <- function(meta){

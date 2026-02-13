@@ -13,3 +13,4 @@
   try({olefile <<- reticulate::import("olefile", delay_load = TRUE)},
       silent = TRUE)
 }
+
