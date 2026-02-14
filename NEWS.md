@@ -38,6 +38,7 @@
 * Fixed problems with Aston converters due to changes in reticulate behavior.
 * Fixed bug so that data from ANDI MS netCDF files can be returned as `data.table` object when specified by user.
 * Fixed bug so that Varian long-format MS data will no longer be returned as matrix.
+* Fixed 'Shimadzu' QGD bug affecting large values. Resolves ([#44](https://github.com/ethanbass/chromConverter/issues/44)).
 
 ## chromConverter 0.8.0
 
