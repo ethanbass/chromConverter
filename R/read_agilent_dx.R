@@ -1,4 +1,3 @@
-
 #' Read 'Agilent' DX files
 #'
 #' Reads 'Agilent' \code{.dx} files.

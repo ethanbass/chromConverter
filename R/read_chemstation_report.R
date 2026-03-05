@@ -125,7 +125,6 @@ convert_chemstation_peaklist <- function(table, data_format =
   header <- paste(header1, header2)
   header <- gsub("\\s+$|^\\s+", "", header)
   header <- gsub("\\s+", " ", header)
-  # line <- markdown_table[10]
   rows <- lapply(markdown_table[5:(length(markdown_table)-1)], function(line){
     gsub("\\s+", "", sapply(seq_len(length(split.pos)-1), function(i){
       substr(line, split.pos[i], split.pos[i+1]-1)

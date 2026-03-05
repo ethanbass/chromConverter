@@ -28,16 +28,16 @@ Otherwise, set to\code{FALSE}.}
 include: \code{chemstation}, \code{shimadzu_fid}, \code{shimadzu_dad},
 \code{shimadzu_lcd}, and \code{shimadzu_gcd}.}
 
-\item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
-case file extension will be deduced from \code{format_in}.}
+\item{pattern}{pattern (e.g. a file extension). Defaults to \code{NULL}, in
+which case the file extension will be deduced from \code{format_in}.}
 
 \item{data_format}{Either \code{chromatographr} or \code{original}.}
 
-\item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
-\code{raw}.}
+\item{metadata_format}{Format to output metadata. Either
+\code{chromconverter} or \code{raw}.}
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
-Defaults to TRUE.}
+Defaults to \code{TRUE}.}
 
 \item{progress_bar}{Logical. Whether to show progress bar. Defaults to
 \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.}
@@ -47,16 +47,18 @@ of clusters to use or a cluster object created by
 \code{\link[parallel]{makeCluster}}. Defaults to 1.}
 }
 \value{
-A list of chromatograms in \code{matrix} or \code{data.frame} format,
-according to the value of \code{format_out}.
+A list of \code{data.frame}s containing information about peaks where
+each list element represents a sample and each row represents an individual
+peak in that sample.
 }
 \description{
 Reads peak lists from specified folders or vector of paths.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-path <- "tests/testthat/testdata/dad1.uv"
-chr <- read_chroms(path, find_files = FALSE, format_in = "chemstation_uv")
+path <- "tests/testthat/testdata/RUTIN2.D"
+peak_list <- read_peaklist(path)
+peak_list[["RUTIN2"]][["254"]]
 \dontshow{\}) # examplesIf}
 }
 \author{
