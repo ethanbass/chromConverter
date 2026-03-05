@@ -206,11 +206,12 @@ read_qgd_ms_stream <- function(path, format_out = "data.frame"){
   rts <- read_qgd_retention_times(path)
 
   path_ms <- export_stream(path, c("GCMS Raw Data", "MS Raw Data"))
-  f <- file(path_ms, "rb")
-  on.exit(close(f))
 
   offsets <- get_spectrum_offsets(path)
   offsets <- c(offsets, file.info(path_ms)$size)
+
+  f <- file(path_ms, "rb")
+  on.exit(close(f))
 
   xx <- lapply(seq_along(rts), function(i){
     tryCatch({
