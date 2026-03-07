@@ -45,7 +45,7 @@ or \code{other}.}
 
 \item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
 the function with a folder or vector of folders containing the files.
-Otherwise, set to\code{FALSE}.}
+Otherwise, set to \code{FALSE}.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
 case file extension will be deduced from \code{format_in}.}
