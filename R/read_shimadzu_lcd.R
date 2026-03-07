@@ -84,7 +84,8 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
     warning("The `chromatogram` argument to `what` is deprecated. Please use `chroms` instead.")
     what[which(what == "chromatogram")] <- "chroms"
   }
-  what <- match.arg(tolower(what), c("pda", "chroms", "tic", "peak_table"),
+  what <- match.arg(tolower(what), c("pda", "chroms", "ms1", "tic",
+                                     "peak_table"),
                     several.ok = TRUE)
 
   olefile_installed <- reticulate::py_module_available("olefile")
@@ -110,6 +111,12 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                           data_format = data_format,
                           read_metadata = read_metadata,
                           metadata_format = metadata_format)
+  }
+  if (any(what == "ms1")){
+    tic <- read_sz_qtof(path, format_out = format_out,
+                       data_format = data_format,
+                       read_metadata = read_metadata,
+                       metadata_format = metadata_format)
   }
   if (any(what == "peak_table")){
     peak_table <- read_sz_tables(path, format_out = format_out)
@@ -358,10 +365,12 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
 read_sz_tic <- function(path, format_out = "data.frame",
                         data_format = c("wide", "long"), read_metadata = TRUE,
                         metadata_format = "shimadzu_lcd"){
-  path_tic <- check_streams(path, what = "tic")
-  if (length(path_tic) == 0){
+  data_format <- match.arg(data_format, c("wide","long"))
+  tic_streams <- check_streams(path, what = "tic")
+  if (length(tic_streams) == 0){
     return(NULL)
   }
+  path_tic <- export_stream(path, tic_streams[[1]])
   f <- file(path_tic, "rb")
   on.exit(close(f))
   dat <- decode_sz_tic(f)

@@ -49,11 +49,12 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
 #' @author Ethan Bass
 #' @noRd
 
-check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
+check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks",
+                                         "qtof", ""),
                           stream = NULL,
                           boolean = FALSE,
                           min_size = 1200){
-  what <- match.arg(what, c("pda", "chroms", "tic", "peaks", ""))
+  what <- match.arg(what, c("pda", "chroms", "tic", "peaks", "qtof", ""))
   olefile <- reticulate::import("olefile")
   ole <- olefile$OleFileIO(path)
   if (what == "pda"){
@@ -67,7 +68,8 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
     streams <- ole$listdir()
     what <- switch(what, "chroms" = "Chromatogram Ch|Max Plot",
                    "tic" = "Centroid SumTIC",
-                   "peaks" = "Peak Table|PT")
+                   "peaks" = "Peak Table|PT",
+                   "qtof" = "Centroid Data")
     selected_streams <- streams[grep(what, streams)]
     sizes <- sapply(selected_streams, function(x){
       ole$get_size(paste0(x, collapse = "/"))})
