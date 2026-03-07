@@ -77,8 +77,8 @@ include: <code>chemstation</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad
 
 
 <dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
-<dd><p>pattern (e.g. a file extension). Defaults to NULL, in which
-case file extension will be deduced from <code>format_in</code>.</p></dd>
+<dd><p>pattern (e.g. a file extension). Defaults to <code>NULL</code>, in
+which case the file extension will be deduced from <code>format_in</code>.</p></dd>
 
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
@@ -86,13 +86,13 @@ case file extension will be deduced from <code>format_in</code>.</p></dd>
 
 
 <dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
-<dd><p>Format to output metadata. Either <code>chromconverter</code> or
-<code>raw</code>.</p></dd>
+<dd><p>Format to output metadata. Either
+<code>chromconverter</code> or <code>raw</code>.</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
 <dd><p>Logical, whether to attach metadata (if it's available).
-Defaults to TRUE.</p></dd>
+Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-progress-bar">progress_bar<a class="anchor" aria-label="anchor" href="#arg-progress-bar"></a></dt>
@@ -103,13 +103,14 @@ Defaults to TRUE.</p></dd>
 <dt id="arg-cl">cl<a class="anchor" aria-label="anchor" href="#arg-cl"></a></dt>
 <dd><p>Argument to <code><a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply</a></code> specifying the number
 of clusters to use or a cluster object created by
-<code><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></code>. Defaults to 1.</p></dd>
+<code><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></code>. Defaults to <code>1</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of chromatograms in <code>matrix</code> or <code>data.frame</code> format,
-according to the value of <code>format_out</code>.</p>
+    <p>A list of <code>data.frame</code>s containing information about peaks where
+each list element represents a sample and each row represents an individual
+peak in that sample.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -119,8 +120,9 @@ according to the value of <code>format_out</code>.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span></span>
-<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="st">"tests/testthat/testdata/dad1.uv"</span></span></span>
-<span class="r-in"><span><span class="va">chr</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, format_in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="st">"tests/testthat/testdata/RUTIN2.D"</span></span></span>
+<span class="r-in"><span><span class="va">peak_list</span> <span class="op">&lt;-</span> <span class="fu">read_peaklist</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">peak_list</span><span class="op">[[</span><span class="st">"RUTIN2"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"254"</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>

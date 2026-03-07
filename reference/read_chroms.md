@@ -57,7 +57,7 @@ read_chroms(
 
   Logical. Set to `TRUE` (default) if you are providing the function
   with a folder or vector of folders containing the files. Otherwise,
-  set to`FALSE`.
+  set to `FALSE`.
 
 - pattern:
 

@@ -27,6 +27,8 @@
   : Read 'Agilent ChemStation' report files.
 - [`read_chemstation_uv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md)
   : Read 'Agilent ChemStation' DAD files
+- [`read_acaml()`](https://ethanbass.github.io/chromConverter/reference/read_acaml.md)
+  : Read 'Agilent' ACAML files from directory.
 
 ## Shimadzu parsers
 

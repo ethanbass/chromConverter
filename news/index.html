@@ -39,7 +39,8 @@
 <h2 class="pkg-version" data-toc-text="development version" id="chromconverter-development-version">chromConverter (development version)<a class="anchor" aria-label="anchor" href="#chromconverter-development-version"></a></h2>
 <div class="section level3">
 <h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>Added preliminary support for reading “Chromatotec” <code>.Chrom</code> files through the <code>read_chromatotec</code> function.</li>
+<ul><li>Added support for reading Agilent Common Analytical Markup Language (ACAML) files.</li>
+<li>Added preliminary support for reading “Chromatotec” <code>.Chrom</code> files through the <code>read_chromatotec</code> function.</li>
 <li>Added <code>sparse</code> argument (now enabled by default) for long-format MS data from rainbow parser to remove excess zeros.</li>
 <li>Added support for reading regular utf8-encoded <code>csv</code> files.</li>
 </ul></div>
@@ -65,8 +66,8 @@
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="other-bug-fixes-and-minor-changes-development-version">Other Bug fixes and minor changes<a class="anchor" aria-label="anchor" href="#other-bug-fixes-and-minor-changes-development-version"></a></h3>
-<ul><li>Fixed entab parser so it translates <code>.ch</code> files to wide format as appropriate.</li>
+<h3 id="other-bug-fixes-and-minor-changes-development-version">Other bug fixes and minor changes<a class="anchor" aria-label="anchor" href="#other-bug-fixes-and-minor-changes-development-version"></a></h3>
+<ul><li>Fixed entab parser so it translates <code>.ch</code> files to wide format when specified.</li>
 <li>Fixed bug in <code>read_agilent_d</code> when subsetting data with the <code>what</code> argument.</li>
 <li>Changed order of <code>what</code> arguments in <code>read_agilent_d</code> so DAD data is prioritized.</li>
 <li>Fixed Waters ARW parser so it can read files with missing metadata.</li>

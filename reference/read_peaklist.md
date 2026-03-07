@@ -39,8 +39,8 @@ read_peaklist(
 
 - pattern:
 
-  pattern (e.g. a file extension). Defaults to NULL, in which case file
-  extension will be deduced from `format_in`.
+  pattern (e.g. a file extension). Defaults to `NULL`, in which case the
+  file extension will be deduced from `format_in`.
 
 - data_format:
 
@@ -53,7 +53,7 @@ read_peaklist(
 - read_metadata:
 
   Logical, whether to attach metadata (if it's available). Defaults to
-  TRUE.
+  `TRUE`.
 
 - progress_bar:
 
@@ -67,12 +67,13 @@ read_peaklist(
   [`pbapply`](https://peter.solymos.org/pbapply/reference/pbapply.html)
   specifying the number of clusters to use or a cluster object created
   by [`makeCluster`](https://rdrr.io/r/parallel/makeCluster.html).
-  Defaults to 1.
+  Defaults to `1`.
 
 ## Value
 
-A list of chromatograms in `matrix` or `data.frame` format, according to
-the value of `format_out`.
+A list of `data.frame`s containing information about peaks where each
+list element represents a sample and each row represents an individual
+peak in that sample.
 
 ## Author
 
@@ -82,7 +83,8 @@ Ethan Bass
 
 ``` r
 if (FALSE) { # interactive()
-path <- "tests/testthat/testdata/dad1.uv"
-chr <- read_chroms(path, find_files = FALSE, format_in = "chemstation_uv")
+path <- "tests/testthat/testdata/RUTIN2.D"
+peak_list <- read_peaklist(path)
+peak_list[["RUTIN2"]][["254"]]
 }
 ```
