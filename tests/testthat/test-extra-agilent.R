@@ -599,3 +599,24 @@ test_that("read_chroms can read 'Agilent' .dx files with OL130", {
       attr(xx, "run_datetime")
     }) == 1749578656))
 })
+
+test_that("read_chroms can read 'Agilent ACAML' files", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_not_installed("entab")
+
+  path <- system.file("minimal.acaml",
+                      package = "chromConverterExtraTests")
+
+  skip_if_not(file.exists(path))
+
+  x <- read_acaml(path, progress_bar = FALSE)
+  expect_s3_class(x, "data.frame")
+  expect_equal(dim(x), c(1,25))
+  expect_equal(x$SampleName, "RP_Frt_37C_0.5x")
+  expect_equal(x$VialNumber, "D2B-G9")
+  x1 <- read_acaml(path, progress_bar = FALSE, format_out = "data.table")
+  expect_s3_class(x1, "data.table")
+  x2 <- read_acaml(path, progress_bar = FALSE, format_out = "tibble")
+  expect_s3_class(x2, "tbl")
+})

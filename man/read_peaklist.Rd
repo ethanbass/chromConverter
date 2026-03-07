@@ -44,7 +44,7 @@ Defaults to \code{TRUE}.}
 
 \item{cl}{Argument to \code{\link[pbapply]{pbapply}} specifying the number
 of clusters to use or a cluster object created by
-\code{\link[parallel]{makeCluster}}. Defaults to 1.}
+\code{\link[parallel]{makeCluster}}. Defaults to \code{1}.}
 }
 \value{
 A list of \code{data.frame}s containing information about peaks where

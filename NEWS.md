@@ -2,6 +2,7 @@
 
 ### New features
 
+* Added support for reading Agilent Common Analytical Markup Language (ACAML) files.
 * Added preliminary support for reading "Chromatotec" `.Chrom` files through the `read_chromatotec` function.
 * Added `sparse` argument (now enabled by default) for long-format MS data from rainbow parser to remove excess zeros.
 * Added support for reading regular utf8-encoded `csv` files.
@@ -27,9 +28,9 @@
 * Fixed `write_mzml` to write DAD spectra correctly.
 * Added chromatograms to mzML files written by `write_mzml`.
 
-### Other Bug fixes and minor changes
+### Other bug fixes and minor changes
 
-* Fixed entab parser so it translates `.ch` files to wide format as appropriate.
+* Fixed entab parser so it translates `.ch` files to wide format when specified.
 * Fixed bug in `read_agilent_d` when subsetting data with the `what` argument.
 * Changed order of `what` arguments in `read_agilent_d` so DAD data is prioritized.
 * Fixed Waters ARW parser so it can read files with missing metadata.

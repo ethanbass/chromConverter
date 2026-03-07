@@ -12,6 +12,7 @@ reference:
   contents:
   - starts_with("read_agilent")
   - starts_with("read_chemstation")
+  - read_acaml
 - title: "Shimadzu parsers"
   contents:
   - starts_with("read_shimadzu")
