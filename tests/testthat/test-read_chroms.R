@@ -106,9 +106,9 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   skip_on_cran()
   skip_if_not_installed("entab")
 
-  path <- test_path("testdata/dad1.uv")
+  path_uv <- test_path("testdata/dad1.uv")
 
-  x1 <- read_chroms(path, format_in = "chemstation_uv", parser = "entab",
+  x1 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE, read_metadata = TRUE,
                     progress_bar = FALSE)[[1]]
 
@@ -120,9 +120,9 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   expect_equal(attr(x1, "operator"), "Ethan")
   expect_equal(attr(x1, "detector"), "UV")
   expect_equal(attr(x1, "detector_id"), "G1315A")
-  expect_equal(attr(x1, "sample_id"), 24)
+  expect_equal(attr(x1, "sample_position"), 24)
 
-  x2 <- read_chroms(path, format_in = "chemstation_uv", parser = "entab",
+  x2 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "entab",
                     find_files = FALSE, data_format = "long",
                     format_out = "data.frame",
                     read_metadata = TRUE, progress_bar = FALSE)[[1]]
@@ -134,7 +134,7 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   expect_equal(attr(x2, "operator"), "Ethan")
   expect_equal(attr(x1, "detector"), "UV")
   expect_equal(attr(x1, "detector_id"), "G1315A")
-  expect_equal(attr(x2, "sample_id"), 24)
+  expect_equal(attr(x2, "sample_position"), 24)
   expect_equal(attr(x2, "format_out"), "data.frame")
   expect_s3_class(x2, "data.frame")
 })

@@ -226,7 +226,7 @@ test_that("read_chroms can write 'Agilent ChemStation' version 81 files to CDF",
                ignore_attr = TRUE)
 })
 
-test_that("read_chroms can read 'Agilent ChemStation' version 131 files", {
+test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -598,6 +598,7 @@ test_that("read_chroms can read 'Agilent' .dx files with OL130", {
     sapply(x$instrument, function(xx){
       attr(xx, "run_datetime")
     }) == 1749578656))
+  expect_equal(attributes(x$dad)$sample_position, "D1B-B3")
 })
 
 test_that("read_chroms can read 'Agilent ACAML' files", {

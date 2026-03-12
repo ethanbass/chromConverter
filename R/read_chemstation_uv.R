@@ -47,24 +47,24 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
   f <- file(path, "rb")
   on.exit(close(f))
 
-  version <- read_cs_string(f)
+  file_version <- read_cs_string(f)
   seek(f, 348, "start")
   file_type_code <- paste(file_type_name = readBin(f, "character", n = 2),
                           collapse = "")
-  version <- match.arg(version, choices = c("31", "131"))
+  file_version <- match.arg(file_version, choices = c("31", "131"))
 
-  if (version == "131"){
-    version <- paste(version, file_type_code, sep = "_")
+  if (file_version == "131"){
+    file_version <- paste(file_version, file_type_code, sep = "_")
   }
 
-  offsets <- get_agilent_offsets(version)
+  offsets <- get_agilent_offsets(file_version)
 
-  n_metadata_fields <- switch(version, "131_LC" = 10,
+  n_metadata_fields <- switch(file_version, "131_LC" = 10,
                                        "131_OL" = 8,
                                        "31" = 8)
 
   meta <- lapply(offsets[seq_len(n_metadata_fields)], function(offset){
-    type <- switch(version, "31" = 1, 2)
+    type <- switch(file_version, "31" = 1, 2)
     seek(f, where = offset, origin = "start")
     read_cs_string(f, type = type)
   })
@@ -94,7 +94,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
   seek(f, where = offsets$data_start, origin = "start")
 
   # Read data and populate arrays
-  decode_array <- switch(version, "131_OL" = decode_uv_array,
+  decode_array <- switch(file_version, "131_OL" = decode_uv_array,
                     "131_LC" = decode_uv_delta,
                     "31" = decode_uv_delta)
 
@@ -123,7 +123,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
     data <- attach_metadata(data, meta, format_in = metadata_format,
                     data_format = data_format, format_out = format_out,
                     parser = "chromconverter", source_file = path,
-                    source_file_format = paste0("chemstation_", version),
+                    source_file_format = paste0("chemstation_", file_version),
                     scale = scale)
   }
   data

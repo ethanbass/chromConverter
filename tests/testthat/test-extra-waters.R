@@ -35,9 +35,9 @@ test_that("read_chroms can read 'Waters RAW' files", {
   expect_equal(attr(x$MS, "parser"), "rainbow")
   expect_equal(attr(x$MS, "data_format"), "wide")
   expect_equal(attr(x$MS,"polarity"), "+")
-  expect_equal(attr(x$MS,"vial"), "2:A,11")
+  expect_equal(attr(x$MS,"sample_position"), "2:A,11")
 
-  expect_equal(attr(x$CAD,"vial"), "2:A,11")
+  expect_equal(attr(x$CAD,"sample_position"), "2:A,11")
   expect_equal(attr(x$CAD,"detector_y_unit"), "mV")
   expect_equal(attr(x$CAD,"parser"), "rainbow")
 
@@ -45,7 +45,6 @@ test_that("read_chroms can read 'Waters RAW' files", {
                     parser = "chromconverter")[[1]]
   expect_equal(class(x1$CAD)[1], "matrix")
   expect_equal(x$CAD, x1$CAD, ignore_attr = TRUE)
-  # attr(x1$CAD, "parser")
 
   x2 <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
                     what = "MS", data_format = "long", precision = 0,

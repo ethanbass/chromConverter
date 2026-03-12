@@ -70,7 +70,8 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
   if (any(what == "dad")) {
     if (length(files.path$dad) > 0){
       dad <- read_chemstation_uv(files.path$dad, format_out = format_out,
-                                 data_format = data_format, read_metadata = read_metadata,
+                                 data_format = data_format,
+                                 read_metadata = read_metadata,
                                  metadata_format = metadata_format)
     } else{
       stop("DAD data could not be found.")
