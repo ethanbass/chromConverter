@@ -467,6 +467,7 @@ test_that("read_chroms can read 'Agilent' .dx files with OL179", {
   expect_equal(attr(x$chroms, "data_format"), "wide")
   expect_equal(head(get_times(x$chroms),1), 0.001125, tolerance = .00001)
   expect_equal(tail(get_times(x$chroms),1), 36, tolerance = .00001)
+  expect_equal(basename(attr(x$chroms, "source_file")), "agilent.dx")
 
   # auxiliary instrumental data
   expect_equal(dim(x$instrument$`PMP1C,Solvent Ratio A`), c(43253, 1))
@@ -503,6 +504,7 @@ test_that("read_chroms can read 'Agilent' .dx files with OL179", {
     sapply(x$instrument, function(xx){
       attr(xx, "run_datetime")
     }) == 1636717143))
+  expect_equal(basename(attr(x$instrument[[1]], "source_file")), "agilent.dx")
 
   x1 <- read_chroms(path, format_in="agilent_dx", what = c("chroms","instrument"),
                     progress_bar = FALSE, data_format = "long",
@@ -599,6 +601,11 @@ test_that("read_chroms can read 'Agilent' .dx files with OL130", {
       attr(xx, "run_datetime")
     }) == 1749578656))
   expect_equal(attributes(x$dad)$sample_position, "D1B-B3")
+
+  # check that source file is passed through
+  expect_equal(basename(attr(x$chroms[[1]], "source_file")), "MeOH1.dx")
+  expect_equal(basename(attr(x$dad, "source_file")), "MeOH1.dx")
+  expect_equal(basename(attr(x$instrument[[1]], "source_file")), "MeOH1.dx")
 })
 
 test_that("read_chroms can read 'Agilent ACAML' files", {

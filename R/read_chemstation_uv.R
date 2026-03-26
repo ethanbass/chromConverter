@@ -15,6 +15,7 @@
 #' or \code{raw}.
 #' @param scale Whether to scale the data by the scaling factor present in the
 #' file. Defaults to \code{TRUE}.
+#' @param source_file Source file from which UV data was originally derived.
 #' @return A 3D chromatogram in the format specified by \code{data_format} and
 #' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
 #' be returned with retention times as rows and wavelengths as columns. If
@@ -37,13 +38,13 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
-                                scale = TRUE){
+                                scale = TRUE, source_file = NULL){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "chemstation_uv", raw = "raw")
-
+  source_file <- ifelse(is.null(source_file), path, source_file)
   f <- file(path, "rb")
   on.exit(close(f))
 
@@ -122,7 +123,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
     meta$detector_x_unit <- "nm"
     data <- attach_metadata(data, meta, format_in = metadata_format,
                     data_format = data_format, format_out = format_out,
-                    parser = "chromconverter", source_file = path,
+                    parser = "chromconverter", source_file = source_file,
                     source_file_format = paste0("chemstation_", file_version),
                     scale = scale)
   }
