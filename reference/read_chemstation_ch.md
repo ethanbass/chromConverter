@@ -11,7 +11,8 @@ read_chemstation_ch(
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  scale = TRUE
+  scale = TRUE,
+  source_file = NULL
 )
 ```
 
@@ -42,6 +43,10 @@ read_chemstation_ch(
   Whether to scale the data by the scaling factor present in the file.
   Defaults to `TRUE`. 'MassHunter' seems to ignore the scaling factor in
   at least some types of 'ChemStation' files.
+
+- source_file:
+
+  Source file from which chromatogram data was originally derived.
 
 ## Value
 

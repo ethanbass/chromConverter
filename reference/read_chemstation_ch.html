@@ -48,7 +48,8 @@
 <span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span><span class="op">)</span>,</span>
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
-<span>  scale <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  scale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  source_file <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -82,6 +83,11 @@ or <code>raw</code>.</p></dd>
 <dd><p>Whether to scale the data by the scaling factor present in the
 file. Defaults to <code>TRUE</code>. 'MassHunter' seems to ignore the scaling
 factor in at least some types of 'ChemStation' files.</p></dd>
+
+
+<dt id="arg-source-file">source_file<a class="anchor" aria-label="anchor" href="#arg-source-file"></a></dt>
+<dd><p>Source file from which chromatogram data was originally
+derived.</p></dd>
 
 </dl></div>
     <div class="section level2">

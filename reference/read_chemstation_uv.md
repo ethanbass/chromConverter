@@ -14,7 +14,8 @@ read_chemstation_uv(
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  scale = TRUE
+  scale = TRUE,
+  source_file = NULL
 )
 ```
 
@@ -44,6 +45,10 @@ read_chemstation_uv(
 
   Whether to scale the data by the scaling factor present in the file.
   Defaults to `TRUE`.
+
+- source_file:
+
+  Source file from which UV data was originally derived.
 
 ## Value
 

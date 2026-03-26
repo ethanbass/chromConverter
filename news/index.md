@@ -20,6 +20,8 @@
 - Added preliminary support for reading “Chromatotec” `.Chrom` files
   through the `read_chromatotec` function.
 - Added support for reading regular utf8-encoded `csv` files.
+- Pass source file through when reading `agilent_dx` files so that the
+  original source file is stored in metadata instead of a temp file.
 
 ### Improved support for exporting files
 
