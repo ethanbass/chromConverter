@@ -13,8 +13,8 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
   stream_exists <- reticulate::py_eval(paste0("ole.exists(", python_stream, ")"))
   if (!stream_exists){
     if (verbose){
-      warning(paste0("The stream ", sQuote(python_stream), " could not be found."),
-              immediate. = TRUE)
+      warning(sprintf("The stream %s could not be found.",
+              sQuote(python_stream)), immediate. = TRUE)
     }
     return(NA)
   } else{
