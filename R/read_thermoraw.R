@@ -44,6 +44,7 @@ read_thermoraw <- function(path, path_out = NULL,
   }
   if (is.null(path_out)){
     path_out <- tempdir()
+    on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
   } else{
     path_out <- fs::path_expand(path_out)
   }

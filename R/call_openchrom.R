@@ -72,6 +72,7 @@ call_openchrom <- function(files, path_out = NULL, format_in,
   export_format <- match.arg(export_format, c("mzml", "csv", "cdf", "animl"))
   if (is.null(path_out)){
     path_out <- tempdir()
+    on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
   } else{
     path_out <- fs::path_expand(path_out)
   }

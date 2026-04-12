@@ -47,10 +47,10 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
     what <- what[vapply(files, length, FUN.VALUE = numeric(1)) > 0]
   }
   if (is.null(path_out)) {
-    path_out <- tempdir()
-    on.exit(unlink(path_out), add = TRUE)
+    tmp <- tempdir()
+    on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
   }
-  path_out <- fs::path(path_out, basename(path))
+  path_out <- fs::path(tmp, basename(path))
   fs::dir_create(path_out, force = TRUE)
   unzip(path, files = unlist(files), exdir = path_out)
   files.path <- lapply(files, function(fl){
