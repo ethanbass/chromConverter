@@ -611,7 +611,6 @@ test_that("read_chroms can read 'Agilent' .dx files with OL130", {
 test_that("read_chroms can read 'Agilent ACAML' files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
-  skip_if_not_installed("entab")
 
   path <- system.file("minimal.acaml",
                       package = "chromConverterExtraTests")
@@ -627,4 +626,52 @@ test_that("read_chroms can read 'Agilent ACAML' files", {
   expect_s3_class(x1, "data.table")
   x2 <- read_acaml(path, progress_bar = FALSE, format_out = "tibble")
   expect_s3_class(x2, "tbl")
+})
+
+test_that("read_agilent_amx works correctly", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("column_storage_ACN100.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  method1 <- read_agilent_amx(path)
+
+  expect_equal(names(method1$metadata),
+               c("method_name", "version", "status", "created", "created_by",
+                 "modified", "modified_by")
+  )
+  expect_equal(method1$dad$peakwidth_nm, 4)
+  expect_equal(nrow(method1$pump$gradient), 0)
+  expect_equal(as.numeric(method1$metadata$created), 1767977263.0)
+
+  path <- system.file("Glucosinolates-XDB5.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  method2 <- read_agilent_amx(path)
+
+  expect_equal(names(method2$metadata),
+               c("method_name", "version", "status", "created", "created_by",
+                 "modified", "modified_by")
+  )
+  expect_equal(method2$dad$peakwidth_nm, 4)
+  expect_equal(c(method2$dad$spectra_from_nm, method2$dad$spectra_to_nm),
+               c(190,400))
+  expect_shape(method2$pump$gradient, dim = c(8,3))
+  expect_equal(method2$column$post_time_min, 6)
+  expect_equal(method2$column$temp_controls$temperature_C, c(40, 40))
+  expect_equal(method2$autosampler$injection_volume_uL, 5)
+  expect_equal(as.numeric(method2$metadata$created), 1770419005)
+
+  method_dt <- read_agilent_amx(path, format_out = "data.table",
+                                gradient_format = "long")
+  expect_s3_class(method_dt$dad$signals, "data.table")
+  expect_s3_class(method_dt$pump$gradient, "data.table")
+  expect_shape(method_dt$pump$gradient, dim = c(16,3))
+
+  method_tibble <- read_agilent_amx(path, format_out = "tibble")
+  expect_s3_class(method_tibble$dad$signals, "tbl")
+  expect_s3_class(method_tibble$pump$gradient, "tbl")
+  expect_shape(method_tibble$pump$gradient, dim = c(8,3))
 })

@@ -10,6 +10,7 @@
 ### New features
 
 * Added support for reading Agilent Common Analytical Markup Language (ACAML) files.
+* Added support for reading Agilent OpenLab method files (`.amx`). 
 * Added preliminary support for reading "Chromatotec" `.Chrom` files through the `read_chromatotec` function.
 * Added support for reading regular utf8-encoded `csv` files.
 * Pass source file through when reading `agilent_dx` files so that the original source file is stored in metadata instead of a temp file.
