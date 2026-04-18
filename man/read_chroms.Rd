@@ -34,28 +34,24 @@ read_chroms(
 \item{paths}{Paths to data files or directories containing the files.}
 
 \item{format_in}{Format of files to be imported/converted. Current options
-include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation},
-\code{chemstation_uv}, \code{chemstation_ch}, \code{chemstation_csv},
-\code{chemstation_ms},
-\code{masshunter}, \code{masshunter_dad}, \code{chromeleon_uv},
-\code{shimadzu_ascii}, \code{shimadzu_fid}, \code{shimadzu_dad},
-\code{thermoraw}, \code{waters_arw}, \code{waters_raw}, \code{mzml},
-\code{mzxml}, \code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd},
-or \code{other}.}
+include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation}, \code{chemstation_uv},
+\code{chemstation_ch}, \code{chemstation_csv}, \code{chemstation_ms}, \code{masshunter},
+\code{masshunter_dad}, \code{chromeleon_uv}, \code{shimadzu_ascii}, \code{shimadzu_fid},
+\code{shimadzu_dad}, \code{thermoraw}, \code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{mzxml},
+\code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.}
 
 \item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
 the function with a folder or vector of folders containing the files.
 Otherwise, set to \code{FALSE}.}
 
-\item{pattern}{pattern (e.g. a file extension). Defaults to NULL, in which
+\item{pattern}{pattern (e.g. a file extension). Defaults to \code{NULL}, in which
 case file extension will be deduced from \code{format_in}.}
 
 \item{parser}{What parser to use (optional). Current option are
-\code{chromconverter}, \code{aston}, \code{entab}, \code{thermoraw},
-\code{openchrom}, or \code{rainbow}.}
+\code{chromconverter}, \code{aston},, \code{entab}, \code{thermoraw}, \code{openchrom}, \code{rainbow}.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{\link[data.table]{data.table}}.}
+or \link[data.table:data.table]{data.table}.}
 
 \item{data_format}{Whether to output data in wide or long format. Either
 \code{wide} or \code{long}.}
@@ -64,32 +60,30 @@ or \code{\link[data.table]{data.table}}.}
 export to current working directory.}
 
 \item{export_format}{Export format. Currently the options include \code{.csv},
-\code{chemstation_csv} (utf-16 encoding), \code{cdf}, \code{mzml},
-\code{animl}, and \code{arw}.}
+\code{chemstation_csv} (utf-16 encoding), \code{cdf}, \code{mzml}, \code{animl} and \code{arw}.}
 
 \item{force}{Logical. Whether to overwrite files when exporting. Defaults to
 \code{FALSE}.}
 
 \item{read_metadata}{Logical, whether to attach metadata (if it's available).
-Defaults to TRUE.}
+Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
-\item{progress_bar}{Logical. Whether to show progress bar. Defaults to
-\code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.}
+\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
+if \code{pbapply} is installed.}
 
-\item{cl}{Argument to \code{\link[pbapply]{pbapply}} specifying the number
+\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
 of clusters to use or a cluster object created by
-\code{\link[parallel]{makeCluster}}. Defaults to 1.}
+\link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
 
 \item{verbose}{Logical. Whether to print output from external parsers to the
 R console.}
 
 \item{sample_names}{Which sample names to use. Options are \code{basename} to
-use the filename (minus the extension) or \code{sample_name} to use the sample
-name encoded in the file metadata. Sample names default to the
-\code{\link{basename}} of the specified files.}
+use the filename (default) or \code{sample_name} to use the sample
+name encoded in the file metadata.}
 
 \item{dat}{Existing list of chromatograms to append results.
 (Defaults to NULL).}
@@ -97,11 +91,9 @@ name encoded in the file metadata. Sample names default to the
 \item{...}{Additional arguments to parser.}
 }
 \value{
-A list of chromatograms in \code{matrix}, \code{data.frame}, or
-\code{data.table} format, according to the value of \code{format_out}.
-Chromatograms may be returned in either \code{wide} or \code{long} format
-according to the value of
-\code{data_format}.
+A list of chromatograms in \code{matrix}, \code{data.frame}, or \code{data.table}
+format, according to the value of \code{format_out}. Chromatograms may be returned
+in either \code{wide} or \code{long} format according to the value of \code{data_format}.
 }
 \description{
 Reads chromatograms from specified folders or vector of paths using either an
@@ -114,14 +106,15 @@ internal parser or bindings to an external library, such as
 }
 \details{
 Provides a unified interface to all chromConverter parsers. Currently recognizes
-'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent
-MassHunter' (\code{.dad}), 'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}),
-'Waters RAW' (\code{.raw}), 'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII'
-(\code{.txt}), 'Shimadzu GCD', 'Shimadzu LCD' (DAD and chromatogram streams)
-and 'Shimadzu QGD' files. Also, wraps 'OpenChrom' parsers, which include many
-additional formats. To use 'Entab', 'ThermoRawFileParser', or 'OpenChrom'
-parsers, they must be manually installed. Please see the instructions in the
-\href{https://ethanbass.github.io/chromConverter/}{README} for further details.
+'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent MassHunter' (\code{.dad}),
+'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW' (\code{.raw}),
+'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII' (\code{.txt}),
+'Shimadzu GCD' (\code{.gcd}), 'Shimadzu LCD' (\code{.lcd}, DAD and chromatogram streams)
+and 'Shimadzu QGD' (\code{.qgd}) files. Also, wraps 'OpenChrom' parsers, which
+include many additional formats. To use 'Entab', 'ThermoRawFileParser', or
+'OpenChrom' parsers, they must be separately installed. Please see the
+instructions in the \href{https://ethanbass.github.io/chromConverter/}{README}
+for further details.
 
 If paths to individual files are provided, \code{read_chroms} will try to
 infer the file format and select an appropriate parser. However, when
@@ -129,11 +122,11 @@ providing paths to directories, the file format must be specified using the
 \code{format_in} argument.
 }
 \section{Side effects}{
- If an \code{export_format} is provided, chromatograms
-will be exported in the specified format specified into the folder
-specified by \code{path_out}. Files can currently be converted to \code{csv},
-\code{mzml}, \code{cdf} format, or \code{arw}. If an \code{openchrom} parser
-is selected, ANIML is available as an additional option.
+ If \code{export_format} is provided, chromatograms will be
+exported in the specified format specified into the folder specified by
+\code{path_out}. Files can currently be converted to \code{csv}, \code{mzml}, \code{cdf}, \code{arw}.
+If an \code{openchrom} parser is selected, ANIML format is available as an
+additional option.
 }
 
 \examples{
