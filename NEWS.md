@@ -6,6 +6,7 @@
 * Added `sparse` argument for `rainbow` parser (now enabled by default) to remove zeros form long-format MS data.
 * Changed order of `what` arguments in `read_agilent_d` to prioritize DAD data (instead of 2D chromatograms).
 * Fixed bug so that Varian long-format MS data is returned as a data.frame by default (rather than a matrix).
+* Added `chrom_list` class and `print.chrom_list` method. Instead of dumping the full contents of every chromatogram, prints a compact metadata summary with configurable columns (`cols`) and row limit (`n`).
 
 ### New features
 

@@ -160,7 +160,6 @@ test_that("read_varian_peaklist function works", {
 })
 
 test_that("read_chroms can write Varian SMS to CDF", {
-  # write CDF
   skip_if_not_installed("ncdf4")
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

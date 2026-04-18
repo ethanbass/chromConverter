@@ -446,5 +446,6 @@ read_chroms <- function(paths,
     writer(data, path_out = path_out)
   }
   dat <- append(dat, data)
+  class(dat) <- c("chrom_list","list")
   dat
 }
