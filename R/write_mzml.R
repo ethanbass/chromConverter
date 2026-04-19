@@ -7,29 +7,26 @@
 #' The function supports writing various types of spectral data including MS1,
 #' TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
 #' (Diode Array Detector) data. DAD spectra are written as electromagnetic
-#' radiation spectra (MS:1000804) using Thermo's naming convention with
-#' \code{controllerType=4} in the spectrum ID for compatibility with existing
+#' radiation spectra (`MS:1000804`) using Thermo's naming convention with
+#' `controllerType=4` in the spectrum ID for compatibility with existing
 #' tools. Support for MS2 may be added in a future release.
 #'
-#' If \code{indexed = TRUE}, the function will generate an indexed mzML file, which
+#' If `indexed = TRUE`, the function will generate an indexed mzML file, which
 #' allows faster random access to spectra.
 #'
 #' @importFrom utils packageVersion
-#' @param data List of data.frames or data.tables containing spectral data.
+#' @param data List of `data.frame`s or `data.table`s containing spectral data.
 #' @param path_out The path to write the file.
 #' @param sample_name The name of the file. If a name is not provided, the name
-#' will be derived from the \code{sample_name} attribute.
-#' @param what Which streams to write to mzML: \code{"MS1"}, \code{"MS2"},
-#' \code{"TIC"}, \code{"BPC"}, and/or \code{"DAD"}.
+#' will be derived from the `sample_name` attribute.
+#' @param what Which streams to write to mzML: `"MS1"`, `"MS2"`, `"TIC"`,
+#' `"BPC"`, and/or `"DAD"`.
 #' @param instrument_info Instrument info to write to mzML file.
-#' @param compress Logical. Whether to use zlib compression. Defaults to
-#' \code{TRUE}.
-#' @param indexed Logical. Whether to write indexed mzML. Defaults to
-#' \code{TRUE}.
-#' @param force Logical. Whether to overwrite existing files at \code{path_out}.
-#' Defaults to \code{FALSE}.
-#' @param show_progress Logical. Whether to show progress bar. Defaults to
-#' \code{TRUE}.
+#' @param compress Logical. Whether to use zlib compression. Defaults to `TRUE`.
+#' @param indexed Logical. Whether to write indexed mzML. Defaults to `TRUE`.
+#' @param force Logical. Whether to overwrite existing files at `path_out`.
+#' Defaults to `FALSE`.
+#' @param show_progress Logical. Whether to show progress bar. Defaults to `TRUE`.
 #' @param verbose Logical. Whether or not to print status messages.
 #' @return Invisibly returns the path to the written mzML file.
 #' @author Ethan Bass
@@ -200,6 +197,8 @@ write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
       file = con, sep = "")
 }
 
+#' Create mzml sample list
+#' @noRd
 create_mzml_sample_list <- function(meta){
   sprintf(
   '<sampleList count="1">
@@ -209,6 +208,8 @@ create_mzml_sample_list <- function(meta){
           ', paste0("s", meta$sample_id), meta$sample_name)
 }
 
+#' Create mzml file description
+#' @noRd
 create_mzml_file_description <- function(meta){
   sprintf(
   '  <fileDescription>
@@ -228,6 +229,8 @@ create_mzml_file_description <- function(meta){
           ifelse(is.na(meta$source_sha1), "", meta$source_sha1))
 }
 
+#' Create mzml software list
+#' @noRd
 create_mzml_software_list <- function(){
   sprintf(
   '  <softwareList count="1">
@@ -319,17 +322,17 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
 #' This function generates an mzML-formatted XML string for a single MS1 scan.
 #' It is designed to be used as part of a larger process for creating
 #' mzML files. Wavelength and intensity data are encoded (and optionally
-#' compressed, according to the value of \code{compress}) into base64 format.
+#' compressed, according to the value of `compress`) into base64 format.
 #' @param scan The scan number (integer).
 #' @param index The scan index (integer).
 #' @param rt The retention time of the scan in minutes (numeric).
-#' @param scan_data: A \code{data.frame} or \code{data.table} containing the
-#' wavelength of each scan (in the \code{'lambda'} column) and the intensity of
-#' each scan (in the \code{'int'} column).
+#' @param scan_data: A `data.frame` or `data.table` containing the
+#' wavelength of each scan (in the `'lambda'` column) and the intensity of
+#' each scan (in the `'int'` column).
 #' @param tic The total ion current intensity (numeric).
 #' @param bpc The peak peak current intensity (numeric).
 #' @param compress Logical. Whether to compress the binary data. Defaults to
-#' \code{TRUE}.
+#' `TRUE`.
 #' @author Ethan Bass
 #' @noRd
 
@@ -381,18 +384,18 @@ create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
 #' This function generates an mzML-formatted XML string for a single HPLC-DAD
 #' spectrum. It is designed to be used as part of a larger process for creating
 #' mzML files from HPLC-DAD data. Wavelength and intensity data are encoded (and
-#' optionally compressed, according to the value of \code{compress}) into base64
+#' optionally compressed, according to the value of `compress`) into base64
 #' format.
 #' @param scan The scan number (integer).
 #' @param index The scan index (integer).
 #' @param rt The retention time of the scan in minutes (numeric).
-#' @param scan_data: A \code{data.frame} or \code{data.table} containing the
-#' wavelength of each scan (in the \code{'lambda'} column) and the intensity of
-#' each scan (in the \code{'int'} column).
+#' @param scan_data: A `data.frame` or `data.table` containing the
+#' wavelength of each scan (in the `'lambda'` column) and the intensity of
+#' each scan (in the `'int'` column).
 #' @param tic Extra argument.
 #' @param bpc Extra argument.
 #' @param compress Logical. Whether to compress the binary data. Defaults to
-#' \code{TRUE}.
+#' `TRUE`.
 #' @author Ethan Bass
 #' @noRd
 
@@ -517,10 +520,10 @@ write_mzml_chrom <- function(con, index, data, what = c("TIC", "BPC"),
 
 #' Encode mzml data
 #' Encodes array in base64 and optionally compresses using zlib compression
-#' according to the value of \code{compress}.
+#' according to the value of `compress`.
 #' @param x A numeric vector containing the data to be encoded.
 #' @param compress Logical. Whether to compress the data using zlib compression.
-#' Defaults to \code{TRUE}.
+#' Defaults to `TRUE`.
 #' @author Ethan Bass
 #' @noRd
 encode_data <- function(x, compress) {

@@ -15,35 +15,35 @@ read_chromatotec(
 )
 }
 \arguments{
-\item{path}{Path to 'Chromatotec' \code{.Chrom} file.}
+\item{path}{The path to 'Chromatotec' \code{.Chrom} file.}
 
-\item{what}{Whether to extract chromatograms (\code{chrom}) and/or
-\code{peak_table} data. Accepts multiple arguments.}
+\item{what}{Whether to extract chromatograms (\code{chrom}) and/or \code{peak_table}
+data. Accepts multiple arguments.}
 
-\item{format_out}{R format. Either \code{matrix}, \code{data.frame}, or
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long} format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{read_metadata}{Whether to read metadata from file.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
-element.}
+element. Defaults to \code{TRUE}.}
 }
 \value{
-A chromatogram and/or peak table from the specified
-\code{path},  according to the value of \code{what}. Chromatograms are
-returned in the format specified by \code{format_out}.
+A chromatogram and/or peak table from the specified \code{path}, according
+to the value of \code{what}. Chromatograms are returned in the format specified by
+\code{format_out}.
 }
 \description{
 Reads 'Chromatotec' \code{.Chrom} files.
 }
 \note{
-This function is a work in progress and the accuracy of the results is
-not guaranteed.
+This function is a work in progress. As such, the accuracy of the
+results is not guaranteed.
 }
 \examples{
 \dontrun{

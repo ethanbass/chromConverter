@@ -2,16 +2,10 @@
 #'
 #' Converts chromatography date files using [entab](https://github.com/bovee/entab) parsers.
 #'
+#' @inheritParams shared_params
 #' @param path Path to file.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
 #' @param format_in Format of input.
-#' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
+#' @inherit shared_params return
 #' @family external parsers
 #' @export
 

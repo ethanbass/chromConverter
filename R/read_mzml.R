@@ -1,27 +1,27 @@
 #' Read mzML files
 #'
-#' Extracts data from \code{mzML} files using parsers from either RaMS or mzR.
+#' Extracts data from `mzML` files using parsers from either RaMS or mzR.
 #' The RaMS parser (default) will only return data in tidy (long) format. The
 #' mzR parser will return data in wide format. Currently the mzR-based parser
 #' is configured to return only DAD data.
 #'
 #' @name read_mzml
 #' @importFrom RaMS grabMSdata
-#' @param path Path to \code{.mzml} file.
-#' @param format_out Class of output. Only applies if \code{mzR} is selected.
-#' Either \code{matrix}, \code{data.frame}, or \code{data.table}. \code{RaMS}
-#' will return a list of data.tables regardless of what is selected here.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param parser What parser to use. Either \code{RaMS} or \code{mzR}.
-#' @param what What types of data to return (argument to \code{\link[RaMS]{grabMSdata}}.
-#' Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD},
-#' \code{chroms}, \code{metadata}, or \code{everything}).
-#' @param verbose Argument to \code{\link[RaMS]{grabMSdata}} controlling \code{verbosity}.
-#' @param ... Additional arguments to \code{\link[RaMS]{grabMSdata}}.
-#' @return If \code{RaMS} is selected, the function will return a list of "tidy"
-#' \code{data.table} objects. If \code{mzR} is selected, the function will return a
-#' chromatogram in \code{matrix} or \code{data.frame} format according to the
-#' value of \code{format_out}.
+#' @inheritParams shared_params
+#' @param path Path to `.mzml` file.
+#' @param format_out Class of output. Only applies if `mzR` is selected.
+#' Either `matrix`, `data.frame`, or `data.table`. `RaMS` will return a list of
+#' data.tables regardless of what is selected here.
+#' @param parser What parser to use. Either `RaMS` or `mzR`.
+#' @param what What types of data to return (argument to [RaMS::grabMSdata]).
+#' Options include `MS1`, `MS2`, `BPC`, `TIC`, `DAD`, `chroms`, `metadata`, or
+#' `everything`).
+#' @param verbose Argument to `grabMSdata` controlling verbosity.
+#' @param ... Additional arguments to `grabMSdata`.
+#' @return If `RaMS` is selected, the function will return a list of "tidy"
+#' `data.table` objects. If `mzR` is selected, the function will return a
+#' chromatogram in `matrix` or `data.frame` format according to the
+#' value of `format_out`.
 #' @author Ethan Bass
 #' @export read_mzml
 

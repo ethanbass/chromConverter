@@ -9,8 +9,8 @@ check_format_out <- function(format_out){
 
 #' Check Data Format Argument
 #'
-#' Make sure that \code{data_format} argument is "long" when \code{format_out} is
-#' \code{"data.table"}.
+#' Make sure that `data_format` argument is "long" when `format_out` is
+#' `"data.table"`.
 #' @noRd
 
 check_data_format <- function(data_format, format_out){
@@ -23,7 +23,7 @@ check_data_format <- function(data_format, format_out){
 #' Convert chromatogram format
 #' @author Ethan Bass
 #' @noRd
-convert_chrom_format <- function(x, format_out, data_format=NULL){
+convert_chrom_format <- function(x, format_out, data_format = NULL){
   if (is.null(data_format)){
     data_format <- attr(x, "data_format")
   }
@@ -35,7 +35,8 @@ convert_chrom_format <- function(x, format_out, data_format=NULL){
     return(as.data.frame(x))
   } else if (format_out == "data.table"){
     return(data.table::as.data.table(x, keep.rownames = ifelse(data_format == "wide",
-                                                               yes = "rt", no = FALSE))
+                                                               yes = "rt",
+                                                               no = FALSE))
     )
   }
 }
@@ -329,8 +330,8 @@ check_for_pkg <- function(pkg, return_boolean = FALSE){
 }
 
 #' Choose apply function
-#' @return Returns \code{\link[pbapply]{pblapply}} if \code{progress_bar == TRUE},
-#' otherwise returns \code{\link{lapply}}.
+#' @return Returns [pbapply::pbapply] if `progress_bar == TRUE`,
+#' otherwise returns `lapply`.
 #' @noRd
 choose_apply_fnc <- function(progress_bar, parallel = FALSE, cl = NULL){
   if (progress_bar){
@@ -377,22 +378,22 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 #' Configure python environment
 #'
 #' Configures python virtual environment or conda environment for parsers that
-#' have python dependencies, according to the value of \code{what}. While this
-#' should not be necessary in most cases starting with reticulate \code{v1.41.0},
+#' have python dependencies, according to the value of `what`. While this
+#' should not be necessary in most cases starting with reticulate `v1.41.0`,
 #' this function can be used to create a dedicated chromConverter environment.
 #'
 #' @name configure_python_environment
 #' @param envname The name of, or path to, a Python virtual environment.
 #' @param what What kind of virtual environment to create. A python virtual
-#' environment (\code{"venv"}) or a conda environment (\code{"conda"}).
-#' @param python Argument to \code{reticulate::virtualenv_create}, specifying
+#' environment (`"venv"`) or a conda environment (`"conda"`).
+#' @param python Argument to `reticulate::virtualenv_create`, specifying
 #' the path to a Python interpreter.
 #' @param ... Additional arguments to [reticulate::virtualenv_create] or
-#' [reticulate::conda_create] according to the value of \code{what}.
+#' [reticulate::conda_create] according to the value of `what`.
 #' @return There is no return value.
 #' @section Side effects:
 #' Creates and configures either  a python virtual environment or conda
-#' environment (according to the value of \code{what}) with all the packages
+#' environment (according to the value of `what`) with all the packages
 #' required for running chromConverter.
 #' @author Ethan Bass
 #' @import reticulate
@@ -408,7 +409,8 @@ configure_python_environment <- function(what = c("venv", "conda"),
   packages <- c("Aston", "olefile", "pandas", "rainbow-api", "scipy")
   install <- FALSE
   if (!dir.exists(reticulate::miniconda_path())){
-    install <- readline(sprintf("It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)"))
+    install <- readline(sprintf(
+      "It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)"))
     if (install %in% c('y', "Y", "YES", "yes", "Yes")){
       reticulate::install_miniconda()
     }
@@ -441,7 +443,8 @@ get_parser_reqs <- function(parser){
   switch(tolower(parser), "aston" = c("pandas", "scipy", "numpy", "Aston"),
          "olefile" = c("olefile"),
          "rainbow" = c("numpy", "rainbow-api"),
-         "all" = c("pandas","scipy","numpy","Aston","olefile","numpy","rainbow-api"))
+         "all" = c("pandas", "scipy", "numpy", "Aston", "olefile",
+                   "numpy", "rainbow-api"))
 }
 
 #' Utility function to capitalize first letter of string
@@ -454,17 +457,18 @@ simple_cap <- function(x) {
 
 #' Get retention times
 #'
-#' Get retention times from a list of chromatograms or a \code{peak_table} object.
+#' Get retention times from a list of chromatograms or a `peak_table` object.
 #'
-#' If \code{data_format} attributes is not present, the data is assumed to be in
+#' If `data_format` attributes is not present, the data is assumed to be in
 #' wide format with retention times as rownames.
 #'
 #' @param x A chromatogram or list of chromatograms.
 #' @param idx Index of a chromatogram from which to extract retention times.
 #' @return Numeric vector of retention times from the chromatogram specified by
-#' \code{idx}.
+#' `idx`.
 #' @family utility functions
 #' @noRd
+#' @md
 
 get_times <- function(x, idx = 1){
   if (inherits(x, "chrom_list") | inherits(x, "list")){

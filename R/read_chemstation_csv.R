@@ -1,68 +1,19 @@
-#' Read CSV files
-#'
-#' Reads \code{.csv} files.
-#'
-#' @name read_csv
-#' @importFrom utils tail read.csv
-#' @param path Path to \code{.csv} file.
-#' @param fileEncoding Argument to \code{\link{read.csv}}. If non-empty declares
-#' the encoding used on a file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Either \code{wide} (default) or \code{long}.
-#' @param read_metadata Logical. Whether to attach metadata. Defaults to
-#' \code{TRUE}. There is no instrumental metadata saved in the CSV files so this
-#' will only attach metadata about the settings used by chromConverter to parse
-#' the file.
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength) and \code{data_format}.
-#' @examplesIf interactive()
-#' read_chemstation_csv("tests/testthat/testdata/dad1.csv")
-#' @author Ethan Bass
-#' @family 'Agilent' parsers
-#' @noRd
-
-read_csv <- function(path, fileEncoding = "",
-                     format_out = c("matrix", "data.frame", "data.table"),
-                     data_format = c("wide", "long"),
-                     read_metadata = TRUE){
-  format_out <- check_format_out(format_out)
-  data_format <- check_data_format(data_format, format_out = format_out)
-  data <- read.csv(path, row.names = 1, header = TRUE,
-                   fileEncoding = fileEncoding, check.names = FALSE)
-
-  if (data_format == "long"){
-    data <- reshape_chrom_long(data)
-  }
-  data <- convert_chrom_format(data, format_out = format_out,
-                               data_format = data_format)
-  if (read_metadata){
-    data <- attach_metadata_minimal(data, data_format = data_format,
-                                    format_out = format_out,
-                                    parser = "chromconverter", source_file = path,
-                                    source_file_format = "chemstation_csv")
-  }
-  data
-}
-
 #' Read 'Agilent ChemStation' CSV files
 #'
-#' Reads 'Agilent Chemstation' \code{.csv} files.
+#' Reads 'Agilent Chemstation' `.csv` files.
 #'
 #' 'Agilent Chemstation' CSV files are encoded in UTF-16.
 #'
 #' @name read_chemstation_csv
 #' @importFrom utils tail read.csv
-#' @param path Path to 'Agilent' \code{.csv} file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Either \code{wide} (default) or \code{long}.
+#' @inheritParams shared_params
+#' @param path Path to 'Agilent' `.csv` file.
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to
-#' \code{TRUE}. There is no instrumental metadata saved in the CSV files so this
+#' `TRUE`. There is no instrumental metadata saved in the CSV files so this
 #' will only attach metadata about the settings used by chromConverter to parse
 #' the file.
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength) and \code{data_format}.
+#' @return A chromatogram in the format specified by `format_out` and 
+#' `data_format`.
 #' @examplesIf interactive()
 #' read_chemstation_csv("tests/testthat/testdata/dad1.csv")
 #' @author Ethan Bass
@@ -77,4 +28,51 @@ read_chemstation_csv <- function(path, format_out = "matrix",
            data_format = data_format,
            read_metadata = read_metadata,
            fileEncoding = "utf-16LE")
+}
+
+#' Read CSV files
+#'
+#' Reads `.csv` files.
+#'
+#' @name read_csv
+#' @importFrom utils tail read.csv
+#' @param path Path to `.csv` file.
+#' @param fileEncoding Argument to [read.csv]. If non-empty declares
+#' the encoding used on a file.
+#' @param format_out Class of output. Either `matrix`, `data.frame`, or 
+#' `data.table`.
+#' @param data_format Either `wide` (default) or `long`.
+#' @param read_metadata Logical. Whether to attach metadata. Defaults to
+#' `TRUE`. There is no instrumental metadata saved in the CSV files so this
+#' will only attach metadata about the settings used by chromConverter to parse
+#' the file.
+#' @return A chromatogram in the format specified by `format_out` (retention 
+#' time x wavelength) and `data_format`.
+#' @examplesIf interactive()
+#' read_chemstation_csv("tests/testthat/testdata/dad1.csv")
+#' @author Ethan Bass
+#' @family 'Agilent' parsers
+#' @noRd
+
+read_csv <- function(path, fileEncoding = "",
+                     format_out = c("matrix", "data.frame", "data.table"),
+                     data_format = c("wide", "long"),
+                     read_metadata = TRUE){
+  format_out <- check_format_out(format_out)
+  data_format <- check_data_format(data_format, format_out = format_out)
+  data <- read.csv(path, row.names = 1, header = TRUE,
+                   fileEncoding = fileEncoding, check.names = FALSE)
+  
+  if (data_format == "long"){
+    data <- reshape_chrom_long(data)
+  }
+  data <- convert_chrom_format(data, format_out = format_out,
+                               data_format = data_format)
+  if (read_metadata){
+    data <- attach_metadata_minimal(data, data_format = data_format,
+                                    format_out = format_out,
+                                    parser = "chromconverter", source_file = path,
+                                    source_file_format = "chemstation_csv")
+  }
+  data
 }

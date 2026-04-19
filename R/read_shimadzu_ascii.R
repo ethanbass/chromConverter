@@ -1,36 +1,27 @@
 #' Read 'Shimadzu' ASCII
 #'
-#' Reads 'Shimadzu' ASCII (\code{.txt}) files. These files can be exported from
+#' Reads 'Shimadzu' ASCII `.txt`) files. These files can be exported from
 #' 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
-#' selecting \code{File Conversion:Convert to ASCII}.
+#' selecting `File Conversion:Convert to ASCII`.
 #'
 #' @name read_shimadzu
 #' @importFrom utils tail read.csv
 #' @importFrom stringr str_split_fixed
-#' @param path Path to Shimadzu \code{.txt} ASCII file.
-#' @param what Whether to extract chromatograms (\code{chroms}),
-#' \code{peak_table}, and/or \code{ms_spectra}. Accepts multiple arguments.
-#' @param include Which chromatograms to include. Options are \code{fid},
-#' \code{dad}, \code{uv}, \code{tic}, and \code{status}.
+#' @inheritParams shared_params
+#' @param path Path to Shimadzu `.txt` ASCII file.
+#' @param what Whether to extract chromatograms (`chroms`),
+#' `peak_table`, and/or `ms_spectra`. Accepts multiple arguments.
+#' @param include Which chromatograms to include. Options are `fid`, `dad`,
+#' `uv`, `tic`, and `status`.
 #' @param format_in This argument is deprecated and is no longer required.
-#' @param format_out R format. Either \code{matrix}, \code{data.frame}, or
-#' \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param peaktable_format Whether to return peak tables in \code{chromatographr}
-#' or \code{original} format.
-#' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
+#' @param peaktable_format Whether to return peak tables in `chromatographr`
+#' or `original` format.
 #' @param ms_format Whether to return mass spectral data as a (long)
-#' \code{data.frame} or a \code{list}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element.
-#' @param scale Whether to scale the data by the scaling factor present in the
-#' file. Defaults to \code{TRUE}.
-#' @return A nested list of elements from the specified \code{file}, where the
-#' top levels are chromatograms, peak tables, and/or mass spectra according to
-#' the value of \code{what}. Chromatograms are returned in the format specified
-#' by \code{format_out} (retention time x wavelength).
+#' `data.frame` or a `list`.
+#' @return A nested list of elements from the specified file, where the top
+#' levels are chromatograms, peak tables, and/or mass spectra according to the
+#' value of `what`. Chromatograms are returned in the format specified by
+#' `format_out`.
 #' @examplesIf interactive()
 #' path <- "tests/testthat/testdata/ladder.txt"
 #' read_shimadzu(path)
@@ -167,7 +158,7 @@ read_shimadzu <- function(path, what = "chroms",
 }
 
 #' Convert list of mass spectra to data.frame
-#' This function is called internally by \code{read_shimadzu}.
+#' This function is called internally by `read_shimadzu`.
 #' @author Ethan Bass
 #' @noRd
 ms_list_to_dataframe <- function(x){
@@ -184,7 +175,7 @@ ms_list_to_dataframe <- function(x){
 }
 
 #' Read 'Shimadzu' Metadata
-#' This function is called internally by \code{read_shimadzu}.
+#' This function is called internally by `read_shimadzu`.
 #' @author Ethan Bass
 #' @noRd
 read_shimadzu_metadata <- function(x, met = NULL, sep){
@@ -210,7 +201,7 @@ read_shimadzu_metadata <- function(x, met = NULL, sep){
 }
 
 #' Read Shimadzu Chromatogram
-#' This function is called internally by \code{read_shimadzu}.
+#' This function is called internally by `read_shimadzu`.
 #' @author Ethan Bass
 #' @noRd
 read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
@@ -256,7 +247,7 @@ read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
 }
 
 #' Read Shimadzu DAD Array
-#' This function is called internally by \code{read_shimadzu}.
+#' This function is called internally by `read_shimadzu`.
 #' @author Ethan Bass
 #' @noRd
 read_shimadzu_dad <- function(path, x, chrom.idx, sep, data_format,
@@ -295,7 +286,7 @@ read_shimadzu_dad <- function(path, x, chrom.idx, sep, data_format,
 }
 
 #' Read Shimadzu Peak Table
-#' This function is called internally by \code{read_shimadzu}.
+#' This function is called internally by `read_shimadzu`.
 #' @author Ethan Bass
 #' @noRd
 read_shimadzu_peaktable <- function(path, x, idx, sep, format_in, format_out){
@@ -323,7 +314,7 @@ read_shimadzu_peaktable <- function(path, x, idx, sep, format_in, format_out){
 }
 
 #' Read Shimadzu MS Spectrum
-#' This function is called internally by \code{read_shimadzu}.
+#' This function is called internally by `read_shimadzu`.
 #' @author Ethan Bass
 #' @noRd
 read_shimadzu_spectrum <- function(path, x, idx, sep){
@@ -337,7 +328,7 @@ read_shimadzu_spectrum <- function(path, x, idx, sep){
 }
 
 #' Extract Header from Shimadzu ASCII Files
-#' This function is called internally by \code{read_shimadzu}.
+#' This function is called internally by `read_shimadzu`.
 #' @author Ethan Bass
 #' @noRd
 extract_shimadzu_header <- function(x, chrom.idx, sep){

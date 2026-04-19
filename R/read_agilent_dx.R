@@ -1,30 +1,23 @@
 #' Read 'Agilent' DX files
 #'
-#' Reads 'Agilent' \code{.dx} files.
+#' Reads 'Agilent' `.dx` files.
 #'
-#' This function unzips 'Agilent'  \code{.dx} into a temporary directory using
-#' \code{\link{unzip}} and calls \code{\link{read_chemstation_ch}}.
+#' This function unzips 'Agilent'  `.dx` into a temporary directory using
+#' [unzip] and calls the appropriate parser on the unzipped file.
 #'
 #' @importFrom utils unzip
-#' @param path Path to \code{.dx} file.
-#' @param what Whether to extract chromatograms (\code{chroms}), DAD data
-#' (\code{dad}) and/or auxiliary instrumental data \code{instrument} (e.g.,
+#' @inheritParams shared_params
+#' @param path Path to Agilent `.dx` file.
+#' @param what Whether to extract chromatograms (`chroms`), DAD data
+#' (`dad`) and/or auxiliary instrumental data (`instrument`) (e.g.,
 #' temperature, pressure, solvent composition, etc.). Accepts multiple arguments.
 #' @param path_out A directory to export unzipped files. If a path is not
 #' specified, the files will be written to a temp directory on the disk. The
 #' function will overwrite existing folders in the specified directory
-#' that share the basename of the file specified by \code{path}.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Logical. Whether to attach metadata.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element.
+#' that share the basename of the file specified by `path`.
 #' @author Ethan Bass
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
+#' @return A chromatogram in the format specified by `format_out` (retention
+#' time x wavelength).
 #' @author Ethan Bass
 #' @family 'Agilent' parsers
 #' @export

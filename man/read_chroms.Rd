@@ -50,14 +50,14 @@ case file extension will be deduced from \code{format_in}.}
 \item{parser}{What parser to use (optional). Current option are
 \code{chromconverter}, \code{aston},, \code{entab}, \code{thermoraw}, \code{openchrom}, \code{rainbow}.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \link[data.table:data.table]{data.table}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
 \item{data_format}{Whether to output data in wide or long format. Either
-\code{wide} or \code{long}.}
+\code{wide} (default) or \code{long}.}
 
-\item{path_out}{Path for exporting files. If path not specified, files will
-export to current working directory.}
+\item{path_out}{Path for exporting files. If path is not specified, the user
+will be prompted to create a temp directory.}
 
 \item{export_format}{Export format. Currently the options include \code{.csv},
 \code{chemstation_csv} (utf-16 encoding), \code{cdf}, \code{mzml}, \code{animl} and \code{arw}.}
@@ -85,8 +85,8 @@ R console.}
 use the filename (default) or \code{sample_name} to use the sample
 name encoded in the file metadata.}
 
-\item{dat}{Existing list of chromatograms to append results.
-(Defaults to NULL).}
+\item{dat}{Existing list of chromatograms to append results. Defaults to
+\code{NULL}.}
 
 \item{...}{Additional arguments to parser.}
 }

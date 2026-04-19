@@ -1,29 +1,17 @@
 #' Read 'Agilent ChemStation' DAD files
 #'
-#' Agilent \code{.uv} files come in several different formats. This parser can
+#' Agilent `.uv` files come in several different formats. This parser can
 #' automatically detect and read several versions of these files from
-#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{31} and
-#' \code{131}.
+#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions `31` and
+#' `131`.
 #'
 #' @importFrom utils head tail
-#' @param path Path to 'Agilent' \code{.uv} file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Either \code{wide} (default) or \code{long}.
-#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
+#' @inheritParams shared_params
+#' @param path Path to 'Agilent' `.uv` file.
 #' @param scale Whether to scale the data by the scaling factor present in the
-#' file. Defaults to \code{TRUE}.
+#' file. Defaults to `TRUE`.
 #' @param source_file Source file from which UV data was originally derived.
-#' @return A 3D chromatogram in the format specified by \code{data_format} and
-#' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
-#' be returned with retention times as rows and wavelengths as columns. If
-#' \code{long} format is requested, three columns will be returned: one for the
-#' retention time, one for the wavelength and one for the intensity. The
-#' \code{format_out} argument determines whether the chromatogram is returned as
-#' a \code{matrix} or \code{data.frame}. Metadata can be attached to the
-#' chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+#' @inherit generic_return_3D return
 #' @examplesIf interactive()
 #' read_chemstation_uv("tests/testthat/testdata/dad1.uv")
 #' @author Ethan Bass

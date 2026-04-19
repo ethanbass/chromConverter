@@ -1,24 +1,17 @@
 #' Read 'Chromatotec' file
 #'
-#' Reads 'Chromatotec' \code{.Chrom} files.
+#' Reads 'Chromatotec' `.Chrom` files.
 #'
-#' @param path Path to 'Chromatotec' \code{.Chrom} file.
-#' @param what Whether to extract chromatograms (\code{chrom}) and/or
-#' \code{peak_table} data. Accepts multiple arguments.
-#' @param format_out R format. Either \code{matrix}, \code{data.frame}, or
-#' \code{data.table}.
-#' @param data_format Either \code{wide} (default) or \code{long} format.
-#' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element.
-#' @return A chromatogram and/or peak table from the specified
-#' \code{path},  according to the value of \code{what}. Chromatograms are
-#' returned in the format specified by \code{format_out}.
+#' @inheritParams shared_params
+#' @param path The path to 'Chromatotec' `.Chrom` file.
+#' @param what Whether to extract chromatograms (`chrom`) and/or `peak_table`
+#' data. Accepts multiple arguments.
+#' @return A chromatogram and/or peak table from the specified `path`, according
+#' to the value of `what`. Chromatograms are returned in the format specified by
+#' `format_out`.
 #' @author Ethan Bass
-#' @note This function is a work in progress and the accuracy of the results is
-#' not guaranteed.
+#' @note This function is a work in progress. As such, the accuracy of the
+#' results is not guaranteed.
 #' @examples \dontrun{
 #' read_chromatotec(path)
 #' }

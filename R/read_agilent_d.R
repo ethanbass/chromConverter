@@ -1,32 +1,23 @@
 #' Read files from 'Agilent ChemStation' .D directories
 #'
-#' Reads files from 'Agilent' \code{.D} directories.
+#' Reads files from 'Agilent' `.D` directories.
 #'
-#' Currently this function is limited to reading \code{.uv}, \code{.ch} and
-#' \code{peak_table} elements.
+#' Currently this function is limited to reading `.uv`, `.ch` and `peak_table`
+#' elements.
 #'
-#' @param path Path to 'Agilent' \code{.D} directory.
-#' @param what Whether to extract chromatograms (\code{chroms}), DAD data
-#' (\code{dad}) and/or peak tables \code{peak_table}. Accepts multiple arguments.
-#' \code{ms_spectra}. Accepts multiple arguments.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Logical. Whether to attach metadata.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element.
+#' @inheritParams shared_params
+#' @param path Path to 'Agilent' `.D` directory.
+#' @param what Whether to extract chromatograms (`chroms`), DAD data (`dad`)
+#' and/or peak tables (`peak_table`). Accepts multiple arguments.
 #' @author Ethan Bass
-#' @return A list of chromatograms in the format specified by
-#' \code{data_format} and #' \code{format_out}. If \code{data_format} is
-#' \code{wide}, the chromatograms will be returned with retention times as rows
-#' and columns containing signal intensity for each signal. If \code{long}
-#' format is requested, retention times will be in the first column. The
-#' \code{format_out} argument determines whether the chromatogram
-#' is returned as a \code{matrix}, \code{data.frame} or \code{data.table}.
-#' Metadata can be attached to the chromatogram as \code{\link{attributes}} if
-#' \code{read_metadata} is \code{TRUE}.
+#' @return A list of chromatograms in the format specified by `data_format` and
+#' `format_out`. If `data_format` is `wide`, the chromatograms will be
+#' returned with retention times as rows and columns containing signal intensity
+#' for each signal. If `long` format is requested, retention times will be
+#' in the first column. The `format_out` argument determines whether the
+#' chromatogram is returned as a `matrix`, `data.frame` or `data.table`.
+#' Metadata can be attached to the chromatogram as [attributes] if
+#' `read_metadata` is `TRUE`.
 #' @examplesIf interactive()
 #' read_agilent_d("tests/testthat/testdata/RUTIN2.D")
 #' @author Ethan Bass

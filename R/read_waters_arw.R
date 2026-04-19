@@ -1,21 +1,16 @@
 #' Read 'Waters' ASCII (.arw)
 #'
-#' Reads 'Waters' ASCII \code{.arw} files.
+#' Reads 'Waters' ASCII `.arw` files.
 #'
 #' For help exporting files from Empower, you can consult the official
-#' documentation: [How_to_export_3D_raw_data_from_Empower](https://support.waters.com/KB_Inf/Empower_Breeze/WKB77571_How_to_export_3D_raw_data_from_Empower_to_a_Microsoft_Excel_spreadsheet).
+#' documentation: [How_to_export_3D_raw_data_from_Empower](
+#' https://support.waters.com/KB_Inf/Empower_Breeze/WKB77571_How_to_export_3D_raw_data_from_Empower_to_a_Microsoft_Excel_spreadsheet).
 #'
 #' @name read_waters_arw
 #' @importFrom utils tail read.csv
-#' @param path Path to Waters \code{.arw} file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @return A chromatogram in the format specified by \code{format_out}
-#' (retention time x wavelength).
+#' @inheritParams shared_params
+#' @param path Path to Waters `.arw` file.
+#' @inherit shared_params return
 #' @author Ethan Bass
 #' @family 'Waters' parsers
 #' @export
@@ -29,7 +24,7 @@ read_waters_arw <- function(path, format_out = c("matrix", "data.frame", "data.t
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "waters_arw", raw = "raw")
-  includes_metadata <- grepl('"', readLines(path, n = 1, encoding="latin1"))
+  includes_metadata <- grepl('"', readLines(path, n = 1, encoding = "latin1"))
   skip <- ifelse(includes_metadata, 2, 0)
   x <- read.csv(path, sep = "\t", skip = skip, header = FALSE, row.names = 1)
   # PDA (3D)

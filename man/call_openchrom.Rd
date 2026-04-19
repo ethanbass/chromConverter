@@ -23,26 +23,25 @@ call_openchrom(
 \item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame
 ionization data, or \code{wsd} for DAD/UV data.}
 
-\item{format_out}{R format. Either \code{matrix}, \code{data.frame} or
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{export_format}{Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
-Defaults to \code{mzml}.}
+\item{export_format}{Either  \code{mzml}, \code{csv}, \code{cdf}, \code{animl}. Defaults to
+\code{mzml}.}
 
-\item{return_paths}{Logical. If TRUE, the function will return a character
+\item{return_paths}{Logical. If \code{TRUE}, the function will return a character
 vector of paths to the newly created files.}
 
 \item{verbose}{Logical. Whether to print output from OpenChrom to the console.}
 }
 \value{
-If \code{return_paths} is \code{FALSE}, the function will return a
-list of chromatograms (if an appropriate parser is available to import the
-files into R). The chromatograms will be returned in \code{matrix} or
-\code{data.frame} format according to the value of \code{format_out}. If
-\code{return_paths} is \code{TRUE}, the function will return a character
-vector of paths to the newly created files.
+If \code{return_paths} is \code{FALSE}, the function will return a list of
+chromatograms (if an appropriate parser is available to import the files into
+R). The chromatograms will be returned in \code{matrix} or \code{data.frame} format
+according to the value of \code{format_out}. If \code{return_paths} is \code{TRUE}, the
+function will return a character vector of paths to the newly created files.
 }
 \description{
 Writes \code{xml} batch-files and calls OpenChrom file parsers using a
@@ -54,16 +53,15 @@ function is deprecated since it will only work if you happen to have access
 to OpenChrom version 1.4.0, which has been scrubbed from the internet.
 }
 \details{
-The \code{call_openchrom} function works by creating an \code{xml} batchfile
+The \code{call_openchrom} function works by creating an xml batchfile
 and feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
-consist of \code{InputEntries} (the files you want to convert) and
-\code{ProcessEntries} (what you want to do to the files). The parsers are
-organized into broad categories by detector-type and output format. The
-detector-types are \code{msd} (mass selective detectors), \code{csd}
-(current selective detectors, e.g., FID, ECD, NPD), and \code{wsd}
-(wavelength selective detectors, e.g.,  DAD, and UV/VIS). Thus, when calling
-the OpenChrom parsers, you must select one of these three options for the
-input format (\code{format_in}).
+consist of \code{InputEntries} (specifying the files you want to convert) and
+\code{ProcessEntries} (specifying what you want to do to the files). The parsers
+are organized into broad categories by detector-type and output format. The
+detector-types are \code{msd} (mass selective detectors), \code{csd} (current selective
+detectors, e.g., FID, ECD, NPD), and \code{wsd} (wavelength selective detectors,
+e.g.,  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers, one of
+these three options must be specified using the \code{format_in} argument.
 }
 \note{
 Activating the OpenChrom command-line will deactivate the graphical

@@ -17,40 +17,38 @@ read_agilent_d(
 \arguments{
 \item{path}{Path to 'Agilent' \code{.D} directory.}
 
-\item{what}{Whether to extract chromatograms (\code{chroms}), DAD data
-(\code{dad}) and/or peak tables \code{peak_table}. Accepts multiple arguments.
-\code{ms_spectra}. Accepts multiple arguments.}
+\item{what}{Whether to extract chromatograms (\code{chroms}), DAD data (\code{dad})
+and/or peak tables (\code{peak_table}). Accepts multiple arguments.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{data.table}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
-element.}
+element. Defaults to \code{TRUE}.}
 }
 \value{
-A list of chromatograms in the format specified by
-\code{data_format} and #' \code{format_out}. If \code{data_format} is
-\code{wide}, the chromatograms will be returned with retention times as rows
-and columns containing signal intensity for each signal. If \code{long}
-format is requested, retention times will be in the first column. The
-\code{format_out} argument determines whether the chromatogram
-is returned as a \code{matrix}, \code{data.frame} or \code{data.table}.
-Metadata can be attached to the chromatogram as \code{\link{attributes}} if
+A list of chromatograms in the format specified by \code{data_format} and
+\code{format_out}. If \code{data_format} is \code{wide}, the chromatograms will be
+returned with retention times as rows and columns containing signal intensity
+for each signal. If \code{long} format is requested, retention times will be
+in the first column. The \code{format_out} argument determines whether the
+chromatogram is returned as a \code{matrix}, \code{data.frame} or \code{data.table}.
+Metadata can be attached to the chromatogram as \link{attributes} if
 \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Reads files from 'Agilent' \code{.D} directories.
 }
 \details{
-Currently this function is limited to reading \code{.uv}, \code{.ch} and
-\code{peak_table} elements.
+Currently this function is limited to reading \code{.uv}, \code{.ch} and \code{peak_table}
+elements.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}

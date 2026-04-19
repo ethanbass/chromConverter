@@ -16,25 +16,23 @@ read_varian_sms(
 \arguments{
 \item{path}{Path to 'Varian' \code{.SMS} files.}
 
-\item{what}{Whether to extract chromatograms (\code{chroms}) and/or
-\code{MS1} data. Accepts multiple arguments.}
+\item{what}{Whether to extract chromatograms (\code{chroms}) and/or \code{MS1} data.
+Accepts multiple arguments.}
 
-\item{format_out}{R format. Either \code{matrix}, \code{data.frame}, or
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}. This argument
-applies only to TIC and BPC data, since MS data will always be returned in
-long format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{read_metadata}{Whether to read metadata from the file.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
-element.}
+element. Defaults to \code{TRUE}.}
 }
 \value{
-A chromatogram or list of chromatograms from the specified
-\code{file},  according to the value of \code{what}. Chromatograms are
-returned in the format specified by \code{format_out}.
+A chromatogram or list of chromatograms from the specified file,
+according to the value of \code{what}. Chromatograms are returned in the format
+specified by \code{format_out}.
 }
 \description{
 Reads 'Varian Workstation' SMS files.
@@ -42,7 +40,7 @@ Reads 'Varian Workstation' SMS files.
 \details{
 Varian SMS files begin with a "DIRECTORY" with offsets for each section. The
 first section (in all the files I've been able to inspect) is "MSData"
-generally beginning at byte 3238. This MSdata section is in turn divided into
+generally beginning at byte \code{3238}. This MSdata section is in turn divided into
 two sections. The first section (after a short header) contains chromatogram
 data. Some of the information found in this section includes scan numbers,
 retention times, (as 64-bit floats), the total ion chromatogram (TIC), the

@@ -16,11 +16,12 @@ read_asm(
 \arguments{
 \item{path}{Path to ASM \code{.json} file.}
 
-\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
@@ -30,13 +31,13 @@ element. Defaults to \code{TRUE}.}
 }
 \value{
 A 2D chromatogram in the format specified by \code{data_format} and
-\code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
-be returned with retention times as rows and a single column for the intensity.
-If \code{long} format is requested, two columns will be returned: one for the
+\code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will be returned
+with retention times as rows and a single column for the intensity. If \code{long}
+format is requested, two columns will be returned: one for the
 retention time and one for the intensity. The \code{format_out} argument
-determines whether the chromatogram is returned as a \code{matrix} or
-\code{data.frame}. Metadata can be attached to the chromatogram as
-\code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+determines whether the chromatogram is returned as a \code{matrix}, \code{data.frame},
+or \code{data.table}. Metadata can be attached to the chromatogram as \link{attributes}
+if \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Reads \href{https://www.allotrope.org/asm}{'Allotrope Simple Model'} files into R.

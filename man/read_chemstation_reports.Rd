@@ -20,7 +20,7 @@ read_chemstation_reports(
 \code{raw}.}
 }
 \value{
-A data.frame containing the information from the specified
+A \code{data.frame} containing the information from the specified
 'ChemStation' report.
 }
 \description{

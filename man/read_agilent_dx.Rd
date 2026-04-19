@@ -16,10 +16,10 @@ read_agilent_dx(
 )
 }
 \arguments{
-\item{path}{Path to \code{.dx} file.}
+\item{path}{Path to Agilent \code{.dx} file.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data
-(\code{dad}) and/or auxiliary instrumental data \code{instrument} (e.g.,
+(\code{dad}) and/or auxiliary instrumental data (\code{instrument}) (e.g.,
 temperature, pressure, solvent composition, etc.). Accepts multiple arguments.}
 
 \item{path_out}{A directory to export unzipped files. If a path is not
@@ -27,29 +27,29 @@ specified, the files will be written to a temp directory on the disk. The
 function will overwrite existing folders in the specified directory
 that share the basename of the file specified by \code{path}.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{data.table}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
-element.}
+element. Defaults to \code{TRUE}.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}
-(retention time x wavelength).
+A chromatogram in the format specified by \code{format_out} (retention
+time x wavelength).
 }
 \description{
 Reads 'Agilent' \code{.dx} files.
 }
 \details{
 This function unzips 'Agilent'  \code{.dx} into a temporary directory using
-\code{\link{unzip}} and calls \code{\link{read_chemstation_ch}}.
+\link{unzip} and calls the appropriate parser on the unzipped file.
 }
 \seealso{
 Other 'Agilent' parsers: 

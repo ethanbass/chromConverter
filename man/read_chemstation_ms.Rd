@@ -17,16 +17,13 @@ read_chemstation_ms(
 \arguments{
 \item{path}{Path to 'Agilent' \code{.ms} file.}
 
-\item{what}{What stream to get: current options are \code{MS1}, \code{BPC}
-and/or \code{TIC}. If a stream is not specified, the function will return all
-streams.}
+\item{what}{What stream to get: current options are \code{MS1}, \code{BPC} and/or
+\code{TIC}. If a stream is not specified, the function will return all streams.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{data.table}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}. This argument
-applies only to TIC data, since MS and BPC data will always be returned in
-long format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -37,14 +34,14 @@ or \code{raw}.}
 element. Defaults to \code{TRUE}.}
 }
 \value{
-A 2D chromatogram in the format specified by \code{data_format} and
-\code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
-be returned with retention times as rows and a single column for the intensity.
-If \code{long} format is requested, two columns will be returned: one for the
-retention time and one for the intensity. The \code{format_out} argument
-determines whether the chromatogram is returned as a \code{matrix},
-\code{data.frame}, or \code{data.table}. Metadata can be attached to the
-chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+A list of chromatograms in the format specified by \code{data_format} and
+\code{format_out}. If \code{data_format} is \code{wide}, 2D chromatograms will
+be returned with retention times as rows and a single column for the
+intensity. Otherwise, two columns will be returned: one for the
+retention time and one for the intensity. MS data will always be returned in
+long format. The \code{format_out} argument determines whether the chromatogram is
+returned as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
+attached to the chromatogram as \link{attributes} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Reads 'Agilent ChemStation MSD Spectral Files' beginning with
@@ -52,8 +49,7 @@ Reads 'Agilent ChemStation MSD Spectral Files' beginning with
 }
 \note{
 Many thanks to Evan Shi and Eugene Kwan for providing helpful
-information on the structure of these files in the
-\href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
+information on the structure of these files in the \href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
 }
 \examples{
 \dontrun{

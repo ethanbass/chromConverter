@@ -16,7 +16,8 @@ read_sz_lcd_3d(
 \arguments{
 \item{path}{Path to 'Shimadzu' \code{.lcd} 3D data file.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
@@ -28,10 +29,10 @@ or \code{raw}.}
 \item{scale}{Whether to scale the data by the value factor.}
 }
 \value{
-A 3D chromatogram from the PDA stream in \code{matrix} or
-\code{data.frame} format, according to the value of \code{format_out}.
-The chromatograms will be returned in \code{wide} or \code{long} format
-according to the value of \code{data_format}.
+A 3D chromatogram from the PDA stream in \code{matrix}, \code{data.frame}, or
+\code{data.table} format, according to the value of \code{format_out}.
+The chromatograms will be returned in \code{wide} or \code{long} format according to
+the value of \code{data_format}.
 }
 \description{
 Reads 3D PDA data stream from 'Shimadzu' \code{.lcd} files.
@@ -40,7 +41,7 @@ Reads 3D PDA data stream from 'Shimadzu' \code{.lcd} files.
 A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are
 encoded as 'Microsoft' OLE documents. The parser relies on the
 \href{https://pypi.org/project/olefile/}{olefile} package in Python to unpack the
-files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Raw Data}.
+files. The PDA data is encoded in a stream called \verb{PDA 3D Raw Data:3D Raw Data}.
 The PDA data stream contains a segment for each retention time, beginning
 with a 24-byte header.
 

@@ -20,15 +20,15 @@ by \code{read_chroms} with \code{read_metadata = TRUE}).}
 
 \item{what}{A character vector specifying the metadata elements to extract.}
 
-\item{format_out}{Format of object. Either \code{data.frame}, \code{tibble},
-or \code{data.table}.}
+\item{format_out}{Format of object. Either \code{data.frame}, \code{data.table} or
+\code{tibble}.}
 }
 \value{
-A \code{data.frame}, \code{tibble}, or \code{data.table} (according
-to the value of \code{format_out}), with samples as rows and the specified
-metadata elements as columns.
+A \code{data.frame}, \code{tibble}, or \code{data.table} (according to the value of
+\code{format_out}), with samples as rows and the specified metadata elements as
+columns.
 }
 \description{
-Extract metadata as a \code{data.frame} or \code{tibble} from a list of
+Extract metadata as a \code{data.frame}, \code{data.table} or \code{tibble} from a list of
 chromatograms.
 }

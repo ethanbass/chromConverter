@@ -15,7 +15,7 @@
 \item{x}{A \code{chrom_list} object.}
 
 \item{n}{Integer. Maximum number of chromatograms to show in the table.
-Defaults to 10.}
+Defaults to \code{10}.}
 
 \item{cols}{Character vector of attribute names to extract and display.
 Defaults to \code{c("sample_name", "run_datetime", "method", "detector")}.}
@@ -32,5 +32,5 @@ are collapsed into a single header line, while varying attributes are shown
 as a table truncated to the first \code{n} rows.
 }
 \seealso{
-\code{\link{extract_metadata}}
+\link{extract_metadata}
 }

@@ -17,15 +17,13 @@ read_shimadzu_qgd(
 \arguments{
 \item{path}{Path to 'Shimadzu' \code{.qgd} file.}
 
-\item{what}{What stream to get: current options are \code{MS1} and/or
-\code{TIC}. If a stream is not specified, the function will return both
-streams.}
+\item{what}{What stream to get: current options are \code{MS1} and/or \code{TIC}. If a
+stream is not specified, the function will return both streams.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}. This argument
-applies only to TIC and BPC data, since MS data will always be returned in
-long format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -36,33 +34,27 @@ or \code{raw}.}
 element. Defaults to \code{TRUE}.}
 }
 \value{
-A 2D chromatogram from the chromatogram stream in \code{matrix},
-\code{data.frame}, or \code{data.table} format, according to the value of
-\code{format_out}. The chromatograms will be returned in \code{wide} or
-\code{long} format according to the value of \code{data_format}.
-
 A chromatogram or list of chromatograms in the format specified by
-\code{data_format} and \code{format_out}. If \code{data_format} is \code{wide},
-the chromatogram(s) will be returned with retention times as rows and a
-single column for the intensity. If \code{long} format is requested, two
-columns will be returned: one for the retention time and one for the intensity.
+\code{data_format} and \code{format_out}. If \code{data_format} is \code{wide}, the
+chromatogram(s) will be returned with retention times as rows and a single
+column for the intensity. If \code{long} format is requested, two columns
+will be returned: one for the retention time and one for the intensity.
 The \code{format_out} argument determines whether chromatograms are returned
-as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
-attached to the chromatogram as \code{\link{attributes}} if
-\code{read_metadata} is \code{TRUE}.
+as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata will be
+attached to the chromatogram as \link{attributes} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Reads 'Shimadzu GCMSsolution' \code{.qgd} GC-MS data files.
 }
 \details{
 The MS data is stored in the "GCMS Raw Data" storage, which contains a
-\code{MS Raw Data} stream with MS scans, a \code{TIC Data} stream containing
-the total ion chromatogram, and a \code{Retention Time} stream containing the
-retention times. All known values are little-endian. The retention time
-stream is a simple array of 4-byte integers. The TIC stream is a simple array
-of 8-byte integers corresponding to retention times stored in the
-retention time stream. The MS Raw Data stream is blocked by retention time.
-Each block begins with a header consisting of the following elements:
+\verb{MS Raw Data} stream with MS scans, a \verb{TIC Data} stream containing the total
+ion chromatogram, and a \verb{Retention Time} stream containing the retention
+times. All known values are little-endian. The retention time stream is a
+simple array of 4-byte integers. The TIC stream is a simple array of 8-byte
+integers corresponding to retention times stored in the retention time stream.
+The MS Raw Data stream is blocked by retention time. Each block begins with a
+header consisting of the following elements:
 \itemize{
 \item scan number (4-byte integer)
 \item retention time (4-byte integer)

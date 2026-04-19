@@ -15,19 +15,19 @@ read_waters_raw(
 \arguments{
 \item{path}{Path to Waters \code{.raw} file.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{data.table}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{read_metadata}{Logical. Whether to attach metadata.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}
-(retention time x wavelength).
+A chromatogram in the format specified by the \code{format_out} and
+\code{data_format} arguments.
 }
 \description{
 Reads 'Waters MassLynx' (\code{.raw}) files into R.

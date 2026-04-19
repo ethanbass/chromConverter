@@ -4,10 +4,10 @@
 #' @param idx Indices of chromatograms to convert
 #' @param sample_var String with name of new column containing sample IDs.
 #' @param lambdas Wavelength(s) to include.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param combine Whether to combine chromatograms into a single \code{data.frame}
-#' (applicable only if \code{data_format} is TRUE).
-#' @param ... Additional arguments to \code{reshape_chrom}.
+#' @param data_format Whether to return data in `wide` or `long` format.
+#' @param combine Whether to combine chromatograms into a single `data.frame`
+#' (applicable only if `data_format` is `TRUE`).
+#' @param ... Additional arguments to `reshape_chrom`.
 #' @return A list of chromatographic matrices in long format.
 #' @author Ethan Bass
 #' @noRd
@@ -52,7 +52,7 @@ reshape_chrom <- function(x, data_format, ...){
 #' @importFrom stats reshape
 #' @param x A chromatographic matrix in wide format.
 #' @param lambdas Wavelength(s) to include.
-#' @param names_to Argument to \code{\link[tidyr]{pivot_longer}}
+#' @param names_to Argument to [tidyr::pivot_longer].
 #' @return A chromatographic matrix in long format.
 #' @author Ethan Bass
 #' @noRd
@@ -75,8 +75,8 @@ reshape_chrom_long <- function(x, lambdas = NULL, format_out = NULL,
     if (!is.null(lambdas)){
       xx <- xx[, lambdas, drop = FALSE]
     }
-    data <- data.table::data.table(tidyr::pivot_longer(data.frame(rt = rownames(xx), xx,
-                                                      check.names = FALSE),
+    data <- data.table::data.table(tidyr::pivot_longer(
+      data.frame(rt = rownames(xx), xx, check.names = FALSE),
                                 cols = -c("rt"), names_to = names_to,
                                 values_to = "intensity"))
     if (sparse){

@@ -1,38 +1,26 @@
 #' Read 'Agilent ChemStation' CH files
 #'
-#' Reads 'Agilent ChemStation' \code{.ch} files.
+#' Reads 'Agilent ChemStation' `.ch` files.
 #'
-#' 'Agilent' \code{.ch} files come in several different formats. This parser
+#' 'Agilent' `.ch` files come in several different formats. This parser
 #' can automatically detect and read several versions of these files from
-#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
-#' \code{130}, which are generally produced by ultraviolet detectors, as well as
-#' \code{81}, \code{179}, and \code{181} which are generally produced by flame
-#' ionization (FID) detectors.
+#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions `30` and
+#' `130`, which are generally produced by ultraviolet detectors, as well as
+#' `81`, `179`, and `181` which are generally produced by flame ionization (FID)
+#' detectors.
 #'
 #' @importFrom bitops bitAnd bitShiftL
-#' @param path Path to 'Agilent' \code{.ch} file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
+#' @inheritParams shared_params
+#' @param path Path to 'Agilent' `.ch` file.
 #' @param scale Whether to scale the data by the scaling factor present in the
-#' file. Defaults to \code{TRUE}. 'MassHunter' seems to ignore the scaling
+#' file. Defaults to `TRUE`. 'MassHunter' seems to ignore the scaling
 #' factor in at least some types of 'ChemStation' files.
 #' @param source_file Source file from which chromatogram data was originally
 #' derived.
 #' @author Ethan Bass
-#' @return A 2D chromatogram in the format specified by \code{data_format} and
-#' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
-#' be returned with retention times as rows and a single column for the intensity.
-#' If \code{long} format is requested, two columns will be returned: one for the
-#' retention time and one for the intensity. The \code{format_out} argument
-#' determines whether the chromatogram is returned as a \code{matrix},
-#' \code{data.frame}, or \code{data.table}. Metadata can be attached to the
-#' chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
-#' @note This function was adapted from the
-#' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
+#' @inherit generic_return_2D return
+#' @note This function was adapted from the [Chromatography Toolbox](
+#' https://github.com/chemplexity/chromatography)
 #' (© James Dillon 2014).
 #' @examplesIf interactive()
 #' read_chemstation_ch("tests/testthat/testdata/chemstation_130.ch")

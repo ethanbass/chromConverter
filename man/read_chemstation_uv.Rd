@@ -17,10 +17,10 @@ read_chemstation_uv(
 \arguments{
 \item{path}{Path to 'Agilent' \code{.uv} file.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{data.table}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -39,8 +39,8 @@ be returned with retention times as rows and wavelengths as columns. If
 \code{long} format is requested, three columns will be returned: one for the
 retention time, one for the wavelength and one for the intensity. The
 \code{format_out} argument determines whether the chromatogram is returned as
-a \code{matrix} or \code{data.frame}. Metadata can be attached to the
-chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata will be attached to the
+chromatogram as \link{attributes} if \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Agilent \code{.uv} files come in several different formats. This parser can

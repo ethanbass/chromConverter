@@ -22,29 +22,28 @@ read_peaklist(
 
 \item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
 the function with a folder or vector of folders containing the files.
-Otherwise, set to\code{FALSE}.}
+Otherwise, set to \code{FALSE}.}
 
 \item{format_in}{Format of files to be imported/converted. Current options
-include: \code{chemstation}, \code{shimadzu_fid}, \code{shimadzu_dad},
-\code{shimadzu_lcd}, and \code{shimadzu_gcd}.}
+include: \code{chemstation}, \code{shimadzu_fid}, \code{shimadzu_dad}, \code{shimadzu_lcd}, and
+\code{shimadzu_gcd}.}
 
-\item{pattern}{pattern (e.g. a file extension). Defaults to \code{NULL}, in
+\item{pattern}{A pattern (e.g. a file extension). Defaults to \code{NULL}, in
 which case the file extension will be deduced from \code{format_in}.}
 
 \item{data_format}{Either \code{chromatographr} or \code{original}.}
 
-\item{metadata_format}{Format to output metadata. Either
-\code{chromconverter} or \code{raw}.}
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
+or \code{raw}.}
 
-\item{read_metadata}{Logical, whether to attach metadata (if it's available).
-Defaults to \code{TRUE}.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
-\item{progress_bar}{Logical. Whether to show progress bar. Defaults to
-\code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.}
+\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
+if \code{pbapply} is installed.}
 
-\item{cl}{Argument to \code{\link[pbapply]{pbapply}} specifying the number
+\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
 of clusters to use or a cluster object created by
-\code{\link[parallel]{makeCluster}}. Defaults to \code{1}.}
+\link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
 }
 \value{
 A list of \code{data.frame}s containing information about peaks where

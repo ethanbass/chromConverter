@@ -14,10 +14,10 @@ read_chemstation_csv(
 \arguments{
 \item{path}{Path to 'Agilent' \code{.csv} file.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{data.table}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to
 \code{TRUE}. There is no instrumental metadata saved in the CSV files so this
@@ -25,8 +25,8 @@ will only attach metadata about the settings used by chromConverter to parse
 the file.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}
-(retention time x wavelength) and \code{data_format}.
+A chromatogram in the format specified by \code{format_out} and
+\code{data_format}.
 }
 \description{
 Reads 'Agilent Chemstation' \code{.csv} files.

@@ -18,8 +18,8 @@ read_cdf(
 \arguments{
 \item{path}{Path to ANDI netCDF file.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{\link[data.table]{data.table}}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.
 For 2D files, "long" format returns the retention time as the first column of
@@ -27,17 +27,17 @@ the data.frame or matrix while "wide" format returns the retention time as the
 rownames of the object. This argument applies only to 2D chromatograms, since
 MS data will always be returned in long format.}
 
-\item{what}{For \code{ANDI chrom} files, whether to extract \code{chroms}
-and/or \code{peak_table}. For \code{ANDI ms} files, whether to extract MS1 scans
+\item{what}{For \verb{ANDI chrom} files, whether to extract \code{chroms}
+and/or \code{peak_table}. For \verb{ANDI ms} files, whether to extract MS1 scans
 (\code{MS1}) or the total ion chromatogram (\code{TIC}).}
 
-\item{read_metadata}{Whether to read metadata from file.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
-element.}
+element. Defaults to \code{TRUE}.}
 
 \item{...}{Additional arguments to parser. The \code{ms_format} argument
 can be used here to specify whether to return mass spectra in \code{list}

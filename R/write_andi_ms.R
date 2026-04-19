@@ -3,7 +3,6 @@
 #' @importFrom data.table setorder
 #' @author Ethan Bass
 #' @noRd
-
 write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
                           ms_params = list(ionization_mode = "Electron Impact",
                                         ionization_polarity = "Positive Polarity",

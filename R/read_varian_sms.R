@@ -4,7 +4,7 @@
 #'
 #' Varian SMS files begin with a "DIRECTORY" with offsets for each section. The
 #' first section (in all the files I've been able to inspect) is "MSData"
-#' generally beginning at byte 3238. This MSdata section is in turn divided into
+#' generally beginning at byte `3238`. This MSdata section is in turn divided into
 #' two sections. The first section (after a short header) contains chromatogram
 #'  data. Some of the information found in this section includes scan numbers,
 #' retention times, (as 64-bit floats), the total ion chromatogram (TIC), the
@@ -20,10 +20,10 @@
 #' The first value in each pair represents the delta-encoded mass-to-charge ratio,
 #' while the second value represents the intensity of the signal. Values in this
 #' section are variable-length, big-endian integers that are encoded using a
-#' selective bit masking based on the leading digit (\code{d}) of each value.
+#' selective bit masking based on the leading digit (`d`) of each value.
 #' The length of each integer seems to be determined as 1 + (d %/% 4). Integers
 #' beginning with digits 0-3 are simple 2-byte integers. If d >= 4, values are
-#' determined by masking to preserve the lowest \code{n} bits according to the
+#' determined by masking to preserve the lowest `n` bits according to the
 #' following scheme:
 #'
 #' * d = 4-5 -> preserve lowest 13 bits
@@ -33,20 +33,13 @@
 #' * d = 12-13 (C-D) -> preserve lowest 27 bits
 #' * d = 14-15 (E-F) -> preserve lowest 28 bits (?)
 #'
-#' @param path Path to 'Varian' \code{.SMS} files.
-#' @param what Whether to extract chromatograms (\code{chroms}) and/or
-#' \code{MS1} data. Accepts multiple arguments.
-#' @param format_out R format. Either \code{matrix}, \code{data.frame}, or
-#' \code{data.table}.
-#' @param data_format Either \code{wide} (default) or \code{long}. This argument
-#' applies only to TIC and BPC data, since MS data will always be returned in
-#' long format.
-#' @param read_metadata Whether to read metadata from the file.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element.
-#' @return A chromatogram or list of chromatograms from the specified
-#' \code{file},  according to the value of \code{what}. Chromatograms are
-#' returned in the format specified by \code{format_out}.
+#' @inheritParams shared_params
+#' @param path Path to 'Varian' `.SMS` files.
+#' @param what Whether to extract chromatograms (`chroms`) and/or `MS1` data.
+#' Accepts multiple arguments.
+#' @return A chromatogram or list of chromatograms from the specified file,
+#' according to the value of `what`. Chromatograms are returned in the format
+#' specified by `format_out`.
 #' @author Ethan Bass
 #' @note There is still only limited support for the extraction of metadata from
 #' this file format. Also, the timestamp conversions aren't quite right.
@@ -158,7 +151,7 @@ read_mod_metadata <- function(f, offsets, meta){
 #' @param f Connection to a 'Varian' SMS file opened to the beginning of the
 #' chromatogram.
 #' @param format_out Matrix or data.frame.
-#' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param data_format Either `wide` (default) or `long`.
 #' @author Ethan Bass
 #' @noRd
 

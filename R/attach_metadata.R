@@ -4,7 +4,7 @@
 #' @param x chromatogram
 #' @param meta List object containing metadata.
 #' @param format_in Chromatogram format
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
+#' @param format_out R format. Either `matrix` or `data.frame`.
 #' @param data_format Whether data is in wide or long format.
 #' @param parser What parser was used to decode the data.
 #' @param source_file The path to the source file.
@@ -681,7 +681,7 @@ get_time_unit <- function(string, format_in){
 
 #' @name read_chemstation_metadata
 #' @param file file
-#' @param what Whether to return \code{metadata} or \code{peaktable}.
+#' @param what Whether to return `metadata` or `peaktable`.
 #' @importFrom readxl read_xls
 #' @return A list containing extracted metadata.
 #' @author Ethan Bass
@@ -764,17 +764,17 @@ read_waters_metadata <- function(file){
 
 #' Extract metadata
 #'
-#' Extract metadata as a \code{data.frame} or \code{tibble} from a list of
+#' Extract metadata as a `data.frame`, `data.table` or `tibble` from a list of
 #' chromatograms.
 #'
 #' @param chrom_list A list of chromatograms with attached metadata (as returned
-#' by \code{read_chroms} with \code{read_metadata = TRUE}).
+#' by `read_chroms` with `read_metadata = TRUE`).
 #' @param what A character vector specifying the metadata elements to extract.
-#' @param format_out Format of object. Either \code{data.frame}, \code{tibble},
-#' or \code{data.table}.
-#' @return A \code{data.frame}, \code{tibble}, or \code{data.table} (according
-#' to the value of \code{format_out}), with samples as rows and the specified
-#' metadata elements as columns.
+#' @param format_out Format of object. Either `data.frame`, `data.table` or
+#' `tibble`.
+#' @return A `data.frame`, `tibble`, or `data.table` (according to the value of
+#' `format_out`), with samples as rows and the specified metadata elements as
+#' columns.
 #' @export
 extract_metadata <- function(chrom_list,
                              what = c("instrument", "detector", "detector_id",

@@ -22,17 +22,15 @@ read_sz_lcd_2d(
 
 \item{read_metadata}{Logical. Whether to attach metadata.}
 
-\item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+\item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
+\code{raw}.}
 
 \item{scale}{Whether to scale the data by the value factor.}
 }
 \value{
 One or more 2D chromatograms from the chromatogram streams in
 \code{matrix} or \code{data.frame} format, according to the value of
-\code{format_out}. If multiple chromatograms are found, they will be returned
-as a list of matrices or data.frames. The chromatograms will be returned in
-\code{wide} or \code{long} format according to the value of \code{data_format}.
+\verb{format_out. If multiple chromatograms are found, they will be returned as a list of matrices or data.frames. The chromatograms will be returned in }wide or \verb{long format according to the value of }data_format`.
 }
 \description{
 Reads 2D PDA data stream from 'Shimadzu' \code{.lcd} files.
@@ -42,7 +40,7 @@ A parser to read chromatogram data streams from 'Shimadzu' \code{.lcd} files.
 LCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
 \href{https://pypi.org/project/olefile/}{olefile} package in Python to unpack the
 files. The chromatogram data is encoded in streams titled
-\code{LSS Raw Data:Chromatogram Ch<#>}. The chromatogram data streams begin
+\verb{LSS Raw Data:Chromatogram Ch<#>}. The chromatogram data streams begin
 with a 24-byte header.
 
 The 24 byte header consists of the following fields:

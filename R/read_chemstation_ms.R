@@ -1,35 +1,25 @@
 #' Read 'Agilent ChemStation' MS file.
 #'
 #' Reads 'Agilent ChemStation MSD Spectral Files' beginning with
-#' \code{x01/x32/x00/x00}.
+#' `x01/x32/x00/x00`.
 #'
-#' @param path Path to 'Agilent' \code{.ms} file.
-#' @param what What stream to get: current options are \code{MS1}, \code{BPC}
-#' and/or \code{TIC}. If a stream is not specified, the function will return all
-#' streams.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Either \code{wide} (default) or \code{long}. This argument
-#' applies only to TIC data, since MS and BPC data will always be returned in
-#' long format.
-#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element. Defaults to \code{TRUE}.
+#' @inheritParams shared_params
+#' @param path Path to 'Agilent' `.ms` file.
+#' @param what What stream to get: current options are `MS1`, `BPC` and/or
+#' `TIC`. If a stream is not specified, the function will return all streams.
 #' @author Ethan Bass
-#' @return A 2D chromatogram in the format specified by \code{data_format} and
-#' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
-#' be returned with retention times as rows and a single column for the intensity.
-#' If \code{long} format is requested, two columns will be returned: one for the
-#' retention time and one for the intensity. The \code{format_out} argument
-#' determines whether the chromatogram is returned as a \code{matrix},
-#' \code{data.frame}, or \code{data.table}. Metadata can be attached to the
-#' chromatogram as \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+#' @return A list of chromatograms in the format specified by `data_format` and
+#' `format_out`. If `data_format` is `wide`, 2D chromatograms will
+#' be returned with retention times as rows and a single column for the
+#' intensity. Otherwise, two columns will be returned: one for the
+#' retention time and one for the intensity. MS data will always be returned in
+#' long format. The `format_out` argument determines whether the chromatogram is
+#' returned as a `matrix`, `data.frame`, or `data.table`. Metadata can be 
+#' attached to the chromatogram as [attributes] if `read_metadata` is `TRUE`.
 #' @author Ethan Bass
 #' @note Many thanks to Evan Shi and Eugene Kwan for providing helpful
-#' information on the structure of these files in the
-#' \href{https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html}{rainbow documentation}.
+#' information on the structure of these files in the [rainbow documentation](
+#' https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html).
 #' @family 'Agilent' parsers
 #' @examples \dontrun{
 #' read_chemstation_ms(path)

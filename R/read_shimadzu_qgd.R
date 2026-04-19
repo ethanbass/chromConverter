@@ -1,15 +1,15 @@
 #' Read 'Shimadzu' QGD files
 #'
-#' Reads 'Shimadzu GCMSsolution' \code{.qgd} GC-MS data files.
+#' Reads 'Shimadzu GCMSsolution' `.qgd` GC-MS data files.
 #'
 #' The MS data is stored in the "GCMS Raw Data" storage, which contains a
-#' \code{MS Raw Data} stream with MS scans, a \code{TIC Data} stream containing
-#' the total ion chromatogram, and a \code{Retention Time} stream containing the
-#' retention times. All known values are little-endian. The retention time
-#' stream is a simple array of 4-byte integers. The TIC stream is a simple array
-#' of 8-byte integers corresponding to retention times stored in the
-#' retention time stream. The MS Raw Data stream is blocked by retention time.
-#' Each block begins with a header consisting of the following elements:
+#' `MS Raw Data` stream with MS scans, a `TIC Data` stream containing the total
+#' ion chromatogram, and a `Retention Time` stream containing the retention
+#' times. All known values are little-endian. The retention time stream is a
+#' simple array of 4-byte integers. The TIC stream is a simple array of 8-byte
+#' integers corresponding to retention times stored in the retention time stream.
+#' The MS Raw Data stream is blocked by retention time. Each block begins with a
+#' header consisting of the following elements:
 #' * scan number (4-byte integer)
 #' * retention time (4-byte integer)
 #' * unknown (12-bytes)
@@ -21,34 +21,21 @@
 #' is scaled by a factor of 20. Intensities are encoded as (unsigned) integers
 #' with variable byte-length defined by the value in the header.
 #'
-#' @param path Path to 'Shimadzu' \code{.qgd} file.
-#' @param what What stream to get: current options are \code{MS1} and/or
-#' \code{TIC}. If a stream is not specified, the function will return both
-#' streams.
-#' @param format_out Matrix or data.frame.
-#' @param data_format Either \code{wide} (default) or \code{long}. This argument
-#' applies only to TIC and BPC data, since MS data will always be returned in
-#' long format.
-#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element. Defaults to \code{TRUE}.
-#' @return A 2D chromatogram from the chromatogram stream in \code{matrix},
-#' \code{data.frame}, or \code{data.table} format, according to the value of
-#' \code{format_out}. The chromatograms will be returned in \code{wide} or
-#' \code{long} format according to the value of \code{data_format}.
+#' @inheritParams shared_params
+#' @param path Path to 'Shimadzu' `.qgd` file.
+#' @param what What stream to get: current options are `MS1` and/or `TIC`. If a
+#' stream is not specified, the function will return both streams.
+#' @inherit generic_return_2D return
 #' @note This parser is experimental and may still need some work. It is not
 #' yet able to interpret much metadata from the files.
 #' @return A chromatogram or list of chromatograms in the format specified by
-#' \code{data_format} and \code{format_out}. If \code{data_format} is \code{wide},
-#' the chromatogram(s) will be returned with retention times as rows and a
-#' single column for the intensity. If \code{long} format is requested, two
-#' columns will be returned: one for the retention time and one for the intensity.
-#' The \code{format_out} argument determines whether chromatograms are returned
-#' as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
-#' attached to the chromatogram as \code{\link{attributes}} if
-#' \code{read_metadata} is \code{TRUE}.
+#' `data_format` and `format_out`. If `data_format` is `wide`, the
+#' chromatogram(s) will be returned with retention times as rows and a single
+#' column for the intensity. If `long` format is requested, two columns
+#' will be returned: one for the retention time and one for the intensity.
+#' The `format_out` argument determines whether chromatograms are returned
+#' as a `matrix`, `data.frame`, or `data.table`. Metadata will be
+#' attached to the chromatogram as [attributes] if `read_metadata` is `TRUE`.
 #' @author Ethan Bass
 #' @family 'Shimadzu' parsers
 #' @export

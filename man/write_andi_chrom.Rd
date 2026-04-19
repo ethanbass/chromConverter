@@ -35,8 +35,8 @@ the first column of the chromatogram will be exported.
 
 Exports a chromatogram in ANDI chromatography format (netCDF) in the directory
 specified by \code{path_out}. The file will be named according to the value
-of \code{sample_name}. If no \code{sample_name} is provided, the
-\code{sample_name} attribute will be used if it exists.
+of \code{sample_name}. If no \code{sample_name} is provided, the \code{sample_name}
+attribute will be used if it exists.
 }
 
 \seealso{

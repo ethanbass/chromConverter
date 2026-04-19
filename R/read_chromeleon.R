@@ -1,20 +1,15 @@
 #' Read 'Chromeleon' ASCII files
 #'
-#' Reads 'Thermo Fisher Chromeleon™ CDS' ASCII (\code{.txt}) files.
+#' Reads 'Thermo Fisher Chromeleon™ CDS' ASCII (`.txt`) files.
 #'
 #' @importFrom utils tail read.csv
+#' @inheritParams shared_params
 #' @param path Path to 'Chromeleon' ASCII file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
-#' \code{raw}.
 #' @param decimal_mark Which character is used as the decimal separator in the
 #' file. By default, decimal mark will be detected automatically, but it can
-#' also be manually set as \code{"."} or \code{","}.
-#' @return A chromatogram in the format specified by \code{format_out}.
-#' (retention time x wavelength).
+#' also be manually set as `"."` or `","`.
+#' @return A chromatogram in the format specified by `format_out` (retention
+#' time x wavelength).
 #' @author Ethan Bass
 #' @export
 

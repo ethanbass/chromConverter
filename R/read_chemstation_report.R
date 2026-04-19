@@ -3,11 +3,11 @@
 #' Reads 'Agilent ChemStation' reports into R.
 #'
 #' @param paths Paths to 'ChemStation' report files.
-#' @param data_format Format to output data. Either \code{chromatographr} or
-#' \code{chemstation}.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
-#' \code{raw}.
-#' @return A data.frame containing the information from the specified
+#' @param data_format Format to output data. Either `chromatographr` or
+#' `chemstation`.
+#' @param metadata_format Format to output metadata. Either `chromconverter` or
+#' `raw`.
+#' @return A `data.frame` containing the information from the specified
 #' 'ChemStation' report.
 #' @author Ethan Bass
 #' @family 'Agilent' parsers
@@ -42,11 +42,11 @@ read_chemstation_reports <- function(paths, data_format = c("chromatographr",
 
 #' Read Agilent Chemstation Report
 #' @param path Path to file
-#' @param data_format Format to output data. Either \code{chromatographr} or
-#' \code{chemstation}.
+#' @param data_format Format to output data. Either `chromatographr` or
+#' `chemstation`.
 #' @param combine Whether to combine peaklists into a single data.frame.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
-#' \code{raw}.
+#' @param metadata_format Format to output metadata. Either `chromconverter` or
+#' `raw`.
 #' @author Ethan Bass
 #' @family {Agilent parsers}
 #' @noRd
@@ -108,8 +108,8 @@ read_chemstation_report <- function(path, data_format = c("chromatographr", "ori
 
 #' Convert 'Chemstation' REPORT peak list to data.frame.
 #' @param table The table to convert.
-#' @param data_format Format to output data. Either \code{chromatographr} or
-#' \code{chemstation}.
+#' @param data_format Format to output data. Either `chromatographr` or
+#' `chemstation`.
 #' @author Ethan Bass
 #' @noRd
 convert_chemstation_peaklist <- function(table, data_format =
@@ -146,7 +146,7 @@ convert_chemstation_peaklist <- function(table, data_format =
 }
 
 #' Remove blank lines
-#' This function is called internally by \code{read_chemstation_reports}.
+#' This function is called internally by `read_chemstation_reports`.
 #' @noRd
 remove_blank_lines <- function(x){
   x[which(x != "")]

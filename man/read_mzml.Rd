@@ -18,20 +18,20 @@ read_mzml(
 \item{path}{Path to \code{.mzml} file.}
 
 \item{format_out}{Class of output. Only applies if \code{mzR} is selected.
-Either \code{matrix}, \code{data.frame}, or \code{data.table}. \code{RaMS}
-will return a list of data.tables regardless of what is selected here.}
+Either \code{matrix}, \code{data.frame}, or \code{data.table}. \code{RaMS} will return a list of
+data.tables regardless of what is selected here.}
 
-\item{data_format}{Whether to return data in \code{wide} or \code{long} format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{parser}{What parser to use. Either \code{RaMS} or \code{mzR}.}
 
-\item{what}{What types of data to return (argument to \code{\link[RaMS]{grabMSdata}}.
-Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD},
-\code{chroms}, \code{metadata}, or \code{everything}).}
+\item{what}{What types of data to return (argument to \link[RaMS:grabMSdata]{RaMS::grabMSdata}).
+Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD}, \code{chroms}, \code{metadata}, or
+\code{everything}).}
 
-\item{verbose}{Argument to \code{\link[RaMS]{grabMSdata}} controlling \code{verbosity}.}
+\item{verbose}{Argument to \code{grabMSdata} controlling verbosity.}
 
-\item{...}{Additional arguments to \code{\link[RaMS]{grabMSdata}}.}
+\item{...}{Additional arguments to \code{grabMSdata}.}
 }
 \value{
 If \code{RaMS} is selected, the function will return a list of "tidy"

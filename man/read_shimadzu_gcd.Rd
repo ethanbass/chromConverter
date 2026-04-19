@@ -21,10 +21,10 @@ read_shimadzu_gcd(
 (\code{chroms}) and/or peak lists (\code{peak_table}). If a stream
 is not specified, the function will default to \code{chroms}.}
 
-\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame},
-or \code{data.table}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -32,13 +32,17 @@ or \code{data.table}.}
 or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
-element.}
+element. Defaults to \code{TRUE}.}
 }
 \value{
-A 2D chromatogram from the chromatogram stream in \code{matrix} or
-\code{data.frame} format, according to the value of \code{format_out}.
-The chromatograms will be returned in \code{wide} or \code{long} format
-according to the value of \code{data_format}.
+A 2D chromatogram in the format specified by \code{data_format} and
+\code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will be returned
+with retention times as rows and a single column for the intensity. If \code{long}
+format is requested, two columns will be returned: one for the
+retention time and one for the intensity. The \code{format_out} argument
+determines whether the chromatogram is returned as a \code{matrix}, \code{data.frame},
+or \code{data.table}. Metadata can be attached to the chromatogram as \link{attributes}
+if \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
@@ -47,7 +51,7 @@ Read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
 A parser to read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
 GCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
 \href{https://pypi.org/project/olefile/}{olefile} package in Python to unpack the
-files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Raw Data}.
+files. The PDA data is encoded in a stream called \verb{PDA 3D Raw Data:3D Raw Data}.
 The GCD data stream contains a segment for each retention time, beginning
 with a 24-byte header.
 

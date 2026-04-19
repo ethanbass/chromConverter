@@ -1,22 +1,22 @@
 #' Read 'Shimadzu' LCD
 #'
-#' Read 3D PDA or 2D chromatogram streams from 'Shimadzu' \code{.lcd} files.
+#' Read 3D PDA or 2D chromatogram streams from 'Shimadzu' `.lcd` files.
 #'
-#' A parser to read data from 'Shimadzu' \code{.lcd} files. LCD files are
+#' A parser to read data from 'Shimadzu' `.lcd` files. LCD files are
 #' encoded as 'Microsoft' OLE documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
-#' files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Raw Data}.
+#' files. The PDA data is encoded in a stream called `PDA 3D Raw Data:3D Raw Data`.
 #' The PDA data stream contains a segment for each retention time, beginning
 #' with a 24-byte header.
 #'
 #' The 24 byte header consists of the following fields:
-#' * 4 bytes: segment label (\code{17234}).
+#' * 4 bytes: segment label (`17234`).
 #' * 4 bytes: Little-endian integer specifying the sampling rate along the time
 #' axis for 2D streams or along the spectral axis (?) for PDA streams.
 #' * 4 bytes: Little-endian integer specifying the number of values in the file
 #' (for 2D data) or the number of wavelength values in each segment (for 3D data).
 #' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
-#' * 8 bytes of \code{00}.
+#' * 8 bytes of `00`.
 #'
 #' For 3D data, Each time point is divided into two sub-segments, which begin and
 #' end with an integer specifying the length of the sub-segment in bytes. 2D data
@@ -31,30 +31,21 @@
 #' complements. The value at each position is derived by subtracting the delta
 #' at each position from the previous value.
 #'
-#' @param path Path to 'Shimadzu' \code{.lcd} file.
-#' @param what What stream to get: current options are \code{pda}, chromatograms
-#' (\code{chroms}), \code{tic}, or peak lists (\code{peak_table}). If a stream
-#' is not specified, the function will default to \code{pda} if the PDA stream
+#' @inheritParams shared_params
+#' @param path Path to 'Shimadzu' `.lcd` file.
+#' @param what What stream to get: current options are `pda`, chromatograms
+#' (`chroms`), `tic`, and/or peak lists (`peak_table`). If a stream
+#' is not specified, the function will default to `pda` if the PDA stream
 #' is present.
-#' @param format_out Matrix or data.frame.
-#' @param data_format Either \code{wide} (default) or \code{long}.
-#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param scale Whether to scale the data by the value factor. Defaults to
-#' \code{TRUE}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element.
 #' @author Ethan Bass
 #' @return A chromatogram or list of chromatograms in the format specified by
-#' \code{data_format} and \code{format_out}. If \code{data_format} is \code{wide},
-#' the chromatogram(s) will be returned with retention times as rows and a
-#' single column for the intensity. If \code{long} format is requested, two
+#' `data_format` and `format_out`. If `data_format` is `wide`, the
+#' chromatogram(s) will be returned with retention times as rows and a
+#' single column for the intensity. If `long` format is requested, two
 #' columns will be returned: one for the retention time and one for the intensity.
-#' The \code{format_out} argument determines whether chromatograms are returned
-#' as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
-#' attached to the chromatogram as \code{\link{attributes}} if
-#' \code{read_metadata} is \code{TRUE}.
+#' The `format_out` argument determines whether chromatograms are returned
+#' in `matrix`, `data.frame`, or `data.table` format. Metadata will be
+#' attached to the chromatogram as [attributes] when `read_metadata` is `TRUE`.
 #' @note My parsing of the date-time format seems to be a little off, since
 #' the acquisition times diverge slightly from the ASCII file.
 #' @examples \dontrun{
@@ -123,22 +114,22 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 
 #' Read 'Shimadzu' LCD 3D data
 #'
-#' Reads 3D PDA data stream from 'Shimadzu' \code{.lcd} files.
+#' Reads 3D PDA data stream from 'Shimadzu' `.lcd` files.
 #'
-#' A parser to read PDA data from 'Shimadzu' \code{.lcd} files. LCD files are
+#' A parser to read PDA data from 'Shimadzu' `.lcd` files. LCD files are
 #' encoded as 'Microsoft' OLE documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
-#' files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Raw Data}.
+#' files. The PDA data is encoded in a stream called `PDA 3D Raw Data:3D Raw Data`.
 #' The PDA data stream contains a segment for each retention time, beginning
 #' with a 24-byte header.
 #'
 #' The 24 byte header consists of the following fields:
-#' * 4 bytes: segment label (\code{17234}).
+#' * 4 bytes: segment label (`17234`).
 #' * 4 bytes: Little-endian integer specifying the wavelength bandwidth (?).
 #' * 4 bytes: Little-endian integer specifying the number of wavelength values
 #' in the segment.
 #' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
-#' * 8 bytes of \code{00}s
+#' * 8 bytes of `00`s
 #'
 #' Each segment is divided into two sub-segments, which begin and end with an
 #' integer specifying the length of the sub-segment in bytes. All known values
@@ -152,18 +143,19 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #' complements. The value at each position is derived by subtracting the delta
 #' at each position from the previous value.
 #'
-#' @param path Path to 'Shimadzu' \code{.lcd} 3D data file.
-#' @param format_out Matrix or data.frame.
-#' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param path Path to 'Shimadzu' `.lcd` 3D data file.
+#' @param format_out Class of output. Either `matrix`, `data.frame`, or
+#' `data.table`.
+#' @param data_format Either `wide` (default) or `long`.
 #' @param read_metadata Logical. Whether to attach metadata.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
+#' @param metadata_format Format to output metadata. Either `chromconverter`
+#' or `raw`.
 #' @param scale Whether to scale the data by the value factor.
 #' @author Ethan Bass
-#' @return A 3D chromatogram from the PDA stream in \code{matrix} or
-#' \code{data.frame} format, according to the value of \code{format_out}.
-#' The chromatograms will be returned in \code{wide} or \code{long} format
-#' according to the value of \code{data_format}.
+#' @return A 3D chromatogram from the PDA stream in `matrix`, `data.frame`, or
+#' `data.table` format, according to the value of `format_out`.
+#' The chromatograms will be returned in `wide` or `long` format according to
+#' the value of `data_format`.
 #' @family 'Shimadzu' parsers
 #' @export
 
@@ -215,23 +207,23 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 
 #' Read 'Shimadzu' LCD 2D data
 #'
-#' Reads 2D PDA data stream from 'Shimadzu' \code{.lcd} files.
+#' Reads 2D PDA data stream from 'Shimadzu' `.lcd` files.
 #'
-#' A parser to read chromatogram data streams from 'Shimadzu' \code{.lcd} files.
+#' A parser to read chromatogram data streams from 'Shimadzu' `.lcd` files.
 #' LCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
 #' files. The chromatogram data is encoded in streams titled
-#' \code{LSS Raw Data:Chromatogram Ch<#>}. The chromatogram data streams begin
+#' `LSS Raw Data:Chromatogram Ch<#>`. The chromatogram data streams begin
 #' with a 24-byte header.
 #'
 #' The 24 byte header consists of the following fields:
-#' * 4 bytes: segment label (\code{17234}).
+#' * 4 bytes: segment label (`17234`).
 #' * 4 bytes: Little-endian integer specifying the sampling rate (in milliseconds).
 #' * 4 bytes: Little-endian integer specifying the number of values
 #' in the file.
 #' * 4 bytes: Little-endian integer specifying the total number of bytes
 #' in the file.
-#' * 8 bytes of \code{00}s
+#' * 8 bytes of `00`s
 #'
 #' Each segment is divided into multiple sub-segments, which begin and end with an
 #' integer specifying the length of the sub-segment in bytes. All known values
@@ -245,19 +237,19 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' complements. The value at each position is derived by subtracting the delta
 #' at each position from the previous value.
 #'
-#' @param path Path to 'Shimadzu' \code{.lcd} 2D data file.
+#' @param path Path to 'Shimadzu' `.lcd` 2D data file.
 #' @param format_out Matrix or data.frame.
-#' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param data_format Either `wide` (default) or `long`.
 #' @param read_metadata Logical. Whether to attach metadata.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
+#' @param metadata_format Format to output metadata. Either `chromconverter` or
+#' `raw`.
 #' @param scale Whether to scale the data by the value factor.
 #' @author Ethan Bass
 #' @return One or more 2D chromatograms from the chromatogram streams in
-#' \code{matrix} or \code{data.frame} format, according to the value of
-#' \code{format_out}. If multiple chromatograms are found, they will be returned
+#' `matrix` or `data.frame` format, according to the value of
+#' `format_out. If multiple chromatograms are found, they will be returned
 #' as a list of matrices or data.frames. The chromatograms will be returned in
-#' \code{wide} or \code{long} format according to the value of \code{data_format}.
+#' `wide or `long format according to the value of `data_format`.
 #' @family 'Shimadzu' parsers
 #' @export
 
@@ -331,26 +323,26 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
 }
 
 #' A parser to read total ion chromatogram data streams from 'Shimadzu'
-#' \code{.lcd} files. LCD files are encoded as 'Microsoft' OLE documents. The
+#' `.lcd` files. LCD files are encoded as 'Microsoft' OLE documents. The
 #' parser relies on the [olefile](https://pypi.org/project/olefile/) package in
 #' Python to unpack the files. The TIC data is encoded in a stream called
-#' \code{Centroid SumTIC}.
+#' `Centroid SumTIC`.
 #' The TIC data stream contains a segment for each retention time, beginning
 #' with a 8-byte header. After the header, the file consists of a series of
 #' 4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
-#' a 4-byte spacer (\code{00000000}) The first integer is the retention time
+#' a 4-byte spacer (`00000000`) The first integer is the retention time
 #' (scaled by 1000), the second integer is the scan number, and the third integer
 #' is the intensity.
 #'
-#' @param path Path to 'Shimadzu' \code{.lcd} file.
+#' @param path Path to 'Shimadzu' `.lcd` file.
 #' @param format_out Matrix or data.frame.
-#' @param data_format Either \code{wide} (default) or \code{long}.
+#' @param data_format Either `wide` (default) or `long`.
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @author Ethan Bass
-#' @return A 2D chromatogram from the SumTIC stream in \code{matrix} or
-#' \code{data.frame} format, according to the value of \code{format_out}.
-#' The chromatograms will be returned in \code{wide} or \code{long} format
-#' according to the value of \code{data_format}.
+#' @return A 2D chromatogram from the SumTIC stream in `matrix` or
+#' `data.frame` format, according to the value of `format_out`.
+#' The chromatograms will be returned in `wide` or `long` format
+#' according to the value of `data_format`.
 #' @note This parser is experimental and may still need some work. It is not
 #' yet able to interpret much metadata from the files.
 #' @noRd
@@ -413,7 +405,7 @@ read_sz_chrom <- function(path, stream){
 }
 
 #' Read 'Shimadzu' "Method" stream
-#' This function is called internally by \code{read_shimadzu_lcd}.
+#' This function is called internally by `read_shimadzu_lcd`.
 #' @author Ethan Bass
 #' @noRd
 read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
@@ -447,7 +439,7 @@ read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
 }
 
 #' Infer times from 'Shimadzu' Method stream
-#' This function is called internally by \code{read_shimadzu_lcd}.
+#' This function is called internally by `read_shimadzu_lcd`.
 #' @note This function is no longer needed because the times can be inferred
 #' (more reliably?) from the 2D Data Item.
 #' @author Ethan Bass
@@ -517,7 +509,7 @@ read_sz_pda <- function(path, n_lambdas = NULL){
 
 
 #' Extract wavelengths from Shimadzu LCD
-#' This function is called internally by \code{read_shimadzu_lcd}.
+#' This function is called internally by `read_shimadzu_lcd`.
 #' @author Ethan Bass
 #' @noRd
 read_sz_wavelengths <- function(path){
@@ -534,7 +526,7 @@ read_sz_wavelengths <- function(path){
 }
 
 #' Read 'Shimadzu' LCD data block
-#' This function is called internally by \code{read_shimadzu_lcd}.
+#' This function is called internally by `read_shimadzu_lcd`.
 #' @author Ethan Bass
 #' @noRd
 decode_sz_block <- function(f) {
@@ -583,7 +575,8 @@ decode_sz_block <- function(f) {
         } else if (hex1 > 1) {
           # Read additional bytes from the block
           extra_bytes <- hex1 %/% 2
-          buffer[[2]] <- decode_sz_val(c(current_byte, raw[(pos+1):(pos+extra_bytes)]))
+          buffer[[2]] <- decode_sz_val(c(current_byte,
+                                         raw[(pos+1):(pos+extra_bytes)]))
           pos <- pos + 1 + extra_bytes
         }
       }
@@ -602,7 +595,7 @@ decode_sz_block <- function(f) {
 }
 
 #' Return twos complement from binary string
-#' This function is called internally by \code{read_shimadzu_lcd}.
+#' This function is called internally by `read_shimadzu_lcd`.
 #' @noRd
 twos_complement <- function(bin, exp){
   if (missing(exp)){

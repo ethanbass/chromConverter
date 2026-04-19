@@ -1,22 +1,20 @@
 #' Read ThermoRaw
 #'
-#' Converts ThermoRawFiles to \code{mzML} by calling the [ThermoRawFileParser](
+#' Converts ThermoRawFiles to `mzML` by calling the [ThermoRawFileParser](
 #' https://github.com/compomics/ThermoRawFileParser) from the command-line.
 #'
 #' To use this function, the ThermoRawFileParser must be manually installed.
 #'
 #' @name read_thermoraw
-#' @param path Path to 'Thermo' \code{.raw} file.
-#' @param path_out Path to directory to export \code{mzML} files. If
-#' \code{path_out} isn't specified, a temp directory will be used.
-#' @param format_out R format. Either \code{matrix} or \code{data.frame}.
-#' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter} or
-#' \code{raw}.
-#' @param verbose Logical. Whether to print output from OpenChrom to the console.
-#' @return A chromatogram in the format specified by \code{format_out}.
-#' @section Side effects: Exports chromatograms in \code{mzML} format to the
-#' folder specified by \code{path_out}.
+#' @inheritParams shared_params
+#' @param path Path to 'Thermo' `.raw` file.
+#' @param path_out Path to directory to export `mzML` files. If `path_out` isn't
+#' specified, a temp directory will be used.
+#' @param verbose Logical. Whether to print output from ThermoRawFileParser to
+#' the console.
+#' @inherit shared_params return
+#' @section Side effects: Exports chromatograms in `mzML` format to the folder
+#' specified by `path_out`.
 #' @author Ethan Bass
 #' @references
 #' Hulstaert Niels, Jim Shofstahl, Timo Sachsenberg, Mathias Walzer,

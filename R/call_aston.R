@@ -1,18 +1,12 @@
 #' Converter for 'Agilent MassHunter' UV files
 #'
-#' Converts a single chromatogram from MassHunter \code{.sp} format to R
-#' \code{data.frame} using the [Aston](https://github.com/bovee/aston) file parser.
+#' Converts a single chromatogram from MassHunter `.sp` format to R
+#' `data.frame` using the [Aston](https://github.com/bovee/aston) file parser.
 #'
 #' @name sp_converter
-#' @param path Path to file
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Logical. Whether to read metadata and attach it to the
-#' chromatogram.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
+#' @inheritParams shared_params
+#' @param path Path to file.
+#' @inherit shared_params return
 #' @import reticulate
 #' @family external parsers
 #' @export sp_converter
@@ -47,23 +41,17 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
 
 #' Converter for 'Agilent ChemStation' UV files
 #'
-#' Converts a single chromatogram from ChemStation \code{.uv} format to R
-#' \code{data.frame}.
+#' Converts a single chromatogram from ChemStation `.uv` format to R
+#' `data.frame`.
 #'
 #' Uses the [Aston](https://github.com/bovee/aston) file parser.
 #'
 #' @name uv_converter
+#' @inheritParams shared_params
 #' @param path Path to file
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
 #' @param correction Logical. Whether to apply empirical correction. Defaults is
 #' TRUE.
-#' @param read_metadata Logical. Whether to read metadata and attach it to the
-#' chromatogram.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
+#' @inherit shared_params return
 #' @import reticulate
 #' @family external parsers
 #' @export uv_converter
@@ -103,14 +91,13 @@ uv_converter <- function(path, format_out = c("matrix","data.frame","data.table"
 
 #' Aston TraceFile Converter
 #'
-#' Uses Aston parser to figure out file-type and convert to R \code{data.frame}.
+#' Uses Aston parser to figure out file-type and convert to R `data.frame`.
+#'
 #' @name trace_converter
 #' @title generic converter for other types of files
-#' @param path Path to file
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @return A chromatogram in \code{data.frame} format (retention time x wavelength).
+#' @inheritParams shared_params
+#' @param path Path to file.
+#' @inherit shared_params return
 #' @import reticulate
 #' @noRd
 trace_converter <- function(path, format_out = c("matrix", "data.frame"),

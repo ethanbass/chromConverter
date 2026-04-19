@@ -2,26 +2,18 @@
 #'
 #' Reads peak lists from specified folders or vector of paths.
 #'
+#' @inheritParams shared_params
 #' @param paths Paths to files or folders containing peak list files.
-#' @param find_files Logical. Set to \code{TRUE} (default) if you are providing
+#' @param find_files Logical. Set to `TRUE` (default) if you are providing
 #' the function with a folder or vector of folders containing the files.
-#' Otherwise, set to\code{FALSE}.
+#' Otherwise, set to `FALSE`.
 #' @param format_in Format of files to be imported/converted. Current options
-#' include: \code{chemstation}, \code{shimadzu_fid}, \code{shimadzu_dad},
-#' \code{shimadzu_lcd}, and \code{shimadzu_gcd}.
-#' @param pattern pattern (e.g. a file extension). Defaults to \code{NULL}, in
-#' which case the file extension will be deduced from \code{format_in}.
-#' @param data_format Either \code{chromatographr} or \code{original}.
-#' @param read_metadata Logical, whether to attach metadata (if it's available).
-#' Defaults to \code{TRUE}.
-#' @param metadata_format Format to output metadata. Either
-#' \code{chromconverter} or \code{raw}.
-#' @param progress_bar Logical. Whether to show progress bar. Defaults to
-#' \code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.
-#' @param cl Argument to \code{\link[pbapply]{pbapply}} specifying the number
-#' of clusters to use or a cluster object created by
-#' \code{\link[parallel]{makeCluster}}. Defaults to \code{1}.
-#' @return A list of \code{data.frame}s containing information about peaks where
+#' include: `chemstation`, `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`, and
+#' `shimadzu_gcd`.
+#' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
+#' which case the file extension will be deduced from `format_in`.
+#' @param data_format Either `chromatographr` or `original`.
+#' @return A list of `data.frame`s containing information about peaks where
 #' each list element represents a sample and each row represents an individual
 #' peak in that sample.
 #' @import reticulate

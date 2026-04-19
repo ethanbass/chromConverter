@@ -1,20 +1,20 @@
 #' Print a chrom_list object
 #'
-#' Prints a summary of a \code{chrom_list} without displaying the underlying
+#' Prints a summary of a `chrom_list` without displaying the underlying
 #' chromatographic data. Attributes that are constant across all chromatograms
 #' are collapsed into a single header line, while varying attributes are shown
-#' as a table truncated to the first \code{n} rows.
+#' as a table truncated to the first `n` rows.
 #'
-#' @param x A \code{chrom_list} object.
+#' @param x A `chrom_list` object.
 #' @param n Integer. Maximum number of chromatograms to show in the table.
-#'   Defaults to 10.
+#' Defaults to `10`.
 #' @param cols Character vector of attribute names to extract and display.
-#'   Defaults to \code{c("sample_name", "run_datetime", "method", "detector")}.
+#'   Defaults to `c("sample_name", "run_datetime", "method", "detector")`.
 #' @param ... Additional arguments (currently ignored).
 #'
-#' @return Invisibly returns \code{x}.
+#' @return Invisibly returns `x`.
 #'
-#' @seealso \code{\link{extract_metadata}}
+#' @seealso [extract_metadata]
 #'
 #' @export
 print.chrom_list <- function(x, n = 5,

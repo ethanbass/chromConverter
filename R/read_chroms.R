@@ -39,12 +39,12 @@
 #' Otherwise, set to `FALSE`.
 #' @param pattern pattern (e.g. a file extension). Defaults to `NULL`, in which
 #' case file extension will be deduced from `format_in`.
-#' @param format_out Class of output. Either `matrix`, `data.frame`,
-#' or [data.table][data.table::data.table].
+#' @param format_out Class of output. Either `matrix`, `data.frame`, or
+#' `data.table`.
 #' @param data_format Whether to output data in wide or long format. Either
-#' `wide` or `long`.
-#' @param path_out Path for exporting files. If path not specified, files will
-#' export to current working directory.
+#' `wide` (default) or `long`.
+#' @param path_out Path for exporting files. If path is not specified, the user
+#' will be prompted to create a temp directory.
 #' @param export_format Export format. Currently the options include `.csv`,
 #' `chemstation_csv` (utf-16 encoding), `cdf`, `mzml`, `animl` and `arw`.
 #' @param force Logical. Whether to overwrite files when exporting. Defaults to
@@ -63,8 +63,8 @@
 #' @param sample_names Which sample names to use. Options are `basename` to
 #' use the filename (default) or `sample_name` to use the sample
 #' name encoded in the file metadata.
-#' @param dat Existing list of chromatograms to append results.
-#' (Defaults to NULL).
+#' @param dat Existing list of chromatograms to append results. Defaults to
+#' `NULL`.
 #' @param ... Additional arguments to parser.
 #' @return A list of chromatograms in `matrix`, `data.frame`, or `data.table`
 #' format, according to the value of `format_out`. Chromatograms may be returned

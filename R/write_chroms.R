@@ -1,22 +1,22 @@
 #' Write chromatograms
 #'
-#' Writes chromatograms to disk in the format specified by \code{export_format}:
-#' either (\code{mzml}), \code{cdf}, \code{csv}, or \code{arw}.
+#' Writes chromatograms to disk in the format specified by `export_format`:
+#' either `mzml`, `cdf`, `csv`, or `arw`.
 #'
 #' @param chrom_list A list of chromatograms.
 #' @param path_out Path to directory for writing files.
-#' @param export_format Format to export files: either \code{"mzml"}, \code{"cdf"},
-#' \code{"csv"}, or \code{"arw"}.
-#' @param what What to write. Argument to \code{write_cdf} and \code{write_mzml}.
-#' Either \code{"MS1"} or \code{"chrom"}.
-#' @param force Logical. Whether to overwrite existing files. Defaults to \code{TRUE}.
-#' @param show_progress Logical. Whether to show progress bar. Defaults to \code{TRUE}.
+#' @param export_format Format to export files: either `"mzml"`, `"cdf"`,
+#' `"csv"`, `"arw"`.
+#' @param what What to write. Argument to `write_cdf` and `write_mzml`. Either
+#' `"MS1"` or `"chrom"`.
+#' @param force Logical. Whether to overwrite existing files. Defaults to `TRUE`.
+#' @param show_progress Logical. Whether to show progress bar. Defaults to `TRUE`.
 #' @param verbose Logical. Whether to print verbose output.
 #' @param ... Additional arguments to write function.
 #' @return No return value. The function is called for its side effects.
 #' @section Side effects:
-#' Exports a chromatogram in the file format specified by \code{export_format}
-#' in the directory specified by \code{path_out}.
+#' Exports a chromatogram in the file format specified by `export_format` in the
+#' directory specified by `path_out`.
 #' @author Ethan Bass
 #' @family write functions
 #' @export
@@ -59,25 +59,25 @@ write_chroms <- function(chrom_list, path_out,
 #' Exports a chromatogram in ANDI (Analytical Data Interchange) chromatography
 #' format (ASTM E1947-98). This format can only accommodate unidimensional data.
 #' For two-dimensional chromatograms, the column to export can be specified
-#' using the \code{lambda} argument. Otherwise, a warning will be generated and
+#' using the `lambda` argument. Otherwise, a warning will be generated and
 #' the first column of the chromatogram will be exported.
 #'
 #' @author Ethan Bass
 #' @param x A chromatogram in (wide) format.
 #' @param path_out The path to write the file.
 #' @param sample_name The name of the file. If a name is not provided, the name
-#' will be derived from the \code{sample_name} attribute.
+#' will be derived from the `sample_name` attribute.
 #' @param lambda The wavelength to export (for 2-dimensional chromatograms).
-#' Must be a string matching one the columns in \code{x} or the index of the
+#' Must be a string matching one the columns in `x` or the index of the
 #' column to export.
 #' @param force Whether to overwrite existing files at the specified path.
-#' Defaults to \code{FALSE}.
+#' Defaults to `FALSE`.
 #' @return Invisibly returns the path to the written CDF file.
 #' @section Side effects:
 #' Exports a chromatogram in ANDI chromatography format (netCDF) in the directory
-#' specified by \code{path_out}. The file will be named according to the value
-#' of \code{sample_name}. If no \code{sample_name} is provided, the
-#' \code{sample_name} attribute will be used if it exists.
+#' specified by `path_out`. The file will be named according to the value
+#' of `sample_name`. If no `sample_name` is provided, the `sample_name`
+#' attribute will be used if it exists.
 #' @family write functions
 #' @export
 
@@ -235,6 +235,7 @@ export_cdf <- function(data, path_out, what = "", force = FALSE,
   return(invisible(unlist(file_paths)))
 }
 
+#' Infer sample names
 #' @noRd
 infer_sample_names <- function(data){
   dat <- lapply(seq_along(data), function(i){

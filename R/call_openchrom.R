@@ -8,16 +8,15 @@
 #' function is deprecated since it will only work if you happen to have access
 #' to OpenChrom version 1.4.0, which has been scrubbed from the internet.
 #'
-#' The \code{call_openchrom} function works by creating an \code{xml} batchfile
+#' The `call_openchrom` function works by creating an xml batchfile
 #' and feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
-#' consist of \code{InputEntries} (the files you want to convert) and
-#' \code{ProcessEntries} (what you want to do to the files). The parsers are
-#' organized into broad categories by detector-type and output format. The
-#' detector-types are \code{msd} (mass selective detectors), \code{csd}
-#' (current selective detectors, e.g., FID, ECD, NPD), and \code{wsd}
-#' (wavelength selective detectors, e.g.,  DAD, and UV/VIS). Thus, when calling
-#' the OpenChrom parsers, you must select one of these three options for the
-#' input format (\code{format_in}).
+#' consist of `InputEntries` (specifying the files you want to convert) and
+#' `ProcessEntries` (specifying what you want to do to the files). The parsers
+#' are organized into broad categories by detector-type and output format. The
+#' detector-types are `msd` (mass selective detectors), `csd` (current selective
+#' detectors, e.g., FID, ECD, NPD), and `wsd` (wavelength selective detectors,
+#' e.g.,  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers, one of
+#' these three options must be specified using the `format_in` argument.
 #'
 #' @note Activating the OpenChrom command-line will deactivate the graphical
 #' user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
@@ -25,26 +24,23 @@
 #' call from R.
 #'
 #' @import xml2
+#' @inheritParams shared_params
 #' @param files Path to files.
 #' @param path_out Directory to export converted files.
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame
 #' ionization data, or `wsd` for DAD/UV data.
-#' @param format_out R format. Either \code{matrix}, \code{data.frame} or
-#' \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param export_format Either  \code{mzml}, \code{csv}, \code{cdf},  \code{animl}.
-#' Defaults to \code{mzml}.
-#' @param return_paths Logical. If TRUE, the function will return a character
+#' @param export_format Either  `mzml`, `csv`, `cdf`, `animl`. Defaults to
+#' `mzml`.
+#' @param return_paths Logical. If `TRUE`, the function will return a character
 #' vector of paths to the newly created files.
 #' @param verbose Logical. Whether to print output from OpenChrom to the console.
-#' @return If \code{return_paths} is \code{FALSE}, the function will return a
-#' list of chromatograms (if an appropriate parser is available to import the
-#' files into R). The chromatograms will be returned in \code{matrix} or
-#' \code{data.frame} format according to the value of \code{format_out}. If
-#' \code{return_paths} is \code{TRUE}, the function will return a character
-#' vector of paths to the newly created files.
+#' @return If `return_paths` is `FALSE`, the function will return a list of
+#' chromatograms (if an appropriate parser is available to import the files into
+#' R). The chromatograms will be returned in `matrix` or `data.frame` format
+#' according to the value of `format_out`. If `return_paths` is `TRUE`, the
+#' function will return a character vector of paths to the newly created files.
 #' @section Side effects: Chromatograms will be exported in the format specified
-#' by \code{export_format} in the folder specified by \code{path_out}.
+#' by `export_format` in the folder specified by `path_out`.
 #' @author Ethan Bass
 #' @references
 #' Wenig, Philip and Odermatt, Juergen. OpenChrom: A Cross-Platform Open Source
@@ -110,13 +106,13 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 }
 
 #' Writes OpenChrom XML batch file
-#' This function is called internally by \code{call_openchrom}.
+#' This function is called internally by `call_openchrom`.
 #' @import xml2
 #' @param files Paths to files for conversion
 #' @param path_out directory to export converted files.
-#' @param format_in Either \code{msd} for mass spectrometry data, \code{csd} for
-#' flame ionization data, or \code{wsd} for DAD/UV data.
-#' @param export_format Either \code{csv}, \code{cdf}, \code{mzml}, or \code{animl}.
+#' @param format_in Either `msd` for mass spectrometry data, `csd` for flame
+#' ionization data, or `wsd` for DAD/UV data.
+#' @param export_format Either `csv`, `cdf`, `mzml`, or `animl`.
 #' @return Returns path to newly created xml batch file.
 #' @author Ethan Bass
 #' @noRd
@@ -184,7 +180,7 @@ write_openchrom_batchfile <- function(files, path_out,
 #' @param path Path to 'OpenChrom' executable (Optional). The supplied path will
 #' overwrite the current path.
 #' @importFrom utils read.table write.table
-#' @return If \code{cli} is set to \code{"status"}, returns a Boolean value
+#' @return If `cli` is set to `"status"`, returns a Boolean value
 #' indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
 #' the path to OpenChrom command-line application.
 #' @author Ethan Bass

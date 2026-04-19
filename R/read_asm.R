@@ -2,22 +2,9 @@
 #'
 #' Reads ['Allotrope Simple Model'](https://www.allotrope.org/asm) files into R.
 #'
-#' @param path Path to ASM \code{.json} file.
-#' @param format_out Matrix or data.frame.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' @param read_metadata Logical. Whether to attach metadata.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element. Defaults to \code{TRUE}.
-#' @return A 2D chromatogram in the format specified by \code{data_format} and
-#' \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
-#' be returned with retention times as rows and a single column for the intensity.
-#' If \code{long} format is requested, two columns will be returned: one for the
-#' retention time and one for the intensity. The \code{format_out} argument
-#' determines whether the chromatogram is returned as a \code{matrix} or
-#' \code{data.frame}. Metadata can be attached to the chromatogram as
-#' \code{\link{attributes}} if \code{read_metadata} is \code{TRUE}.
+#' @inheritParams shared_params
+#' @param path Path to ASM `.json` file.
+#' @inherit generic_return_2D return
 #' @author Ethan Bass
 #' @export
 

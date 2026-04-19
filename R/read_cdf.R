@@ -1,28 +1,22 @@
 #' Read CDF
 #'
-#' Reads 'Analytical Data Interchange' (ANDI) netCDF (\code{.cdf}) files.
+#' Reads 'Analytical Data Interchange' (ANDI) netCDF (`.cdf`) files.
 #'
+#' @inheritParams shared_params
 #' @param path Path to ANDI netCDF file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{\link[data.table]{data.table}}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
+#' @param data_format Whether to return data in `wide` or `long` format.
 #' For 2D files, "long" format returns the retention time as the first column of
 #' the data.frame or matrix while "wide" format returns the retention time as the
 #' rownames of the object. This argument applies only to 2D chromatograms, since
 #' MS data will always be returned in long format.
-#' @param what For \code{ANDI chrom} files, whether to extract \code{chroms}
-#' and/or \code{peak_table}. For \code{ANDI ms} files, whether to extract MS1 scans
-#' (\code{MS1}) or the total ion chromatogram (\code{TIC}).
-#' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element.
-#' @param ... Additional arguments to parser. The \code{ms_format} argument
-#' can be used here to specify whether to return mass spectra in \code{list}
-#' format or as a \code{data.frame}.
-#' @return A chromatogram in the format specified by the \code{format_out} and
-#' \code{data_format} arguments.
+#' @param what For `ANDI chrom` files, whether to extract `chroms`
+#' and/or `peak_table`. For `ANDI ms` files, whether to extract MS1 scans
+#' (`MS1`) or the total ion chromatogram (`TIC`).
+#' @param ... Additional arguments to parser. The `ms_format` argument
+#' can be used here to specify whether to return mass spectra in `list`
+#' format or as a `data.frame`.
+#' @return A chromatogram in the format specified by the `format_out` and
+#' `data_format` arguments.
 #' @author Ethan Bass
 #' @export
 
@@ -56,18 +50,18 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
 
 #' Read ANDI chrom file
 #' @param path Path to file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return data in \code{wide} or \code{long} format.
-#' For 2D files, "long" format returns the retention time as the first column of
-#' the data.frame or matrix while "wide" format returns the retention time as the
-#' rownames of the object.
-#' @param what Whether to extract \code{chromatogram} and/or \code{peak_table}.
-#' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @return A chromatogram in the format specified by the \code{format_out} and
-#' \code{data_format} arguments (retention time x wavelength).
+#' @param format_out Class of output. Either `matrix`, `data.frame`, or
+#' `data.table`.
+#' @param data_format Whether to return data in `wide` or `long` format.
+#' For 2D files, `"long"` format returns the retention time as the first column
+#' of the data.frame or matrix while `"wide"` format returns the retention time
+#' as the rownames of the object.
+#' @param what Whether to extract `chromatogram` and/or `peak_table`.
+#' @param read_metadata Whether to read metadata from file. Defaults to `TRUE`.
+#' @param metadata_format Format to output metadata. Either `chromconverter` or
+#' `raw`.
+#' @return A chromatogram in the format specified by the `format_out` and
+#' `data_format` arguments (retention time x wavelength).
 #' @author Ethan Bass
 #' @noRd
 read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
@@ -129,23 +123,23 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
 
 #' Read ANDI MS file
 #' @param path Path to file.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Whether to return the total ion chromatogram in \code{wide}
-#' or \code{long} format. The "long" format returns the retention time as the
+#' @param format_out Class of output. Either `matrix`, `data.frame`,
+#' or `data.table`.
+#' @param data_format Whether to return the total ion chromatogram in `wide`
+#' or `long` format. The "long" format returns the retention time as the
 #' first column of the data.frame or matrix while "wide" format returns the
 #' retention time as the rownames of the object.
-#' @param what Whether to extract MS1 scans \code{MS1} and/or the total ion
-#' chromatogram \code{TIC}.
+#' @param what Whether to extract MS1 scans `MS1` and/or the total ion 
+#' chromatogram (`TIC`).
 #' @param read_metadata Whether to read metadata from file.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
+#' @param metadata_format Format to output metadata. Either `chromconverter`
+#' or `raw`.
 #' @param ms_format Whether to return mass spectral data as a (long)
-#' \code{data.frame} or a \code{list}.
-#' @return A chromatogram in the format specified by the \code{format_out} and
-#' \code{data_format} arguments and MS spectra as either a long-format
-#' \code{data.frame} or a \code{list} of spectra, according to the value of
-#' \code{ms_format}.
+#' `data.frame` or a `list`.
+#' @return A chromatogram in the format specified by the `format_out` and
+#' `data_format` arguments and MS spectra as either a long-format
+#' `data.frame` or a `list` of spectra, according to the value of
+#' `ms_format`.
 #' @author Ethan Bass
 #' @noRd
 

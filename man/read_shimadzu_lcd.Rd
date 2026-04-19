@@ -19,35 +19,35 @@ read_shimadzu_lcd(
 \item{path}{Path to 'Shimadzu' \code{.lcd} file.}
 
 \item{what}{What stream to get: current options are \code{pda}, chromatograms
-(\code{chroms}), \code{tic}, or peak lists (\code{peak_table}). If a stream
+(\code{chroms}), \code{tic}, and/or peak lists (\code{peak_table}). If a stream
 is not specified, the function will default to \code{pda} if the PDA stream
 is present.}
 
-\item{format_out}{Matrix or data.frame.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{data_format}{Either \code{wide} (default) or \code{long}.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
-\item{scale}{Whether to scale the data by the value factor. Defaults to
-\code{TRUE}.}
+\item{scale}{Whether to scale the data by the scaling factor present in the
+file. Defaults to \code{TRUE}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
-element.}
+element. Defaults to \code{TRUE}.}
 }
 \value{
 A chromatogram or list of chromatograms in the format specified by
-\code{data_format} and \code{format_out}. If \code{data_format} is \code{wide},
-the chromatogram(s) will be returned with retention times as rows and a
+\code{data_format} and \code{format_out}. If \code{data_format} is \code{wide}, the
+chromatogram(s) will be returned with retention times as rows and a
 single column for the intensity. If \code{long} format is requested, two
 columns will be returned: one for the retention time and one for the intensity.
 The \code{format_out} argument determines whether chromatograms are returned
-as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
-attached to the chromatogram as \code{\link{attributes}} if
-\code{read_metadata} is \code{TRUE}.
+in \code{matrix}, \code{data.frame}, or \code{data.table} format. Metadata will be
+attached to the chromatogram as \link{attributes} when \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Read 3D PDA or 2D chromatogram streams from 'Shimadzu' \code{.lcd} files.
@@ -56,7 +56,7 @@ Read 3D PDA or 2D chromatogram streams from 'Shimadzu' \code{.lcd} files.
 A parser to read data from 'Shimadzu' \code{.lcd} files. LCD files are
 encoded as 'Microsoft' OLE documents. The parser relies on the
 \href{https://pypi.org/project/olefile/}{olefile} package in Python to unpack the
-files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Raw Data}.
+files. The PDA data is encoded in a stream called \verb{PDA 3D Raw Data:3D Raw Data}.
 The PDA data stream contains a segment for each retention time, beginning
 with a 24-byte header.
 

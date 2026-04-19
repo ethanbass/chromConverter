@@ -5,7 +5,7 @@
 #' @param path Path to 'Varian' peak list file.
 #' @importFrom utils read.csv
 #' @author Ethan Bass
-#' @return A data.frame containing the information from the specified report.
+#' @return A `data.frame` containing the information from the specified report.
 #' @examples \dontrun{
 #' read_varian_peaklist(path)
 #' }

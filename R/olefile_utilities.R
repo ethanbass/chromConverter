@@ -1,5 +1,5 @@
 #' Export OLE stream
-#' This function is called internally by \code{read_shimadzu_lcd}.
+#' This function is called internally by `read_shimadzu_lcd`.
 #' Use olefile to export te specified stream.
 #' @param path Path to ole file.
 #' @author Ethan Bass

@@ -5,7 +5,7 @@
 \title{Read 'Agilent' ACAML files from directory.}
 \usage{
 read_acaml(
-  paths,
+  path,
   find_files,
   format_out = c("data.frame", "data.table", "tibble"),
   progress_bar = TRUE,
@@ -13,30 +13,30 @@ read_acaml(
 )
 }
 \arguments{
-\item{paths}{Paths to ACAML files or to folders that contain the files.}
+\item{path}{Path(s) to ACAML files or to folders that contain the files.}
 
 \item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
 the function with a folder or vector of folders containing the files.
 Otherwise, set to \code{FALSE}.}
 
-\item{format_out}{Either \code{data.frame}, \code{data.table}, or
-\code{tibble}.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}.}
 
-\item{progress_bar}{Logical. Whether to show progress bar. Defaults to
-\code{TRUE} if \code{\link[pbapply]{pbapply}} is installed.}
+\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
+if \code{pbapply} is installed.}
 
-\item{cl}{Argument to \code{\link[pbapply]{pbapply}} specifying the number
+\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
 of clusters to use or a cluster object created by
-\code{\link[parallel]{makeCluster}}. Defaults to \code{1}.}
+\link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
 }
 \value{
-A \code{data.frame}, \code{data.table} or \code{tibble} (according
-to the value of \code{format_out}) containing sample metadata derived from
-the supplied ACAML files.
+A \code{data.frame}, \code{data.table} or \code{tibble} (according to the value of
+\code{format_out}) containing sample metadata derived from the supplied ACAML
+files.
 }
 \description{
 Extracts injection metadata from 'Agilent Common Analytical Markup Language'
-(ACAML) files into a \code{data.frame}.
+(ACAML) files into an R object.
 }
 \details{
 ACAML is an XML-based format used by Agilent OpenLab to store sequence and

@@ -1,42 +1,33 @@
 #' Read 'Shimadzu' GCD
 #'
-#' Read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
+#' Read chromatogram data streams from 'Shimadzu' `.gcd` files.
 #'
-#' A parser to read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
+#' A parser to read chromatogram data streams from 'Shimadzu' `.gcd` files.
 #' GCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
-#' files. The PDA data is encoded in a stream called \code{PDA 3D Raw Data:3D Raw Data}.
+#' files. The PDA data is encoded in a stream called `PDA 3D Raw Data:3D Raw Data`.
 #' The GCD data stream contains a segment for each retention time, beginning
 #' with a 24-byte header.
 #'
 #' The 24 byte header consists of the following fields:
-#' * 4 bytes: segment label (\code{17234}).
+#' * 4 bytes: segment label (`17234`).
 #' * 4 bytes: Little-endian integer specifying the sampling interval in milliseconds.
 #' * 4 bytes: Little-endian integer specifying the number of values in the file.
 #' * 4 bytes: Little-endian integer specifying the total number of bytes in the file
 #' (However, this seems to be off by a few bytes?).
-#' * 8 bytes of \code{00}s
+#' * 8 bytes of `00`s
 #'
 #' After the header, the data are simply encoded as 64-bit (little-endian)
 #' floating-point numbers. The retention times can be (approximately?) derived
 #' from the number of values and the sampling interval encoded in the header.
-#' @param path Path to 'Shimadzu' \code{.gcd} file.
+#'
+#' @inheritParams shared_params
+#' @param path Path to 'Shimadzu' `.gcd` file.
 #' @param what What stream to get: current options are chromatograms
-#' (\code{chroms}) and/or peak lists (\code{peak_table}). If a stream
-#' is not specified, the function will default to \code{chroms}.
-#' @param format_out Class of output. Either \code{matrix}, \code{data.frame},
-#' or \code{data.table}.
-#' @param data_format Either \code{wide} (default) or \code{long}.
-#' @param read_metadata Logical. Whether to attach metadata. Defaults to \code{TRUE}.
-#' @param metadata_format Format to output metadata. Either \code{chromconverter}
-#' or \code{raw}.
-#' @param collapse Logical. Whether to collapse lists that only contain a single
-#' element.
+#' (`chroms`) and/or peak lists (`peak_table`). If a stream
+#' is not specified, the function will default to `chroms`.
 #' @author Ethan Bass
-#' @return A 2D chromatogram from the chromatogram stream in \code{matrix} or
-#' \code{data.frame} format, according to the value of \code{format_out}.
-#' The chromatograms will be returned in \code{wide} or \code{long} format
-#' according to the value of \code{data_format}.
+#' @inherit generic_return_2D return
 #' @note This parser is experimental and may still need some work. It is not
 #' yet able to interpret much metadata from the files.
 #' @family 'Shimadzu' parsers

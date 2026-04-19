@@ -26,43 +26,42 @@ call_rainbow(
 \item{format_in}{Format of the supplied files. Either \code{agilent_d},
 \code{waters_raw}, or \code{chemstation}.}
 
-\item{format_out}{R format. Either \code{matrix}, \code{data.frame}, or
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{data_format}{Whether to return data in wide or long format.}
+\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{by}{How to order the list that is returned. Either \code{detector}
-(default) or \code{name}.}
+\item{by}{How to order the list that is returned. Either \code{detector} (default)
+or \code{name}.}
 
 \item{what}{What types of data to return (e.g. \code{MS}, \code{UV}, \code{CAD},
 \code{ELSD}). This argument only applies if \code{by == "detector"}.}
 
-\item{read_metadata}{Logical. Whether to attach metadata. Defaults to TRUE.}
+\item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
-element.}
+element. Defaults to \code{TRUE}.}
 
 \item{precision}{Number of decimals to round mz values. Defaults to 1.}
 
 \item{sparse}{Logical. Whether to return MS data in sparse format (excluding
-zeros). Defaults to \code{TRUE}. Applies only when data are requested in
-\code{long} format.}
+zeros). Defaults to \code{TRUE}. Applies only when data are requested in \code{long}
+format.}
 }
 \value{
-Returns a (nested) list of \code{matrices} or \code{data.frames} according to
-the value of \code{format_out}. Data is ordered according to the value of
-\code{by}.
+Returns a (nested) list of matrices or \code{data.frame}s according to
+the value of \code{format_out}. Data is ordered according to the value of \code{by}.
 }
 \description{
-Uses \href{https://rainbow-api.readthedocs.io}{rainbow} parsers to read in Agilent (.D)
-and Waters (.raw) files. If \code{format_in} is \code{"agilent_d"} or
-\code{"waters_raw"}, a directory of the appropriate format (\code{.d} or
-\code{.raw}) should be provided to the \code{file} argument. If \code{format_in} is
-\code{"chemstation_uv"} a \code{.uv} file should be provided. Data can be filtered
-by detector type using the \code{what} argument.
+Uses \href{https://rainbow-api.readthedocs.io}{rainbow} parsers to read in Agilent
+(\code{.D}) and Waters (\code{.raw}) files. If \code{format_in} is \code{"agilent_d"} or
+\code{"waters_raw"}, a directory of the appropriate format (\code{.D} or \code{.raw}) should
+be provided to the \code{path} argument. If \code{format_in} is \code{"chemstation_uv"} a
+\code{.uv} file should be provided. Data can be filtered by detector type using
+the \code{what} argument.
 }
 \seealso{
 Other external parsers: 
