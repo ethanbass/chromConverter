@@ -48,6 +48,7 @@
 * Fixed 'Shimadzu' QGD bug affecting large values. Resolves ([#44](https://github.com/ethanbass/chromConverter/issues/44)).
 * Fixed bug causing sample_position/vial metadata to be dropped when reading Agilent files.
 * Fixed bug so that temp directories created by certain file parsers (e.g., `read_agilent_dx` and `read_themoraw`) are actually deleted on completion.
+* Refactored `extract_metadata` function for simplicity.
 
 ## chromConverter 0.8.0
 

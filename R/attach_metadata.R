@@ -776,7 +776,6 @@ read_waters_metadata <- function(file){
 #' to the value of \code{format_out}), with samples as rows and the specified
 #' metadata elements as columns.
 #' @export
-
 extract_metadata <- function(chrom_list,
                              what = c("instrument", "detector", "detector_id",
                                       "software", "method", "batch", "operator",
@@ -789,16 +788,16 @@ extract_metadata <- function(chrom_list,
                                       "source_file_format", "source_sha1",
                                       "data_format", "parser", "format_out"),
                              format_out = c("data.frame", "data.table", "tibble")
-                                                  ){
+){
   if (inherits(chrom_list, c("matrix", "data.table", "data.frame"))){
     chrom_list <- list(chrom_list)
     use_names <- FALSE
   } else use_names <- TRUE
   format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
-  metadata <- purrr::map_df(chrom_list, function(chrom){
-    unlist(sapply(what, function(w){
+  metadata <- purrr::imap_dfr(chrom_list, function(chrom, name){
+    c(name = name, unlist(sapply(what, function(w){
       attr(chrom, which = w)
-    }, simplify = FALSE))
+    }, simplify = FALSE)))
   })
   missing <- what[which(!(what %in% colnames(metadata)))]
   if (nrow(metadata) == 0){
@@ -809,12 +808,11 @@ extract_metadata <- function(chrom_list,
                     paste(sQuote(missing),collapse = ", ")),immediate. = TRUE)
   }
   if (any(colnames(metadata) == "run_datetime")){
-    metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime), tz = "UTC")
+    metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime),
+                                        tz = "UTC")
   }
-  if (use_names){
-    metadata <- tibble::add_column(.data = metadata,
-                                   data.frame(name = names(chrom_list)),
-                                   .before = TRUE)
+  if (!use_names){
+    metadata <- metadata[,-1]
   }
   if (format_out == "data.frame"){
     metadata <- as.data.frame(metadata, row.names = NULL)
