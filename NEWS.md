@@ -1,4 +1,4 @@
-## chromConverter (development version)
+## chromConverter 0.9.0
 
 ### Breaking changes
 
