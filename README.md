@@ -23,7 +23,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 ##### ChromConverter (internal parsers)
 - 'Agilent ChemStation' & 'OpenLab' `.uv` files (versions 131, 31)
 - 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 30, 130, 8, 81, 179, 181)
-- 'Agilent OpenLab' `.dx` files.
+- 'Agilent OpenLab' `.dx`, `acaml`, and `amx` files.
 - Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
 - mzML (`.mzml`) & mzXML (.`mzxml`) (via *RaMS*).
@@ -35,6 +35,7 @@ chromConverter aims to facilitate the conversion of chromatography data from var
 - 'Varian Workstation' (`.SMS`)
 - 'Waters Empower' ascii (`.arw`)
 - 'Waters Empower' `.raw` files (2D chromatograms only)
+- Chromatotec `.Chrom` files.
 
 ##### External Libraries
 
