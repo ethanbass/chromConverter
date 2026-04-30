@@ -70,8 +70,8 @@ install.packages("chromConverter")
 However, it's recommended to install the development version of chromConverter from GitHub as follows:
 
 ```
-install.packages("remotes")
-remotes::install_github("https://github.com/ethanbass/chromConverter/")
+if (!require("pak", quietly=TRUE)) install.packages("pak")
+pak::pak("ethanbass/chromConverter")
 ```
 
 or from [R Universe](https://r-universe.dev/):
