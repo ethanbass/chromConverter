@@ -81,12 +81,12 @@ BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405.
 \doi{10.1186/1471-2105-11-405}.
 }
 \seealso{
-Other external parsers: 
-\code{\link{call_entab}()},
-\code{\link{call_rainbow}()},
-\code{\link{read_thermoraw}()},
-\code{\link{sp_converter}()},
-\code{\link{uv_converter}()}
+Other external parsers:
+\code{\link[=call_entab]{call_entab()}},
+\code{\link[=call_rainbow]{call_rainbow()}},
+\code{\link[=read_thermoraw]{read_thermoraw()}},
+\code{\link[=sp_converter]{sp_converter()}},
+\code{\link[=uv_converter]{uv_converter()}}
 }
 \author{
 Ethan Bass

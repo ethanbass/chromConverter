@@ -37,8 +37,8 @@ For now this parser only reads 1D chromatograms (not mass spectra or
 DAD data) and does not support parsing of metadata from 'Waters' RAW files.
 }
 \seealso{
-Other 'Waters' parsers: 
-\code{\link{read_waters_arw}()}
+Other 'Waters' parsers:
+\code{\link[=read_waters_arw]{read_waters_arw()}}
 }
 \author{
 Ethan Bass

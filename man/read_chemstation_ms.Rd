@@ -57,13 +57,13 @@ read_chemstation_ms(path)
 }
 }
 \seealso{
-Other 'Agilent' parsers: 
-\code{\link{read_agilent_d}()},
-\code{\link{read_agilent_dx}()},
-\code{\link{read_chemstation_ch}()},
-\code{\link{read_chemstation_csv}()},
-\code{\link{read_chemstation_reports}()},
-\code{\link{read_chemstation_uv}()}
+Other 'Agilent' parsers:
+\code{\link[=read_agilent_d]{read_agilent_d()}},
+\code{\link[=read_agilent_dx]{read_agilent_dx()}},
+\code{\link[=read_chemstation_ch]{read_chemstation_ch()}},
+\code{\link[=read_chemstation_csv]{read_chemstation_csv()}},
+\code{\link[=read_chemstation_reports]{read_chemstation_reports()}},
+\code{\link[=read_chemstation_uv]{read_chemstation_uv()}}
 }
 \author{
 Ethan Bass

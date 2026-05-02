@@ -52,13 +52,13 @@ This function unzips 'Agilent'  \code{.dx} into a temporary directory using
 \link{unzip} and calls the appropriate parser on the unzipped file.
 }
 \seealso{
-Other 'Agilent' parsers: 
-\code{\link{read_agilent_d}()},
-\code{\link{read_chemstation_ch}()},
-\code{\link{read_chemstation_csv}()},
-\code{\link{read_chemstation_ms}()},
-\code{\link{read_chemstation_reports}()},
-\code{\link{read_chemstation_uv}()}
+Other 'Agilent' parsers:
+\code{\link[=read_agilent_d]{read_agilent_d()}},
+\code{\link[=read_chemstation_ch]{read_chemstation_ch()}},
+\code{\link[=read_chemstation_csv]{read_chemstation_csv()}},
+\code{\link[=read_chemstation_ms]{read_chemstation_ms()}},
+\code{\link[=read_chemstation_reports]{read_chemstation_reports()}},
+\code{\link[=read_chemstation_uv]{read_chemstation_uv()}}
 }
 \author{
 Ethan Bass

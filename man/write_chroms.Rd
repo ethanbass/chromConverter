@@ -48,9 +48,9 @@ directory specified by \code{path_out}.
 }
 
 \seealso{
-Other write functions: 
-\code{\link{write_andi_chrom}()},
-\code{\link{write_mzml}()}
+Other write functions:
+\code{\link[=write_andi_chrom]{write_andi_chrom()}},
+\code{\link[=write_mzml]{write_mzml()}}
 }
 \author{
 Ethan Bass

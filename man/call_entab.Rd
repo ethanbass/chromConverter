@@ -36,11 +36,11 @@ A chromatogram in the format specified by the \code{format_out} and
 Converts chromatography date files using \href{https://github.com/bovee/entab}{entab} parsers.
 }
 \seealso{
-Other external parsers: 
-\code{\link{call_openchrom}()},
-\code{\link{call_rainbow}()},
-\code{\link{read_thermoraw}()},
-\code{\link{sp_converter}()},
-\code{\link{uv_converter}()}
+Other external parsers:
+\code{\link[=call_openchrom]{call_openchrom()}},
+\code{\link[=call_rainbow]{call_rainbow()}},
+\code{\link[=read_thermoraw]{read_thermoraw()}},
+\code{\link[=sp_converter]{sp_converter()}},
+\code{\link[=uv_converter]{uv_converter()}}
 }
 \concept{external parsers}

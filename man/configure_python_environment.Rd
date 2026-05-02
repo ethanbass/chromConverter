@@ -20,8 +20,8 @@ environment (\code{"venv"}) or a conda environment (\code{"conda"}).}
 \item{python}{Argument to \code{reticulate::virtualenv_create}, specifying
 the path to a Python interpreter.}
 
-\item{...}{Additional arguments to \link[reticulate:virtualenv-tools]{reticulate::virtualenv_create} or
-\link[reticulate:conda-tools]{reticulate::conda_create} according to the value of \code{what}.}
+\item{...}{Additional arguments to \link[reticulate:virtualenv_create]{reticulate::virtualenv_create} or
+\link[reticulate:conda_create]{reticulate::conda_create} according to the value of \code{what}.}
 }
 \value{
 There is no return value.

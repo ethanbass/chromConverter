@@ -67,12 +67,12 @@ complements. The value at each position is derived by subtracting the delta
 at each position from the previous value.
 }
 \seealso{
-Other 'Shimadzu' parsers: 
-\code{\link{read_shimadzu}()},
-\code{\link{read_shimadzu_gcd}()},
-\code{\link{read_shimadzu_lcd}()},
-\code{\link{read_shimadzu_qgd}()},
-\code{\link{read_sz_lcd_3d}()}
+Other 'Shimadzu' parsers:
+\code{\link[=read_shimadzu]{read_shimadzu()}},
+\code{\link[=read_shimadzu_gcd]{read_shimadzu_gcd()}},
+\code{\link[=read_shimadzu_lcd]{read_shimadzu_lcd()}},
+\code{\link[=read_shimadzu_qgd]{read_shimadzu_qgd()}},
+\code{\link[=read_sz_lcd_3d]{read_sz_lcd_3d()}}
 }
 \author{
 Ethan Bass

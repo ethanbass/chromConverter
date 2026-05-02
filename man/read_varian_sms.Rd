@@ -80,8 +80,8 @@ read_varian_sms(path)
 }
 }
 \seealso{
-Other 'Varian' parsers: 
-\code{\link{read_varian_peaklist}()}
+Other 'Varian' parsers:
+\code{\link[=read_varian_peaklist]{read_varian_peaklist()}}
 }
 \author{
 Ethan Bass

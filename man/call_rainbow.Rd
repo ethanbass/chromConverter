@@ -64,12 +64,12 @@ be provided to the \code{path} argument. If \code{format_in} is \code{"chemstati
 the \code{what} argument.
 }
 \seealso{
-Other external parsers: 
-\code{\link{call_entab}()},
-\code{\link{call_openchrom}()},
-\code{\link{read_thermoraw}()},
-\code{\link{sp_converter}()},
-\code{\link{uv_converter}()}
+Other external parsers:
+\code{\link[=call_entab]{call_entab()}},
+\code{\link[=call_openchrom]{call_openchrom()}},
+\code{\link[=read_thermoraw]{read_thermoraw()}},
+\code{\link[=sp_converter]{sp_converter()}},
+\code{\link[=uv_converter]{uv_converter()}}
 }
 \author{
 Ethan Bass

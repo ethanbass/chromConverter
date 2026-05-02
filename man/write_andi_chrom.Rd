@@ -40,9 +40,9 @@ attribute will be used if it exists.
 }
 
 \seealso{
-Other write functions: 
-\code{\link{write_chroms}()},
-\code{\link{write_mzml}()}
+Other write functions:
+\code{\link[=write_chroms]{write_chroms()}},
+\code{\link[=write_mzml]{write_mzml()}}
 }
 \author{
 Ethan Bass

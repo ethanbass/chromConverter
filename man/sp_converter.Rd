@@ -34,11 +34,11 @@ Converts a single chromatogram from MassHunter \code{.sp} format to R
 \code{data.frame} using the \href{https://github.com/bovee/aston}{Aston} file parser.
 }
 \seealso{
-Other external parsers: 
-\code{\link{call_entab}()},
-\code{\link{call_openchrom}()},
-\code{\link{call_rainbow}()},
-\code{\link{read_thermoraw}()},
-\code{\link{uv_converter}()}
+Other external parsers:
+\code{\link[=call_entab]{call_entab()}},
+\code{\link[=call_openchrom]{call_openchrom()}},
+\code{\link[=call_rainbow]{call_rainbow()}},
+\code{\link[=read_thermoraw]{read_thermoraw()}},
+\code{\link[=uv_converter]{uv_converter()}}
 }
 \concept{external parsers}

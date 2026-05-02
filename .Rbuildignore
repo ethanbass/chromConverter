@@ -15,3 +15,5 @@
 ^pkgdown$
 ^vignettes/articles$
 ^vignettes$
+^\.positai$
+^\.claude$

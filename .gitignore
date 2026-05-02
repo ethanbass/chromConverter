@@ -5,3 +5,4 @@ chromConverter.Rcheck
 *.Rproj
 .DS_Store
 CRAN-SUBMISSION
+.positai

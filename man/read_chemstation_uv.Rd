@@ -59,13 +59,13 @@ read_chemstation_uv("tests/testthat/testdata/dad1.uv")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-Other 'Agilent' parsers: 
-\code{\link{read_agilent_d}()},
-\code{\link{read_agilent_dx}()},
-\code{\link{read_chemstation_ch}()},
-\code{\link{read_chemstation_csv}()},
-\code{\link{read_chemstation_ms}()},
-\code{\link{read_chemstation_reports}()}
+Other 'Agilent' parsers:
+\code{\link[=read_agilent_d]{read_agilent_d()}},
+\code{\link[=read_agilent_dx]{read_agilent_dx()}},
+\code{\link[=read_chemstation_ch]{read_chemstation_ch()}},
+\code{\link[=read_chemstation_csv]{read_chemstation_csv()}},
+\code{\link[=read_chemstation_ms]{read_chemstation_ms()}},
+\code{\link[=read_chemstation_reports]{read_chemstation_reports()}}
 }
 \author{
 Ethan Bass

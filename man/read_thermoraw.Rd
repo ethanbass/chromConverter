@@ -58,12 +58,12 @@ ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.
 \doi{10.1021/acs.jproteome.9b00328}.
 }
 \seealso{
-Other external parsers: 
-\code{\link{call_entab}()},
-\code{\link{call_openchrom}()},
-\code{\link{call_rainbow}()},
-\code{\link{sp_converter}()},
-\code{\link{uv_converter}()}
+Other external parsers:
+\code{\link[=call_entab]{call_entab()}},
+\code{\link[=call_openchrom]{call_openchrom()}},
+\code{\link[=call_rainbow]{call_rainbow()}},
+\code{\link[=sp_converter]{sp_converter()}},
+\code{\link[=uv_converter]{uv_converter()}}
 }
 \author{
 Ethan Bass
