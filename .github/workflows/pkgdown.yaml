@@ -27,7 +27,7 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-          
+
       - name: Add entab repo
         run: |
           writeLines('options(repos = c(entab = "https://ethanbass.github.io/drat/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
@@ -44,7 +44,7 @@ jobs:
           remotes::install_deps(dependencies = TRUE)
           reticulate::install_miniconda()
           reticulate::conda_create('r-reticulate', packages = c('python==3.9', 'numpy', 'scipy', 'pandas'))
-          reticulate::conda_install('r-reticulate', packages = c('aston'), pip=TRUE)
+          reticulate::conda_install('r-reticulate', packages = c('Aston'), pip=TRUE)
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2

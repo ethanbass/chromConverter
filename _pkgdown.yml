@@ -43,3 +43,6 @@ reference:
   contents:
   - write_andi_chrom
   - write_mzml
+- title: "Methods"
+  contents:
+  - print.chrom_list
