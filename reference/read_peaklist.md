@@ -29,7 +29,7 @@ read_peaklist(
 
   Logical. Set to `TRUE` (default) if you are providing the function
   with a folder or vector of folders containing the files. Otherwise,
-  set to`FALSE`.
+  set to `FALSE`.
 
 - format_in:
 
@@ -39,8 +39,8 @@ read_peaklist(
 
 - pattern:
 
-  pattern (e.g. a file extension). Defaults to `NULL`, in which case the
-  file extension will be deduced from `format_in`.
+  A pattern (e.g. a file extension). Defaults to `NULL`, in which case
+  the file extension will be deduced from `format_in`.
 
 - data_format:
 
@@ -52,21 +52,19 @@ read_peaklist(
 
 - read_metadata:
 
-  Logical, whether to attach metadata (if it's available). Defaults to
-  `TRUE`.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - progress_bar:
 
-  Logical. Whether to show progress bar. Defaults to `TRUE` if
-  [`pbapply`](https://peter.solymos.org/pbapply/reference/pbapply.html)
+  Logical. Whether to show progress bar. Defaults to `TRUE` if `pbapply`
   is installed.
 
 - cl:
 
   Argument to
-  [`pbapply`](https://peter.solymos.org/pbapply/reference/pbapply.html)
+  [pbapply](https://peter.solymos.org/pbapply/reference/pbapply.html)
   specifying the number of clusters to use or a cluster object created
-  by [`makeCluster`](https://rdrr.io/r/parallel/makeCluster.html).
+  by [makeCluster](https://rdrr.io/r/parallel/makeCluster.html).
   Defaults to `1`.
 
 ## Value

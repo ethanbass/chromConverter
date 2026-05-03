@@ -24,15 +24,15 @@ read_asm(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - format_out:
 
-  Matrix or data.frame.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - read_metadata:
 
-  Logical. Whether to attach metadata.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -50,9 +50,9 @@ A 2D chromatogram in the format specified by `data_format` and
 returned with retention times as rows and a single column for the
 intensity. If `long` format is requested, two columns will be returned:
 one for the retention time and one for the intensity. The `format_out`
-argument determines whether the chromatogram is returned as a `matrix`
-or `data.frame`. Metadata can be attached to the chromatogram as
-[`attributes`](https://rdrr.io/r/base/attributes.html) if
+argument determines whether the chromatogram is returned as a `matrix`,
+`data.frame`, or `data.table`. Metadata can be attached to the
+chromatogram as [attributes](https://rdrr.io/r/base/attributes.html) if
 `read_metadata` is `TRUE`.
 
 ## Author

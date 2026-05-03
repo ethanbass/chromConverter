@@ -33,7 +33,7 @@ read_mzml(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - parser:
 
@@ -42,20 +42,17 @@ read_mzml(
 - what:
 
   What types of data to return (argument to
-  [`grabMSdata`](https://rdrr.io/pkg/RaMS/man/grabMSdata.html). Options
-  include `MS1`, `MS2`, `BPC`, `TIC`, `DAD`, `chroms`, `metadata`, or
-  `everything`).
+  [RaMS::grabMSdata](https://rdrr.io/pkg/RaMS/man/grabMSdata.html)).
+  Options include `MS1`, `MS2`, `BPC`, `TIC`, `DAD`, `chroms`,
+  `metadata`, or `everything`).
 
 - verbose:
 
-  Argument to
-  [`grabMSdata`](https://rdrr.io/pkg/RaMS/man/grabMSdata.html)
-  controlling `verbosity`.
+  Argument to `grabMSdata` controlling verbosity.
 
 - ...:
 
-  Additional arguments to
-  [`grabMSdata`](https://rdrr.io/pkg/RaMS/man/grabMSdata.html).
+  Additional arguments to `grabMSdata`.
 
 ## Value
 

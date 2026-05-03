@@ -27,11 +27,11 @@ read_chromeleon(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
-  Whether to read metadata from file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -45,8 +45,8 @@ read_chromeleon(
 
 ## Value
 
-A chromatogram in the format specified by `format_out`. (retention time
-x wavelength).
+A chromatogram in the format specified by `format_out` (retention time x
+wavelength).
 
 ## Author
 

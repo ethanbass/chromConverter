@@ -44,10 +44,9 @@ read_sz_lcd_2d(
 ## Value
 
 One or more 2D chromatograms from the chromatogram streams in `matrix`
-or `data.frame` format, according to the value of `format_out`. If
-multiple chromatograms are found, they will be returned as a list of
-matrices or data.frames. The chromatograms will be returned in `wide` or
-`long` format according to the value of `data_format`.
+or `data.frame` format, according to the value of
+`format_out. If multiple chromatograms are found, they will be returned as a list of matrices or data.frames. The chromatograms will be returned in `wide
+or `long format according to the value of `data_format\`.
 
 ## Details
 

@@ -16,8 +16,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Chromatographic File Converter">
-<meta name="description" content="Reads chromatograms from binary formats into R objects. Currently supports conversion of Agilent ChemStation, Agilent MassHunter, Shimadzu LabSolutions, ThermoRaw, and Varian Workstation files as well as various text-based formats. In addition to its internal parsers, chromConverter contains bindings to parsers in external libraries, such as Aston &lt;https://github.com/bovee/aston&gt;, Entab &lt;https://github.com/bovee/entab&gt;, rainbow &lt;https://rainbow-api.readthedocs.io/&gt;, and ThermoRawFileParser &lt;https://github.com/compomics/ThermoRawFileParser&gt;.">
-<meta property="og:description" content="Reads chromatograms from binary formats into R objects. Currently supports conversion of Agilent ChemStation, Agilent MassHunter, Shimadzu LabSolutions, ThermoRaw, and Varian Workstation files as well as various text-based formats. In addition to its internal parsers, chromConverter contains bindings to parsers in external libraries, such as Aston &lt;https://github.com/bovee/aston&gt;, Entab &lt;https://github.com/bovee/entab&gt;, rainbow &lt;https://rainbow-api.readthedocs.io/&gt;, and ThermoRawFileParser &lt;https://github.com/compomics/ThermoRawFileParser&gt;.">
+<meta name="description" content="Reads chromatograms from binary formats into R objects. Currently supports conversion of Agilent ChemStation, Agilent MassHunter, Agilent OpenLab, Shimadzu LabSolutions, ThermoRaw, Varian Workstation, and Waters Empower files as well as various other formats. In addition to its internal parsers, chromConverter contains bindings to parsers in external libraries, such as Aston &lt;https://github.com/bovee/aston&gt;, Entab &lt;https://github.com/bovee/entab&gt;, rainbow &lt;https://rainbow-api.readthedocs.io/&gt;, and ThermoRawFileParser &lt;https://github.com/compomics/ThermoRawFileParser&gt;.">
+<meta property="og:description" content="Reads chromatograms from binary formats into R objects. Currently supports conversion of Agilent ChemStation, Agilent MassHunter, Agilent OpenLab, Shimadzu LabSolutions, ThermoRaw, Varian Workstation, and Waters Empower files as well as various other formats. In addition to its internal parsers, chromConverter contains bindings to parsers in external libraries, such as Aston &lt;https://github.com/bovee/aston&gt;, Entab &lt;https://github.com/bovee/entab&gt;, rainbow &lt;https://rainbow-api.readthedocs.io/&gt;, and ThermoRawFileParser &lt;https://github.com/compomics/ThermoRawFileParser&gt;.">
 <meta property="og:image" content="https://ethanbass.github.io/chromConverter/logo.png">
 </head>
 <body>
@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,7 +70,7 @@
 <div class="section level3">
 <h3 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h3>
-<p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. By promoting data interoperability and reducing dependence on vendor-specific software, chromConverter supports open science and reproducible research. It includes a number of parsers written directly in R as well as bindings to various external libraries including <a href="https://github.com/bovee/aston" class="external-link">Aston</a>, <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, <a href="https://rainbow-api.readthedocs.io/" class="external-link">rainbow</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, <a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> and <a href="https://github.com/wkumler/RaMS/" class="external-link">RaMS</a>.</p>
+<p>chromConverter aims to facilitate the conversion of chromatography data from various proprietary formats so it can be easily read into R for further analysis. chromConverter supports open science and reproducible research by promoting data interoperability and reducing dependence on vendor-specific software, . It includes a number of parsers written directly in R as well as bindings to various external libraries including <a href="https://github.com/bovee/aston" class="external-link">Aston</a>, <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, <a href="https://rainbow-api.readthedocs.io/" class="external-link">rainbow</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, <a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> and <a href="https://github.com/wkumler/RaMS/" class="external-link">RaMS</a>.</p>
 </div>
 <div class="section level3">
 <h3 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
@@ -81,7 +81,7 @@
 <ul>
 <li>‘Agilent ChemStation’ &amp; ‘OpenLab’ <code>.uv</code> files (versions 131, 31)</li>
 <li>‘Agilent ChemStation’ &amp; ‘OpenLab’ <code>.ch</code> files (versions 30, 130, 8, 81, 179, 181)</li>
-<li>‘Agilent OpenLab’ <code>.dx</code> files.</li>
+<li>‘Agilent OpenLab’ <code>.dx</code>, <code>acaml</code>, and <code>amx</code> files.</li>
 <li>Allotrope® Simple Model (ASM) 2D chromatograms (<code>.asm</code>)</li>
 <li>ANDI (Analytical Data Interchange) Chromatography &amp; MS formats (<code>.cdf</code>)</li>
 <li>mzML (<code>.mzml</code>) &amp; mzXML (.<code>mzxml</code>) (via <em>RaMS</em>).</li>
@@ -93,6 +93,7 @@
 <li>‘Varian Workstation’ (<code>.SMS</code>)</li>
 <li>‘Waters Empower’ ascii (<code>.arw</code>)</li>
 <li>‘Waters Empower’ <code>.raw</code> files (2D chromatograms only)</li>
+<li>Chromatotec <code>.Chrom</code> files.</li>
 </ul>
 </div>
 <div class="section level5">
@@ -142,8 +143,8 @@
 <p>chromConverter can now be installed directly from CRAN:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"chromConverter"</span><span class="op">)</span></span></code></pre>
 <p>However, it’s recommended to install the development version of chromConverter from GitHub as follows:</p>
-<pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"https://github.com/ethanbass/chromConverter/"</span><span class="op">)</span></span></code></pre>
+<pre><code><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://pak.r-lib.org/" class="external-link">"pak"</a></span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"ethanbass/chromConverter"</span><span class="op">)</span></span></code></pre>
 <p>or from <a href="https://r-universe.dev/" class="external-link">R Universe</a>:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"chromConverter"</span>, repos<span class="op">=</span><span class="st">"https://ethanbass.r-universe.dev/"</span><span class="op">)</span></span></code></pre>
 </div>
@@ -258,7 +259,7 @@
 <h3 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h3>
 <p>You can cite chromConverter as follows:</p>
-<p>Bass, E. (2025). chromConverter: Chromatographic File Converter. <a href="http://doi.org/10.5281/zenodo.6792521" class="external-link uri">http://doi.org/10.5281/zenodo.6792521</a>.</p>
+<p>Bass, E. (2026). chromConverter: Chromatographic File Converter. <a href="http://doi.org/10.5281/zenodo.6792521" class="external-link uri">http://doi.org/10.5281/zenodo.6792521</a>.</p>
 <p>If you use external libraries to convert your files, it is suggested to also cite these libraries in published work.</p>
 </div>
 </div>

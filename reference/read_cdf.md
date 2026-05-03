@@ -25,8 +25,7 @@ read_cdf(
 
 - format_out:
 
-  Class of output. Either `matrix`, `data.frame`, or
-  [`data.table`](https://rdrr.io/pkg/data.table/man/data.table.html).
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
@@ -44,7 +43,7 @@ read_cdf(
 
 - read_metadata:
 
-  Whether to read metadata from file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -53,6 +52,7 @@ read_cdf(
 - collapse:
 
   Logical. Whether to collapse lists that only contain a single element.
+  Defaults to `TRUE`.
 
 - ...:
 

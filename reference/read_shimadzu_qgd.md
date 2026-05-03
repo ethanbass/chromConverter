@@ -29,12 +29,11 @@ read_shimadzu_qgd(
 
 - format_out:
 
-  Matrix or data.frame.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
-  Either `wide` (default) or `long`. This argument applies only to TIC
-  and BPC data, since MS data will always be returned in long format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
@@ -51,21 +50,16 @@ read_shimadzu_qgd(
 
 ## Value
 
-A 2D chromatogram from the chromatogram stream in `matrix`,
-`data.frame`, or `data.table` format, according to the value of
-`format_out`. The chromatograms will be returned in `wide` or `long`
-format according to the value of `data_format`.
-
 A chromatogram or list of chromatograms in the format specified by
 `data_format` and `format_out`. If `data_format` is `wide`, the
 chromatogram(s) will be returned with retention times as rows and a
 single column for the intensity. If `long` format is requested, two
 columns will be returned: one for the retention time and one for the
 intensity. The `format_out` argument determines whether chromatograms
-are returned as a `matrix`, `data.frame`, or `data.table`. Metadata can
+are returned as a `matrix`, `data.frame`, or `data.table`. Metadata will
 be attached to the chromatogram as
-[`attributes`](https://rdrr.io/r/base/attributes.html) if
-`read_metadata` is `TRUE`.
+[attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
+is `TRUE`.
 
 ## Details
 

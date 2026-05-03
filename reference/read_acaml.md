@@ -1,13 +1,13 @@
 # Read 'Agilent' ACAML files from directory.
 
 Extracts injection metadata from 'Agilent Common Analytical Markup
-Language' (ACAML) files into a `data.frame`.
+Language' (ACAML) files into an R object.
 
 ## Usage
 
 ``` r
 read_acaml(
-  paths,
+  path,
   find_files,
   format_out = c("data.frame", "data.table", "tibble"),
   progress_bar = TRUE,
@@ -17,9 +17,9 @@ read_acaml(
 
 ## Arguments
 
-- paths:
+- path:
 
-  Paths to ACAML files or to folders that contain the files.
+  Path(s) to ACAML files or to folders that contain the files.
 
 - find_files:
 
@@ -29,20 +29,19 @@ read_acaml(
 
 - format_out:
 
-  Either `data.frame`, `data.table`, or `tibble`.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - progress_bar:
 
-  Logical. Whether to show progress bar. Defaults to `TRUE` if
-  [`pbapply`](https://peter.solymos.org/pbapply/reference/pbapply.html)
+  Logical. Whether to show progress bar. Defaults to `TRUE` if `pbapply`
   is installed.
 
 - cl:
 
   Argument to
-  [`pbapply`](https://peter.solymos.org/pbapply/reference/pbapply.html)
+  [pbapply](https://peter.solymos.org/pbapply/reference/pbapply.html)
   specifying the number of clusters to use or a cluster object created
-  by [`makeCluster`](https://rdrr.io/r/parallel/makeCluster.html).
+  by [makeCluster](https://rdrr.io/r/parallel/makeCluster.html).
   Defaults to `1`.
 
 ## Value

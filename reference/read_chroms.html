@@ -19,7 +19,7 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read Chromatograms</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_chroms.R" class="external-link"><code>R/read_chroms.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/dev/R/read_chroms.R" class="external-link"><code>R/read_chroms.R</code></a></small>
       <div class="d-none name"><code>read_chroms.Rd</code></div>
     </div>
 
@@ -97,14 +97,11 @@ internal parser or bindings to an external library, such as
 
 <dt id="arg-format-in">format_in<a class="anchor" aria-label="anchor" href="#arg-format-in"></a></dt>
 <dd><p>Format of files to be imported/converted. Current options
-include: <code>agilent_d</code>, <code>agilent_dx</code>, <code>chemstation</code>,
-<code>chemstation_uv</code>, <code>chemstation_ch</code>, <code>chemstation_csv</code>,
-<code>chemstation_ms</code>,
-<code>masshunter</code>, <code>masshunter_dad</code>, <code>chromeleon_uv</code>,
-<code>shimadzu_ascii</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>,
-<code>thermoraw</code>, <code>waters_arw</code>, <code>waters_raw</code>, <code>mzml</code>,
-<code>mzxml</code>, <code>cdf</code>, <code>mdf</code>, <code>msd</code>, <code>csd</code>, <code>wsd</code>,
-or <code>other</code>.</p></dd>
+include: <code>agilent_d</code>, <code>agilent_dx</code>, <code>chemstation</code>, <code>chemstation_uv</code>,
+<code>chemstation_ch</code>, <code>chemstation_csv</code>, <code>chemstation_ms</code>, <code>masshunter</code>,
+<code>masshunter_dad</code>, <code>chromeleon_uv</code>, <code>shimadzu_ascii</code>, <code>shimadzu_fid</code>,
+<code>shimadzu_dad</code>, <code>thermoraw</code>, <code>waters_arw</code>, <code>waters_raw</code>, <code>mzml</code>, <code>mzxml</code>,
+<code>cdf</code>, <code>mdf</code>, <code>msd</code>, <code>csd</code>, <code>wsd</code>, or <code>other</code>.</p></dd>
 
 
 <dt id="arg-find-files">find_files<a class="anchor" aria-label="anchor" href="#arg-find-files"></a></dt>
@@ -114,35 +111,33 @@ Otherwise, set to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
-<dd><p>pattern (e.g. a file extension). Defaults to NULL, in which
+<dd><p>pattern (e.g. a file extension). Defaults to <code>NULL</code>, in which
 case file extension will be deduced from <code>format_in</code>.</p></dd>
 
 
 <dt id="arg-parser">parser<a class="anchor" aria-label="anchor" href="#arg-parser"></a></dt>
 <dd><p>What parser to use (optional). Current option are
-<code>chromconverter</code>, <code>aston</code>, <code>entab</code>, <code>thermoraw</code>,
-<code>openchrom</code>, or <code>rainbow</code>.</p></dd>
+<code>chromconverter</code>, <code>aston</code>,, <code>entab</code>, <code>thermoraw</code>, <code>openchrom</code>, <code>rainbow</code>.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
-<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>,
-or <code><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></code>.</p></dd>
+<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>, or
+<code>data.table</code>.</p></dd>
 
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
 <dd><p>Whether to output data in wide or long format. Either
-<code>wide</code> or <code>long</code>.</p></dd>
+<code>wide</code> (default) or <code>long</code>.</p></dd>
 
 
 <dt id="arg-path-out">path_out<a class="anchor" aria-label="anchor" href="#arg-path-out"></a></dt>
-<dd><p>Path for exporting files. If path not specified, files will
-export to current working directory.</p></dd>
+<dd><p>Path for exporting files. If path is not specified, the user
+will be prompted to create a temp directory.</p></dd>
 
 
 <dt id="arg-export-format">export_format<a class="anchor" aria-label="anchor" href="#arg-export-format"></a></dt>
 <dd><p>Export format. Currently the options include <code>.csv</code>,
-<code>chemstation_csv</code> (utf-16 encoding), <code>cdf</code>, <code>mzml</code>,
-<code>animl</code>, and <code>arw</code>.</p></dd>
+<code>chemstation_csv</code> (utf-16 encoding), <code>cdf</code>, <code>mzml</code>, <code>animl</code> and <code>arw</code>.</p></dd>
 
 
 <dt id="arg-force">force<a class="anchor" aria-label="anchor" href="#arg-force"></a></dt>
@@ -152,7 +147,7 @@ export to current working directory.</p></dd>
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
 <dd><p>Logical, whether to attach metadata (if it's available).
-Defaults to TRUE.</p></dd>
+Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
@@ -161,14 +156,14 @@ or <code>raw</code>.</p></dd>
 
 
 <dt id="arg-progress-bar">progress_bar<a class="anchor" aria-label="anchor" href="#arg-progress-bar"></a></dt>
-<dd><p>Logical. Whether to show progress bar. Defaults to
-<code>TRUE</code> if <code><a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply</a></code> is installed.</p></dd>
+<dd><p>Logical. Whether to show progress bar. Defaults to <code>TRUE</code>
+if <code>pbapply</code> is installed.</p></dd>
 
 
 <dt id="arg-cl">cl<a class="anchor" aria-label="anchor" href="#arg-cl"></a></dt>
-<dd><p>Argument to <code><a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply</a></code> specifying the number
+<dd><p>Argument to <a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply</a> specifying the number
 of clusters to use or a cluster object created by
-<code><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></code>. Defaults to 1.</p></dd>
+<a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a>. Defaults to <code>1</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -178,14 +173,13 @@ R console.</p></dd>
 
 <dt id="arg-sample-names">sample_names<a class="anchor" aria-label="anchor" href="#arg-sample-names"></a></dt>
 <dd><p>Which sample names to use. Options are <code>basename</code> to
-use the filename (minus the extension) or <code>sample_name</code> to use the sample
-name encoded in the file metadata. Sample names default to the
-<code><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></code> of the specified files.</p></dd>
+use the filename (default) or <code>sample_name</code> to use the sample
+name encoded in the file metadata.</p></dd>
 
 
 <dt id="arg-dat">dat<a class="anchor" aria-label="anchor" href="#arg-dat"></a></dt>
-<dd><p>Existing list of chromatograms to append results.
-(Defaults to NULL).</p></dd>
+<dd><p>Existing list of chromatograms to append results. Defaults to
+<code>NULL</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -194,23 +188,22 @@ name encoded in the file metadata. Sample names default to the
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list of chromatograms in <code>matrix</code>, <code>data.frame</code>, or
-<code>data.table</code> format, according to the value of <code>format_out</code>.
-Chromatograms may be returned in either <code>wide</code> or <code>long</code> format
-according to the value of
-<code>data_format</code>.</p>
+    <p>A list of chromatograms in <code>matrix</code>, <code>data.frame</code>, or <code>data.table</code>
+format, according to the value of <code>format_out</code>. Chromatograms may be returned
+in either <code>wide</code> or <code>long</code> format according to the value of <code>data_format</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Provides a unified interface to all chromConverter parsers. Currently recognizes
-'Agilent ChemStation' (<code>.uv</code>, <code>.ch</code>, <code>.dx</code>), 'Agilent
-MassHunter' (<code>.dad</code>), 'Thermo RAW' (<code>.raw</code>), 'Waters ARW' (<code>.arw</code>),
-'Waters RAW' (<code>.raw</code>), 'Chromeleon ASCII' (<code>.txt</code>), 'Shimadzu ASCII'
-(<code>.txt</code>), 'Shimadzu GCD', 'Shimadzu LCD' (DAD and chromatogram streams)
-and 'Shimadzu QGD' files. Also, wraps 'OpenChrom' parsers, which include many
-additional formats. To use 'Entab', 'ThermoRawFileParser', or 'OpenChrom'
-parsers, they must be manually installed. Please see the instructions in the
-<a href="https://ethanbass.github.io/chromConverter/">README</a> for further details.</p>
+'Agilent ChemStation' (<code>.uv</code>, <code>.ch</code>, <code>.dx</code>), 'Agilent MassHunter' (<code>.dad</code>),
+'Thermo RAW' (<code>.raw</code>), 'Waters ARW' (<code>.arw</code>), 'Waters RAW' (<code>.raw</code>),
+'Chromeleon ASCII' (<code>.txt</code>), 'Shimadzu ASCII' (<code>.txt</code>),
+'Shimadzu GCD' (<code>.gcd</code>), 'Shimadzu LCD' (<code>.lcd</code>, DAD and chromatogram streams)
+and 'Shimadzu QGD' (<code>.qgd</code>) files. Also, wraps 'OpenChrom' parsers, which
+include many additional formats. To use 'Entab', 'ThermoRawFileParser', or
+'OpenChrom' parsers, they must be separately installed. Please see the
+instructions in the <a href="https://ethanbass.github.io/chromConverter/">README</a>
+for further details.</p>
 <p>If paths to individual files are provided, <code>read_chroms</code> will try to
 infer the file format and select an appropriate parser. However, when
 providing paths to directories, the file format must be specified using the
@@ -218,11 +211,11 @@ providing paths to directories, the file format must be specified using the
     </div>
     <div class="section level2">
     <h2 id="side-effects">Side effects<a class="anchor" aria-label="anchor" href="#side-effects"></a></h2>
-    <p>If an <code>export_format</code> is provided, chromatograms
-will be exported in the specified format specified into the folder
-specified by <code>path_out</code>. Files can currently be converted to <code>csv</code>,
-<code>mzml</code>, <code>cdf</code> format, or <code>arw</code>. If an <code>openchrom</code> parser
-is selected, ANIML is available as an additional option.</p>
+    <p>If <code>export_format</code> is provided, chromatograms will be
+exported in the specified format specified into the folder specified by
+<code>path_out</code>. Files can currently be converted to <code>csv</code>, <code>mzml</code>, <code>cdf</code>, <code>arw</code>.
+If an <code>openchrom</code> parser is selected, ANIML format is available as an
+additional option.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

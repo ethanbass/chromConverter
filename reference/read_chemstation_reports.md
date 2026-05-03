@@ -28,8 +28,8 @@ read_chemstation_reports(
 
 ## Value
 
-A data.frame containing the information from the specified 'ChemStation'
-report.
+A `data.frame` containing the information from the specified
+'ChemStation' report.
 
 ## See also
 

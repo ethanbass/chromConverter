@@ -1,6 +1,6 @@
 # Read 'Shimadzu' ASCII
 
-Reads 'Shimadzu' ASCII (`.txt`) files. These files can be exported from
+Reads 'Shimadzu' ASCII `.txt`) files. These files can be exported from
 'Shimadzu LabSolutions' by right clicking on samples in the sample list
 and selecting `File Conversion:Convert to ASCII`.
 
@@ -45,11 +45,11 @@ read_shimadzu(
 
 - format_out:
 
-  R format. Either `matrix`, `data.frame`, or `data.table`.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - peaktable_format:
 
@@ -58,7 +58,7 @@ read_shimadzu(
 
 - read_metadata:
 
-  Whether to read metadata from file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -72,6 +72,7 @@ read_shimadzu(
 - collapse:
 
   Logical. Whether to collapse lists that only contain a single element.
+  Defaults to `TRUE`.
 
 - scale:
 
@@ -80,10 +81,10 @@ read_shimadzu(
 
 ## Value
 
-A nested list of elements from the specified `file`, where the top
-levels are chromatograms, peak tables, and/or mass spectra according to
-the value of `what`. Chromatograms are returned in the format specified
-by `format_out` (retention time x wavelength).
+A nested list of elements from the specified file, where the top levels
+are chromatograms, peak tables, and/or mass spectra according to the
+value of `what`. Chromatograms are returned in the format specified by
+`format_out`.
 
 ## See also
 

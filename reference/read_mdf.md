@@ -25,16 +25,16 @@ read_mdf(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
-  Whether to read metadata from file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 ## Value
 
 A chromatogram in the format specified by the `format_out` and
-`data_format` arguments (retention time x wavelength).
+`data_format` arguments.
 
 ## Author
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,33 +32,35 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ethanbass/chromConverter/blob/dev/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="chromconverter-development-version">chromConverter (development version)<a class="anchor" aria-label="anchor" href="#chromconverter-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.9.0" id="chromconverter-090">chromConverter 0.9.0<a class="anchor" aria-label="anchor" href="#chromconverter-090"></a></h2>
 <div class="section level3">
-<h3 id="breaking-changes-development-version">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-development-version"></a></h3>
+<h3 id="breaking-changes-0-9-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-9-0"></a></h3>
 <ul><li>Consolidated <code>sample_id</code> and <code>vial</code> metadata fields into new <code>sample_position</code> field.</li>
 <li>Added <code>sparse</code> argument for <code>rainbow</code> parser (now enabled by default) to remove zeros form long-format MS data.</li>
 <li>Changed order of <code>what</code> arguments in <code>read_agilent_d</code> to prioritize DAD data (instead of 2D chromatograms).</li>
 <li>Fixed bug so that Varian long-format MS data is returned as a data.frame by default (rather than a matrix).</li>
+<li>Added <code>chrom_list</code> class and <code>print.chrom_list</code> method. Instead of dumping the full contents of every chromatogram, prints a compact metadata summary with configurable columns (<code>cols</code>) and row limit (<code>n</code>).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-0-9-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-9-0"></a></h3>
 <ul><li>Added support for reading Agilent Common Analytical Markup Language (ACAML) files.</li>
+<li>Added support for reading Agilent OpenLab method files (<code>.amx</code>).</li>
 <li>Added preliminary support for reading “Chromatotec” <code>.Chrom</code> files through the <code>read_chromatotec</code> function.</li>
 <li>Added support for reading regular utf8-encoded <code>csv</code> files.</li>
 <li>Pass source file through when reading <code>agilent_dx</code> files so that the original source file is stored in metadata instead of a temp file.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="improved-support-for-exporting-files-development-version">Improved support for exporting files<a class="anchor" aria-label="anchor" href="#improved-support-for-exporting-files-development-version"></a></h3>
+<h3 id="improved-support-for-exporting-files-0-9-0">Improved support for exporting files<a class="anchor" aria-label="anchor" href="#improved-support-for-exporting-files-0-9-0"></a></h3>
 <ul><li>Added option to write ARW files in <code>write_chroms</code>. This format seems to be the simplest way to get DAD data into <code>OpenChrom</code>.</li>
 <li>Added support for writing standard utf8-encoded <code>csv</code> files and fixed a bug causing column names to be prepended with “X”.</li>
 <li>Modified <code>write_chroms</code> so it invisibly returns file names of the exported chromatograms.</li>
 <li>Improved error handling within <code>write_chroms</code>.</li>
 </ul><div class="section level4">
-<h4 id="cdf-development-version">CDF<a class="anchor" aria-label="anchor" href="#cdf-development-version"></a></h4>
+<h4 id="cdf-0-9-0">CDF<a class="anchor" aria-label="anchor" href="#cdf-0-9-0"></a></h4>
 <ul><li>Fixed bug causing failure to write chromatograms with missing attributes to <code>.cdf</code> (thanks to <a href="https://github.com/pbulsink" class="external-link">@pbulsink</a> for PR <a href="https://github.com/ethanbass/chromConverter/issues/37" class="external-link">#37</a>).</li>
 <li>Fixed bug causing failure to write existing timestamp data to <code>.cdf</code> files.</li>
 <li>Added additional metadata fields to exported CDF files.</li>
@@ -66,13 +68,13 @@
 <li>Fixed CDF time range metadata bug.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="mzml-development-version">mzML<a class="anchor" aria-label="anchor" href="#mzml-development-version"></a></h4>
+<h4 id="mzml-0-9-0">mzML<a class="anchor" aria-label="anchor" href="#mzml-0-9-0"></a></h4>
 <ul><li>Fixed <code>write_mzml</code> to correctly handle DAD spectra.</li>
 <li>Added chromatograms to mzML files written by <code>write_mzml</code>.</li>
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="other-bug-fixes-and-minor-changes-development-version">Other bug fixes and minor changes<a class="anchor" aria-label="anchor" href="#other-bug-fixes-and-minor-changes-development-version"></a></h3>
+<h3 id="other-bug-fixes-and-minor-changes-0-9-0">Other bug fixes and minor changes<a class="anchor" aria-label="anchor" href="#other-bug-fixes-and-minor-changes-0-9-0"></a></h3>
 <ul><li>Fixed entab parser so it translates <code>.ch</code> files to wide format when specified.</li>
 <li>Fixed bug in <code>read_agilent_d</code> when subsetting data with the <code>what</code> argument.</li>
 <li>Fixed Waters ARW parser so it can read files with missing metadata.</li>
@@ -82,6 +84,8 @@
 <li>Fixed bug so that data from ANDI MS netCDF files can be returned as <code>data.table</code> object when specified by user.</li>
 <li>Fixed ‘Shimadzu’ QGD bug affecting large values. Resolves (<a href="https://github.com/ethanbass/chromConverter/issues/44" class="external-link">#44</a>).</li>
 <li>Fixed bug causing sample_position/vial metadata to be dropped when reading Agilent files.</li>
+<li>Fixed bug so that temp directories created by certain file parsers (e.g., <code>read_agilent_dx</code> and <code>read_themoraw</code>) are actually deleted on completion.</li>
+<li>Refactored <code>extract_metadata</code> function for simplicity.</li>
 </ul></div>
 </div>
     <div class="section level2">

@@ -16,7 +16,7 @@ read_varian_peaklist(path)
 
 ## Value
 
-A data.frame containing the information from the specified report.
+A `data.frame` containing the information from the specified report.
 
 ## See also
 

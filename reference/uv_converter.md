@@ -28,7 +28,7 @@ uv_converter(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - correction:
 
@@ -36,7 +36,7 @@ uv_converter(
 
 - read_metadata:
 
-  Logical. Whether to read metadata and attach it to the chromatogram.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -44,7 +44,8 @@ uv_converter(
 
 ## Value
 
-A chromatogram in `data.frame` format (retention time x wavelength).
+A chromatogram in the format specified by the `format_out` and
+`data_format` arguments.
 
 ## Details
 

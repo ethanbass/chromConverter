@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Call Entab</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/call_entab.R" class="external-link"><code>R/call_entab.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/dev/R/call_entab.R" class="external-link"><code>R/call_entab.R</code></a></small>
       <div class="d-none name"><code>call_entab.Rd</code></div>
     </div>
 
@@ -61,12 +61,12 @@
 
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
-<dd><p>Whether to return data in <code>wide</code> or <code>long</code> format.</p></dd>
+<dd><p>Whether to return data in <code>wide</code> (default) or <code>long</code> format.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
-<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>,
-or <code>data.table</code>.</p></dd>
+<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>, or
+<code>data.table</code>.</p></dd>
 
 
 <dt id="arg-format-in">format_in<a class="anchor" aria-label="anchor" href="#arg-format-in"></a></dt>
@@ -74,7 +74,7 @@ or <code>data.table</code>.</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
-<dd><p>Whether to read metadata from file.</p></dd>
+<dd><p>Logical. Whether to attach metadata. Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
@@ -84,8 +84,8 @@ or <code>raw</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A chromatogram in the format specified by <code>format_out</code>
-(retention time x wavelength).</p>
+    <p>A chromatogram in the format specified by the <code>format_out</code> and
+<code>data_format</code> arguments.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

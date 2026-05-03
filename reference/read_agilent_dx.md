@@ -21,13 +21,13 @@ read_agilent_dx(
 
 - path:
 
-  Path to `.dx` file.
+  Path to Agilent `.dx` file.
 
 - what:
 
   Whether to extract chromatograms (`chroms`), DAD data (`dad`) and/or
-  auxiliary instrumental data `instrument` (e.g., temperature, pressure,
-  solvent composition, etc.). Accepts multiple arguments.
+  auxiliary instrumental data (`instrument`) (e.g., temperature,
+  pressure, solvent composition, etc.). Accepts multiple arguments.
 
 - path_out:
 
@@ -42,11 +42,11 @@ read_agilent_dx(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
-  Logical. Whether to attach metadata.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -55,6 +55,7 @@ read_agilent_dx(
 - collapse:
 
   Logical. Whether to collapse lists that only contain a single element.
+  Defaults to `TRUE`.
 
 ## Value
 
@@ -64,8 +65,8 @@ wavelength).
 ## Details
 
 This function unzips 'Agilent' `.dx` into a temporary directory using
-[`unzip`](https://rdrr.io/r/utils/unzip.html) and calls
-[`read_chemstation_ch`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md).
+[unzip](https://rdrr.io/r/utils/unzip.html) and calls the appropriate
+parser on the unzipped file.
 
 ## See also
 

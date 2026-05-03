@@ -12,8 +12,12 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/configure_openchrom.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/configure_python_environment.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/extract_metadata.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/generic_return_2D.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/generic_return_3D.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/index.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/print.chrom_list.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_acaml.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_agilent_amx.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_agilent_d.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_agilent_dx.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_asm.html</loc></url>
@@ -40,6 +44,7 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_varian_sms.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_waters_arw.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_waters_raw.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/shared_params.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/sp_converter.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/uv_converter.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.html</loc></url>

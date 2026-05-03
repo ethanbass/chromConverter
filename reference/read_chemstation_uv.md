@@ -31,7 +31,7 @@ read_chemstation_uv(
 
 - data_format:
 
-  Either `wide` (default) or `long`.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
@@ -58,9 +58,9 @@ returned with retention times as rows and wavelengths as columns. If
 `long` format is requested, three columns will be returned: one for the
 retention time, one for the wavelength and one for the intensity. The
 `format_out` argument determines whether the chromatogram is returned as
-a `matrix` or `data.frame`. Metadata can be attached to the chromatogram
-as [`attributes`](https://rdrr.io/r/base/attributes.html) if
-`read_metadata` is `TRUE`.
+a `matrix`, `data.frame`, or `data.table`. Metadata will be attached to
+the chromatogram as [attributes](https://rdrr.io/r/base/attributes.html)
+if `read_metadata` is `TRUE`.
 
 ## Note
 

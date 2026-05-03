@@ -25,8 +25,7 @@ read_agilent_d(
 - what:
 
   Whether to extract chromatograms (`chroms`), DAD data (`dad`) and/or
-  peak tables `peak_table`. Accepts multiple arguments. `ms_spectra`.
-  Accepts multiple arguments.
+  peak tables (`peak_table`). Accepts multiple arguments.
 
 - format_out:
 
@@ -34,11 +33,11 @@ read_agilent_d(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
-  Logical. Whether to attach metadata.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -47,18 +46,19 @@ read_agilent_d(
 - collapse:
 
   Logical. Whether to collapse lists that only contain a single element.
+  Defaults to `TRUE`.
 
 ## Value
 
-A list of chromatograms in the format specified by `data_format` and \#'
+A list of chromatograms in the format specified by `data_format` and
 `format_out`. If `data_format` is `wide`, the chromatograms will be
 returned with retention times as rows and columns containing signal
 intensity for each signal. If `long` format is requested, retention
 times will be in the first column. The `format_out` argument determines
 whether the chromatogram is returned as a `matrix`, `data.frame` or
 `data.table`. Metadata can be attached to the chromatogram as
-[`attributes`](https://rdrr.io/r/base/attributes.html) if
-`read_metadata` is `TRUE`.
+[attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
+is `TRUE`.
 
 ## Details
 

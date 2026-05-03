@@ -34,7 +34,7 @@ read_shimadzu_gcd(
 
 - data_format:
 
-  Either `wide` (default) or `long`.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
@@ -47,13 +47,19 @@ read_shimadzu_gcd(
 - collapse:
 
   Logical. Whether to collapse lists that only contain a single element.
+  Defaults to `TRUE`.
 
 ## Value
 
-A 2D chromatogram from the chromatogram stream in `matrix` or
-`data.frame` format, according to the value of `format_out`. The
-chromatograms will be returned in `wide` or `long` format according to
-the value of `data_format`.
+A 2D chromatogram in the format specified by `data_format` and
+`format_out`. If `data_format` is `wide`, the chromatogram will be
+returned with retention times as rows and a single column for the
+intensity. If `long` format is requested, two columns will be returned:
+one for the retention time and one for the intensity. The `format_out`
+argument determines whether the chromatogram is returned as a `matrix`,
+`data.frame`, or `data.table`. Metadata can be attached to the
+chromatogram as [attributes](https://rdrr.io/r/base/attributes.html) if
+`read_metadata` is `TRUE`.
 
 ## Details
 

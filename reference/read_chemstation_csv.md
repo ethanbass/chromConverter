@@ -25,7 +25,7 @@ read_chemstation_csv(
 
 - data_format:
 
-  Either `wide` (default) or `long`.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
@@ -35,8 +35,8 @@ read_chemstation_csv(
 
 ## Value
 
-A chromatogram in the format specified by `format_out` (retention time x
-wavelength) and `data_format`.
+A chromatogram in the format specified by `format_out` and
+`data_format`.
 
 ## Details
 

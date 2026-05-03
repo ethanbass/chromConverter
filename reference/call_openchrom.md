@@ -41,11 +41,11 @@ call_openchrom(
 
 - format_out:
 
-  R format. Either `matrix`, `data.frame` or `data.table`.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - export_format:
 
@@ -53,8 +53,8 @@ call_openchrom(
 
 - return_paths:
 
-  Logical. If TRUE, the function will return a character vector of paths
-  to the newly created files.
+  Logical. If `TRUE`, the function will return a character vector of
+  paths to the newly created files.
 
 - verbose:
 
@@ -71,16 +71,16 @@ newly created files.
 
 ## Details
 
-The `call_openchrom` function works by creating an `xml` batchfile and
+The `call_openchrom` function works by creating an xml batchfile and
 feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
-consist of `InputEntries` (the files you want to convert) and
-`ProcessEntries` (what you want to do to the files). The parsers are
-organized into broad categories by detector-type and output format. The
-detector-types are `msd` (mass selective detectors), `csd` (current
-selective detectors, e.g., FID, ECD, NPD), and `wsd` (wavelength
-selective detectors, e.g., DAD, and UV/VIS). Thus, when calling the
-OpenChrom parsers, you must select one of these three options for the
-input format (`format_in`).
+consist of `InputEntries` (specifying the files you want to convert) and
+`ProcessEntries` (specifying what you want to do to the files). The
+parsers are organized into broad categories by detector-type and output
+format. The detector-types are `msd` (mass selective detectors), `csd`
+(current selective detectors, e.g., FID, ECD, NPD), and `wsd`
+(wavelength selective detectors, e.g., DAD, and UV/VIS). Thus, when
+calling the OpenChrom parsers, one of these three options must be
+specified using the `format_in` argument.
 
 ## Note
 

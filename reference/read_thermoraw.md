@@ -30,11 +30,11 @@ read_thermoraw(
 
 - format_out:
 
-  R format. Either `matrix` or `data.frame`.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - read_metadata:
 
-  Whether to read metadata from file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -42,11 +42,13 @@ read_thermoraw(
 
 - verbose:
 
-  Logical. Whether to print output from OpenChrom to the console.
+  Logical. Whether to print output from ThermoRawFileParser to the
+  console.
 
 ## Value
 
-A chromatogram in the format specified by `format_out`.
+A chromatogram in the format specified by the `format_out` and
+`data_format` arguments.
 
 ## Details
 

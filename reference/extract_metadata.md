@@ -1,7 +1,7 @@
 # Extract metadata
 
-Extract metadata as a `data.frame` or `tibble` from a list of
-chromatograms.
+Extract metadata as a `data.frame`, `data.table` or `tibble` from a list
+of chromatograms.
 
 ## Usage
 
@@ -30,7 +30,7 @@ extract_metadata(
 
 - format_out:
 
-  Format of object. Either `data.frame`, `tibble`, or `data.table`.
+  Format of object. Either `data.frame`, `data.table` or `tibble`.
 
 ## Value
 

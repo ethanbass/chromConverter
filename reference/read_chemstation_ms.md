@@ -34,8 +34,7 @@ read_chemstation_ms(
 
 - data_format:
 
-  Either `wide` (default) or `long`. This argument applies only to TIC
-  data, since MS and BPC data will always be returned in long format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
@@ -52,15 +51,16 @@ read_chemstation_ms(
 
 ## Value
 
-A 2D chromatogram in the format specified by `data_format` and
-`format_out`. If `data_format` is `wide`, the chromatogram will be
+A list of chromatograms in the format specified by `data_format` and
+`format_out`. If `data_format` is `wide`, 2D chromatograms will be
 returned with retention times as rows and a single column for the
-intensity. If `long` format is requested, two columns will be returned:
-one for the retention time and one for the intensity. The `format_out`
-argument determines whether the chromatogram is returned as a `matrix`,
-`data.frame`, or `data.table`. Metadata can be attached to the
-chromatogram as [`attributes`](https://rdrr.io/r/base/attributes.html)
-if `read_metadata` is `TRUE`.
+intensity. Otherwise, two columns will be returned: one for the
+retention time and one for the intensity. MS data will always be
+returned in long format. The `format_out` argument determines whether
+the chromatogram is returned as a `matrix`, `data.frame`, or
+`data.table`. Metadata can be attached to the chromatogram as
+[attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
+is `TRUE`.
 
 ## Note
 

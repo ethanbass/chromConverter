@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Shimadzu' LCD</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/dev/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
       <div class="d-none name"><code>read_shimadzu_lcd.Rd</code></div>
     </div>
 
@@ -64,17 +64,18 @@
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>What stream to get: current options are <code>pda</code>, chromatograms
-(<code>chroms</code>), <code>tic</code>, or peak lists (<code>peak_table</code>). If a stream
+(<code>chroms</code>), <code>tic</code>, and/or peak lists (<code>peak_table</code>). If a stream
 is not specified, the function will default to <code>pda</code> if the PDA stream
 is present.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
-<dd><p>Matrix or data.frame.</p></dd>
+<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>, or
+<code>data.table</code>.</p></dd>
 
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
-<dd><p>Either <code>wide</code> (default) or <code>long</code>.</p></dd>
+<dd><p>Whether to return data in <code>wide</code> (default) or <code>long</code> format.</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
@@ -87,26 +88,25 @@ or <code>raw</code>.</p></dd>
 
 
 <dt id="arg-scale">scale<a class="anchor" aria-label="anchor" href="#arg-scale"></a></dt>
-<dd><p>Whether to scale the data by the value factor. Defaults to
-<code>TRUE</code>.</p></dd>
+<dd><p>Whether to scale the data by the scaling factor present in the
+file. Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-collapse">collapse<a class="anchor" aria-label="anchor" href="#arg-collapse"></a></dt>
 <dd><p>Logical. Whether to collapse lists that only contain a single
-element.</p></dd>
+element. Defaults to <code>TRUE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A chromatogram or list of chromatograms in the format specified by
-<code>data_format</code> and <code>format_out</code>. If <code>data_format</code> is <code>wide</code>,
-the chromatogram(s) will be returned with retention times as rows and a
+<code>data_format</code> and <code>format_out</code>. If <code>data_format</code> is <code>wide</code>, the
+chromatogram(s) will be returned with retention times as rows and a
 single column for the intensity. If <code>long</code> format is requested, two
 columns will be returned: one for the retention time and one for the intensity.
 The <code>format_out</code> argument determines whether chromatograms are returned
-as a <code>matrix</code>, <code>data.frame</code>, or <code>data.table</code>. Metadata can be
-attached to the chromatogram as <code><a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a></code> if
-<code>read_metadata</code> is <code>TRUE</code>.</p>
+in <code>matrix</code>, <code>data.frame</code>, or <code>data.table</code> format. Metadata will be
+attached to the chromatogram as <a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a> when <code>read_metadata</code> is <code>TRUE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

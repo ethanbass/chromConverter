@@ -61,33 +61,32 @@ read_chroms(
 
 - pattern:
 
-  pattern (e.g. a file extension). Defaults to NULL, in which case file
-  extension will be deduced from `format_in`.
+  pattern (e.g. a file extension). Defaults to `NULL`, in which case
+  file extension will be deduced from `format_in`.
 
 - parser:
 
   What parser to use (optional). Current option are `chromconverter`,
-  `aston`, `entab`, `thermoraw`, `openchrom`, or `rainbow`.
+  `aston`,, `entab`, `thermoraw`, `openchrom`, `rainbow`.
 
 - format_out:
 
-  Class of output. Either `matrix`, `data.frame`, or
-  [`data.table`](https://rdrr.io/pkg/data.table/man/data.table.html).
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
-  Whether to output data in wide or long format. Either `wide` or
-  `long`.
+  Whether to output data in wide or long format. Either `wide` (default)
+  or `long`.
 
 - path_out:
 
-  Path for exporting files. If path not specified, files will export to
-  current working directory.
+  Path for exporting files. If path is not specified, the user will be
+  prompted to create a temp directory.
 
 - export_format:
 
   Export format. Currently the options include `.csv`, `chemstation_csv`
-  (utf-16 encoding), `cdf`, `mzml`, `animl`, and `arw`.
+  (utf-16 encoding), `cdf`, `mzml`, `animl` and `arw`.
 
 - force:
 
@@ -97,7 +96,7 @@ read_chroms(
 - read_metadata:
 
   Logical, whether to attach metadata (if it's available). Defaults to
-  TRUE.
+  `TRUE`.
 
 - metadata_format:
 
@@ -105,17 +104,16 @@ read_chroms(
 
 - progress_bar:
 
-  Logical. Whether to show progress bar. Defaults to `TRUE` if
-  [`pbapply`](https://peter.solymos.org/pbapply/reference/pbapply.html)
+  Logical. Whether to show progress bar. Defaults to `TRUE` if `pbapply`
   is installed.
 
 - cl:
 
   Argument to
-  [`pbapply`](https://peter.solymos.org/pbapply/reference/pbapply.html)
+  [pbapply](https://peter.solymos.org/pbapply/reference/pbapply.html)
   specifying the number of clusters to use or a cluster object created
-  by [`makeCluster`](https://rdrr.io/r/parallel/makeCluster.html).
-  Defaults to 1.
+  by [makeCluster](https://rdrr.io/r/parallel/makeCluster.html).
+  Defaults to `1`.
 
 - verbose:
 
@@ -125,14 +123,12 @@ read_chroms(
 - sample_names:
 
   Which sample names to use. Options are `basename` to use the filename
-  (minus the extension) or `sample_name` to use the sample name encoded
-  in the file metadata. Sample names default to the
-  [`basename`](https://rdrr.io/r/base/basename.html) of the specified
-  files.
+  (default) or `sample_name` to use the sample name encoded in the file
+  metadata.
 
 - dat:
 
-  Existing list of chromatograms to append results. (Defaults to NULL).
+  Existing list of chromatograms to append results. Defaults to `NULL`.
 
 - ...:
 
@@ -151,11 +147,11 @@ Provides a unified interface to all chromConverter parsers. Currently
 recognizes 'Agilent ChemStation' (`.uv`, `.ch`, `.dx`), 'Agilent
 MassHunter' (`.dad`), 'Thermo RAW' (`.raw`), 'Waters ARW' (`.arw`),
 'Waters RAW' (`.raw`), 'Chromeleon ASCII' (`.txt`), 'Shimadzu ASCII'
-(`.txt`), 'Shimadzu GCD', 'Shimadzu LCD' (DAD and chromatogram streams)
-and 'Shimadzu QGD' files. Also, wraps 'OpenChrom' parsers, which include
-many additional formats. To use 'Entab', 'ThermoRawFileParser', or
-'OpenChrom' parsers, they must be manually installed. Please see the
-instructions in the
+(`.txt`), 'Shimadzu GCD' (`.gcd`), 'Shimadzu LCD' (`.lcd`, DAD and
+chromatogram streams) and 'Shimadzu QGD' (`.qgd`) files. Also, wraps
+'OpenChrom' parsers, which include many additional formats. To use
+'Entab', 'ThermoRawFileParser', or 'OpenChrom' parsers, they must be
+separately installed. Please see the instructions in the
 [README](https://ethanbass.github.io/chromConverter/) for further
 details.
 
@@ -166,10 +162,10 @@ the `format_in` argument.
 
 ## Side effects
 
-If an `export_format` is provided, chromatograms will be exported in the
+If `export_format` is provided, chromatograms will be exported in the
 specified format specified into the folder specified by `path_out`.
-Files can currently be converted to `csv`, `mzml`, `cdf` format, or
-`arw`. If an `openchrom` parser is selected, ANIML is available as an
+Files can currently be converted to `csv`, `mzml`, `cdf`, `arw`. If an
+`openchrom` parser is selected, ANIML format is available as an
 additional option.
 
 ## Author

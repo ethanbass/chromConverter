@@ -24,7 +24,7 @@ call_entab(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - format_out:
 
@@ -36,7 +36,7 @@ call_entab(
 
 - read_metadata:
 
-  Whether to read metadata from file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -44,8 +44,8 @@ call_entab(
 
 ## Value
 
-A chromatogram in the format specified by `format_out` (retention time x
-wavelength).
+A chromatogram in the format specified by the `format_out` and
+`data_format` arguments.
 
 ## See also
 

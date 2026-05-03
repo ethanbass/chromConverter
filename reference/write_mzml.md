@@ -25,7 +25,7 @@ write_mzml(
 
 - data:
 
-  List of data.frames or data.tables containing spectral data.
+  List of `data.frame`s or `data.table`s containing spectral data.
 
 - path_out:
 
@@ -75,7 +75,7 @@ Invisibly returns the path to the written mzML file.
 The function supports writing various types of spectral data including
 MS1, TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
 (Diode Array Detector) data. DAD spectra are written as electromagnetic
-radiation spectra (MS:1000804) using Thermo's naming convention with
+radiation spectra (`MS:1000804`) using Thermo's naming convention with
 `controllerType=4` in the spectrum ID for compatibility with existing
 tools. Support for MS2 may be added in a future release.
 

@@ -11,7 +11,7 @@ methods based on an explicit Document Object Model (DOM)."><meta property="og:im
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,7 @@ methods based on an explicit Document Object Model (DOM)."><meta property="og:im
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Write mzML</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/write_mzml.R" class="external-link"><code>R/write_mzml.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/dev/R/write_mzml.R" class="external-link"><code>R/write_mzml.R</code></a></small>
       <div class="d-none name"><code>write_mzml.Rd</code></div>
     </div>
 
@@ -67,7 +67,7 @@ methods based on an explicit Document Object Model (DOM).</p>
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>List of data.frames or data.tables containing spectral data.</p></dd>
+<dd><p>List of <code>data.frame</code>s or <code>data.table</code>s containing spectral data.</p></dd>
 
 
 <dt id="arg-path-out">path_out<a class="anchor" aria-label="anchor" href="#arg-path-out"></a></dt>
@@ -80,8 +80,8 @@ will be derived from the <code>sample_name</code> attribute.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>Which streams to write to mzML: <code>"MS1"</code>, <code>"MS2"</code>,
-<code>"TIC"</code>, <code>"BPC"</code>, and/or <code>"DAD"</code>.</p></dd>
+<dd><p>Which streams to write to mzML: <code>"MS1"</code>, <code>"MS2"</code>, <code>"TIC"</code>,
+<code>"BPC"</code>, and/or <code>"DAD"</code>.</p></dd>
 
 
 <dt id="arg-instrument-info">instrument_info<a class="anchor" aria-label="anchor" href="#arg-instrument-info"></a></dt>
@@ -89,13 +89,11 @@ will be derived from the <code>sample_name</code> attribute.</p></dd>
 
 
 <dt id="arg-compress">compress<a class="anchor" aria-label="anchor" href="#arg-compress"></a></dt>
-<dd><p>Logical. Whether to use zlib compression. Defaults to
-<code>TRUE</code>.</p></dd>
+<dd><p>Logical. Whether to use zlib compression. Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-indexed">indexed<a class="anchor" aria-label="anchor" href="#arg-indexed"></a></dt>
-<dd><p>Logical. Whether to write indexed mzML. Defaults to
-<code>TRUE</code>.</p></dd>
+<dd><p>Logical. Whether to write indexed mzML. Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-force">force<a class="anchor" aria-label="anchor" href="#arg-force"></a></dt>
@@ -104,8 +102,7 @@ Defaults to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-show-progress">show_progress<a class="anchor" aria-label="anchor" href="#arg-show-progress"></a></dt>
-<dd><p>Logical. Whether to show progress bar. Defaults to
-<code>TRUE</code>.</p></dd>
+<dd><p>Logical. Whether to show progress bar. Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -121,7 +118,7 @@ Defaults to <code>FALSE</code>.</p></dd>
     <p>The function supports writing various types of spectral data including MS1,
 TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
 (Diode Array Detector) data. DAD spectra are written as electromagnetic
-radiation spectra (MS:1000804) using Thermo's naming convention with
+radiation spectra (<code>MS:1000804</code>) using Thermo's naming convention with
 <code>controllerType=4</code> in the spectrum ID for compatibility with existing
 tools. Support for MS2 may be added in a future release.</p>
 <p>If <code>indexed = TRUE</code>, the function will generate an indexed mzML file, which

@@ -12,10 +12,10 @@
 
 chromConverter aims to facilitate the conversion of chromatography data
 from various proprietary formats so it can be easily read into R for
-further analysis. By promoting data interoperability and reducing
-dependence on vendor-specific software, chromConverter supports open
-science and reproducible research. It includes a number of parsers
-written directly in R as well as bindings to various external libraries
+further analysis. chromConverter supports open science and reproducible
+research by promoting data interoperability and reducing dependence on
+vendor-specific software, . It includes a number of parsers written
+directly in R as well as bindings to various external libraries
 including [Aston](https://github.com/bovee/aston),
 [Entab](https://github.com/bovee/entab),
 [rainbow](https://rainbow-api.readthedocs.io/), the
@@ -30,7 +30,7 @@ including [Aston](https://github.com/bovee/aston),
 - ‘Agilent ChemStation’ & ‘OpenLab’ `.uv` files (versions 131, 31)
 - ‘Agilent ChemStation’ & ‘OpenLab’ `.ch` files (versions 30, 130, 8,
   81, 179, 181)
-- ‘Agilent OpenLab’ `.dx` files.
+- ‘Agilent OpenLab’ `.dx`, `acaml`, and `amx` files.
 - Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats
   (`.cdf`)
@@ -44,6 +44,7 @@ including [Aston](https://github.com/bovee/aston),
 - ‘Varian Workstation’ (`.SMS`)
 - ‘Waters Empower’ ascii (`.arw`)
 - ‘Waters Empower’ `.raw` files (2D chromatograms only)
+- Chromatotec `.Chrom` files.
 
 ##### External Libraries
 
@@ -81,8 +82,8 @@ chromConverter can now be installed directly from CRAN:
 However, it’s recommended to install the development version of
 chromConverter from GitHub as follows:
 
-    install.packages("remotes")
-    remotes::install_github("https://github.com/ethanbass/chromConverter/")
+    if (!require("pak", quietly=TRUE)) install.packages("pak")
+    pak::pak("ethanbass/chromConverter")
 
 or from [R Universe](https://r-universe.dev/):
 
@@ -283,7 +284,7 @@ the cache.
 
 You can cite chromConverter as follows:
 
-Bass, E. (2025). chromConverter: Chromatographic File Converter.
+Bass, E. (2026). chromConverter: Chromatographic File Converter.
 <http://doi.org/10.5281/zenodo.6792521>.
 
 If you use external libraries to convert your files, it is suggested to

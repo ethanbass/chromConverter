@@ -20,7 +20,7 @@ read_chromatotec(
 
 - path:
 
-  Path to 'Chromatotec' `.Chrom` file.
+  The path to 'Chromatotec' `.Chrom` file.
 
 - what:
 
@@ -29,15 +29,15 @@ read_chromatotec(
 
 - format_out:
 
-  R format. Either `matrix`, `data.frame`, or `data.table`.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
-  Either `wide` (default) or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
-  Whether to read metadata from file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -46,6 +46,7 @@ read_chromatotec(
 - collapse:
 
   Logical. Whether to collapse lists that only contain a single element.
+  Defaults to `TRUE`.
 
 ## Value
 
@@ -55,8 +56,8 @@ by `format_out`.
 
 ## Note
 
-This function is a work in progress and the accuracy of the results is
-not guaranteed.
+This function is a work in progress. As such, the accuracy of the
+results is not guaranteed.
 
 ## Author
 

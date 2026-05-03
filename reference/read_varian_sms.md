@@ -28,24 +28,24 @@ read_varian_sms(
 
 - format_out:
 
-  R format. Either `matrix`, `data.frame`, or `data.table`.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
-  Either `wide` (default) or `long`. This argument applies only to TIC
-  and BPC data, since MS data will always be returned in long format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
-  Whether to read metadata from the file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - collapse:
 
   Logical. Whether to collapse lists that only contain a single element.
+  Defaults to `TRUE`.
 
 ## Value
 
-A chromatogram or list of chromatograms from the specified `file`,
+A chromatogram or list of chromatograms from the specified file,
 according to the value of `what`. Chromatograms are returned in the
 format specified by `format_out`.
 
@@ -53,7 +53,7 @@ format specified by `format_out`.
 
 Varian SMS files begin with a "DIRECTORY" with offsets for each section.
 The first section (in all the files I've been able to inspect) is
-"MSData" generally beginning at byte 3238. This MSdata section is in
+"MSData" generally beginning at byte `3238`. This MSdata section is in
 turn divided into two sections. The first section (after a short header)
 contains chromatogram data. Some of the information found in this
 section includes scan numbers, retention times, (as 64-bit floats), the

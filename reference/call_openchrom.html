@@ -19,7 +19,7 @@ to OpenChrom version 1.4.0, which has been scrubbed from the internet."><meta pr
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ to OpenChrom version 1.4.0, which has been scrubbed from the internet."><meta pr
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Parse files with OpenChrom</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/call_openchrom.R" class="external-link"><code>R/call_openchrom.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/dev/R/call_openchrom.R" class="external-link"><code>R/call_openchrom.R</code></a></small>
       <div class="d-none name"><code>call_openchrom.Rd</code></div>
     </div>
 
@@ -90,21 +90,21 @@ ionization data, or <code>wsd</code> for DAD/UV data.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
-<dd><p>R format. Either <code>matrix</code>, <code>data.frame</code> or
+<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>, or
 <code>data.table</code>.</p></dd>
 
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
-<dd><p>Whether to return data in <code>wide</code> or <code>long</code> format.</p></dd>
+<dd><p>Whether to return data in <code>wide</code> (default) or <code>long</code> format.</p></dd>
 
 
 <dt id="arg-export-format">export_format<a class="anchor" aria-label="anchor" href="#arg-export-format"></a></dt>
-<dd><p>Either  <code>mzml</code>, <code>csv</code>, <code>cdf</code>,  <code>animl</code>.
-Defaults to <code>mzml</code>.</p></dd>
+<dd><p>Either  <code>mzml</code>, <code>csv</code>, <code>cdf</code>, <code>animl</code>. Defaults to
+<code>mzml</code>.</p></dd>
 
 
 <dt id="arg-return-paths">return_paths<a class="anchor" aria-label="anchor" href="#arg-return-paths"></a></dt>
-<dd><p>Logical. If TRUE, the function will return a character
+<dd><p>Logical. If <code>TRUE</code>, the function will return a character
 vector of paths to the newly created files.</p></dd>
 
 
@@ -114,25 +114,23 @@ vector of paths to the newly created files.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>If <code>return_paths</code> is <code>FALSE</code>, the function will return a
-list of chromatograms (if an appropriate parser is available to import the
-files into R). The chromatograms will be returned in <code>matrix</code> or
-<code>data.frame</code> format according to the value of <code>format_out</code>. If
-<code>return_paths</code> is <code>TRUE</code>, the function will return a character
-vector of paths to the newly created files.</p>
+    <p>If <code>return_paths</code> is <code>FALSE</code>, the function will return a list of
+chromatograms (if an appropriate parser is available to import the files into
+R). The chromatograms will be returned in <code>matrix</code> or <code>data.frame</code> format
+according to the value of <code>format_out</code>. If <code>return_paths</code> is <code>TRUE</code>, the
+function will return a character vector of paths to the newly created files.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The <code>call_openchrom</code> function works by creating an <code>xml</code> batchfile
+    <p>The <code>call_openchrom</code> function works by creating an xml batchfile
 and feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
-consist of <code>InputEntries</code> (the files you want to convert) and
-<code>ProcessEntries</code> (what you want to do to the files). The parsers are
-organized into broad categories by detector-type and output format. The
-detector-types are <code>msd</code> (mass selective detectors), <code>csd</code>
-(current selective detectors, e.g., FID, ECD, NPD), and <code>wsd</code>
-(wavelength selective detectors, e.g.,  DAD, and UV/VIS). Thus, when calling
-the OpenChrom parsers, you must select one of these three options for the
-input format (<code>format_in</code>).</p>
+consist of <code>InputEntries</code> (specifying the files you want to convert) and
+<code>ProcessEntries</code> (specifying what you want to do to the files). The parsers
+are organized into broad categories by detector-type and output format. The
+detector-types are <code>msd</code> (mass selective detectors), <code>csd</code> (current selective
+detectors, e.g., FID, ECD, NPD), and <code>wsd</code> (wavelength selective detectors,
+e.g.,  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers, one of
+these three options must be specified using the <code>format_in</code> argument.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>

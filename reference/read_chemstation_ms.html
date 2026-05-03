@@ -9,7 +9,7 @@ x01/x32/x00/x00."><meta property="og:image" content="https://ethanbass.github.io
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@ x01/x32/x00/x00."><meta property="og:image" content="https://ethanbass.github.io
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Agilent ChemStation' MS file.</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_chemstation_ms.R" class="external-link"><code>R/read_chemstation_ms.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/dev/R/read_chemstation_ms.R" class="external-link"><code>R/read_chemstation_ms.R</code></a></small>
       <div class="d-none name"><code>read_chemstation_ms.Rd</code></div>
     </div>
 
@@ -65,20 +65,17 @@ x01/x32/x00/x00."><meta property="og:image" content="https://ethanbass.github.io
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>What stream to get: current options are <code>MS1</code>, <code>BPC</code>
-and/or <code>TIC</code>. If a stream is not specified, the function will return all
-streams.</p></dd>
+<dd><p>What stream to get: current options are <code>MS1</code>, <code>BPC</code> and/or
+<code>TIC</code>. If a stream is not specified, the function will return all streams.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
-<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>,
-or <code>data.table</code>.</p></dd>
+<dd><p>Class of output. Either <code>matrix</code>, <code>data.frame</code>, or
+<code>data.table</code>.</p></dd>
 
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
-<dd><p>Either <code>wide</code> (default) or <code>long</code>. This argument
-applies only to TIC data, since MS and BPC data will always be returned in
-long format.</p></dd>
+<dd><p>Whether to return data in <code>wide</code> (default) or <code>long</code> format.</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
@@ -97,20 +94,19 @@ element. Defaults to <code>TRUE</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A 2D chromatogram in the format specified by <code>data_format</code> and
-<code>format_out</code>. If <code>data_format</code> is <code>wide</code>, the chromatogram will
-be returned with retention times as rows and a single column for the intensity.
-If <code>long</code> format is requested, two columns will be returned: one for the
-retention time and one for the intensity. The <code>format_out</code> argument
-determines whether the chromatogram is returned as a <code>matrix</code>,
-<code>data.frame</code>, or <code>data.table</code>. Metadata can be attached to the
-chromatogram as <code><a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a></code> if <code>read_metadata</code> is <code>TRUE</code>.</p>
+    <p>A list of chromatograms in the format specified by <code>data_format</code> and
+<code>format_out</code>. If <code>data_format</code> is <code>wide</code>, 2D chromatograms will
+be returned with retention times as rows and a single column for the
+intensity. Otherwise, two columns will be returned: one for the
+retention time and one for the intensity. MS data will always be returned in
+long format. The <code>format_out</code> argument determines whether the chromatogram is
+returned as a <code>matrix</code>, <code>data.frame</code>, or <code>data.table</code>. Metadata can be
+attached to the chromatogram as <a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a> if <code>read_metadata</code> is <code>TRUE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
     <p>Many thanks to Evan Shi and Eugene Kwan for providing helpful
-information on the structure of these files in the
-<a href="https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html" class="external-link">rainbow documentation</a>.</p>
+information on the structure of these files in the <a href="https://rainbow-api.readthedocs.io/en/latest/agilent/ms.html" class="external-link">rainbow documentation</a>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

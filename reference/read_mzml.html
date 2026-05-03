@@ -13,7 +13,7 @@ is configured to return only DAD data."><meta property="og:image" content="https
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,7 +38,7 @@ is configured to return only DAD data."><meta property="og:image" content="https
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read mzML files</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_mzml.R" class="external-link"><code>R/read_mzml.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/dev/R/read_mzml.R" class="external-link"><code>R/read_mzml.R</code></a></small>
       <div class="d-none name"><code>read_mzml.Rd</code></div>
     </div>
 
@@ -72,12 +72,12 @@ is configured to return only DAD data.</p>
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
 <dd><p>Class of output. Only applies if <code>mzR</code> is selected.
-Either <code>matrix</code>, <code>data.frame</code>, or <code>data.table</code>. <code>RaMS</code>
-will return a list of data.tables regardless of what is selected here.</p></dd>
+Either <code>matrix</code>, <code>data.frame</code>, or <code>data.table</code>. <code>RaMS</code> will return a list of
+data.tables regardless of what is selected here.</p></dd>
 
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
-<dd><p>Whether to return data in <code>wide</code> or <code>long</code> format.</p></dd>
+<dd><p>Whether to return data in <code>wide</code> (default) or <code>long</code> format.</p></dd>
 
 
 <dt id="arg-parser">parser<a class="anchor" aria-label="anchor" href="#arg-parser"></a></dt>
@@ -85,17 +85,17 @@ will return a list of data.tables regardless of what is selected here.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>What types of data to return (argument to <code><a href="https://rdrr.io/pkg/RaMS/man/grabMSdata.html" class="external-link">grabMSdata</a></code>.
-Options include <code>MS1</code>, <code>MS2</code>, <code>BPC</code>, <code>TIC</code>, <code>DAD</code>,
-<code>chroms</code>, <code>metadata</code>, or <code>everything</code>).</p></dd>
+<dd><p>What types of data to return (argument to <a href="https://rdrr.io/pkg/RaMS/man/grabMSdata.html" class="external-link">RaMS::grabMSdata</a>).
+Options include <code>MS1</code>, <code>MS2</code>, <code>BPC</code>, <code>TIC</code>, <code>DAD</code>, <code>chroms</code>, <code>metadata</code>, or
+<code>everything</code>).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Argument to <code><a href="https://rdrr.io/pkg/RaMS/man/grabMSdata.html" class="external-link">grabMSdata</a></code> controlling <code>verbosity</code>.</p></dd>
+<dd><p>Argument to <code>grabMSdata</code> controlling verbosity.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments to <code><a href="https://rdrr.io/pkg/RaMS/man/grabMSdata.html" class="external-link">grabMSdata</a></code>.</p></dd>
+<dd><p>Additional arguments to <code>grabMSdata</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -26,17 +26,17 @@ read_shimadzu_lcd(
 - what:
 
   What stream to get: current options are `pda`, chromatograms
-  (`chroms`), `tic`, or peak lists (`peak_table`). If a stream is not
-  specified, the function will default to `pda` if the PDA stream is
+  (`chroms`), `tic`, and/or peak lists (`peak_table`). If a stream is
+  not specified, the function will default to `pda` if the PDA stream is
   present.
 
 - format_out:
 
-  Matrix or data.frame.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
-  Either `wide` (default) or `long`.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
@@ -48,11 +48,13 @@ read_shimadzu_lcd(
 
 - scale:
 
-  Whether to scale the data by the value factor. Defaults to `TRUE`.
+  Whether to scale the data by the scaling factor present in the file.
+  Defaults to `TRUE`.
 
 - collapse:
 
   Logical. Whether to collapse lists that only contain a single element.
+  Defaults to `TRUE`.
 
 ## Value
 
@@ -62,9 +64,9 @@ chromatogram(s) will be returned with retention times as rows and a
 single column for the intensity. If `long` format is requested, two
 columns will be returned: one for the retention time and one for the
 intensity. The `format_out` argument determines whether chromatograms
-are returned as a `matrix`, `data.frame`, or `data.table`. Metadata can
-be attached to the chromatogram as
-[`attributes`](https://rdrr.io/r/base/attributes.html) if
+are returned in `matrix`, `data.frame`, or `data.table` format. Metadata
+will be attached to the chromatogram as
+[attributes](https://rdrr.io/r/base/attributes.html) when
 `read_metadata` is `TRUE`.
 
 ## Details

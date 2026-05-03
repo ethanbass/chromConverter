@@ -1,6 +1,6 @@
 # Changelog
 
-## chromConverter (development version)
+## chromConverter 0.9.0
 
 ### Breaking changes
 
@@ -12,11 +12,16 @@
   DAD data (instead of 2D chromatograms).
 - Fixed bug so that Varian long-format MS data is returned as a
   data.frame by default (rather than a matrix).
+- Added `chrom_list` class and `print.chrom_list` method. Instead of
+  dumping the full contents of every chromatogram, prints a compact
+  metadata summary with configurable columns (`cols`) and row limit
+  (`n`).
 
 ### New features
 
 - Added support for reading Agilent Common Analytical Markup Language
   (ACAML) files.
+- Added support for reading Agilent OpenLab method files (`.amx`).
 - Added preliminary support for reading “Chromatotec” `.Chrom` files
   through the `read_chromatotec` function.
 - Added support for reading regular utf8-encoded `csv` files.
@@ -70,6 +75,10 @@
   ([\#44](https://github.com/ethanbass/chromConverter/issues/44)).
 - Fixed bug causing sample_position/vial metadata to be dropped when
   reading Agilent files.
+- Fixed bug so that temp directories created by certain file parsers
+  (e.g., `read_agilent_dx` and `read_themoraw`) are actually deleted on
+  completion.
+- Refactored `extract_metadata` function for simplicity.
 
 ## chromConverter 0.8.0
 

@@ -13,6 +13,8 @@
 
 ## Agilent parsers
 
+- [`read_agilent_amx()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_amx.md)
+  : Read Agilent AMX method file
 - [`read_agilent_d()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_d.md)
   : Read files from 'Agilent ChemStation' .D directories
 - [`read_agilent_dx()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_dx.md)
@@ -95,3 +97,8 @@
   : Write ANDI chrom CDF file from chromatogram
 - [`write_mzml()`](https://ethanbass.github.io/chromConverter/reference/write_mzml.md)
   : Write mzML
+
+## Methods
+
+- [`print(`*`<chrom_list>`*`)`](https://ethanbass.github.io/chromConverter/reference/print.chrom_list.md)
+  : Print a chrom_list object

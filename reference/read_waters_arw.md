@@ -26,11 +26,11 @@ read_waters_arw(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format.
+  Whether to return data in `wide` (default) or `long` format.
 
 - read_metadata:
 
-  Whether to read metadata from file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`.
 
 - metadata_format:
 
@@ -38,8 +38,8 @@ read_waters_arw(
 
 ## Value
 
-A chromatogram in the format specified by `format_out` (retention time x
-wavelength).
+A chromatogram in the format specified by the `format_out` and
+`data_format` arguments.
 
 ## Details
 

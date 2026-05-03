@@ -23,7 +23,7 @@ read_sz_lcd_3d(
 
 - format_out:
 
-  Matrix or data.frame.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`.
 
 - data_format:
 
@@ -43,10 +43,10 @@ read_sz_lcd_3d(
 
 ## Value
 
-A 3D chromatogram from the PDA stream in `matrix` or `data.frame`
-format, according to the value of `format_out`. The chromatograms will
-be returned in `wide` or `long` format according to the value of
-`data_format`.
+A 3D chromatogram from the PDA stream in `matrix`, `data.frame`, or
+`data.table` format, according to the value of `format_out`. The
+chromatograms will be returned in `wide` or `long` format according to
+the value of `data_format`.
 
 ## Details
 
