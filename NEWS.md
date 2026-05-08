@@ -53,7 +53,7 @@
 
 ## chromConverter 0.8.0
 
-* Improved support for 'Agilent Openlab' `.dx` files: extraction of DAD and auxiliary instrumental data (stored in `.IT` files).
+* Improved support for 'Agilent OpenLab' `.dx` files: extraction of DAD and auxiliary instrumental data (stored in `.IT` files).
 * Refactored `read_shimadzu_qgd` for a 1.4x speedup in the parsing of Shimadzu `.qgd` files, cutting execution time by 30%.
 * Refactored `read_shimadzu_lcd` for a 2.4x speedup in the parsing of Shimadzu `.lcd` files, cutting execution time by 60%.
 * Refactored `write_mzml` for massive speed-up when writing mzML files, especially for large MS data.
