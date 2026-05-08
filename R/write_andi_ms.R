@@ -113,11 +113,9 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
                      prec = "char")
   })
 
-  ncdf4::nc_create(file_out, c(list(nc_time, nc_mz, nc_intensity,
+  nc <- ncdf4::nc_create(file_out, c(list(nc_time, nc_mz, nc_intensity,
                                     nc_scan_time, nc_tic, nc_scan, nc_points),
                                range_vars, instrument_vars))
-
-  nc <- ncdf4::nc_open(file_out, write = TRUE)
 
   ncdf4::ncvar_put(nc = nc, varid = "scan_acquisition_time",
                    vals = x$TIC[["rt"]])

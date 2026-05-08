@@ -104,7 +104,7 @@ test_that("read_chroms can convert Agilent 131 to ARW", {
   x1 <- read_chroms(arw_path, format_in = "waters_arw", progress_bar = FALSE)[[1]]
   expect_equal(x, x1, ignore_attr = TRUE)
 })
-library(testthat)
+
 test_that("write_chroms can export any of the advertised formats", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")
@@ -113,7 +113,7 @@ test_that("write_chroms can export any of the advertised formats", {
 
   tmp <- tempdir()
   expect_warning(path_cdf <- write_chroms(x, path_out = tmp, export_format = "cdf",
-                           show_progress=FALSE,force=TRUE))
+                           show_progress = FALSE, force = TRUE))
   on.exit(unlink(path_cdf))
 
   x_cdf <- read_chroms(path_cdf, progress_bar = FALSE)[[1]]
