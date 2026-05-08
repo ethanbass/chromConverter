@@ -73,8 +73,9 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
   }
   if (any(what == "instrument")){
     if (length(files.path$instrument) > 0){
-      instrument <- lapply(files.path$instrument, read_chemstation_it, format_out = format_out,
-                           data_format = data_format, read_metadata = read_metadata,
+      instrument <- lapply(files.path$instrument, read_chemstation_it, 
+                           format_out = format_out, data_format = data_format, 
+                           read_metadata = read_metadata,
                            metadata_format = metadata_format, source_file = path)
       names(instrument) <- sapply(instrument, function(x) attr(x, "detector_range"))
       instrument <- collapse_list(instrument)
