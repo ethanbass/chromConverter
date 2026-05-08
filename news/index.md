@@ -46,6 +46,8 @@
   [\#37](https://github.com/ethanbass/chromConverter/issues/37)).
 - Fixed bug causing failure to write existing timestamp data to `.cdf`
   files.
+- Fixed bug causing failure to write ANDI chrom files on Windows due to
+  failure to coerce numeric metadata to text.
 - Added additional metadata fields to exported CDF files.
 - Added additional test for writing CDF files with missing attributes.
 - Fixed CDF time range metadata bug.

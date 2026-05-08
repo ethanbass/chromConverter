@@ -63,6 +63,7 @@
 <h4 id="cdf-0-9-0">CDF<a class="anchor" aria-label="anchor" href="#cdf-0-9-0"></a></h4>
 <ul><li>Fixed bug causing failure to write chromatograms with missing attributes to <code>.cdf</code> (thanks to <a href="https://github.com/pbulsink" class="external-link">@pbulsink</a> for PR <a href="https://github.com/ethanbass/chromConverter/issues/37" class="external-link">#37</a>).</li>
 <li>Fixed bug causing failure to write existing timestamp data to <code>.cdf</code> files.</li>
+<li>Fixed bug causing failure to write ANDI chrom files on Windows due to failure to coerce numeric metadata to text.</li>
 <li>Added additional metadata fields to exported CDF files.</li>
 <li>Added additional test for writing CDF files with missing attributes.</li>
 <li>Fixed CDF time range metadata bug.</li>

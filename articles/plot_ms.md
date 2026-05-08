@@ -200,7 +200,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] data.table_1.18.2.1  ggplot2_4.0.3        chromConverter_0.9.0
+#> [1] data.table_1.18.4    ggplot2_4.0.3        chromConverter_0.9.0
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] rappdirs_0.3.4     sass_0.4.10        generics_0.1.4     bitops_1.0-9      
