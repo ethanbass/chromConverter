@@ -124,15 +124,12 @@ write_andi_chrom <- function(x, path_out, sample_name = NULL,
   other_vars <- lapply(other_vars, function(x) ncdf4::ncvar_def(x, "", list()))
 
   # write netcdf file
-  ncdf4::nc_create(file_out, c(list(nc_time, nc_intensity), other_vars))
-
-  # open netcdf file
-  nc <- ncdf4::nc_open(file_out, write = TRUE)
+  nc <- ncdf4::nc_create(file_out, c(list(nc_time, nc_intensity), other_vars))
 
   # write data to file
   ncdf4::ncvar_put(nc = nc, varid = "raw_data_retention", vals = x[,1])
   ncdf4::ncvar_put(nc = nc, varid = "ordinate_values", vals = x[,2])
-  ncdf4::ncatt_put(nc, varid="ordinate_values",
+  ncdf4::ncatt_put(nc, varid = "ordinate_values",
                    attname = "uniform_sampling_flag", attval = "Y")
   ncdf4::ncvar_put(nc = nc, varid = "actual_run_time_length",
                    vals = tail(x[,1], 1))
@@ -349,7 +346,7 @@ format_metadata_for_cdf <- function(x){
              sample_id_comments = "",
              detector = attr(x, "detector"),
              detector_name = attr(x, "detector_id"),
-             detector_method_commends = attr(x, "detector_range"),
+             detector_method_comments = as.character(attr(x, "detector_range")),
              # experiment_title = "",
              sample_amount = as.numeric(attr(x, "sample_amount")),
              sample_injection_volume = as.numeric(attr(x, "sample_injection_volume")),
@@ -364,7 +361,7 @@ format_metadata_for_cdf <- function(x){
            meta$sample_injection_volume, 1)
   meta[sapply(meta, length) == 0] <- ""
   meta[sapply(meta, is.null)] <- ""
-  meta[sapply(meta, is.na)] <- ""
+  meta[sapply(meta, function(x) all(is.na(x)))] <- ""
   meta
 }
 
