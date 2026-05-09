@@ -58,7 +58,7 @@
 * Refactored `read_shimadzu_lcd` for a 2.4x speedup in the parsing of Shimadzu `.lcd` files, cutting execution time by 60%.
 * Refactored `write_mzml` for massive speed-up when writing mzML files, especially for large MS data.
 * Fixed 'Shimadzu' metadata time zone offsets.
-* Fixed misplaced parentheses in `read_agilent_d` causing possible bug.
+* Fixed misplaced parentheses in `read_agilent_d` that were causing possible bug.
 * Fixed bug in `read_chemstation_uv` causing error for long format data.
 * Added more informative error messages for `read_agilent_d`.
 * Added additional tests for retention times and `data_format` attribute.

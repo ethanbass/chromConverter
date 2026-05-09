@@ -51,6 +51,11 @@ Reads 'Agilent' \code{.dx} files.
 This function unzips 'Agilent'  \code{.dx} into a temporary directory using
 \link{unzip} and calls the appropriate parser on the unzipped file.
 }
+\examples{
+\dontrun{
+read_agilent_dx(path)
+}
+}
 \seealso{
 Other 'Agilent' parsers:
 \code{\link[=read_agilent_d]{read_agilent_d()}},

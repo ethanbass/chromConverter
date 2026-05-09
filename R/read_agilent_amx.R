@@ -58,6 +58,9 @@
 #'   `draw_speed_uL_min`, `eject_speed_uL_min`,
 #'   `wait_after_draw_min`, `injection_volume_uL`,  `wash_time_s`.
 #'
+#' @examples \dontrun{
+#' read_agilent_amx(path)
+#' }
 #' @export
 read_agilent_amx <- function(path, what = c("dad", "pump", "comp", "sampler"),
                              path_out = NULL,

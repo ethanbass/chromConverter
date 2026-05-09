@@ -10,8 +10,6 @@
 #' to the value of `what`. Chromatograms are returned in the format specified by
 #' `format_out`.
 #' @author Ethan Bass
-#' @note This function is a work in progress. As such, the accuracy of the
-#' results is not guaranteed.
 #' @examples \dontrun{
 #' read_chromatotec(path)
 #' }

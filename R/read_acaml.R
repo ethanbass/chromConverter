@@ -17,6 +17,9 @@
 #' @return A `data.frame`, `data.table` or `tibble` (according to the value of
 #' `format_out`) containing sample metadata derived from the supplied ACAML
 #' files.
+#' @examples \dontrun{
+#' read_acaml(path)
+#' }
 #' @export
 read_acaml <- function(path, find_files,
                        format_out = c("data.frame", "data.table", "tibble"),
@@ -90,7 +93,7 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
 
     tibble::as_tibble_row(c(as.list(attrs), val_data, text_data))
   }) |>
-    purrr::list_rbind() #|>
+    purrr::list_rbind()
   int_cols <- c("SampleOrderNumber", "SampleInjectionsCount", "ReplicateNumber")
   df[int_cols] <- lapply(df[int_cols], as.integer)
   df$SampleAmount <- as.numeric(df$SampleAmount)

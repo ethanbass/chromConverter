@@ -41,10 +41,6 @@ to the value of \code{what}. Chromatograms are returned in the format specified 
 \description{
 Reads 'Chromatotec' \code{.Chrom} files.
 }
-\note{
-This function is a work in progress. As such, the accuracy of the
-results is not guaranteed.
-}
 \examples{
 \dontrun{
 read_chromatotec(path)

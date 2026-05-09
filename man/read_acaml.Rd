@@ -45,3 +45,8 @@ sample metadata. This function extracts information from the
 custom field files, which do not seem to be readily accessible through other
 means.
 }
+\examples{
+\dontrun{
+read_acaml(path)
+}
+}

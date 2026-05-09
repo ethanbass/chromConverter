@@ -76,3 +76,8 @@ format: \code{time_min}, \code{channel}, \code{percent}.}
 Parses an Agilent \code{.amx} method archive, extracting instrument parameters
 from one or more of its driver sub-files.
 }
+\examples{
+\dontrun{
+read_agilent_amx(path)
+}
+}
