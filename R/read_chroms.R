@@ -427,6 +427,12 @@ read_chroms <- function(paths,
   } else if (sample_names == "sample_name"){
     names(data) <- sapply(data, attr, "sample_name")
   }
+  if (anyDuplicated(names(data))){
+    duplicated_names <- unique(names(data)[duplicated(names(data))])
+    warning("The following names are duplicated: ",
+            paste(sQuote(duplicated_names), collapse = ", "),
+            ". This may interfere with downstream analyses.", immediate. = TRUE)
+  }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
     make_exporter <- function(fn, ...) {
       purrr::partial(fn, ..., force = force, show_progress = progress_bar,
@@ -446,6 +452,7 @@ read_chroms <- function(paths,
     writer(data, path_out = path_out)
   }
   dat <- append(dat, data)
-  class(dat) <- c("chrom_list","list")
+  class(dat) <- c("chrom_list", "list")
   dat
 }
+
