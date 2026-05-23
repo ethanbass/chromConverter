@@ -36,6 +36,7 @@
 
 * Fixed `write_mzml` to correctly handle DAD spectra.
 * Added chromatograms to mzML files written by `write_mzml`.
+* Fixed incorrect CV accession for no compression (MS:1000576).
 
 ### Other bug fixes and minor changes
 

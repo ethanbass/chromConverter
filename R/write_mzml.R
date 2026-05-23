@@ -450,7 +450,7 @@ write_mzml_chromlist <- function(con, data, what = c("TIC", "BPC"),
   chroms <- match.arg(toupper(what), c("TIC", "BPC"), several.ok = TRUE)
   if (length(chroms) > 0){
     chrom_index <- vector("list", length(chroms))
-    cat(sprintf('    <chromatogramList count="%d" defaultDataProcessingRef="chromConverter_processing">',
+    cat(sprintf('    <chromatogramList count="%d" defaultDataProcessingRef="chromConverter_processing">\n',
                 length(chroms)), file = con)
     c_index <- 0
     if (any(chroms == "TIC")){
@@ -470,7 +470,7 @@ write_mzml_chromlist <- function(con, data, what = c("TIC", "BPC"),
       c_index <- c_index + 1
     }
     cat('
-      </chromatogramList>    ', file = con)
+      </chromatogramList>\n', file = con)
   }
   chrom_index
 }
@@ -513,8 +513,8 @@ write_mzml_chrom <- function(con, index, data, what = c("TIC", "BPC"),
       </binaryDataArray>
     </binaryDataArrayList>
         </chromatogram>', id, index, array_length, cv_param,
-              array_length, rt_encoded$compression_param, rt_encoded$base64,
-              array_length, int_encoded$compression_param, int_encoded$base64),
+              nchar(rt_encoded$base64), rt_encoded$compression_param, rt_encoded$base64,
+              nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64),
       file = con)
 }
 
@@ -527,12 +527,12 @@ write_mzml_chrom <- function(con, index, data, what = c("TIC", "BPC"),
 #' @author Ethan Bass
 #' @noRd
 encode_data <- function(x, compress) {
-  bin_data <- writeBin(x, raw(), endian = "little")
+  bin_data <- writeBin(as.double(x), raw(), endian = "little")
   if (compress) {
     bin_data <- memCompress(bin_data, type = "gzip")
     compression_param <- '<cvParam cvRef="MS" accession="MS:1000574" name="zlib compression" />'
   } else {
-    compression_param <- '<cvParam cvRef="MS" accession="MS:1000574" name="none" />'
+    compression_param <- '<cvParam cvRef="MS" accession="MS:1000576" name="no compression" />'
   }
   list(base64 = base64enc::base64encode(bin_data), compression_param = compression_param)
 }
