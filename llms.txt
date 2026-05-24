@@ -93,8 +93,8 @@ or from [R Universe](https://r-universe.dev/):
 
 ##### Importing chromatograms
 
-The workhorse of chromConverter is the `read_chroms` function, which
-functions as a wrapper around all of the supported parsers. To convert
+The central function of chromConverter is `read_chroms`, which functions
+as a wrapper around all of the supported parsers. To convert a set of
 files, call `read_chroms`, specifying the `paths` to a vector of
 directories or files and the appropriate file format (`format_in`).
 Supported formats include `chemstation_uv`, `chemstation_csv`,
@@ -190,10 +190,10 @@ if you don’t already have it.
 
 [Entab](https://github.com/bovee/entab) is a Rust-based parsing
 framework for converting a variety of scientific file formats into
-tabular data. To use parsers from Entab, you must first install
-[Rust](https://www.rust-lang.org/tools/install) and Entab-R. After
-following the [instructions](https://www.rust-lang.org/tools/install) to
-install Rust, you can install Entab from GitHub as follows:
+tabular data. To use parsers from Entab, you must first install Rust and
+Entab-R. After following the
+[instructions](https://rust-lang.org/tools/install/) to install Rust,
+you can install Entab from GitHub as follows:
 
     remotes::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
 

@@ -108,3 +108,11 @@ Elements present depend on `what`; see below for the structure of each.
 **`sampler`** — a list with scalar elements: `thermostat_installed`,
 `draw_speed_uL_min`, `eject_speed_uL_min`, `wait_after_draw_min`,
 `injection_volume_uL`, `wash_time_s`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_agilent_amx(path)
+} # }
+```

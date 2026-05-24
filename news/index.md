@@ -27,6 +27,8 @@
 - Added support for reading regular utf8-encoded `csv` files.
 - Pass source file through when reading `agilent_dx` files so that the
   original source file is stored in metadata instead of a temp file.
+- Added warning in `read_chroms` for duplicated names as they may
+  silently interfere with downstream analyses.
 
 ### Improved support for exporting files
 
@@ -56,6 +58,7 @@
 
 - Fixed `write_mzml` to correctly handle DAD spectra.
 - Added chromatograms to mzML files written by `write_mzml`.
+- Fixed incorrect CV accession for no compression (MS:1000576).
 
 ### Other bug fixes and minor changes
 
@@ -93,7 +96,8 @@
 - Refactored `write_mzml` for massive speed-up when writing mzML files,
   especially for large MS data.
 - Fixed ‘Shimadzu’ metadata time zone offsets.
-- Fixed misplaced parentheses in `read_agilent_d` causing possible bug.
+- Fixed misplaced parentheses in `read_agilent_d` that were causing
+  possible bug.
 - Fixed bug in `read_chemstation_uv` causing error for long format data.
 - Added more informative error messages for `read_agilent_d`.
 - Added additional tests for retention times and `data_format`

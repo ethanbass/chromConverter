@@ -81,3 +81,11 @@ Other 'Agilent' parsers:
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_agilent_dx(path)
+} # }
+```

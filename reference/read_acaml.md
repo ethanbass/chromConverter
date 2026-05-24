@@ -57,3 +57,11 @@ and sample metadata. This function extracts information from the
 `InjectionMetaData` nodes embedded in the `InjectionMetaDataItems`
 custom field files, which do not seem to be readily accessible through
 other means.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_acaml(path)
+} # }
+```

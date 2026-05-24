@@ -54,11 +54,6 @@ A chromatogram and/or peak table from the specified `path`, according to
 the value of `what`. Chromatograms are returned in the format specified
 by `format_out`.
 
-## Note
-
-This function is a work in progress. As such, the accuracy of the
-results is not guaranteed.
-
 ## Author
 
 Ethan Bass
