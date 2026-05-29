@@ -218,7 +218,7 @@ test_that("read_chroms can write 'Agilent ChemStation' version 81 files to CDF",
 
   xx <- read_chroms(fs::path(path_out, "5970_mix_10nG.cdf"),
                     progress_bar = FALSE)[[1]]
-  expect_equal(x, xx, ignore_attr=TRUE, tolerance=1e-7)
+  expect_equal(x, xx, ignore_attr = TRUE, tolerance = 1e-7)
   expect_equal(get_times(x), get_times(xx))
   fields <-c("sample_name", "detector", "detector_id", "detector_y_unit",
              "method", "operator", "time_interval", "time_unit", "run_datetime")
@@ -628,7 +628,7 @@ test_that("read_chroms can read 'Agilent ACAML' files", {
   expect_s3_class(x2, "tbl")
 })
 
-test_that("read_agilent_amx works correctly", {
+test_that("read_agilent_amx works correctly, part 1", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
   path <- system.file("column_storage_ACN100.amx",
@@ -644,7 +644,11 @@ test_that("read_agilent_amx works correctly", {
   expect_equal(method1$dad$peakwidth_nm, 4)
   expect_equal(nrow(method1$pump$gradient), 0)
   expect_equal(as.numeric(method1$metadata$created), 1767977263.0)
+})
 
+test_that("read_agilent_amx works correctly, part 2", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
   path <- system.file("Glucosinolates-XDB5.amx",
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
@@ -658,7 +662,7 @@ test_that("read_agilent_amx works correctly", {
   expect_equal(method2$dad$peakwidth_nm, 4)
   expect_equal(c(method2$dad$spectra_from_nm, method2$dad$spectra_to_nm),
                c(190,400))
-  expect_shape(method2$pump$gradient, dim = c(8,3))
+  expect_shape(method2$pump$gradient, dim = c(9,3))
   expect_equal(method2$column$post_time_min, 6)
   expect_equal(method2$column$temp_controls$temperature_C, c(40, 40))
   expect_equal(method2$autosampler$injection_volume_uL, 5)
@@ -668,10 +672,34 @@ test_that("read_agilent_amx works correctly", {
                                 gradient_format = "long")
   expect_s3_class(method_dt$dad$signals, "data.table")
   expect_s3_class(method_dt$pump$gradient, "data.table")
-  expect_shape(method_dt$pump$gradient, dim = c(16,3))
+  expect_shape(method_dt$pump$gradient, dim = c(18, 3))
 
   method_tibble <- read_agilent_amx(path, format_out = "tibble")
   expect_s3_class(method_tibble$dad$signals, "tbl")
   expect_s3_class(method_tibble$pump$gradient, "tbl")
-  expect_shape(method_tibble$pump$gradient, dim = c(8,3))
+  expect_shape(method_tibble$pump$gradient, dim = c(9, 3))
+})
+
+
+test_that("read_agilent_amx works correctly, part 3", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("flow_rate_example.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+  method3 <- read_agilent_amx(path)
+  expect_equal(names(method3$metadata),
+               c("method_name", "version", "status", "created", "created_by",
+                 "modified", "modified_by")
+  )
+  expect_equal(method3$dad$peakwidth_nm, 4)
+  expect_equal(c(method3$dad$spectra_from_nm, method3$dad$spectra_to_nm),
+               c(190,400))
+  expect_shape(method3$pump$gradient, dim = c(10,4))
+  expect_equal(method3$column$post_time_min, 2.5)
+  expect_equal(method3$column$temp_controls$temperature_C, c(25, 25))
+  expect_equal(method3$autosampler$injection_volume_uL, 1)
+  expect_equal(as.numeric(method3$metadata$created), 1779656802.0)
+  expect_equal(method3$pump$gradient$flow_mL_min,
+               c(0.4,0.5,0.5,0.5,0.55,0.55,0.6,0.6,0.7,0.7))
 })

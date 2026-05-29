@@ -165,7 +165,14 @@ parse_pump_method <- function(file_path, format_out = "data.frame",
 
   timetable_nodes <- xml2::xml_find_all(doc, ".//TimetableEntry")
 
-  gradient <- purrr::map_dfr(timetable_nodes, function(node) {
+  composition_nodes <- timetable_nodes[
+    xml2::xml_attr(timetable_nodes, "type") == "ChangeSolventCompositionType"
+  ]
+  flow_nodes <- timetable_nodes[
+    xml2::xml_attr(timetable_nodes, "type") == "ChangeFlowType"
+  ]
+
+  gradient <- purrr::map_dfr(composition_nodes, function(node) {
     data.frame(
       time_min = get_amx_num(node, ".//Time"),
       channel  = c("A", "B", "C", "D"),
@@ -177,22 +184,59 @@ parse_pump_method <- function(file_path, format_out = "data.frame",
       )
     )
   })
+
+  flow_gradient <- purrr::map_dfr(flow_nodes, function(node) {
+    data.frame(
+      time_min = get_amx_num(node, ".//Time"),
+      channel  = "flow",
+      percent  = get_amx_num(node, ".//Flow")
+    )
+  })
+
   if (nrow(gradient) != 0){
     gradient <- gradient[gradient$channel %in% active_channels, ]
 
-    if (gradient_format == "wide") {
-      gradient <- tidyr::pivot_wider(gradient, names_from = "channel",
-                                     values_from = "percent",
-                                     names_prefix = "pct_")
+    zero_row <- data.frame(
+      time_min = 0,
+      channel  = active_channels,
+      percent  = solvents$percentage
+    )
+
+    if (!any(gradient$time_min == 0)) {
+      gradient <- rbind(zero_row, gradient)
     }
   }
+  if (nrow(flow_gradient) != 0) {
+    flow_zero <- data.frame(
+      time_min = 0,
+      channel  = "flow",
+      percent  = get_amx_num(doc, "/PumpMethod/Flow")
+    )
+    if (!any(flow_gradient$time_min == 0)) {
+      flow_gradient <- rbind(flow_zero, flow_gradient)
+    }
+  }
+  if (nrow(gradient) != 0 || nrow(flow_gradient) != 0){
+    gradient <- rbind(gradient, flow_gradient)
+    gradient <- gradient[order(gradient$time_min), ]
+  }
+  if (nrow(gradient) != 0 && gradient_format == "wide") {
+    gradient <- tidyr::pivot_wider(gradient, names_from = "channel",
+                                   values_from = "percent",
+                                   names_prefix = "pct_")
+    if ("pct_flow" %in% names(gradient)) {
+      names(gradient)[names(gradient) == "pct_flow"] <- "flow_mL_min"
+      gradient <- tidyr::fill(gradient, "flow_mL_min", .direction = "down")
+    }
+  }
+
   gradient <- convert_format_out(gradient, format_out = format_out)
   list(
-    flow_mL_min       = get_amx_num(doc, ".//Flow"),
-    stop_time_min     = get_amx_num(doc, ".//StopTimeValue"),
-    post_time_min     = get_amx_num(doc, ".//PostTimeValue"),
-    pressure_low_bar  = get_amx_num(doc, ".//LowPressureLimit"),
-    pressure_high_bar = get_amx_num(doc, ".//HighPressureLimit"),
+    flow_mL_min       = get_amx_num(doc, "/PumpMethod/Flow"),
+    stop_time_min     = get_amx_num(doc, "/PumpMethod/StopTime/StopTimeValue"),
+    post_time_min     = get_amx_num(doc, "/PumpMethod/PostTime/PostTimeValue"),
+    pressure_low_bar  = get_amx_num(doc, "/PumpMethod/LowPressureLimit"),
+    pressure_high_bar = get_amx_num(doc, "/PumpMethod/HighPressureLimit"),
     solvents          = solvents,
     gradient          = gradient
   )

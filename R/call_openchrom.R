@@ -184,7 +184,7 @@ write_openchrom_batchfile <- function(files, path_out,
 #' indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
 #' the path to OpenChrom command-line application.
 #' @author Ethan Bass
-#' @seealso [call_openchrom]
+#' @seealso [`call_openchrom`]
 #' @export
 
 configure_openchrom <- function(cli = c("null", "true", "false", "status"), path = NULL){

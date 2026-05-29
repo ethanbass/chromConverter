@@ -89,8 +89,10 @@ test_that("extract_metadata function works", {
   meta <- extract_metadata(x1, what = c("sample_name"))
   expect_named(meta, c("name", "sample_name"))
 
-  x2 <- read_chroms(rep(path_uv, 2), parser = "chromConverter",
+  expect_warning({
+    x2 <- read_chroms(rep(path_uv, 2), parser = "chromConverter",
                     progress_bar = FALSE)
+  })
   attr(x2[[1]],"detector") <- NULL
   meta2 <- extract_metadata(x2)
   expect_equal(nrow(meta2), length(x2))

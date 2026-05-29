@@ -23,7 +23,7 @@ Configures \href{https://lablicate.com/platform/openchrom}{OpenChrom} to use
 command-line interface. Requires OpenChrom version prior to 0.5.0.
 }
 \seealso{
-\link{call_openchrom}
+\code{\link{call_openchrom}}
 }
 \author{
 Ethan Bass
