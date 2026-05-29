@@ -30,7 +30,7 @@ to OpenChrom command-line application.
 
 ## See also
 
-[call_openchrom](https://ethanbass.github.io/chromConverter/reference/call_openchrom.md)
+[`call_openchrom`](https://ethanbass.github.io/chromConverter/reference/call_openchrom.md)
 
 ## Author
 
