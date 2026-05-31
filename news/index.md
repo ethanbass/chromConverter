@@ -2,6 +2,8 @@
 
 ## chromConverter 0.9.0
 
+CRAN release: 2026-05-31
+
 ### Breaking changes
 
 - Consolidated `sample_id` and `vial` metadata fields into new
