@@ -16,7 +16,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/ethanbass/chromConverter/blob/master/inst/CITATION)
+[`inst/CITATION`](https://github.com/ethanbass/chromConverter/blob/v0.9.0/inst/CITATION)
 
 Bass, E. (2026). chromConverter: Chromatographic File Converter.
 http://doi.org/10.5281/zenodo.6792521.
