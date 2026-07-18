@@ -179,7 +179,7 @@ dplyr::filter(x, rt == 7.26355) |>
 ``` r
 
 sessionInfo()
-#> R version 4.6.0 (2026-04-24)
+#> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
 #> Running under: Ubuntu 24.04.4 LTS
 #> 
@@ -200,24 +200,24 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] data.table_1.18.4    ggplot2_4.0.3        chromConverter_0.9.0
+#> [1] data.table_1.18.4    ggplot2_4.0.3        chromConverter_0.9.1
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] rappdirs_0.3.4     sass_0.4.10        generics_0.1.4     bitops_1.0-9      
-#>  [5] xml2_1.5.2         stringi_1.8.7      lattice_0.22-9     digest_0.6.39     
-#>  [9] magrittr_2.0.5     evaluate_1.0.5     grid_4.6.0         RColorBrewer_1.1-3
+#>  [5] xml2_1.6.0         stringi_1.8.7      lattice_0.22-9     digest_0.6.39     
+#>  [9] magrittr_2.0.5     evaluate_1.0.5     grid_4.6.1         RColorBrewer_1.1-3
 #> [13] fastmap_1.2.0      rprojroot_2.1.1    cellranger_1.1.0   jsonlite_2.0.0    
 #> [17] Matrix_1.7-5       purrr_1.2.2        scales_1.4.0       RaMS_1.4.3        
 #> [21] pbapply_1.7-4      textshaping_1.0.5  jquerylib_0.1.4    cli_3.6.6         
-#> [25] rlang_1.2.0        bit64_4.8.2        withr_3.0.2        base64enc_0.1-6   
-#> [29] cachem_1.1.0       yaml_2.3.12        otel_0.2.0         parallel_4.6.0    
-#> [33] tools_4.6.0        dplyr_1.2.1        here_1.0.2         reticulate_1.46.0 
+#> [25] rlang_1.3.0        bit64_4.8.2        withr_3.0.3        base64enc_0.1-6   
+#> [29] cachem_1.1.0       yaml_2.3.12        otel_0.2.0         parallel_4.6.1    
+#> [33] tools_4.6.1        dplyr_1.2.1        here_1.0.2         reticulate_1.46.0 
 #> [37] vctrs_0.7.3        R6_2.6.1           png_0.1-9          lifecycle_1.0.5   
 #> [41] stringr_1.6.0      fs_2.1.0           bit_4.6.0          ragg_1.5.2        
-#> [45] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.0      bslib_0.11.0      
-#> [49] pillar_1.11.1      gtable_0.3.6       glue_1.8.1         Rcpp_1.1.1-1.1    
-#> [53] systemfonts_1.3.2  tidyselect_1.2.1   tibble_3.3.1       xfun_0.58         
+#> [45] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.1      bslib_0.11.0      
+#> [49] pillar_1.11.1      gtable_0.3.6       glue_1.8.1         Rcpp_1.1.2        
+#> [53] systemfonts_1.3.2  tidyselect_1.2.1   tibble_3.3.1       xfun_0.60         
 #> [57] knitr_1.51         farver_2.1.2       htmltools_0.5.9    labeling_0.4.3    
-#> [61] rmarkdown_2.31     compiler_4.6.0     entab_0.3.1        S7_0.2.2          
+#> [61] rmarkdown_2.31     compiler_4.6.1     entab_0.3.1        S7_0.2.2          
 #> [65] readxl_1.5.0
 ```

@@ -1,9 +1,9 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   articles/plot_ms: plot_ms.html
-last_built: 2026-06-19T05:07Z
+last_built: 2026-07-18T21:32Z
 urls:
   reference: https://ethanbass.github.io/chromConverter/reference
   article: https://ethanbass.github.io/chromConverter/articles

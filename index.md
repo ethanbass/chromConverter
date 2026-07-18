@@ -1,29 +1,71 @@
 # chromConverter
 
-**Table of contents:**
-[Overview](https://ethanbass.github.io/chromConverter/#Overview) -
-[Installation](https://ethanbass.github.io/chromConverter/#Installation) -
-[File formats](https://ethanbass.github.io/chromConverter/#Formats) -
-[Usage](https://ethanbass.github.io/chromConverter/#Usage) -
-[Contributing](https://ethanbass.github.io/chromConverter/#Contributing) -
-[Citation](https://ethanbass.github.io/chromConverter/#Citation)
+##### Table of contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [File formats](#formats)
+- [Usage](#usage)
+- [Additional dependencies](#optional-dependencies)
+- [Further analysis](#further-analysis)
+- [Contributing](#contributing)
+- [Citation](#citation)
 
 ### Overview
 
-chromConverter reads chromatography data into R, supporting both
-proprietary and open formats. It includes parsers written directly in R
-as well as bindings to various external libraries including
+chromConverter provides a simple way to read chromatography data into R
+from a variety of vendor formats. It includes parsers implemented
+directly in R as well as interfaces to various external tools including
 [Entab](https://github.com/bovee/entab),
 [rainbow](https://rainbow-api.readthedocs.io/), the
 [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser),
 and [RaMS](https://github.com/wkumler/RaMS/).
 
 We aim to support open science and reproducible research by reducing
-dependence on vendor-specific software. Since most of the supported
-formats are not publicly documented, parsers are developed through
-reverse-engineering. If you run into a file that doesn’t parse correctly
-(or at all) please [open an
+dependence on proprietary vendor software. Since most of the supported
+file formats are not publicly documented, many of the parsers are
+developed through reverse-engineering. If you run into a file that
+doesn’t parse correctly (or at all), please [open an
 issue](https://github.com/ethanbass/chromConverter/issues).
+
+### Installation
+
+chromConverter can be installed from CRAN:
+
+``` r
+
+install.packages("chromConverter")
+```
+
+However, it’s recommended to install the development version, either
+from GitHub:
+
+``` r
+
+if (!require("pak", quietly=TRUE)) install.packages("pak")
+pak::pak("ethanbass/chromConverter")
+```
+
+or from [R Universe](https://r-universe.dev/):
+
+``` r
+
+install.packages("chromConverter", repos="https://ethanbass.r-universe.dev/")
+```
+
+Some parsers require additional software. See [Optional
+Dependencies](#optional-dependencies) for details.
+
+### Quick start
+
+``` r
+
+library(chromConverter)
+
+# Read a folder of Agilent ChemStation UV files
+dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
+```
 
 ### Formats
 
@@ -50,7 +92,7 @@ issue](https://github.com/ethanbass/chromConverter/issues).
 
 ##### External Libraries
 
-###### Aston/Entab (*Entab requires separate installation, see [instructions below](https://ethanbass.github.io/chromConverter/README.html#Installation)*)
+###### Entab (*Entab requires separate installation, see [instructions below](https://ethanbass.github.io/chromConverter/README.html#Installation)*)
 
 - Agilent ChemStation (`.ch`, `.fid`, `.ms`, .`mwd`, & `.uv`)
 - Agilent MassHunter DAD (`.sp`)
@@ -64,33 +106,6 @@ issue](https://github.com/ethanbass/chromConverter/issues).
 - Agilent (`.ch`, `.fid`, `.ms`, .`MSProfile.bin`, & `.uv`)
 - Waters (`.raw` \[UV, MS, CAD, ELSD\])
 
-###### OpenChrom (*requires separate installation of an outdated OpenChrom version which is unfortunately no longer available, see [instructions below](https://ethanbass.github.io/chromConverter/README.html#Installation)*)
-
-- Shimadzu FID (`.gcd`, `.C0#`)
-- PerkinElmer FID (`.raw`)
-- Varian FID (`.run`)
-- DataApex FID (`.PRM`)
-- MassFinder FID/MSD (`*.mfg`)
-- ABSciex DAD (`.wiff`)
-- and many more (see full list
-  [here](https://lablicate.com/platform/openchrom)).
-
-### Installation
-
-chromConverter can now be installed directly from CRAN:
-
-    install.packages("chromConverter")
-
-However, it’s recommended to install the development version of
-chromConverter from GitHub as follows:
-
-    if (!require("pak", quietly=TRUE)) install.packages("pak")
-    pak::pak("ethanbass/chromConverter")
-
-or from [R Universe](https://r-universe.dev/):
-
-    install.packages("chromConverter", repos="https://ethanbass.r-universe.dev/")
-
 ### Usage
 
 ##### Importing chromatograms
@@ -103,8 +118,11 @@ Supported formats include `chemstation_uv`, `chemstation_csv`,
 `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`,
 `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
 
-    library(chromConverter)
-    dat <- read_chroms(path, format_in = "chemstation_uv")
+``` r
+
+library(chromConverter)
+dat <- read_chroms(path, format_in = "chemstation_uv")
+```
 
 The `read_chroms` function will attempt to determine an appropriate
 parser to use and whether you’ve provided a vector of directories or
@@ -118,39 +136,24 @@ providing a vector of directories.
 
 If you’d like to automatically export the files, include the desired
 file format (`export_format`) and the path where you’d like to export
-the files (`path_out`). Some parsers (e.g. `OpenChrom` and
-`ThermoRawFileParser`) need to export files for their basic operations.
-Thus, if these parsers are selected, you will need to specify an
-argument to `path_out`.
+the files (`path_out`). Some parsers (e.g. `ThermoRawFileParser`) need
+to export files for their basic operations. Thus, if these parsers are
+selected, you will need to specify an argument to `path_out`.
 
-    library(chromConverter)
-    dat <- read_chroms(path, find_files = FALSE, path_out="temp", export=TRUE)
+``` r
+
+library(chromConverter)
+dat <- read_chroms(path, find_files = FALSE, path_out="temp", export=TRUE)
+```
 
 ###### Choosing between multiple parsers
 
 For formats where multiple parsers are available, you can choose between
 them using the `parser` argument. For example, ‘Agilent’ files can now
 be read using parsers from a number of external libraries, including
-Aston, Entab, OpenChrom, and rainbow. Some of these parsers must be
-installed manually as described in the [installation
-instructions](https://ethanbass.github.io/chromConverter/README.html#Installation)
-further up the page. It is recommended to use the newer Entab or rainbow
-parsers, since Aston is no longer actively supported.
-
-###### OpenChrom parsers
-
-Parsers in OpenChrom are organized by detector-type. Thus, for the
-`format_in` argument, the user must specify whether the files come from
-a mass selective detector (`msd`), a current-selective detector like a
-flame-ionization detector (`csd`), or a wavelength-selective detector
-(`wsd`), rather than providing a specific file format. In addition, the
-user should specify what format they’d like to export (`export_format`).
-Current options include `csv`, `cdf`, `mzml`, or `animl` (the analytical
-information markup language). The files will then be converted by
-calling OpenChrom through the command-line interface. If the files are
-exported in `csv` or `mzml` format, the chromatograms will be
-automatically read into R. Otherwise, files will be exported to the
-specified folder but will not be read into the R workspace.
+Entab and rainbow. Some of these parsers must be installed manually as
+described in the [installation
+instructions](https://ethanbass.github.io/chromConverter/README.html#Optional-dependencies).
 
 ###### Extracting metadata
 
@@ -171,22 +174,14 @@ is similar to `read_chroms`. In the simplest case, you can just provide
 paths to the files or directory you want to read in along with the
 format (`format_in`), e.g.
 
-    pks <- read_peaklist(<path_to_directory>, format_in = "chemstation")
+``` r
+pks <- read_peaklist(<path_to_directory>, format_in = "chemstation")
+```
 
-#### Optional additional dependencies
+### Optional dependencies
 
 Some of the parsers rely on external software libraries that must be
 manually installed.
-
-##### **Aston**
-
-To install Aston, call the `configure_aston()` function to install
-miniconda along with the necessary python dependencies. Running
-`read_chroms` with the Aston parser selected should also trigger a
-prompt to install Aston. If you’re running Windows, you may need to
-install the latest version of [‘Microsoft Visual
-C++’](https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist)
-if you don’t already have it.
 
 ##### **Entab**
 
@@ -197,7 +192,10 @@ Entab-R. After following the
 [instructions](https://rust-lang.org/tools/install/) to install Rust,
 you can install Entab from GitHub as follows:
 
-    remotes::install_github("https://github.com/bovee/entab/", subdir = "entab-r")
+``` r
+
+pak::pak("bovee/entab/entab-r")
+```
 
 ##### **ThermoRawFileParser**
 
@@ -213,7 +211,7 @@ will be asked to enter the path to the program.
 
 ##### **OpenChrom**
 
-###### (**Note:** Support for the commmand line interface has been removed from OpenChrom (as of `version 1.5.0`). Older versions (e.g. `1.4.x`) should still work for now. Unfortunately, OpenChrom 1.4 has been scrubbed from the internet.
+###### (**Note:** Support for the command line interface has been removed from OpenChrom (as of `version 1.5.0`). Version 1.4, which is required for command-line use, is no longer available for download. The instructions below are preserved for users who already have it installed.
 
 [OpenChrom](https://lablicate.com/platform/openchrom) is a free
 chromatography software, containing a large number of file parsers,
@@ -259,12 +257,10 @@ tidyverse, and data.table).
 ### Contributing
 
 Contributions of source code, ideas, or documentation are always
-welcome. Pull requests are especially welcome for new file format
-parsers — if you have access to files in an unsupported format and some
-familiarity with R, feel free to open a PR directly, even if it’s a
-rough draft. I’m happy to help get contributions over the finish line.
-Please get in touch (preferably by opening a GitHub issue) to discuss
-suggestions or file a bug report. Some good reasons to file an issue:
+welcome. Please get in touch (preferable by opening a GitHub
+[issue](https://github.com/ethanbass/chromConverter/issues)) to discuss
+any suggestions or to file a bug report. Some good reasons to file an
+issue:
 
 - You think you’ve found a bug.  
 - You’re getting a cryptic error message that you don’t understand.  
@@ -278,11 +274,6 @@ latest development version of chromConverter from GitHub**, in case your
 bug has already been patched. After installing the latest version, you
 may also need to refresh your R session to remove the older version from
 the cache.
-
-### Other related packages
-
-- For tidy extraction of mzML data, see
-  [RaMS](https://github.com/wkumler/RaMS/).
 
 ### Citation
 
