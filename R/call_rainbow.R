@@ -56,7 +56,7 @@ call_rainbow <- function(path,
   if (format_in %in% c("chemstation")){
     by <- "single"
   }
-  x <- converter(path, prec = as.integer(precision))
+  x <- converter(path, precision = as.integer(precision))
   if (by == "detector"){
     if (!is.null(what)){
       what_not_present <- which(!(what %in% names(x$by_detector)))
@@ -151,6 +151,12 @@ assign_rb_read <- function(){
 #' This function is called internally by `call_rainbow`.
 #' @noRd
 check_rb_configuration <- function(){
+  v <- reticulate::import("importlib.metadata")$version("rainbow-api")
+  if (numeric_version(v) < numeric_version("1.3.0")) {
+    stop("chromConverter requires rainbow-api >= 1.3.0 (found ", v,
+         "). Please upgrade: pip install --upgrade rainbow-api",
+         call. = FALSE)
+  }
   assign_rb_read()
   if (length(rb_read) == 0){
     ans <- readline("rainbow not found. Configure rainbow? (y/n)?")

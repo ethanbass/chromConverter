@@ -1,6 +1,6 @@
 .onLoad <- function(libname, pkgname){
   reticulate::py_require(packages = c("Aston", "olefile", "pandas",
-                                      "rainbow-api", "scipy"))
+                                      "rainbow-api>=1.3.0", "scipy"))
   try({trace_file <<- reticulate::import("aston.tracefile", delay_load = TRUE)},
       silent = TRUE)
   try({pd <<- reticulate::import("pandas", delay_load = TRUE)}, silent = TRUE)

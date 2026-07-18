@@ -1,3 +1,8 @@
+## chromConverter 0.9.1
+
+* Fixed encoding bug when parsing XML metadata in `read_shimadzu_lcd`: (bytes are now read explicitly as ISO-8859-1 rather than relying on system locale via `readLines()`).
+* Updated for compatibility with rainbow v1.3.0, which renamed the `prec` argument to `precision`; chromConverter now requires rainbow >= 1.3.0.
+
 ## chromConverter 0.9.0
 
 ### Breaking changes

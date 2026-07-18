@@ -764,8 +764,11 @@ sz_decode_props <- function(x){
 #' @noRd
 read_sz_3DDI <- function(path){
   path_meta <- export_stream(path, c('PDA 3D Raw Data', '3D Data Item'))
-  xml_content <- readLines(path_meta, warn = FALSE)
-  doc <- xml2::read_xml(xml_content)
+
+  raw <- readBin(path_meta, what = "raw", n = file.info(path_meta)$size)
+  txt <- iconv(rawToChar(raw), from = "ISO-8859-1", to = "UTF-8")
+  doc <- xml2::read_xml(paste0("<root>", txt, "</root>"))
+  doc <- xml2::xml_find_first(doc, ".//GUD[@Type='3DD']")
 
   nodes <- xml2::xml_children(doc)
   rm <- which(xml2::xml_name(nodes) %in% c("ELE", "GUD", "DataItem", "SPR"))
@@ -787,8 +790,10 @@ read_sz_3DDI <- function(path){
 read_sz_2DDI <- function(path, read_file = TRUE, idx = 1){
   if(read_file){
     path_meta <- export_stream(path, c('LSS Data Processing', '2D Data Item'))
-    xml_content <- readLines(path_meta, warn = FALSE)
-    doc <- xml2::read_xml(xml_content)
+    raw <- readBin(path_meta, what = "raw", n = file.info(path_meta)$size)
+    txt <- iconv(rawToChar(raw), from = "ISO-8859-1", to = "UTF-8")
+    doc <- xml2::read_xml(paste0("<root>", txt, "</root>"))
+    doc <- xml2::xml_find_first(doc, ".//GUD[@Type='2DDataItem']")
   } else{
     doc <- path
   }

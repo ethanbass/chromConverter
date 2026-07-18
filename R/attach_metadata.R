@@ -322,9 +322,9 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
         datetime <- datetime[!is.na(datetime)]
       } else {
         datetime <- sub("(\\+\\d{2}):(\\d{2})$", "\\1\\2", meta$`Inject Time`)
-        datetime <- as.POSIXct(strptime(datetime, format = "%d/%m/%Y %H:%M:%S %z"),
-                               tz="UTC")
-
+        datetime <- as.POSIXct(strptime(datetime,
+                                        format = "%d/%m/%Y %H:%M:%S %z"),
+                               tz = "UTC")
       }
     time_interval_unit <- tryCatch({
       get_time_unit(grep("Average Step", names(meta), value = TRUE)[1],
@@ -394,7 +394,6 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               software = meta$software,
               software_version = meta$software_version,
               software_revision = meta$software_revision,
-              # software = meta$Version,
               method = meta$method,
               batch = meta$SeqPathAndFile,
               operator = meta$operator,
