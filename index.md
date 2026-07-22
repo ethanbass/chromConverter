@@ -29,6 +29,9 @@ developed through reverse-engineering. If you run into a file that
 doesn’t parse correctly (or at all), please [open an
 issue](https://github.com/ethanbass/chromConverter/issues).
 
+For downstream analysis of chromatographic data, see the companion
+package [chromatographR](https://ethanbass.github.io/chromatographR/).
+
 ### Installation
 
 chromConverter can be installed from CRAN:
