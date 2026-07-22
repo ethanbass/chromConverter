@@ -28,6 +28,8 @@ chromConverter provides a simple way to read chromatography data into R from a v
 
 We aim to support open science and reproducible research by reducing dependence on proprietary vendor software. Since most of the supported file formats are not publicly documented, many of the parsers are developed through reverse-engineering. If you run into a file that doesn't parse correctly (or at all), please [open an issue](https://github.com/ethanbass/chromConverter/issues).
 
+For downstream analysis of chromatographic data, see the companion package [chromatographR](https://ethanbass.github.io/chromatographR/).
+
 ### Installation
 
 chromConverter can be installed from CRAN:
