@@ -22,7 +22,8 @@ As an example, we can load the 'Varian' SMS chromatogram included in the `chromC
 ```{r download_varian_sms}
 # download example Varian SMS file from the web
 path_sms <- tempfile(fileext = ".sms")
-download.file("https://raw.github.com/ethanbass/chromConverterExtraTests/master/inst/STRD15.SMS", destfile = path_sms)
+download.file("https://raw.github.com/ethanbass/chromConverterExtraTests/master/inst/STRD15.SMS", 
+              destfile = path_sms, mode = "wb")
 
 dat <- read_chroms(path_sms, format_in = "varian_sms", format_out = "data.frame")
 ```
