@@ -9,6 +9,9 @@
 - Updated for compatibility with rainbow v1.3.0, which renamed the
   `prec` argument to `precision`; chromConverter now requires rainbow
   \>= 1.3.0.
+- Fixed vignette example for `varian_sms` so the example file is
+  downloaded in binary mode (`mode = "wb"`), preventing file corruption
+  on Windows.
 
 ## chromConverter 0.9.0
 

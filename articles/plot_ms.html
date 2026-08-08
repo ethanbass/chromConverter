@@ -85,7 +85,8 @@ the <code>chromConverterExtraTests</code> package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># download example Varian SMS file from the web</span></span>
 <span><span class="va">path_sms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".sms"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span><span class="st">"https://raw.github.com/ethanbass/chromConverterExtraTests/master/inst/STRD15.SMS"</span>, destfile <span class="op">=</span> <span class="va">path_sms</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span><span class="st">"https://raw.github.com/ethanbass/chromConverterExtraTests/master/inst/STRD15.SMS"</span>, </span>
+<span>              destfile <span class="op">=</span> <span class="va">path_sms</span>, mode <span class="op">=</span> <span class="st">"wb"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path_sms</span>, format_in <span class="op">=</span> <span class="st">"varian_sms"</span>, format_out <span class="op">=</span> <span class="st">"data.frame"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Downloading uv...Done!</span></span></code></pre></div>
@@ -218,8 +219,8 @@ before:</p>
 <span><span class="co">#&gt; [1] data.table_1.18.4    ggplot2_4.0.3        chromConverter_0.9.1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] rappdirs_0.3.4     sass_0.4.10        generics_0.1.4     bitops_1.0-9      </span></span>
-<span><span class="co">#&gt;  [5] xml2_1.6.0         stringi_1.8.7      lattice_0.22-9     digest_0.6.39     </span></span>
+<span><span class="co">#&gt;  [1] rappdirs_0.3.4     sass_0.4.10        generics_0.1.4     bitops_1.1-0      </span></span>
+<span><span class="co">#&gt;  [5] xml2_1.6.0         stringi_1.8.9      lattice_0.22-9     digest_0.6.39     </span></span>
 <span><span class="co">#&gt;  [9] magrittr_2.0.5     evaluate_1.0.5     grid_4.6.1         RColorBrewer_1.1-3</span></span>
 <span><span class="co">#&gt; [13] fastmap_1.2.0      rprojroot_2.1.1    cellranger_1.1.0   jsonlite_2.0.0    </span></span>
 <span><span class="co">#&gt; [17] Matrix_1.7-5       purrr_1.2.2        scales_1.4.0       RaMS_1.4.3        </span></span>
@@ -229,7 +230,7 @@ before:</p>
 <span><span class="co">#&gt; [33] tools_4.6.1        dplyr_1.2.1        here_1.0.2         reticulate_1.46.0 </span></span>
 <span><span class="co">#&gt; [37] vctrs_0.7.3        R6_2.6.1           png_0.1-9          lifecycle_1.0.5   </span></span>
 <span><span class="co">#&gt; [41] stringr_1.6.0      fs_2.1.0           bit_4.6.0          ragg_1.5.2        </span></span>
-<span><span class="co">#&gt; [45] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.1      bslib_0.11.0      </span></span>
+<span><span class="co">#&gt; [45] pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.1      bslib_0.12.0      </span></span>
 <span><span class="co">#&gt; [49] pillar_1.11.1      gtable_0.3.6       glue_1.8.1         Rcpp_1.1.2        </span></span>
 <span><span class="co">#&gt; [53] systemfonts_1.3.2  tidyselect_1.2.1   tibble_3.3.1       xfun_0.60         </span></span>
 <span><span class="co">#&gt; [57] knitr_1.51         farver_2.1.2       htmltools_0.5.9    labeling_0.4.3    </span></span>
