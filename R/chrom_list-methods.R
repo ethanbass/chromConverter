@@ -47,3 +47,40 @@ print.chrom_list <- function(x, n = 5,
 
   invisible(x)
 }
+
+#' Subset a `chrom_list` object
+#'
+#' Extracts a subset of a `chrom_list` while preserving its class, so
+#' the result remains a `chrom_list` rather than a plain `list`.
+#'
+#' @param x A `chrom_list` object.
+#' @param i Indices specifying elements to extract.
+#' @param ... Additional arguments passed to the default `[` method.
+#'
+#' @return A `chrom_list` containing the selected elements.
+#'
+#' @export
+#' @keywords internal
+`[.chrom_list` <- function(x, i, ...) {
+  out <- NextMethod()
+  class(out) <- class(x)
+  out
+}
+
+#' Combine `chrom_list` objects
+#'
+#' Combines multiple `chrom_list` objects (or a mix of `chrom_list` and
+#' plain lists/matrices) into a single `chrom_list`, preserving the class.
+#'
+#' @param ... One or more `chrom_list` objects (or objects coercible via
+#'   `c()`) to combine.
+#'
+#' @return A `chrom_list` containing all elements.
+#'
+#' @export
+#' @keywords internal
+c.chrom_list <- function(...) {
+  out <- NextMethod()
+  class(out) <- "chrom_list"
+  out
+}
