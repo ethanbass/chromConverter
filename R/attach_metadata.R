@@ -778,7 +778,7 @@ read_waters_metadata <- function(file){
 extract_metadata <- function(chrom_list,
                              what = c("instrument", "detector", "detector_id",
                                       "software", "method", "batch", "operator",
-                                      "run_datetime",
+                                      "run_datetime", "sample_position",
                                       "sample_name", "sample_id",
                                       "injection_volume", "time_range",
                                       "time_interval", "time_unit", "detector_range",
