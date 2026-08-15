@@ -12,6 +12,12 @@
 - Fixed vignette example for `varian_sms` so the example file is
   downloaded in binary mode (`mode = "wb"`), preventing file corruption
   on Windows.
+- Added a `[.chrom_list` method so that subsetting a `chrom_list`
+  preserves its class instead of dropping it to a plain `list`.
+- Added a `c.chrom_list` method so that combining `chrom_list` objects
+  with [`c()`](https://rdrr.io/r/base/c.html) preserves the class
+  instead of dropping it to a plain `list`.
+- Added `sample_position` field to `extract_metadata`.
 
 ## chromConverter 0.9.0
 
