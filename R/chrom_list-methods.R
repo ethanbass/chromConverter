@@ -21,18 +21,21 @@ print.chrom_list <- function(x, n = 5,
                              cols = c("sample_name", "run_datetime",
                                       "method", "detector"), ...) {
   len <- length(x)
-  cat(sprintf("A chrom_list with %d chromatogram%s\n", len, if (len == 1) "" else "s"))
+  cat(sprintf("A chrom_list with %d chromatogram%s\n", len,
+              if (len == 1) "" else "s"))
 
   if (len == 0) return(invisible(x))
 
-  meta <- extract_metadata(x, cols)
+  meta <- suppressWarnings(extract_metadata(x, cols))
 
   is_constant <- sapply(meta, function(col) length(unique(col)) == 1)
   constant_cols <- meta[1, is_constant, drop = FALSE]
   varying_meta  <- meta[, !is_constant, drop = FALSE]
 
   if (any(is_constant)) {
-    cat(paste(names(constant_cols), unlist(constant_cols), sep = ": ", collapse = "  |  "), "\n")
+    cat(paste(names(constant_cols),
+              sapply(constant_cols, as.character),
+              sep = ": ", collapse = "  |  "), "\n")
   }
 
   # Print first n rows of varying columns
@@ -42,7 +45,8 @@ print.chrom_list <- function(x, n = 5,
   }
 
   if (len > n_show) {
-    cat(sprintf("... with %d more chromatogram%s\n", len - n_show, if (len - n_show == 1) "" else "s"))
+    cat(sprintf("... with %d more chromatogram%s\n", len - n_show,
+                if (len - n_show == 1) "" else "s"))
   }
 
   invisible(x)

@@ -1,12 +1,17 @@
 ## chromConverter 0.9.1
 
-* Fixed encoding bug when parsing XML metadata in `read_shimadzu_lcd`: (bytes are now read explicitly as ISO-8859-1 rather than relying on system locale via `readLines()`).
-* Updated for compatibility with rainbow v1.3.0, which renamed the `prec` argument to `precision`; chromConverter now requires rainbow >= 1.3.0.
-* Fixed vignette example for `varian_sms` so the example file is downloaded 
-  in binary mode (`mode = "wb"`), preventing file corruption on Windows.
+### New features
+
 * Added a `[.chrom_list` method so that subsetting a `chrom_list` preserves its class instead of dropping it to a plain `list`.
 * Added a `c.chrom_list` method so that combining `chrom_list` objects with `c()` preserves the class instead of dropping it to a plain `list`.
+  
+### Bug fixes and other minor changes
+
+* Fixed encoding bug when parsing XML metadata in `read_shimadzu_lcd`: (bytes are now read explicitly as ISO-8859-1 rather than relying on system locale via `readLines()`).
+* Updated for compatibility with rainbow v1.3.0, which renamed the `prec` argument to `precision`; chromConverter now requires rainbow >= 1.3.0.
+* Fixed vignette example for `varian_sms` so the example file is downloaded  in binary mode (`mode = "wb"`), preventing file corruption on Windows.
 * Added `sample_position` field to `extract_metadata`.
+* Fixed `print.chrom_list` so it prints formatted datetime instead of raw epoch seconds.
 
 ## chromConverter 0.9.0
 
