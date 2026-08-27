@@ -63,13 +63,13 @@
 #' @param sample_names Which sample names to use. Options are `basename` to
 #' use the filename (default) or `sample_name` to use the sample
 #' name encoded in the file metadata.
-#' @param dat Existing list of chromatograms to append results. Defaults to
-#' `NULL`.
 #' @param sort_by How to sort the chromatograms. Either `none` (default,
 #' preserves current arbitrary/file-order behavior), `acquisition_time` (sorts
 #' by the `run_datetime` attribute attached to each chromatogram when
 #' `read_metadata = TRUE`, oldest first), or `file_time` (sorts the
 #' input files by file modification time before reading, oldest first).
+#' @param dat Deprecated. Existing list of chromatograms to append results
+#' to. Use `c()` on the returned `chrom_list` objects instead. Defaults to `NULL`.
 #' @param ... Additional arguments to parser.
 #' @return A list of chromatograms in `matrix`, `data.frame`, or `data.table`
 #' format, according to the value of `format_out`. Chromatograms may be returned
@@ -126,6 +126,11 @@ read_chroms <- function(paths,
                                c("chromconverter", "raw"))
   sample_names <- match.arg(sample_names, c("basename", "sample_name"))
   sort_by <- match.arg(sort_by, c("none", "acquisition_time", "file_time"))
+  if (!is.null(dat)){
+    warning("The `dat` argument is deprecated and will be removed in a future ",
+            "version. Use `c()` on the returned `chrom_list` objects instead, ",
+            "e.g. `c(old_dat, read_chroms(...))`.", immediate. = TRUE)
+  }
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }

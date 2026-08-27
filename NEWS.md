@@ -13,6 +13,7 @@
 * Fixed vignette example for `varian_sms` so the example file is downloaded  in binary mode (`mode = "wb"`), preventing file corruption on Windows.
 * Added `sample_position` field to `extract_metadata`.
 * Fixed `print.chrom_list` so it prints formatted datetime instead of raw epoch seconds.
+* Deprecated `dat` argument in `read_chroms`. 
 
 ## chromConverter 0.9.0
 

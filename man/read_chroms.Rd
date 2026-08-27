@@ -86,13 +86,14 @@ R console.}
 use the filename (default) or \code{sample_name} to use the sample
 name encoded in the file metadata.}
 
-\item{dat}{Existing list of chromatograms to append results. Defaults to
-\code{NULL}.}
 \item{sort_by}{How to sort the chromatograms. Either \code{none} (default,
 preserves current arbitrary/file-order behavior), \code{acquisition_time} (sorts
 by the \code{run_datetime} attribute attached to each chromatogram when
 \code{read_metadata = TRUE}, oldest first), or \code{file_time} (sorts the
 input files by file modification time before reading, oldest first).}
+
+\item{dat}{Deprecated. Existing list of chromatograms to append results
+to. Use \code{c()} on the returned \code{chrom_list} objects instead. Defaults to \code{NULL}.}
 
 \item{...}{Additional arguments to parser.}
 }
