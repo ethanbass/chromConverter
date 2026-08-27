@@ -77,6 +77,7 @@ get_agilent_offsets <- function(version){
       instrument = 2492, # 0x9BC
       method = 2574, # 0xA0E
       software = 3089, # 0xC11
+      vial = 4055,
       units = 4172, # 0x104C
       signal = 4213, # 0x1075
       num_times = 278, # 0x116

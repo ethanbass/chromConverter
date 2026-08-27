@@ -117,8 +117,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
                                     "81" = 10,
                                     "30" = 13,
                                     "130" = 14,
-                                    "179_4b" = 10,
-                                    "179_8b" = 10,
+                                    "179_4b" = 11,
+                                    "179_8b" = 11,
                                     "181" = 10)
 
       meta <- lapply(offsets[seq_len(meta_slots)], function(offset){

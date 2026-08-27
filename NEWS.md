@@ -12,6 +12,7 @@
 * Updated for compatibility with rainbow v1.3.0, which renamed the `prec` argument to `precision`; chromConverter now requires rainbow >= 1.3.0.
 * Fixed vignette example for `varian_sms` so the example file is downloaded  in binary mode (`mode = "wb"`), preventing file corruption on Windows.
 * Added `sample_position` field to `extract_metadata`.
+* Added `sample_position` metadata field for Chemstation 179 files (`.ch` and `.it`).
 * Fixed `print.chrom_list` so it prints formatted datetime instead of raw epoch seconds.
 * Deprecated `dat` argument in `read_chroms`. 
 
