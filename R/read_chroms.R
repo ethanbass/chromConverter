@@ -65,6 +65,11 @@
 #' name encoded in the file metadata.
 #' @param dat Existing list of chromatograms to append results. Defaults to
 #' `NULL`.
+#' @param sort_by How to sort the chromatograms. Either `none` (default,
+#' preserves current arbitrary/file-order behavior), `acquisition_time` (sorts
+#' by the `run_datetime` attribute attached to each chromatogram when
+#' `read_metadata = TRUE`, oldest first), or `file_time` (sorts the
+#' input files by file modification time before reading, oldest first).
 #' @param ... Additional arguments to parser.
 #' @return A list of chromatograms in `matrix`, `data.frame`, or `data.table`
 #' format, according to the value of `format_out`. Chromatograms may be returned
@@ -111,6 +116,7 @@ read_chroms <- function(paths,
                         progress_bar, cl = 1,
                         verbose = getOption("verbose"),
                         sample_names = c("basename", "sample_name"),
+                        sort_by = c("none", "acquisition_time", "file_time"),
                         dat = NULL, ...){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
@@ -119,6 +125,7 @@ read_chroms <- function(paths,
   metadata_format <- match.arg(tolower(metadata_format),
                                c("chromconverter", "raw"))
   sample_names <- match.arg(sample_names, c("basename", "sample_name"))
+  sort_by <- match.arg(sort_by, c("none", "acquisition_time", "file_time"))
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
@@ -388,6 +395,9 @@ read_chroms <- function(paths,
         }
     }
   }
+  if (sort_by == "file_time"){
+    files <- files[order(fs::file_info(files)$modification_time)]
+  }
   if (all(grepl("\\.[Dd]$|\\.[Dd]?[/\\\\]",files))){
     file_names <- strsplit(files, "/")
     file_names <- gsub("\\.[Dd]", "",
@@ -399,7 +409,6 @@ read_chroms <- function(paths,
   } else {
     file_names <- fs::path_ext_remove(basename(files))
   }
-
   if (verbose)
     message(sprintf("Reading %d %s files", length(files), sQuote(format_in)))
 
@@ -432,6 +441,20 @@ read_chroms <- function(paths,
     warning("The following names are duplicated: ",
             paste(sQuote(duplicated_names), collapse = ", "),
             ". This may interfere with downstream analyses.", immediate. = TRUE)
+  }
+  if (sort_by == "acquisition_time"){
+    if (!read_metadata){
+      warning("`sort_by = \"acquisition_time\"` requires `read_metadata = TRUE`; skipping sort.",
+              immediate. = TRUE)
+    } else {
+      sort_vals <- lapply(data, attr, "run_datetime")
+      if (any(sapply(sort_vals, is.null))){
+        warning("`run_datetime` attribute missing for some chromatograms; skipping sort.",
+                immediate. = TRUE)
+      } else {
+        data <- data[order(unlist(sort_vals))]
+      }
+    }
   }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
     make_exporter <- function(fn, ...) {

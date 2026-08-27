@@ -26,6 +26,7 @@ read_chroms(
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = c("basename", "sample_name"),
+  sort_by = c("none", "acquisition_time", "file_time"),
   dat = NULL,
   ...
 )
@@ -87,6 +88,11 @@ name encoded in the file metadata.}
 
 \item{dat}{Existing list of chromatograms to append results. Defaults to
 \code{NULL}.}
+\item{sort_by}{How to sort the chromatograms. Either \code{none} (default,
+preserves current arbitrary/file-order behavior), \code{acquisition_time} (sorts
+by the \code{run_datetime} attribute attached to each chromatogram when
+\code{read_metadata = TRUE}, oldest first), or \code{file_time} (sorts the
+input files by file modification time before reading, oldest first).}
 
 \item{...}{Additional arguments to parser.}
 }

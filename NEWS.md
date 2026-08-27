@@ -2,6 +2,7 @@
 
 ### New features
 
+* Added `sort_by` argument to `read_chroms` to control chromatogram order. Options are "none" (default), "acquisition_time" (using run_datetime from metadata), and "file_time" (using file modification time). The default will change to "acquisition_time" in a future release.
 * Added a `[.chrom_list` method so that subsetting a `chrom_list` preserves its class instead of dropping it to a plain `list`.
 * Added a `c.chrom_list` method so that combining `chrom_list` objects with `c()` preserves the class instead of dropping it to a plain `list`.
   
