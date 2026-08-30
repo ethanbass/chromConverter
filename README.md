@@ -176,6 +176,6 @@ Contributions of source code, ideas, or documentation are always welcome. Please
 
 You can cite chromConverter as follows:
 
-Bass, E. (2026). chromConverter: Chromatographic File Converter. http://doi.org/10.5281/zenodo.6792521.
+`Bass, E. (2026). chromConverter: Chromatographic File Converter. http://doi.org/10.5281/zenodo.6792521`.
 
 If you use external libraries to convert your files, it is suggested to also cite these libraries in published work.
