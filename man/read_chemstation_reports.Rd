@@ -26,6 +26,11 @@ A \code{data.frame} containing the information from the specified
 \description{
 Reads 'Agilent ChemStation' reports into R.
 }
+\examples{
+\dontrun{
+read_chemstation_reports("path/to/report.txt")
+}
+}
 \seealso{
 Other 'Agilent' parsers:
 \code{\link[=read_agilent_d]{read_agilent_d()}},

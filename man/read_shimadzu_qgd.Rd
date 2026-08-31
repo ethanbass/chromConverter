@@ -72,6 +72,11 @@ with variable byte-length defined by the value in the header.
 This parser is experimental and may still need some work. It is not
 yet able to interpret much metadata from the files.
 }
+\examples{
+\dontrun{
+read_shimadzu_qgd("path/to/file.qgd")
+}
+}
 \seealso{
 Other 'Shimadzu' parsers:
 \code{\link[=read_shimadzu]{read_shimadzu()}},

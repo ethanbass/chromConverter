@@ -73,6 +73,11 @@ from the number of values and the sampling interval encoded in the header.
 This parser is experimental and may still need some work. It is not
 yet able to interpret much metadata from the files.
 }
+\examples{
+\dontrun{
+read_shimadzu_gcd("path/to/file.gcd")
+}
+}
 \seealso{
 Other 'Shimadzu' parsers:
 \code{\link[=read_shimadzu]{read_shimadzu()}},

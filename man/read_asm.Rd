@@ -42,6 +42,11 @@ if \code{read_metadata} is \code{TRUE}.
 \description{
 Reads \href{https://www.allotrope.org/asm}{'Allotrope Simple Model'} files into R.
 }
+\examples{
+\dontrun{
+read_asm("path/to/file.json")
+}
+}
 \author{
 Ethan Bass
 }

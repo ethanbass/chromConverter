@@ -50,6 +50,11 @@ A chromatogram in the format specified by the \code{format_out} and
 \description{
 Reads 'Analytical Data Interchange' (ANDI) netCDF (\code{.cdf}) files.
 }
+\examples{
+\dontrun{
+read_cdf("path/to/file.cdf")
+}
+}
 \author{
 Ethan Bass
 }

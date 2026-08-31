@@ -22,6 +22,9 @@
 #' `data.table` objects. If `mzR` is selected, the function will return a
 #' chromatogram in `matrix` or `data.frame` format according to the
 #' value of `format_out`.
+#' @examples \dontrun{
+#' read_mzml("path/to/file.mzML")
+#' }
 #' @author Ethan Bass
 #' @export read_mzml
 

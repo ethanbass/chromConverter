@@ -46,25 +46,35 @@ import(reticulate)
 import(xml2)
 importFrom(RaMS,grabMSdata)
 importFrom(bit64,as.integer64)
-importFrom(bitops,bitAnd)
-importFrom(bitops,bitShiftL)
-importFrom(data.table,":=")
-importFrom(data.table,.SD)
-importFrom(data.table,setorder)
+importFrom(bitops,
+  bitAnd,
+  bitShiftL
+)
+importFrom(data.table,
+  ":=",
+  .SD,
+  setorder
+)
 importFrom(purrr,partial)
 importFrom(readxl,read_xls)
-importFrom(stats,reshape)
-importFrom(stats,setNames)
+importFrom(stats,
+  reshape,
+  setNames
+)
 importFrom(stringr,str_split_fixed)
-importFrom(utils,file_test)
-importFrom(utils,head)
-importFrom(utils,packageVersion)
-importFrom(utils,read.csv)
-importFrom(utils,read.table)
-importFrom(utils,tail)
-importFrom(utils,unzip)
-importFrom(utils,write.csv)
-importFrom(utils,write.table)
-importFrom(xml2,read_xml)
-importFrom(xml2,xml_find_all)
-importFrom(xml2,xml_text)
+importFrom(utils,
+  file_test,
+  head,
+  packageVersion,
+  read.csv,
+  read.table,
+  tail,
+  unzip,
+  write.csv,
+  write.table
+)
+importFrom(xml2,
+  read_xml,
+  xml_find_all,
+  xml_text
+)

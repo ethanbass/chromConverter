@@ -17,6 +17,9 @@
 #' format or as a `data.frame`.
 #' @return A chromatogram in the format specified by the `format_out` and
 #' `data_format` arguments.
+#' @examples \dontrun{
+#' read_cdf("path/to/file.cdf")
+#' }
 #' @author Ethan Bass
 #' @export
 

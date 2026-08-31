@@ -26,6 +26,9 @@
 #' @param what What stream to get: current options are chromatograms
 #' (`chroms`) and/or peak lists (`peak_table`). If a stream
 #' is not specified, the function will default to `chroms`.
+#' @examples \dontrun{
+#' read_shimadzu_gcd("path/to/file.gcd")
+#' }
 #' @author Ethan Bass
 #' @inherit generic_return_2D return
 #' @note This parser is experimental and may still need some work. It is not

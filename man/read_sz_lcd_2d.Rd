@@ -66,6 +66,11 @@ little-endian integers, while negative values are encoded as two's
 complements. The value at each position is derived by subtracting the delta
 at each position from the previous value.
 }
+\examples{
+\dontrun{
+read_sz_lcd_2d("path/to/file.lcd")
+}
+}
 \seealso{
 Other 'Shimadzu' parsers:
 \code{\link[=read_shimadzu]{read_shimadzu()}},

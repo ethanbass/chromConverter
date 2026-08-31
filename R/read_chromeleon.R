@@ -10,6 +10,9 @@
 #' also be manually set as `"."` or `","`.
 #' @return A chromatogram in the format specified by `format_out` (retention
 #' time x wavelength).
+#' @examples \dontrun{
+#' read_chromeleon("path/to/file.txt")
+#' }
 #' @author Ethan Bass
 #' @export
 

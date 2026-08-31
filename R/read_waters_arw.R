@@ -11,6 +11,9 @@
 #' @inheritParams shared_params
 #' @param path Path to Waters `.arw` file.
 #' @inherit shared_params return
+#' @examples \dontrun{
+#' read_waters_arw("path/to/file.arw")
+#' }
 #' @author Ethan Bass
 #' @family 'Waters' parsers
 #' @export

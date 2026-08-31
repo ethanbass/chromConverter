@@ -5,6 +5,9 @@
 #' @inheritParams shared_params
 #' @param path Path to ASM `.json` file.
 #' @inherit generic_return_2D return
+#' @examples \dontrun{
+#' read_asm("path/to/file.json")
+#' }
 #' @author Ethan Bass
 #' @export
 

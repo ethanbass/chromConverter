@@ -5,6 +5,9 @@
 #' @inheritParams shared_params
 #' @param path The path to a 'Lumex' `.mdf` file.
 #' @inherit shared_params return
+#' @examples \dontrun{
+#' read_mdf("path/to/file.mdf")
+#' }
 #' @author Ethan Bass
 #' @export
 

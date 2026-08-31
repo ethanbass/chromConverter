@@ -45,6 +45,11 @@ The RaMS parser (default) will only return data in tidy (long) format. The
 mzR parser will return data in wide format. Currently the mzR-based parser
 is configured to return only DAD data.
 }
+\examples{
+\dontrun{
+read_mzml("path/to/file.mzML")
+}
+}
 \author{
 Ethan Bass
 }

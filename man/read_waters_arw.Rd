@@ -36,6 +36,11 @@ Reads 'Waters' ASCII \code{.arw} files.
 For help exporting files from Empower, you can consult the official
 documentation: \href{https://support.waters.com/KB_Inf/Empower_Breeze/WKB77571_How_to_export_3D_raw_data_from_Empower_to_a_Microsoft_Excel_spreadsheet}{How_to_export_3D_raw_data_from_Empower}.
 }
+\examples{
+\dontrun{
+read_waters_arw("path/to/file.arw")
+}
+}
 \seealso{
 Other 'Waters' parsers:
 \code{\link[=read_waters_raw]{read_waters_raw()}}

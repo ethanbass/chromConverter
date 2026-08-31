@@ -37,6 +37,11 @@ time x wavelength).
 \description{
 Reads 'Thermo Fisher Chromeleon™ CDS' ASCII (\code{.txt}) files.
 }
+\examples{
+\dontrun{
+read_chromeleon("path/to/file.txt")
+}
+}
 \author{
 Ethan Bass
 }

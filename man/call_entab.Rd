@@ -33,7 +33,8 @@ A chromatogram in the format specified by the \code{format_out} and
 \code{data_format} arguments.
 }
 \description{
-Converts chromatography date files using \href{https://github.com/bovee/entab}{entab} parsers.
+Converts chromatography date files using \href{https://github.com/bovee/entab}{entab}
+parsers.
 }
 \seealso{
 Other external parsers:

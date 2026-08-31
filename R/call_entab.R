@@ -1,6 +1,7 @@
 #' Call Entab
 #'
-#' Converts chromatography date files using [entab](https://github.com/bovee/entab) parsers.
+#' Converts chromatography date files using [entab](https://github.com/bovee/entab)
+#' parsers.
 #'
 #' @inheritParams shared_params
 #' @param path Path to file.

@@ -36,6 +36,9 @@
 #' The `format_out` argument determines whether chromatograms are returned
 #' as a `matrix`, `data.frame`, or `data.table`. Metadata will be
 #' attached to the chromatogram as [attributes] if `read_metadata` is `TRUE`.
+#' @examples \dontrun{
+#' read_shimadzu_qgd("path/to/file.qgd")
+#' }
 #' @author Ethan Bass
 #' @family 'Shimadzu' parsers
 #' @export

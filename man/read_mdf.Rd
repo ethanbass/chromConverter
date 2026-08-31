@@ -28,6 +28,11 @@ A chromatogram in the format specified by the \code{format_out} and
 \description{
 Reads 'Lumex' \code{.mdf} files.
 }
+\examples{
+\dontrun{
+read_mdf("path/to/file.mdf")
+}
+}
 \author{
 Ethan Bass
 }

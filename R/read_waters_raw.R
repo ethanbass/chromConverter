@@ -8,6 +8,9 @@
 #' @inherit shared_params return
 #' @note For now this parser only reads 1D chromatograms (not mass spectra or
 #' DAD data) and does not support parsing of metadata from 'Waters' RAW files.
+#' @examples \dontrun{
+#' read_waters_raw("path/to/file.raw")
+#' }
 #' @author Ethan Bass
 #' @family 'Waters' parsers
 #' @export

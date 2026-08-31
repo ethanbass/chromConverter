@@ -9,6 +9,9 @@
 #' `raw`.
 #' @return A `data.frame` containing the information from the specified
 #' 'ChemStation' report.
+#' @examples \dontrun{
+#' read_chemstation_reports("path/to/report.txt")
+#' }
 #' @author Ethan Bass
 #' @family 'Agilent' parsers
 #' @export
