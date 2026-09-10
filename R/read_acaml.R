@@ -65,6 +65,24 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
   doc <- xml2::read_xml(path)
   ns <- xml2::xml_ns(doc)
 
+  setup_nodes <- xml2::xml_find_all(doc, ".//*[local-name()='Samples']/*[local-name()='Setup']")
+  vol_lookup <- purrr::map(setup_nodes, function(s){
+    vol_node <- xml2::xml_find_first(s, ".//*[local-name()='AcqParam']/*[local-name()='InjectionVolume']")
+    if (is.na(vol_node)){
+      list(InjectionVolume = NA, InjectionVolume_unit = NA)
+    } else {
+      out <- list(InjectionVolume = xml2::xml_attr(vol_node, "val"))
+      u <- xml2::xml_attr(vol_node, "unit")
+      if (!is.na(u) && nzchar(u)) out$InjectionVolume_unit <- u
+      out
+    }
+  })
+  names(vol_lookup) <- xml2::xml_attr(setup_nodes, "id")
+
+  app <- xml2::xml_find_first(doc, ".//*[local-name()='AcquisitionApplication']/*[local-name()='AgilentApp']")
+  software <- if (is.na(app)) NA_character_ else xml2::xml_text(xml2::xml_find_first(app, "*[local-name()='Name']"))
+  software_version <- if (is.na(app)) NA_character_ else trimws(xml2::xml_text(xml2::xml_find_first(app, "*[local-name()='Version']")))
+
   injections <- xml2::xml_find_all(doc,
                                    ".//*[local-name()='InjectionMetaData']")
 
@@ -84,6 +102,10 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
       out
     }) |> purrr::list_flatten()
 
+    inj_vol_data <- vol_lookup[[attrs[["SampleSetupId"]]]]
+    if (is.null(inj_vol_data)) inj_vol_data <- list(InjectionVolume = NA,
+                                                    InjectionVolume_unit = NA)
+
     text_nodes <- c("Dil", "Mult", "Locked")
     text_data <- purrr::map(text_nodes, function(tag) {
       child <- xml2::xml_find_first(node, paste0("*[local-name()='", tag, "']"))
@@ -91,12 +113,13 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
       stats::setNames(list(v), tag)
     }) |> purrr::list_flatten()
 
-    tibble::as_tibble_row(c(as.list(attrs), val_data, text_data))
+    tibble::as_tibble_row(c(as.list(attrs), val_data, text_data, inj_vol_data))
   }) |>
     purrr::list_rbind()
   int_cols <- c("SampleOrderNumber", "SampleInjectionsCount", "ReplicateNumber")
   df[int_cols] <- lapply(df[int_cols], as.integer)
   df$SampleAmount <- as.numeric(df$SampleAmount)
+  df$InjectionVolume <- as.numeric(df$InjectionVolume)
   df$LastModifiedDateTime <- as.POSIXct(
     sub("([+-][0-9]{2}:[0-9]{2})$", "", df$LastModifiedDateTime),
     format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC"
@@ -104,6 +127,9 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
   df$InjectionAcqDateTime  <- as.POSIXct(df$InjectionAcqDateTime,
                                          format = "%Y-%m-%dT%H:%M:%OSZ",
                                          tz = "UTC")
+  df$Software <- software
+  df$SoftwareVersion <- software_version
+
   if (format_out == "data.frame"){
     df <- as.data.frame(df)
   } else if (format_out == "data.table"){

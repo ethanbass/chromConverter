@@ -89,18 +89,15 @@
 #' @export read_chroms
 
 read_chroms <- function(paths,
-                        format_in = c("agilent_d", "agilent_dx", "asm",
-                                      "chemstation", "chemstation_fid",
-                                      "chemstation_ch", "chemstation_csv",
-                                      "chemstation_ms", "chemstation_uv",
-                                      "masshunter_dad", "chromeleon_uv",
-                                      "chromatotec", "mzml", "mzxml", "mdf",
-                                      "shimadzu_ascii", "shimadzu_dad",
-                                      "shimadzu_fid", "shimadzu_gcd",
-                                      "shimadzu_qgd", "shimadzu_lcd",
-                                      "thermoraw", "varian_sms",
-                                      "waters_arw", "waters_raw",
-                                      "msd", "csd", "wsd", "csv", "other"),
+                        format_in = c("agilent_d", "agilent_dx", "agilent_rslt",
+                        "asm", "chemstation", "chemstation_fid",
+                        "chemstation_ch", "chemstation_csv", "chemstation_ms",
+                        "chemstation_uv", "masshunter_dad", "chromeleon_uv",
+                        "chromatotec", "mzml", "mzxml", "mdf",
+                        "shimadzu_ascii", "shimadzu_dad", "shimadzu_fid",
+                        "shimadzu_gcd", "shimadzu_qgd", "shimadzu_lcd",
+                        "thermoraw", "varian_sms", "waters_arw", "waters_raw",
+                        "msd", "csd", "wsd", "csv", "other"),
                         find_files,
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
@@ -136,12 +133,13 @@ read_chroms <- function(paths,
   }
   if (missing(find_files)){
     if (length(format_in) == 1){
-      if (!(format_in %in% c("agilent_d", "waters_raw"))){
+      if (!(format_in %in% c("agilent_d", "waters_raw", "agilent_rslt"))){
         ft <- all(file_test("-f", paths))
       } else {
         ext <- switch(format_in,
-                          agilent_d = "\\.d",
-                          waters_raw = "\\.raw")
+                      agilent_d = "\\.d",
+                      agilent_rslt = "\\.rslt|\\.sirslt",
+                      waters_raw = "\\.raw")
         ft <- all(grepl(ext, paths, ignore.case = TRUE))
       }
       find_files <- !ft
@@ -158,8 +156,8 @@ read_chroms <- function(paths,
     }
   }
   format_in <- match.arg(tolower(format_in),
-                         c("agilent_d", "agilent_dx", "asm", "chemstation",
-                           "chemstation_uv", "chemstation_ch",
+                         c("agilent_d", "agilent_dx", "agilent_rslt", "asm",
+                           "chemstation", "chemstation_uv", "chemstation_ch",
                            "chemstation_ms", "chemstation_2", "chemstation_30",
                            "chemstation_31", "chemstation_130",
                            "chemstation_131", "openlab_131", "chemstation_179",
@@ -238,6 +236,13 @@ read_chroms <- function(paths,
                          format_out = format_out,
                          data_format = data_format,
                          read_metadata = read_metadata,
+                         ...)
+  }  else if (format_in == "agilent_rslt"){
+    converter <- partial(read_agilent_rslt, path_out = path_out,
+                         format_out = format_out,
+                         data_format = data_format,
+                         read_metadata = read_metadata,
+                         sample_names = sample_names,
                          ...)
   } else if (format_in == "asm"){
     converter <- partial(read_asm, format_out = format_out,
@@ -436,7 +441,9 @@ read_chroms <- function(paths,
   } else{
     data <- converter(files)
   }
-  if (sample_names == "basename"){
+  if (format_in == "agilent_rslt"){
+    data <- do.call(`c`, data)
+  } else if (sample_names == "basename"){
     names(data) <- file_names
   } else if (sample_names == "sample_name"){
     names(data) <- sapply(data, attr, "sample_name")

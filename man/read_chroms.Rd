@@ -6,12 +6,12 @@
 \usage{
 read_chroms(
   paths,
-  format_in = c("agilent_d", "agilent_dx", "asm", "chemstation", "chemstation_fid",
-    "chemstation_ch", "chemstation_csv", "chemstation_ms", "chemstation_uv",
-    "masshunter_dad", "chromeleon_uv", "chromatotec", "mzml", "mzxml", "mdf",
-    "shimadzu_ascii", "shimadzu_dad", "shimadzu_fid", "shimadzu_gcd", "shimadzu_qgd",
-    "shimadzu_lcd", "thermoraw", "varian_sms", "waters_arw", "waters_raw", "msd", "csd",
-    "wsd", "csv", "other"),
+  format_in = c("agilent_d", "agilent_dx", "agilent_rslt", "asm", "chemstation",
+    "chemstation_fid", "chemstation_ch", "chemstation_csv", "chemstation_ms",
+    "chemstation_uv", "masshunter_dad", "chromeleon_uv", "chromatotec", "mzml", "mzxml",
+    "mdf", "shimadzu_ascii", "shimadzu_dad", "shimadzu_fid", "shimadzu_gcd",
+    "shimadzu_qgd", "shimadzu_lcd", "thermoraw", "varian_sms", "waters_arw",
+    "waters_raw", "msd", "csd", "wsd", "csv", "other"),
   find_files,
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),

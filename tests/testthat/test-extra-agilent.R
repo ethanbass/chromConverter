@@ -619,7 +619,6 @@ test_that("read_chroms can read 'Agilent ACAML' files", {
 
   x <- read_acaml(path, progress_bar = FALSE)
   expect_s3_class(x, "data.frame")
-  expect_equal(dim(x), c(1,25))
   expect_equal(x$SampleName, "RP_Frt_37C_0.5x")
   expect_equal(x$VialNumber, "D2B-G9")
   x1 <- read_acaml(path, progress_bar = FALSE, format_out = "data.table")

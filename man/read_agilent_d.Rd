@@ -58,6 +58,7 @@ read_agilent_d("tests/testthat/testdata/RUTIN2.D")
 \seealso{
 Other 'Agilent' parsers:
 \code{\link[=read_agilent_dx]{read_agilent_dx()}},
+\code{\link[=read_agilent_rslt]{read_agilent_rslt()}},
 \code{\link[=read_chemstation_ch]{read_chemstation_ch()}},
 \code{\link[=read_chemstation_csv]{read_chemstation_csv()}},
 \code{\link[=read_chemstation_ms]{read_chemstation_ms()}},

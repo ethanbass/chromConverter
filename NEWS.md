@@ -1,7 +1,9 @@
-## chromConverter 0.9.1
+## chromConverter 0.10.0
 
 ### New features
 
+* Added `read_agilent_rslt` function to read whole sequence of files from OpenLab and automatically attach corresponding metadata from the `acaml` file.
+* `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
 * Added `sort_by` argument to `read_chroms` to control chromatogram order. Options are "none" (default), "acquisition_time" (using run_datetime from metadata), and "file_time" (using file modification time). The default will change to "acquisition_time" in a future release.
 * Added a `[.chrom_list` method so that subsetting a `chrom_list` preserves its class instead of dropping it to a plain `list`.
 * Added a `c.chrom_list` method so that combining `chrom_list` objects with `c()` preserves the class instead of dropping it to a plain `list`.

@@ -67,7 +67,9 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 ##### ChromConverter (internal parsers)
 - 'Agilent ChemStation' & 'OpenLab' `.uv` files (versions 131, 31)
 - 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 30, 130, 8, 81, 179, 181)
-- 'Agilent OpenLab' `.dx`, `acaml`, and `amx` files.
+- 'Agilent ChemStation' `.ms` and `.csv` files
+- 'Agilent OpenLab' `.dx`, `.acaml`, `.amx`, and `.D` directories
+- 'Agilent OpenLab' `.rslt` sequence directories
 - Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
 - mzML (`.mzml`) & mzXML (.`mzxml`) (via *RaMS*).
@@ -75,6 +77,7 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - 'Shimadzu GCsolution' data files (`.gcd`)
 - 'Shimadzu GCMSsolution' data files (`.qgd`) 
 - 'Shimadzu LabSolutions'`.lcd` (PDA, chromatogram, and peak table streams)
+- 'Lumex' `.mdf` files
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Varian Workstation' (`.SMS`)
 - 'Waters Empower' ascii (`.arw`)

@@ -135,7 +135,8 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
 #' @noRd
 check_parser <- function(format_in, parser = NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd", "csd", "wsd"),
-                          chromconverter = c("agilent_d", "agilent_dx", "asm",
+                          chromconverter = c("agilent_d", "agilent_dx",
+                                             "agilent_rslt", "asm",
                                              "cdf", "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
@@ -243,6 +244,7 @@ format_to_extension <- function(format_in){
   switch(format_in,
          "agilent_d" = "\\.d$",
          "agilent_dx" = "\\.dx$",
+         "agilent_rslt" = "\\.rslt$|\\.sirslt$",
          "chemstation_ms" = "\\.ms$",
          "chemstation_2" = "\\.ms$",
          "chemstation_uv" = "\\.uv$",
@@ -285,7 +287,8 @@ format_to_extension <- function(format_in){
 #' @noRd
 find_files <- function(paths, pattern){
   files <- unlist(lapply(paths, function(path){
-    dirs <- ifelse(pattern %in% c("\\.raw$", "\\.d$"), TRUE, FALSE)
+    dirs <- ifelse(pattern %in% c("\\.raw$", "\\.d$", "\\.rslt$|\\.sirslt$"),
+                   TRUE, FALSE)
     files <- list.files(path = path, pattern = pattern, include.dirs = dirs,
                         full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
     if (length(files)==0){
