@@ -106,15 +106,15 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 sample_name = ifelse(is.null(meta$sample_name),
                                      fs::path_ext_remove(basename(source_file)),
                                              meta$sample_name),
-                instrument = NA,
+                instrument = get_metadata_field(meta, "instrument"),
                 detector = "MS",
                 detector_id = NA,
                 software_name = get_metadata_field(meta, "software"),
                 software_version = get_metadata_field(meta, "version"),
-                method = NA,
+                method = get_metadata_field(meta, "method"),
                 batch = NA,
                 operator = NA,
-                run_datetime = c(meta$t1, meta$t2),
+                run_datetime = get_metadata_field(meta, "acquisition_start"),
                 sample_injection_volume = NA,
                 sample_amount = NA,
                 time_start = sapply(meta$segment_metadata, function(x){
@@ -574,7 +574,10 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               method = NA,
               batch = NA,
               operator = NA,
-              run_date = meta$`Creation date`,
+              run_datetime = convert_timestamp(meta$`Creation date`,
+                                               datetime_formats =
+                                                 c("%m/%d/%Y %H:%M:%S",
+                                                   "%d/%m/%Y %H:%M:%S")),
               sample_name = fs::path_ext_remove(basename(meta$`RAW file path`)),
               sample_id = meta$`Sample id`,
               sample_position = meta$`Sample vial`,
@@ -802,6 +805,11 @@ read_waters_metadata <- function(file){
 #' @param chrom_list A list of chromatograms with attached metadata (as returned
 #' by `read_chroms` with `read_metadata = TRUE`).
 #' @param what A character vector specifying the metadata elements to extract.
+#' @param detector A character vector of detectors to include (e.g. `"UV"` or
+#' `c("UV", "MS")`), matched case-insensitively against each chromatogram's
+#' `detector` attribute. Defaults to `NULL`, in which case all chromatograms
+#' are included. Useful for lists containing more than one detector per
+#' sample.
 #' @param format_out Format of object. Either `data.frame`, `data.table` or
 #' `tibble`.
 #' @return A `data.frame`, `tibble`, or `data.table` (according to the value of
@@ -819,16 +827,27 @@ extract_metadata <- function(chrom_list,
                                       "intensity_multiplier", "scaled", "source_file",
                                       "source_file_format", "source_sha1",
                                       "data_format", "parser", "format_out"),
+                             detector = NULL,
                              format_out = c("data.frame", "data.table", "tibble")
 ){
   if (inherits(chrom_list, c("matrix", "data.table", "data.frame"))){
     chrom_list <- list(chrom_list)
     use_names <- FALSE
   } else use_names <- TRUE
+  chrom_list <- flatten_chrom_list(chrom_list)
+  if (!is.null(detector)){
+    chrom_list <- filter_by_detector(chrom_list, detector)
+  }
   format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
   metadata <- purrr::imap_dfr(chrom_list, function(chrom, name){
     c(name = name, unlist(sapply(what, function(w){
-      attr(chrom, which = w)
+      val <- attr(chrom, which = w, exact = TRUE)
+      # `run_datetime` is expected to be a single timestamp, but a parser may
+      # attach more than one. `unlist` would split a pair into
+      # `run_datetime1`/`run_datetime2`, which then miss the POSIXct conversion
+      # below and print as raw epoch seconds.
+      if (w == "run_datetime" && length(val) > 1) val <- val[1]
+      val
     }, simplify = FALSE)))
   })
   missing <- what[which(!(what %in% colnames(metadata)))]
@@ -838,6 +857,9 @@ extract_metadata <- function(chrom_list,
   if (length(what) < 25 && length(missing) > 0){
     warning(sprintf("The following metadata elements were not found: %s.",
                     paste(sQuote(missing),collapse = ", ")),immediate. = TRUE)
+  }
+  if (use_names && ncol(metadata) == 1) {
+    return(NA)
   }
   if (any(colnames(metadata) == "run_datetime")){
     metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime),
@@ -852,6 +874,99 @@ extract_metadata <- function(chrom_list,
     data.table::setDT(metadata)
   }
   metadata
+}
+
+#' Enumerate the individual chromatograms in a (possibly nested) list
+#'
+#' A `chrom_list` element can itself be a list of chromatograms, e.g. one entry
+#' per detector for a multichannel file, or one entry per data file within each
+#' detector when `read_chroms` is called with `collapse = FALSE`. This function
+#' walks the list to whatever depth is needed and returns one entry per actual
+#' chromatogram, together with the path taken to reach it.
+#'
+#' Both `extract_metadata` and `print.chrom_list` are built on this, so that
+#' they cannot disagree about how many chromatograms a list contains.
+#'
+#' @return A list of `list(path = <character vector>, chrom = <object>)`.
+#' @noRd
+chrom_list_leaves <- function(x, path = character()){
+  # elements a parser returns alongside the traces without being traces
+  # themselves (e.g. the `metadata` table from `read_mzml`)
+  if (inherits(x, "chromconverter_metadata")) return(list())
+  if (!is.list(x) || inherits(x, c("matrix", "data.table", "data.frame"))){
+    return(list(list(path = path, chrom = x)))
+  }
+  if (length(x) == 0) return(list())
+  nms <- names(x)
+  if (is.null(nms)) nms <- rep("", length(x))
+  nms[!nzchar(nms)] <- seq_along(x)[!nzchar(nms)]
+  unlist(lapply(seq_along(x), function(i){
+    chrom_list_leaves(x[[i]], c(path, nms[i]))
+  }), recursive = FALSE)
+}
+
+#' Flatten a (possibly nested) list of chromatograms
+#'
+#' Nested chromatograms are named for the path taken to reach them, so a
+#' multichannel sample `blue` with a `UV` channel becomes `blue.UV`.
+#' @noRd
+flatten_chrom_list <- function(x){
+  leaves <- chrom_list_leaves(x)
+  stats::setNames(lapply(leaves, `[[`, "chrom"),
+                  vapply(leaves, function(l) paste(l$path, collapse = "."),
+                         character(1)))
+}
+
+#' Resolve a sample-level attribute from a chromatogram or a list of them
+#'
+#' `read_chroms` needs per-sample values like `sample_name` and `run_datetime`,
+#' but a sample may be a single chromatogram or a (possibly nested) list of
+#' them, and parsers only ever attach metadata to the individual traces. Look on
+#' the element itself first -- `read_agilent_rslt` writes acaml attributes
+#' directly onto whatever `read_agilent_dx` returned, which may be a list --
+#' then fall back to the first leaf that carries the attribute.
+#' @noRd
+get_sample_attr <- function(x, which){
+  val <- attr(x, which, exact = TRUE)
+  if (is.null(val)){
+    for (leaf in chrom_list_leaves(x)){
+      val <- attr(leaf$chrom, which, exact = TRUE)
+      if (!is.null(val)) break
+    }
+  }
+  if (length(val) == 0) return(NULL)
+  # a parser may attach more than one value; `extract_metadata` takes the first
+  # for `run_datetime` and this must agree with it
+  val[[1]]
+}
+
+#' Subset a list of chromatograms by detector
+#'
+#' Matches against the `detector` attribute rather than the name of the list
+#' element, since the two do not always agree: the `rainbow` parser happens to
+#' name its sub-lists after the detector (`MS`, `UV`, `CAD`), but other parsers
+#' name them after the kind of data (e.g. `pda`, `tic`, `chroms`).
+#'
+#' Chromatograms with no `detector` attribute cannot match and are dropped.
+#' Called by `extract_metadata`.
+#' @noRd
+filter_by_detector <- function(chrom_list, detector){
+  detectors <- lapply(chrom_list, attr, "detector", exact = TRUE)
+  keep <- vapply(detectors, function(x){
+    !is.null(x) && any(tolower(x) %in% tolower(detector))
+  }, logical(1))
+  if (!any(keep)){
+    found <- unique(unlist(detectors))
+    stop(sprintf(paste0("No chromatograms were found for the requested ",
+                        "detector(s): %s.\n%s"),
+                 paste(sQuote(detector), collapse = ", "),
+                 if (length(found) == 0)
+                   "The chromatograms do not have a 'detector' attribute." else
+                   sprintf("The following detector(s) are present: %s.",
+                           paste(sQuote(found), collapse = ", "))),
+         call. = FALSE)
+  }
+  chrom_list[keep]
 }
 
 #' Transfer metadata

@@ -6,7 +6,7 @@
 \usage{
 \method{print}{chrom_list}(
   x,
-  n = 5,
+  n = 10,
   cols = c("sample_name", "run_datetime", "method", "detector"),
   ...
 )

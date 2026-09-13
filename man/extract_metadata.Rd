@@ -12,6 +12,7 @@ extract_metadata(
     "detector_y_unit", "detector_x_unit", "intensity_multiplier", "scaled",
     "source_file", "source_file_format", "source_sha1", "data_format", "parser",
     "format_out"),
+  detector = NULL,
   format_out = c("data.frame", "data.table", "tibble")
 )
 }
@@ -20,6 +21,12 @@ extract_metadata(
 by \code{read_chroms} with \code{read_metadata = TRUE}).}
 
 \item{what}{A character vector specifying the metadata elements to extract.}
+
+\item{detector}{A character vector of detectors to include (e.g. \code{"UV"} or
+\code{c("UV", "MS")}), matched case-insensitively against each chromatogram's
+\code{detector} attribute. Defaults to \code{NULL}, in which case all chromatograms
+are included. Useful for lists containing more than one detector per
+sample.}
 
 \item{format_out}{Format of object. Either \code{data.frame}, \code{data.table} or
 \code{tibble}.}

@@ -5,6 +5,7 @@
 * Added `read_agilent_rslt` function to read whole sequence of files from OpenLab and automatically attach corresponding metadata from the `acaml` file.
 * `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
 * Added `sort_by` argument to `read_chroms` to control chromatogram order. Options are "none" (default), "acquisition_time" (using `run_datetime` from metadata), and "file_time" (using file modification time). The default will change to "acquisition_time" in a future release.
+* Added a `detector` argument to `extract_metadata` to select which detectors to include (e.g. `detector = "UV"` or `detector = c("UV", "MS")`), matched case-insensitively against each chromatogram's `detector` attribute. This is useful for lists containing more than one detector per sample, such as those returned by the `rainbow` parser.
 * Added a `bin_width` argument to `call_rainbow` as an alternative to `precision`, for m/z grids that are not a power of ten (e.g. `bin_width = 0.5`). `precision` is unchanged and remains the default.
 * Added a `signal_descriptor` metadata field (e.g. `"DAD1A,Sig=210,4 Ref=off"` or `"FID1A, Front Signal"`), which is attached to every type of 2D 'Agilent' stream that records one, rather than only to versions 179 and 181.
 
@@ -26,6 +27,7 @@
 
 * `detector_range` is now reserved for the numeric wavelength range recorded by `.uv` files. For 'ChemStation' versions 30 and 130 the signal descriptor was previously reported in this field, and is now reported as `signal_descriptor`.
 * The `detector` field is now `NA` for 'ChemStation' `.ch` files. These files do not record a detector type; the field previously reported the detector module, duplicating `detector_id`.
+* The acquisition time of 'Thermo' RAW files is now named `run_datetime`, like every other format, rather than `run_date`.
 
 ### Deprecations
 
@@ -55,6 +57,16 @@
 * Fixed `read_varian_sms` for `format_out = "data.table"`, which failed previously with an error. The `TIC` and `BPC` returned by this parser also had their intensity column named `tic`/`bpc` instead of `intensity` for this value of `format_out`.
 * Added support for reading `instrument` and `method` metadata from Varian SMS files (read from the `InjectionLog` section).
 
+
+#### Metadata and printing
+
+* Nested chromatograms are now flattened recursively rather than one level deep, so `extract_metadata` and `print` work on lists returned by `read_chroms` with `collapse = FALSE`.
+* `extract_metadata` now matches attribute names exactly. Previously a requested element could be filled in from a different attribute that merely started with the same characters, so a chromatogram with no `detector` attribute could report its `detector_y_unit` as its detector.
+* `extract_metadata` now returns `NA` instead of a metadata frame with only a `name` column when none of the requested metadata elements are found.
+* `print.chrom_list` now shows every chromatogram in a list containing more than one trace per sample (e.g. a multichannel 'Shimadzu' file), grouped under the sample they belong to. Previously it counted only the top-level elements, so it reported the wrong number of chromatograms and silently displayed only the first trace of each sample without the usual "... with N more" notice.
+* Improved `print.chrom_list` formatting: datetimes are printed as formatted timestamps rather than raw epoch seconds; the header now shows values exactly as they appear in the table below it (sub-second digits were previously shown in one but not the other); the header wraps to the width of the console (a long field such as a Windows `method` path could previously produce a single line of up to 220 characters).
+* `print.chrom_list` no longer errors when none of the requested `cols` are present in the chromatograms, or when `n` is negative.
+* The default for the `n` argument of `print.chrom_list` is now `10`, matching its documented default (the code previously used `5`).
 ## chromConverter 0.9.1
 
 ### New features
