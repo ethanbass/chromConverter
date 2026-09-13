@@ -6,6 +6,7 @@
 * `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
 * Added `sort_by` argument to `read_chroms` to control chromatogram order. Options are "none" (default), "acquisition_time" (using `run_datetime` from metadata), and "file_time" (using file modification time). The default will change to "acquisition_time" in a future release.
 * Added a `bin_width` argument to `call_rainbow` as an alternative to `precision`, for m/z grids that are not a power of ten (e.g. `bin_width = 0.5`). `precision` is unchanged and remains the default.
+* Added a `signal_descriptor` metadata field (e.g. `"DAD1A,Sig=210,4 Ref=off"` or `"FID1A, Front Signal"`), which is attached to every type of 2D 'Agilent' stream that records one, rather than only to versions 179 and 181.
 
 ### Improved handling of Python dependencies
 
@@ -14,6 +15,13 @@
 * chromConverter no longer creates Python module objects in your global environment when the package is loaded.
 * Fixed `configure_python_environment` so it accepts the `parser` argument it is called with, and removed its interactive prompts, which failed in non-interactive sessions.
 
+### Performance
+
+* Refactored internal 'Agilent' parsers for increased speed (~3.5-30x for the delta-encoded formats). The per-value `readBin()` loops used to decode them have been replaced by a single bulk read followed by vectorized decoding, which returns exactly the same values. For example, a 10.8 MB 'ChemStation' version 31 `.uv` file went from ~9 s to ~0.57 s.
+### Metadata field changes
+
+* `detector_range` is now reserved for the numeric wavelength range recorded by `.uv` files. For 'ChemStation' versions 30 and 130 the signal descriptor was previously reported in this field, and is now reported as `signal_descriptor`.
+* The `detector` field is now `NA` for 'ChemStation' `.ch` files. These files do not record a detector type; the field previously reported the detector module, duplicating `detector_id`.
 
 ### Deprecations
 
@@ -24,18 +32,28 @@
 ### Bug fixes and other minor changes
 
 * Fixed the `rainbow` parser, which raised `read() no longer takes precision` on every call once `rainbow-api` v1.5.0 was released. v1.5.0 split `precision` into `bin_width` (the m/z grid, in daltons) and `display_precision` (label rounding, in decimals); chromConverter now derives both from `precision`, so the argument and the data it returns are unchanged. v1.5.0 is now the minimum required version.
+
+#### 'Agilent'
+
+* Fixed missing `detector_id` for 'ChemStation' version 130 files.
+* Added `sample_position` metadata field for 'ChemStation' 179 files (`.ch` and `.it`).
+* The acquisition time of 'Agilent MassHunter' files is now converted to `POSIXct` instead of being attached as an unparsed string, which `extract_metadata` reported as `NA`.
+
+
+
+## chromConverter 0.9.1
+
+### New features
+
 * Added a `[.chrom_list` method so that subsetting a `chrom_list` preserves its class instead of dropping it to a plain `list`.
 * Added a `c.chrom_list` method so that combining `chrom_list` objects with `c()` preserves the class instead of dropping it to a plain `list`.
-  
+
 ### Bug fixes and other minor changes
 
 * Fixed encoding bug when parsing XML metadata in `read_shimadzu_lcd`: (bytes are now read explicitly as ISO-8859-1 rather than relying on system locale via `readLines()`).
 * Updated for compatibility with rainbow v1.3.0, which renamed the `prec` argument to `precision`; chromConverter now requires rainbow >= 1.3.0.
 * Fixed vignette example for `varian_sms` so the example file is downloaded  in binary mode (`mode = "wb"`), preventing file corruption on Windows.
 * Added `sample_position` field to `extract_metadata`.
-* Added `sample_position` metadata field for Chemstation 179 files (`.ch` and `.it`).
-* Fixed `print.chrom_list` so it prints formatted datetime instead of raw epoch seconds.
-* Deprecated `dat` argument in `read_chroms`. 
 
 ## chromConverter 0.9.0
 

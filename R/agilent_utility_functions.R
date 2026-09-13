@@ -8,6 +8,7 @@ get_agilent_offsets <- function(version){
                     operator = 1880,
                     date = 2391,
                     detector_model = 2492,
+                    instrument = 2533,
                     method = 2574,
                     software = 3089,
                     units = 3093,
@@ -79,7 +80,7 @@ get_agilent_offsets <- function(version){
       software = 3089, # 0xC11
       vial = 4055,
       units = 4172, # 0x104C
-      signal = 4213, # 0x1075
+      signal_desc = 4213, # 0x1075
       num_times = 278, # 0x116
       rt_first = 282, # 0x11A
       rt_last = 286, # 0x11E
@@ -99,7 +100,10 @@ get_agilent_offsets <- function(version){
       sample_name = 858, # utf16
       operator = 1880, # utf16
       date = 2391, # utf16
-      inlet = 2492, # utf16
+      # 0x9BC holds the detector module (e.g. "G1315A"), the same field the
+      # 131_LC layout records at this offset. It was previously labelled
+      # `inlet`, which nothing consumed, so `detector_id` came back empty.
+      detector_model = 2492, # utf16
       instrument = 2533, # utf16'
       method = 2574, # utf16
       software = 3089, # 'utf16'
@@ -107,7 +111,7 @@ get_agilent_offsets <- function(version){
       software_revision = 3802, #'utf16'
       vial = 4054,
       units = 4172, # 'utf16'
-      signal = 4213, # 'utf16'
+      signal_desc = 4213, # 'utf16'
       intercept = 4110, # INT32
       scaling_factor = 4732) #ENDIAN + 'd'
   } else if (version == 30){
@@ -124,7 +128,7 @@ get_agilent_offsets <- function(version){
       software_version = 355, #utf16'
       software_revision = 405, #'utf16'
       units = 580, # 'utf16'
-      signal = 596, # 'utf16'
+      signal_desc = 596, # 'utf16'
       intercept = 636, # INT32
       scaling_factor = 644,
       data_start = 1024 #ENDIAN + 'd'
@@ -152,6 +156,30 @@ get_agilent_offsets <- function(version){
   offsets
 }
 
+#' 'Agilent' offsets that point at binary values rather than strings
+#'
+#' Everything else in the offset lists returned by `get_agilent_offsets` is a
+#' string field read with `read_cs_string`.
+#' @noRd
+agilent_binary_fields <- c("num_times", "rt_first", "rt_last", "start_time",
+                           "end_time", "header_length", "scaling_factor",
+                           "scaling_toggle", "intercept", "data_start")
+
+#' Read the string-valued metadata fields from a 'ChemStation' file
+#'
+#' Reads the fields by name. The offset lists are ordered by position in the
+#' file, so slicing them positionally (`offsets[seq_len(n)]`, as this code
+#' previously did) silently drops trailing fields whenever a new offset is
+#' inserted into the middle of a list.
+#' @noRd
+read_chemstation_string_fields <- function(f, offsets, type = 2){
+  fields <- setdiff(names(offsets), agilent_binary_fields)
+  lapply(offsets[fields], function(offset){
+    seek(f, where = offset, origin = "start")
+    read_cs_string(f, type = type)
+  })
+}
+
 #' Read ChemStation string
 #' @noRd
 read_cs_string <- function(f, type = 1, pos = NULL){
@@ -160,9 +188,13 @@ read_cs_string <- function(f, type = 1, pos = NULL){
   }
   n <- get_nchar(f)
   if (type == 1){
-    tryCatch(rawToChar(readBin(f, what = "raw", n = n)), error = function(e) NA)
+    tryCatch(clean_vendor_string(rawToChar(readBin(f, what = "raw", n = n))),
+             error = function(e) NA)
   } else if (type == 2){
-    tryCatch(rawToChar(readBin(f, what = "raw", n = n*2)[c(TRUE, FALSE)]),
+    # only the low byte of each UTF-16LE unit is kept, so what is left is
+    # Latin-1
+    tryCatch(clean_vendor_string(
+      rawToChar(readBin(f, what = "raw", n = n*2)[c(TRUE, FALSE)])),
              error = function(e) NA)
   }
 }
@@ -189,4 +221,36 @@ get_chemstation_dir_name <- function(path){
 #' @noRd
 get_nchar <- function(f){
   as.numeric(readBin(f, what = "raw", n = 1))
+}
+
+#' Locate escape markers in an 'Agilent' delta stream
+#' @noRd
+resolve_escape_positions <- function(x, marker, width){
+  cand <- which(x == marker)
+  if (length(cand) < 2L) return(cand)
+  if (all(diff(cand) > width)) return(cand)
+  keep <- logical(length(cand))
+  last <- -width
+  for (k in seq_along(cand)){
+    if (cand[k] - last > width){
+      keep[k] <- TRUE
+      last <- cand[k]
+    }
+  }
+  cand[keep]
+}
+
+#' Accumulate an 'Agilent' delta stream, restarting at each reset
+#' @noRd
+cumsum_with_resets <- function(d, reset, values){
+  cs <- cumsum(d)
+  g <- cumsum(reset)
+  cs + (c(0, values) - c(0, cs[which(reset)]))[g + 1L]
+}
+
+#' Read a big-endian signed 32-bit integer from a pair of unsigned words
+#' @noRd
+int32_from_words <- function(hi, lo){
+  x <- hi * 65536 + lo
+  ifelse(x >= 2147483648, x - 4294967296, x)
 }

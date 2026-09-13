@@ -78,7 +78,6 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
   data <- decoder(f, offset)
 
   seek(f, where = 282, origin = "start")
-  seek(f, where = 282, origin = "start")
   if (version %in% c("8", "30", "130")){
     xmin <- as.double(readBin(f, "integer", n = 1, size = 4, signed = TRUE,
                               endian = "big")) / 60000
@@ -113,22 +112,8 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
                                    format_out = format_out)
 
     if (read_metadata){
-      meta_slots <- switch(version, "8" = 10,
-                                    "81" = 10,
-                                    "30" = 13,
-                                    "130" = 14,
-                                    "179_4b" = 11,
-                                    "179_8b" = 11,
-                                    "181" = 10)
-
-      meta <- lapply(offsets[seq_len(meta_slots)], function(offset){
-        seek(f, where = offset, origin = "start")
-        if (version %in% c("8", "30", "81")){
-          read_cs_string(f, type = 1)
-        } else{
-          read_cs_string(f, type = 2)
-        }
-      })
+      meta <- read_chemstation_string_fields(f, offsets,
+                type = ifelse(version %in% c("8", "30", "81"), 1, 2))
     meta$intensity_multiplier <- scaling_factor
     meta$time_range <- c(xmin, xmax)
 
@@ -153,36 +138,33 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
 #' ((c) James Dillon 2014).
 #' @noRd
 decode_double_delta <- function(file, offset){
-  seek(file, 0, 'end')
+  seek(file, 0, "end")
   fsize <- seek(file, NA, "current")
-
-  # Read data
-
-  seek(file, offset, "start")
   seek(file, offset, "start")
 
-  signal <- numeric(fsize/2)
-  count <- 1
-  buffer <- numeric(3)
+  rw <- readBin(file, "raw", n = fsize - offset)
+  n16 <- length(rw) %/% 2L
+  v <- readBin(rw, "integer", n = n16, size = 2, signed = TRUE, endian = "big")
 
-  while (seek(file, NA, "current") < fsize){
-    buffer[3] <- readBin(file, "integer", n = 1, endian = "big", size = 2)
+  esc <- resolve_escape_positions(v, 32767L, 3L)
+  esc <- esc[esc + 3L <= n16]
 
-    if (buffer[3] != 32767) {
-      buffer[2] <- buffer[2] + buffer[3]
-      buffer[1] <- buffer[1] + buffer[2]
-    } else {
-      buffer[1] <- readBin(file, "integer", n=1, endian = "big", size = 2) * 4294967296
-      buffer[1] <- readBin(file, "integer", n=1, endian = "big", size = 4) + buffer[1]
-      buffer[2] <- 0
-    }
+  keep <- rep(TRUE, n16)
+  if (length(esc)) keep[as.vector(outer(1:3, esc, "+"))] <- FALSE
+  pos <- which(keep)
 
-    signal[count] <- buffer[1]
-    count <- count + 1
-  }
+  is_esc <- pos %in% esc
+  d <- as.numeric(v[pos])
+  d[is_esc] <- 0
 
-  signal <- signal[1:(count - 1)]
-  return(signal)
+  absv <- if (length(esc)){
+    v[esc + 1L] * 4294967296 +
+      readBin(rw[as.vector(outer(3:6, esc * 2L, "+"))], "integer",
+              n = length(esc), size = 4, endian = "big")
+  } else numeric(0)
+
+  b2 <- cumsum_with_resets(d, is_esc, rep(0, length(esc)))
+  cumsum_with_resets(b2, is_esc, absv)
 }
 
 #' Decode double array
@@ -197,7 +179,7 @@ decode_double_array_4byte <- function(file, offset){
   # Read data
   seek(file, offset, "start")
   signal <- readBin(file, what = "double", size = 4, endian = "little",
-                    n = (fsize - offset))
+                    n = (fsize - offset) %/% 4L)
   signal <- signal[seq(2, length(signal), 2)]
   return(signal)
 }
@@ -211,7 +193,7 @@ decode_double_array_8byte <- function(file, offset){
   # Read data
   seek(file, offset, "start")
   signal <- readBin(file, what = "double", size = 8, endian = "little",
-                    n = (fsize - offset))
+                    n = (fsize - offset) %/% 8L)
   return(signal)
 }
 
@@ -221,39 +203,54 @@ decode_double_array_8byte <- function(file, offset){
 #' ((c) James Dillon 2014).
 #' @noRd
 decode_delta <- function(file, offset){
-    seek(file, 0, 'end')
-    fsize <- seek(file, NA, "current")
+  seek(file, 0, "end")
+  fsize <- seek(file, NA, "current")
+  seek(file, offset, "start")
 
-    seek(file, offset, "start")
-    start <- seek(file, NA, "current")
+  rw <- readBin(file, "raw", n = fsize - offset)
+  n16 <- length(rw) %/% 2L
+  v <- readBin(rw, "integer", n = n16, size = 2, signed = TRUE, endian = "big")
 
-  signal <- rep(NA, round((fsize - start)/2))
-  buffer <- rep(0, 4)
-  index <- 1
+  signal <- numeric(n16)
+  index <- 1L
+  s <- 1L
+  acc <- 0
 
-    while (TRUE){
-      head <- readBin(file, "integer", n = 1, size = 1, endian = "big")
-      if (head != 0x10) {
-        break
-      }
-      buffer[2] <- buffer[4]
-
-      segment_length <- readBin(file, "integer", n = 1, size = 1, endian = "big")
-      for (i in seq_len(segment_length)){
-        buffer[3] <- readBin(file, "integer", n = 1, size = 2, endian = "big")
-        if (buffer[3] != -32768L) {
-          buffer[2] <- buffer[2] + buffer[3]
+  while (s <= n16){
+    h <- v[s]
+    if (is.na(h) || h < 0x1000L || h > 0x10FFL) break
+    len <- h - 0x1000L
+    if (len == 0L){
+      s <- s + 1L
+      next
+    }
+    sl <- v[(s + 1L):min(n16, s + 3L * len)]
+    esc <- which(sl == -32768L)
+    if (!length(esc) || esc[1L] > len){
+      vals <- acc + cumsum(sl[seq_len(len)])
+      consumed <- len
+    } else {
+      vals <- numeric(len)
+      j <- 1L
+      for (i in seq_len(len)){
+        if (sl[j] == -32768L){
+          acc <- readBin(rw[(s * 2L + j * 2L + 1L):(s * 2L + j * 2L + 4L)],
+                         "integer", n = 1, size = 4, endian = "big")
+          j <- j + 3L
         } else {
-          buffer[2] <- readBin(file, "integer", n = 1, size = 4 ,endian = "big")
+          acc <- acc + sl[j]
+          j <- j + 1L
         }
-
-        signal[index] <- buffer[2]
-        index <- index + 1
+        vals[i] <- acc
       }
-      buffer[4] <- buffer[2]
+      consumed <- j - 1L
+    }
+    acc <- vals[len]
+    signal[index:(index + len - 1L)] <- vals
+    index <- index + len
+    s <- s + 1L + consumed
   }
-  signal <- signal[!is.na(signal)]
-  return(signal)
+  signal[seq_len(index - 1L)]
 }
 
 #' Read Chemstation IT file
@@ -316,12 +313,10 @@ read_chemstation_it <- function(path, format_out = c("matrix", "data.frame",
                                  format_out = format_out)
 
   if (read_metadata){
-    meta <- lapply(offsets[seq_len(10)], function(offset){
-      seek(f, where = offset, origin = "start")
-        read_cs_string(f, type = 2)
-    })
+    meta <- read_chemstation_string_fields(f, offsets)
     meta$time_range <- c(head(rt, 1), tail(rt, 1))
-    meta$units <- gsub("\xb0", "\u00b0", meta$units, useBytes = TRUE)
+    # the Latin-1 degree sign in `units` is now re-encoded by
+    # `clean_vendor_string`, which `read_cs_string` applies to every field
     meta <- c(meta, intensity_multiplier = scaling_factor)
     datetime_regex <- "(\\d{2}-[A-Za-z]{3}-\\d{2}, \\d{2}:\\d{2}:\\d{2})|(\\d{2}/\\d{2}/\\d{4} \\d{1,2}:\\d{2}:\\d{2} (?:AM|PM)?)"
     meta$date <- regmatches(meta$date, gregexpr(datetime_regex, meta$date))[[1]]

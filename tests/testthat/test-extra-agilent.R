@@ -84,6 +84,26 @@ test_that("read_chroms can read 'Agilent' MS files", {
   expect_equal(attr(x3, "detector"), attr(x2, "detector"))
   expect_equal(attr(x3, "data_format"), "long")
   expect_equal(x3[intensity!=0], x4)
+
+  expect_equal(unname(colSums(x1$MS1)),
+    c(2410340.08160019, 27133679.6999996, 17657612))
+  expect_equal(unname(as.matrix(x1$MS1[1:5, ])),
+    structure(c(0.0791666666666667, 0.0791666666666667, 0.0791666666666667, 
+    0.0791666666666667, 0.0791666666666667, 915.7, 865.4, 840.4, 727.5, 
+    680.6, 112, 184, 157, 145, 120), dim = c(5L, 3L)))
+  expect_equal(unname(as.matrix(x1$MS1[nrow(x1$MS1), ])),
+    structure(c(44.9728666666667, 105.2, 313), dim = c(1L, 3L)))
+  expect_equal(max(x1$MS1$intensity),
+    14859)
+  expect_equal(unname(colSums(x1$BPC)),
+    c(57080.9160833333, 598612.000000003, 1973751))
+  expect_equal(unname(as.matrix(x1$BPC[1:3, ])),
+    structure(c(0.0791666666666667, 0.0968833333333333, 0.114616666666667, 
+    105.2, 105.2, 105.1, 644, 410, 305), dim = c(3L, 3L)))
+  expect_equal(sum(x1$TIC[, 1]),
+    17703817)
+  expect_equal(unname(head(x1$TIC[, 1], 5)),
+    c(13924, 11824, 5041, 1034, 1000)) 
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
@@ -103,7 +123,9 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
 
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "NVAC-6B1-S3R1")
-  expect_equal(attr(x, "detector"), "G1315B")
+  expect_equal(attr(x, "detector_id"), "G1315B")
+  expect_true(is.na(attr(x, "detector")))
+  expect_equal(attr(x, "instrument"), "LC")
   expect_equal(attr(x, "detector_y_unit"), "mAU")
   expect_equal(attr(x, "method"), "JCMONO1.M")
   expect_equal(attr(x, "time_unit"), "Minutes")
@@ -118,6 +140,30 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
   expect_equal(head(x1$rt, 1), -.00133333333333333, tolerance = .00001)
   expect_equal(tail(x1$rt, 1), 32.002, tolerance = .00001)
   expect_equal(attr(x1, "data_format"), "long")
+
+  expect_equal(sum(x),
+    1389686.77091599)
+  expect_equal(range(x),
+    c(-23.5595703125, 2085.93797683716))
+  expect_equal(which.max(x),
+    2012L)
+  expect_equal(unname(head(x[, 1], 5)),
+    c(-0.72479248046875, -0.726222991943359, -0.720024108886719, 
+    -0.714302062988281, -0.710010528564453))
+  expect_equal(unname(tail(x[, 1], 5)),
+    c(2.08759307861328, 2.08568572998047, 2.09283828735352, 2.09903717041016, 
+    2.09712982177734))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 15)), 1]),
+    c(-0.72479248046875, 70.218563079834, 98.7544059753418, 20.2045440673828, 
+    26.1750221252441, 34.522533416748, 45.8745956420898, 20.2937126159668, 
+    13.2441520690918, 6.53409957885742, 2.96545028686523, 1.22594833374023, 
+    0.322341918945312, 5.03826141357422, 2.09712982177734))
+  expect_equal(head(as.numeric(rownames(x)), 3),
+    c(-0.00133333333333333, -5e-04, 0.000333333333333333))
+  expect_equal(tail(as.numeric(rownames(x)), 3),
+    c(32.0003333333333, 32.0011666666667, 32.002))
+  expect_equal(attr(x, "intensity_multiplier"),
+    0.000476837158203125) 
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
@@ -151,11 +197,11 @@ test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
   expect_equal(attr(x, "sample_name"), attr(x1, "sample_name"))
 
   expect_equal(attr(x, "detector"), "DAD")
+    expect_equal(attr(x, "detector"), attr(x1, "detector"))
 
   expect_equal(attr(x, "detector_id"), "G1315B")
-  expect_equal(attr(x, "detector"), attr(x1, "detector"))
-
   expect_equal(attr(x, "detector_range"), c(250, 600))
+  expect_equal(attr(x, "detector_y_unit"), "mAU")
 
   expect_equal(attr(x, "method"), "JCMONO1.M")
   expect_equal(attr(x, "method"), attr(x1, "method"))
@@ -165,6 +211,28 @@ test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
 
   expect_equal(attr(x, "data_format"), "wide")
   expect_equal(attr(x, "data_format"), attr(x1, "data_format"))
+
+  expect_equal(sum(x),
+    64460273.4203339)
+  expect_equal(range(x),
+    c(-34.482479095459, 2320.54805755615))
+  expect_equal(unname(colSums(x)[c(1, 88, 176)]),
+    c(1366884.23919678, 150754.784584045, 14532.4759483337))
+  expect_equal(unname(x[1, 1:5]),
+    c(-0.699043273925781, -0.710487365722656, -0.657081604003906, 
+    -0.722885131835938, -0.674724578857422))
+  expect_equal(unname(x[nrow(x), 172:176]),
+    c(0.253200531005859, 0.290393829345703, 0.310897827148438, 
+    0.240802764892578, 0.224590301513672))
+  expect_equal(unname(x[13830, c(1, 88, 176)]),
+    c(38.210391998291, 1.06906890869141, 0.332355499267578))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 12)), 88]),
+    c(-0.555515289306641, 4.42886352539062, 3.22723388671875, 
+    1.34944915771484, 1.99985504150391, 74.0513801574707, 0.875949859619141, 
+    0.666141510009766, -0.487327575683594, -0.648975372314453, 
+    -3.80277633666992, 1.29938125610352))
+  expect_equal(attr(x, "intensity_multiplier"),
+    0.000476837158203125) 
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
@@ -202,6 +270,30 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   expect_equal(head(x1$rt, 1), 3.00044479166667, tolerance = .00001)
   expect_equal(tail(x1$rt, 1), 11.9971114583333, tolerance = .00001)
   expect_equal(attr(x1, "data_format"), "long")
+
+  expect_equal(sum(x),
+    47813.2741082398)
+  expect_equal(range(x),
+    c(17.4561207020743, 31.3735693445924))
+  expect_equal(which.max(x),
+    557L)
+  expect_equal(unname(head(x[, 1], 5)),
+    c(17.5007821627369, 17.5005217460566, 17.5053394546412, 17.4997404960159, 
+    17.5023446628184))
+  expect_equal(unname(tail(x[, 1], 5)),
+    c(17.8859384328243, 17.8838550993823, 17.883464474362, 17.8837248910422, 
+    17.8859384328243))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 15)), 1]),
+    c(17.5007821627369, 17.7187509241048, 17.5089852881647, 17.4744800780318, 
+    17.4923186206288, 17.4674488276651, 17.4833342451602, 17.487240495364, 
+    17.599480084551, 17.6227873774333, 17.6053394598566, 17.6699227965582, 
+    17.7399748835451, 17.8773446823761, 17.8859384328243))
+  expect_equal(head(as.numeric(rownames(x)), 3),
+    c(3.00044479166667, 3.00377936048307, 3.00711392929948))
+  expect_equal(tail(as.numeric(rownames(x)), 3),
+    c(11.9904423207005, 11.9937768895169, 11.9971114583333))
+  expect_equal(attr(x, "intensity_multiplier"),
+    0.000130208340124227) 
 })
 
 test_that("read_chroms can write 'Agilent ChemStation' version 81 files to CDF", {
@@ -220,10 +312,14 @@ test_that("read_chroms can write 'Agilent ChemStation' version 81 files to CDF",
                     progress_bar = FALSE)[[1]]
   expect_equal(x, xx, ignore_attr = TRUE, tolerance = 1e-7)
   expect_equal(get_times(x), get_times(xx))
-  fields <-c("sample_name", "detector", "detector_id", "detector_y_unit",
+  fields <-c("sample_name", "detector_id", "detector_y_unit",
              "method", "operator", "time_interval", "time_unit", "run_datetime")
   expect_equal(attributes(x)[fields], attributes(xx)[fields],
                ignore_attr = TRUE)
+  # version 81 files record no detector type, and an `NA` field comes back from
+  # CDF as an empty string, so `detector` is checked separately
+  expect_true(is.na(attr(x, "detector")))
+  expect_equal(attr(xx, "detector"), "")
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
@@ -264,6 +360,30 @@ test_that("read_chroms can read 'Agilent ChemStation' version 130 files", {
   expect_equal(attr(x1, "method"), "Phenolics_new2.M")
   expect_equal(attr(x1, "time_unit"), "Minutes")
   expect_equal(attr(x1, "data_format"), "long")
+
+  expect_equal(sum(x),
+    94265.6593322754)
+  expect_equal(range(x),
+    c(-0.160694122314453, 482.753276824951))
+  expect_equal(which.max(x),
+    4625L)
+  expect_equal(unname(head(x[, 1], 5)),
+    c(-0.0982284545898438, -0.0691413879394531, -0.0452995300292969, 
+    -0.0290870666503906, -0.0233650207519531))
+  expect_equal(unname(tail(x[, 1], 5)),
+    c(2.59780883789062, 2.58731842041016, 2.5787353515625, 2.57301330566406, 
+    2.56919860839844))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 15)), 1]),
+    c(-0.0982284545898438, 3.39984893798828, 0.159263610839844, 
+    0.113487243652344, 2.37417221069336, 2.17580795288086, 5.96761703491211, 
+    6.07109069824219, 4.53329086303711, 5.401611328125, 4.80127334594727, 
+    53.5097122192383, 0.374794006347656, 1.57976150512695, 2.56919860839844))
+  expect_equal(head(as.numeric(rownames(x)), 3),
+    c(0.00583333333333333, 0.0125, 0.0191666666666667))
+  expect_equal(tail(as.numeric(rownames(x)), 3),
+    c(84.9858333333333, 84.9925, 84.9991666666667))
+  expect_equal(attr(x, "intensity_multiplier"),
+    0.000476837158203125) 
 })
 
 
@@ -300,6 +420,26 @@ test_that("read_chroms can read 'Agilent OpenLab' 179 files", {
   expect_equal(head(x1$rt,1), 0.001125, tolerance = .00001)
   expect_equal(tail(x1$rt,1), 36, tolerance = .00001)
   expect_equal(attr(x1, "data_format"), "long")
+
+  expect_equal(sum(x),
+    -6851316.46)
+  expect_equal(range(x),
+    c(-43246.99, 3956.53))
+  expect_equal(which.max(x),
+    3417L)
+  expect_equal(unname(head(x[, 1], 5)),
+    c(0.39, 0.59, 0.68, 0.66, 0.52))
+  expect_equal(unname(tail(x[, 1], 5)),
+    c(135.59, 133.79, 131.99, 130.2, 128.43))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 15)), 1]),
+    c(0.39, 1.34, 3.46, 10.8, 105.96, 20.55, 11.38, -884.79, -106.12, -50.54, 
+    -20.29, -24.91, -0.75, 7.1, 128.43))
+  expect_equal(head(as.numeric(rownames(x)), 3),
+    c(0.001125, 0.00472524752475248, 0.00832549504950495))
+  expect_equal(tail(as.numeric(rownames(x)), 3),
+    c(35.9927995049505, 35.9963997524752, 36))
+  expect_equal(attr(x, "intensity_multiplier"),
+    0.01) 
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)", {
@@ -329,6 +469,33 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)"
   # test scale argument
   x1 <- read_chroms(path, progress_bar = FALSE, scale=FALSE)[[1]]
   expect_equal(x, x1*attr(x1,"intensity_multiplier"), ignore_attr = TRUE)
+
+  expect_equal(sum(x),
+    15517120.0723939)
+  expect_equal(range(x),
+    c(9.10929965277778, 11367.90334375))
+  expect_equal(which.max(x),
+    16456L)
+  expect_equal(unname(head(x[, 1], 5)),
+    c(9.13388628472222, 9.13298298611111, 9.13488923611111, 9.13205260416667, 
+    9.13278159722222))
+  expect_equal(unname(tail(x[, 1], 5)),
+    c(18.7625970486111, 18.7272180555556, 18.7075598958333, 18.6918010416667, 
+    18.6870208333333))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 15)), 1]),
+    c(9.13388628472222, 9.12766527777778, 9.15994513888889, 9.14195121527778, 
+    3536.96170833333, 9.76124809027778, 9.29714079861111, 9.41890989583334, 
+    10.0017868055556, 359.667555034722, 139.188453993056, 10.2155680555556, 
+    349.624839236111, 13.4060611111111, 18.6870208333333))
+  expect_equal(head(as.numeric(rownames(x)), 3),
+    c(0.000326049995422363, 0.000659383347645664, 0.000992716699868966))
+  expect_equal(tail(as.numeric(rownames(x)), 3),
+    c(18.2339937499622, 18.2343270833144, 18.2346604166667))
+  expect_equal(sum(x1),
+    119171482155.985)
+  expect_equal(unname(head(x1[, 1], 5)),
+    c(70148.2466666667, 70141.3093333333, 70155.9493333334, 70134.164, 
+    70139.7626666667)) 
 })
 
 test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
@@ -353,6 +520,31 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
   expect_equal(attr(x, "software"), "Asterix ChemStation")
   expect_equal(attr(x, "method"), "Sine14.M")
   expect_equal(attr(x, "time_unit"), "Minutes")
+
+  expect_equal(sum(x),
+    19.8259068687756)
+  expect_equal(range(x),
+    c(0.000862646102905273, 0.000896255175272624))
+  expect_equal(which.max(x),
+    21781L)
+  expect_equal(unname(head(x[, 1], 5)),
+    c(0.000863722960154216, 0.000863691171010335, 0.00086359977722168, 
+    0.000863456726074219, 0.000863293806711833))
+  expect_equal(unname(tail(x[, 1], 5)),
+    c(0.000896100203196208, 0.000896108150482178, 0.000896060466766357, 
+    0.000895984967549642, 0.000895949204762777))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 15)), 1]),
+    c(0.000863722960154216, 0.000863738854726156, 0.000863226254781087, 
+    0.000863413016001383, 0.0008636474609375, 0.000863635540008545, 
+    0.000864279270172119, 0.000865034262339274, 0.000865697860717773, 
+    0.000867696603139242, 0.000871018568674723, 0.000873978932698568, 
+    0.000875476996103922, 0.000891304016113281, 0.000895949204762777))
+  expect_equal(head(as.numeric(rownames(x)), 3),
+    c(0.00083331667582194, 0.0016666500098859, 0.00249998334394986))
+  expect_equal(tail(as.numeric(rownames(x)), 3),
+    c(18.9983333333319, 18.9991666666659, 19))
+  expect_equal(attr(x, "intensity_multiplier"),
+    0.000130208333333333) 
 })
 
 test_that("read_chroms can read 'Agilent MassHunter' dad files", {
@@ -366,8 +558,10 @@ test_that("read_chroms can read 'Agilent MassHunter' dad files", {
 
   x <- read_chroms(path, format_in = "masshunter_dad", parser = "entab",
                    progress_bar = FALSE)[[1]]
-  x1 <- read_chroms(path, format_in = "masshunter_dad", parser = "aston",
-                    progress_bar = FALSE)[[1]]
+  # the 'aston' parsers are deprecated; the warning fires once per session
+  x1 <- suppressWarnings(
+    read_chroms(path, format_in = "masshunter_dad", parser = "aston",
+                progress_bar = FALSE)[[1]])
   expect_equal(dim(x), c(240, 276))
   expect_equal(class(x)[1], "matrix")
   expect_equal(x, x1, ignore_attr = TRUE)
@@ -417,7 +611,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   expect_equal(attr(x[[1]], "detector_y_unit"), "pA")
   expect_equal(attr(x[[1]], "method"), "DET3300.M")
   expect_equal(attr(x[[1]], "run_datetime"),
-               as.numeric(as.POSIXct("2022-8-23 12:16:25", tz = "UTC")))
+               as.POSIXct("2022-8-23 12:16:25", tz = "UTC"))
   expect_equal(attr(x[[1]], "time_unit"), "Minutes")
   expect_equal(attr(x[[1]], "data_format"), "wide")
 
@@ -426,7 +620,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   expect_equal(attr(x[[2]], "detector_y_unit"), "pA")
   expect_equal(attr(x[[2]], "method"), "DET3300.M")
   expect_equal(attr(x[[2]], "run_datetime"),
-               as.numeric(as.POSIXct("2022-8-23 12:48:20", tz = "UTC")))
+               as.POSIXct("2022-8-23 12:48:20", tz = "UTC"))
   expect_equal(attr(x[[2]], "time_unit"), "Minutes")
 
   # long format
@@ -449,6 +643,28 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
                              progress_bar = FALSE))
   expect_error(read_agilent_d(path, what = "dad"))
 
+
+  expect_equal(sum(x$FID1A),
+    92783.4559895832)
+  expect_equal(range(x$FID1A),
+    c(2.13880208333333, 263.427213541667))
+  expect_equal(which.max(x$FID1A),
+    51L)
+  expect_equal(unname(head(x$FID1A[, 1], 5)),
+    c(2.14322916666667, 2.144140625, 2.13971354166667, 2.13880208333333, 
+    2.1390625))
+  expect_equal(unname(tail(x$FID1A[, 1], 5)),
+    c(20.1201822916667, 20.1235677083333, 20.1274739583333, 20.1287760416667, 
+    20.1287760416667))
+  expect_equal(unname(x$FID1A[round(seq(1, nrow(x$FID1A), length.out = 15)), 1]),
+    c(2.14322916666667, 4.44778645833333, 8.048828125, 13.4111979166667, 
+    19.693359375, 7.922265625, 7.55260416666667, 18.4865885416667, 
+    20.0388020833333, 20.247265625, 20.2434895833333, 20.2096354166667, 
+    20.1368489583333, 20.1915364583333, 20.1287760416667))
+  expect_equal(head(as.numeric(rownames(x$FID1A)), 3),
+    c(-0.00181875, 0.00151401960369807, 0.00484678920739613))
+  expect_equal(tail(as.numeric(rownames(x$FID1A)), 3),
+    c(19.6981823774593, 19.701515147063, 19.7048479166667)) 
 })
 
 test_that("read_chroms can read 'Agilent' .dx files with OL179", {
@@ -702,6 +918,40 @@ test_that("read_agilent_amx works correctly, part 3", {
   expect_equal(method3$pump$gradient$flow_mL_min,
                c(0.4,0.5,0.5,0.5,0.55,0.55,0.6,0.6,0.7,0.7))
 })
+
+test_that("read_chemstation_uv decodes OpenLab 131 intensities exactly", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("openlab_131.uv", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chemstation_uv(path, read_metadata = FALSE, scale = FALSE)
+
+  expect_equal(dim(x),
+    c(9000L, 106L))
+  expect_equal(sum(x),
+    213757509330016192)
+  expect_equal(range(x),
+    c(-6765378797.568, 60898499398467.6))
+  expect_equal(unname(x[1, 1:5]),
+    c(2378875011.072, 945966546.944, -165758894.08, -784502620.16, 
+    -1149574840.32))
+  expect_equal(unname(x[nrow(x), (ncol(x)-4):ncol(x)]),
+    c(33698179186.688, 33803540103.168, 33695897485.312, 33659524481.024, 
+    33599529156.608))
+  expect_equal(unname(colSums(x)[c(1, 53, 106)]),
+    c(29565274241976344, 1137291182582267, 232994783751045))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 25)), 53]),
+    c(-178375360.512, 12957513678.848, 28819901644.8, 19468684099.584, 
+    62671760130.048, 41008347742.208, 140940962430.976, 278711836344.32, 
+    567294447058.944, 264927273025.536, 69555787399.168, 67749216780.288, 
+    55510975905.792, 58605097189.376, 96633811369.984, 57375528583.168, 
+    50830266859.52, 46150094684.16, 47302219661.312, 47940156522.496, 
+    46986539565.056, 45314723545.088, 46402692448.256, 45594567507.968, 
+    45169365745.664))
+})
+
 test_that("`precision` and `bin_width` control the m/z grid from 'rainbow'", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

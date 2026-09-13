@@ -381,14 +381,15 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                         c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p",
                           "%d/%m/%Y %I:%M:%S %p", "%d %b %y %I:%M %p %z",
                           "%d %b %y %I:%M %p"))
-    structure(x, sample_name = iconv(meta$sample_name, sub = ""),
+    structure(x, sample_name = clean_vendor_string(meta$sample_name),
               sample_position = meta$vial,
               file_version = meta$version,
               file_type = meta$file_type,
-              instrument = meta$AcqInstName,
-              detector = meta$detector,
-              detector_id = meta$detector_model,
-              detector_range = meta$signal,
+              instrument = get_metadata_field(meta, "instrument"),
+              detector = get_metadata_field(meta, "detector"),
+              detector_id = get_metadata_field(meta, "detector_model"),
+              detector_range = get_metadata_field(meta, "signal"),
+              signal_descriptor = get_metadata_field(meta, "signal_desc"),
               detector_y_unit = meta$units,
               detector_x_unit = meta$detector_x_unit,
               software = meta$software,
@@ -443,7 +444,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 method = meta$Method,
                 batch = NA,
                 operator = meta$OperatorName,
-                run_datetime = meta$AcqTime,
+                run_datetime = convert_timestamp(meta$AcqTime,
+                                                 datetime_formats = masshunter_datetime_formats),
                 sample_name = ifelse(is.null(meta[["Sample Name"]]),
                                      fs::path_ext_remove(basename(source_file)),
                                      meta[["Sample Name"]]),
@@ -625,7 +627,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               method = meta$Method,
               batch = NA,
               operator = meta$OperatorName,
-              run_datetime = meta$AcqTime,
+              run_datetime = convert_timestamp(meta$AcqTime,
+                                               datetime_formats = masshunter_datetime_formats),
               sample_name = ifelse(is.null(meta[["Sample Name"]]),
                                    fs::path_ext_remove(basename(source_file)),
                                    meta[["Sample Name"]]),
@@ -648,11 +651,41 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
  )
 }
 
+#' Clean a string decoded from a vendor file
+#'
+#' Some vendor metadata strings are Latin-1 (the `method` field of a 'Shimadzu'
+#' `.qgd` file) and some carry embedded control bytes (the same field of an
+#' 'OpenLab' 131 `.uv` file contains `\032`). Left alone they produce strings
+#' for which `validUTF8()` is `FALSE`, so `nchar()` and `toupper()` error and
+#' `grepl()` warns and fails to match.
+#'
+#' Only strings that are not already valid UTF-8 are re-encoded: some fields
+#' (e.g. the `units` of an 'Agilent' `.dx` instrument channel, `"\u00b0C"`)
+#' are UTF-8 as read, and treating those as Latin-1 would mojibake them. The
+#' re-encoding has to come first either way, because `gsub` errors on a string
+#' that is not yet valid in the current encoding.
+#' @noRd
+clean_vendor_string <- function(x){
+  if (!is.character(x)) return(x)
+  broken <- !is.na(x) & !validUTF8(x)
+  x[broken] <- iconv(x[broken], from = "ISO-8859-1", to = "UTF-8")
+  gsub("[[:cntrl:]]", "", x)
+}
+
+#' Get a metadata field
+#'
+#' Returns `null_val` when the field is absent or empty, and otherwise the
+#' value unchanged. Note: this deliberately avoids `ifelse()`, which returns a
+#' value shaped and typed like its *test* -- that silently truncated
+#' multi-element fields (e.g. a `c(250, 600)` detector range) to their first
+#' element and dropped attributes such as the class of a `POSIXct`.
 #' @noRd
 get_metadata_field <- function(x, field, num = FALSE, null_val = NA){
-  ifelse(!is.null(x[[field]]),
-         ifelse(num, as.numeric(x[[field]]), x[[field]]),
-         null_val)
+  val <- x[[field]]
+  if (is.null(val) || length(val) == 0){
+    return(null_val)
+  }
+  if (num) as.numeric(val) else val
 }
 
 #' @noRd
@@ -851,10 +884,21 @@ get_asm_wavelength <- function(meta, lab = "absorbance_wavelength_setting.value"
   unique(unlist(meta$`device control aggregate document`[wv_idx]))
 }
 
+#' Date-time formats used by 'MassHunter' (`sample_info.xml`)
+#'
+#' Note the literal `Z` rather than `%z`, which does not accept the military
+#' `Z` designator for UTC.
+#' @noRd
+masshunter_datetime_formats <- c("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%OS",
+                                 "%m/%d/%Y %I:%M:%S %p")
+
 #' Convert date-time string to POSIXct
 #' @author Ethan Bass
 #' @noRd
 convert_timestamp <- function(string, datetime_formats){
+  if (length(string) == 0 || all(is.na(string))){
+    return(.POSIXct(NA_real_, tz = "UTC"))
+  }
   tryCatch({
     as.POSIXct(string, tz = "UTC", tryFormats = datetime_formats)
   }, error = function(cond){

@@ -48,15 +48,8 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
 
   offsets <- get_agilent_offsets(file_version)
 
-  n_metadata_fields <- switch(file_version, "131_LC" = 10,
-                                       "131_OL" = 8,
-                                       "31" = 8)
-
-  meta <- lapply(offsets[seq_len(n_metadata_fields)], function(offset){
-    type <- switch(file_version, "31" = 1, 2)
-    seek(f, where = offset, origin = "start")
-    read_cs_string(f, type = type)
-  })
+  meta <- read_chemstation_string_fields(f, offsets,
+                                         type = switch(file_version, "31" = 1, 2))
 
   # Number of data values
   seek(f, where = offsets$num_times, origin = "start")
@@ -122,26 +115,57 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
 #' @author Ethan Bass
 #' @noRd
 decode_uv_delta <- function(f, nval, ncol){
-  # Initialize empty arrays
-  times <- integer(nval)
-  data <- array(0, dim = c(nval, ncol))
-  for (i in seq_len(nval)) {
-    readBin(f, integer(), n = 1, size = 4)  # Discard first 4 bytes
-    times[i] <- readBin(f, integer(), n = 1, size = 4)
-    readBin(f, raw(), n = 14)  # Discard 14 bytes
-    absorb_accum <- 0
-    for (j in seq_len(ncol)) {
-      check_int <- readBin(f, integer(), n = 1, size = 2)
-      if (check_int == -0x8000) {
-        absorb_accum <- readBin(f, integer(), n = 1, size = 4)
-      } else {
-        absorb_accum <- absorb_accum + check_int
-      }
-      data[i, j] <- absorb_accum
-    }
+  start <- seek(f, NA, "current")
+  seek(f, 0, "end")
+  fsize <- seek(f, NA, "current")
+  seek(f, start, "start")
+
+  rw <- readBin(f, "raw", n = fsize - start)
+  n16 <- length(rw) %/% 2L
+  v <- readBin(rw, "integer", n = n16, size = 2, signed = TRUE, endian = "little")
+  u <- readBin(rw, "integer", n = n16, size = 2, signed = FALSE, endian = "little")
+
+  starts <- integer(nval)
+  lens <- integer(nval)
+  p <- 0L
+  for (i in seq_len(nval)){
+    starts[i] <- p
+    lens[i] <- v[p + 2L]
+    p <- p + lens[i] %/% 2L
   }
-  times <- times/60000
-  rownames(data) <- times
+
+  tidx <- rep(starts * 2L + 4L, each = 4L) + rep(1:4, nval)
+  times <- readBin(rw[tidx], "integer", n = nval, size = 4, endian = "little")
+
+  nslots <- lens %/% 2L - 11L
+  idx <- sequence(nslots, from = starts + 12L)
+  d <- v[idx]
+
+  esc <- resolve_escape_positions(d, -32768L, 2L)
+  absval <- if (length(esc)){
+    u[idx[esc + 1L]] + v[idx[esc + 2L]] * 65536
+  } else numeric(0)
+
+  is_val <- rep(TRUE, length(d))
+  if (length(esc)) is_val[c(esc + 1L, esc + 2L)] <- FALSE
+
+  reset <- logical(length(d))
+  reset[c(1L, head(cumsum(nslots), -1L) + 1L)] <- TRUE
+  reset[esc] <- TRUE
+
+  delta <- as.numeric(d)
+  delta[!is_val] <- 0
+  delta[reset] <- 0
+
+  rp <- which(reset)
+  rval <- numeric(length(rp))
+  rval[match(esc, rp)] <- absval
+  rs <- setdiff(rp, esc)
+  rval[match(rs, rp)] <- as.numeric(d[rs])
+
+  data <- matrix(cumsum_with_resets(delta, reset, rval)[is_val],
+                 nrow = nval, byrow = TRUE)
+  rownames(data) <- times / 60000
   data
 }
 
@@ -149,16 +173,29 @@ decode_uv_delta <- function(f, nval, ncol){
 #' @author Ethan Bass
 #' @noRd
 decode_uv_array <- function(f, nval, ncol){
-  # Initialize empty arrays
-  times <- integer(nval)
-  data <- array(0, dim = c(nval, ncol))
-  for (i in seq_len(nval)) {
-    readBin(f, integer(), n = 1, size = 4)  # Discard first 4 bytes
-    times[i] <- readBin(f, integer(), n = 1, size = 4)
-    readBin(f, raw(), n = 14)  # Discard 14 bytes
-    data[i,] <- readBin(f, what = "double", size = 8, n = ncol)
+  start <- seek(f, NA, "current")
+  seek(f, 0, "end")
+  fsize <- seek(f, NA, "current")
+  seek(f, start, "start")
+
+  stride <- 22L + 8L * ncol
+  rw <- readBin(f, "raw", n = fsize - start)
+  if (length(rw) < nval * stride){
+    stop("'Agilent' UV file is shorter than its header declares.")
   }
-  times <- times / 60000
-  rownames(data) <- times
+  m <- matrix(rw[seq_len(nval * stride)], nrow = stride)
+
+  reclen <- readBin(as.vector(m[3:4, ]), "integer", n = nval, size = 2,
+                    signed = FALSE, endian = "little")
+  if (any(reclen != stride)){
+    stop("Unexpected record length in 'Agilent' UV file.")
+  }
+
+  times <- readBin(as.vector(m[5:8, ]), "integer", n = nval, size = 4,
+                   endian = "little")
+  data <- matrix(readBin(as.vector(m[-seq_len(22L), ]), "double",
+                         n = nval * ncol, size = 8, endian = "little"),
+                 nrow = nval, byrow = TRUE)
+  rownames(data) <- times / 60000
   data
 }

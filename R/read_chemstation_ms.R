@@ -60,24 +60,47 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
   header_len <- (readBin(f, what = "integer", size = 2,
                         signed = FALSE, endian = "big") - 1)*2
 
+  seek(f, 0, "end")
+  fsize <- seek(f, NA, "current")
   seek(f, header_len, "start")
 
-  dat <- lapply(seq_len(n_rt), function(i){
-    read_cs_ms_block(f)
-  })
+  rw <- readBin(f, "raw", n = fsize - header_len)
+  nw <- length(rw) %/% 2L
+  wu <- readBin(rw, "integer", n = nw, size = 2, signed = FALSE, endian = "big")
+  wi <- readBin(rw, "integer", n = nw, size = 2, signed = TRUE, endian = "big")
+
+  starts <- integer(n_rt)
+  pos <- 1L
+  for (i in seq_len(n_rt)){
+    starts[i] <- pos
+    pos <- pos + wu[pos]
+  }
+  if (pos > nw + 1L){
+    stop("'Agilent' MS scan blocks overrun the end of the file.")
+  }
+
+  rt <- int32_from_words(wu[starts + 1L], wu[starts + 2L])/60000
+  n_row <- int32_from_words(wu[starts + 5L], wu[starts + 6L])
+  if (any(wu[starts] != 14L + 2L*n_row)){
+    stop("'Agilent' MS block length does not match its peak count.")
+  }
+
   if (any(what == "MS1")){
-    MS1 <- do.call(rbind, lapply(dat, "[[", 1))
+    pairs <- wu[sequence(2L*n_row, from = starts + 9L)]
+    mz <- seq.int(1L, length(pairs), by = 2L)
+    MS1 <- cbind(rt = rep.int(rt, n_row), mz = pairs[mz]/20,
+                 intensity = ms_bit_shift(pairs[mz + 1L]))
   }
   if (any(what == "BPC")){
-    BPC <- do.call(rbind, lapply(dat, "[[", 2))
-    BPC[,2] <- BPC[,2]/20
-    BPC[,3] <- sapply(BPC[,3], ms_bit_shift)
-    colnames(BPC) <- c("rt", "mz", "intensity")
+    BPC <- cbind(rt = rt, mz = wi[starts + 7L]/20,
+                 intensity = ms_bit_shift(wi[starts + 8L]))
   }
 
   if (any(what == "TIC")){
-    TIC <- do.call(rbind, lapply(dat, "[[", 3))
-    TIC <- format_2d_chromatogram(rt=TIC[,1], int = TIC[,2],
+    TIC <- format_2d_chromatogram(rt = rt,
+                                  int = int32_from_words(
+                                    wu[starts + 12L + 2L*n_row],
+                                    wu[starts + 13L + 2L*n_row]),
                                   data_format = data_format,
                                   format_out = format_out)
   }
@@ -88,12 +111,7 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
   })
 
   if (read_metadata){
-    meta_slots <- switch(version, "2" = 9)
-
-    meta <- lapply(offsets[seq_len(meta_slots)], function(offset){
-      seek(f, where = offset, origin = "start")
-      read_cs_string(f, type = 1)
-    })
+    meta <- read_chemstation_string_fields(f, offsets, type = 1)
     meta$detector <- "MS"
     dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = metadata_format,
@@ -110,42 +128,12 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
   dat
 }
 
-#' Read 'Agilent Chemstation' MS block
-#' @author Ethan Bass
-#' @noRd
-#' @note Many thanks to the rainbow team for providing helpful information on the
-#' structure of this file.
-read_cs_ms_block <- function(f){
-  start <- seek(f, NA)
-  block_length <- readBin(f, what = "integer", size = 2,
-                          signed = FALSE, endian = "big")*2
-  rt <- readBin(f, what = "integer", size = 4, endian = "big")/60000
-  u1 <- readBin(f, what = "integer", size = 4, endian = "big")
-  n_row <- readBin(f, what = "integer", size = 4, endian = "big")
-  bpc <- c(rt, readBin(f, what = "integer", n = 2, size = 2, endian = "big"))
-  mat <- matrix(NA, nrow = n_row, ncol = 2,
-                dimnames = list(NULL, c("mz", "intensity")))
-  for (i in seq_len(n_row)){
-    mat[i,] <- readBin(f, what = "integer", size = 2, n = 2,
-                       signed = FALSE, endian = "big")
-  }
-  mat[,"mz"] <- mat[,"mz"]/20
-  mat[,"intensity"] <- sapply(mat[,"intensity"], ms_bit_shift)
-
-  u3 <- readBin(f, what="raw", n=6)
-  tic <- c(rt, readBin(f, what = "integer", size = 4, endian = "big"))
-  end <- seek(f, NA)
-  stopifnot(start + block_length == end)
-  list(MS1 = cbind(rt, mat), BPC = bpc, TIC = tic)
-}
-
 #' Chemstation MS bit shift
 #' @noRd
 ms_bit_shift <- function(int){
   int_heads <- bitwShiftR(int, 14)
-  if (int_heads != 0){
-    int_tails <- bitwAnd(int, 0x3FFF)
-    8^int_heads * int_tails
-  }
-  else int
+  shifted <- int_heads != 0
+  out <- as.numeric(int)
+  out[shifted] <- 8^int_heads[shifted] * bitwAnd(int[shifted], 0x3FFF)
+  out
 }

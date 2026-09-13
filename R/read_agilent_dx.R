@@ -57,7 +57,7 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
       chroms <- lapply(files.path$chroms, read_chemstation_ch, format_out = format_out,
                        data_format = data_format, read_metadata = read_metadata,
                        metadata_format = metadata_format, source_file = path)
-      names(chroms) <- sapply(chroms, function(x) attr(x, "detector_range"))
+      names(chroms) <- get_signal_names(chroms)
       chroms <- collapse_list(chroms)
     } else{
       stop("Trace data could not be found.")
@@ -80,7 +80,7 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
                            format_out = format_out, data_format = data_format,
                            read_metadata = read_metadata,
                            metadata_format = metadata_format, source_file = path)
-      names(instrument) <- sapply(instrument, function(x) attr(x, "detector_range"))
+      names(instrument) <- get_signal_names(instrument)
       instrument <- collapse_list(instrument)
     } else{
       "Instrument data could not be found."
@@ -91,4 +91,18 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
     dat <- collapse_list(dat)
   }
   dat
+}
+
+#' Name traces by their signal descriptor
+#'
+#' Every 'ChemStation' version that records a signal descriptor (e.g.
+#' `"RID1G,Board Temperature"`) now attaches it as `signal_descriptor`, so
+#' there is one field to read regardless of version. Versions that do not
+#' record one (8, 81) give `NA`.
+#' @noRd
+get_signal_names <- function(x){
+  vapply(x, function(xx){
+    nm <- attr(xx, "signal_descriptor")
+    if (is.null(nm) || length(nm) == 0) NA_character_ else as.character(nm)[1]
+  }, FUN.VALUE = character(1))
 }
