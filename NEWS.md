@@ -67,6 +67,12 @@
 * Improved `print.chrom_list` formatting: datetimes are printed as formatted timestamps rather than raw epoch seconds; the header now shows values exactly as they appear in the table below it (sub-second digits were previously shown in one but not the other); the header wraps to the width of the console (a long field such as a Windows `method` path could previously produce a single line of up to 220 characters).
 * `print.chrom_list` no longer errors when none of the requested `cols` are present in the chromatograms, or when `n` is negative.
 * The default for the `n` argument of `print.chrom_list` is now `10`, matching its documented default (the code previously used `5`).
+
+#### `read_chroms`
+
+* For formats that return more than one chromatogram per sample, `sample_names = "sample_name"` named every sample with the literal string `"NULL"` and then warned about duplicate names. The `sample_name` attribute is attached to the individual chromatograms rather than to the list grouping them, so the lookup came up empty and the resulting `NULL` was coerced to a string. Samples with no recorded sample name now fall back to the file name, with a warning naming them.
+* `read_chroms` now gives an informative error when no parser is available for a format, instead of failing with `missing value where TRUE/FALSE needed`.
+
 ## chromConverter 0.9.1
 
 ### New features

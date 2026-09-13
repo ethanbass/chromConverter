@@ -438,7 +438,18 @@ read_chroms <- function(paths,
   } else if (sample_names == "basename"){
     names(data) <- file_names
   } else if (sample_names == "sample_name"){
-    names(data) <- sapply(data, attr, "sample_name")
+    nms <- vapply(data, function(x){
+      val <- get_sample_attr(x, "sample_name")
+      if (is.null(val) || is.na(val)) NA_character_ else as.character(val)
+    }, character(1))
+    if (anyNA(nms)){
+      warning(sprintf(paste0("`sample_name` could not be determined for %s. ",
+                             "Using the file name instead."),
+                      paste(sQuote(file_names[is.na(nms)]), collapse = ", ")),
+              immediate. = TRUE)
+      nms[is.na(nms)] <- file_names[is.na(nms)]
+    }
+    names(data) <- nms
   }
   if (anyDuplicated(names(data))){
     duplicated_names <- unique(names(data)[duplicated(names(data))])
@@ -451,13 +462,7 @@ read_chroms <- function(paths,
       warning("`sort_by = \"acquisition_time\"` requires `read_metadata = TRUE`; skipping sort.",
               immediate. = TRUE)
     } else {
-      sort_vals <- lapply(data, attr, "run_datetime")
-      if (any(sapply(sort_vals, is.null))){
-        warning("`run_datetime` attribute missing for some chromatograms; skipping sort.",
-                immediate. = TRUE)
-      } else {
-        data <- data[order(unlist(sort_vals))]
-      }
+      data <- sort_chroms_by_time(data)
     }
   }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
@@ -483,3 +488,30 @@ read_chroms <- function(paths,
   dat
 }
 
+#' Sort a list of chromatograms by acquisition time
+#'
+#' A sample may be a single chromatogram or a (possibly nested) list of them,
+#' so the timestamp is resolved with `get_sample_attr` rather than read
+#' straight off the element.
+#'
+#' Samples with no usable `run_datetime` keep their relative order and are
+#' placed last, so that one unreadable file does not discard the ordering for a
+#' whole batch. `order` is stable for numeric input.
+#' @noRd
+sort_chroms_by_time <- function(data){
+  vals <- vapply(data, function(x){
+    val <- get_sample_attr(x, "run_datetime")
+    if (is.null(val)) return(NA_real_)
+    suppressWarnings(as.numeric(val)) # non-coercible becomes NA, i.e. missing
+  }, numeric(1))
+  if (anyNA(vals)){
+    labs <- names(data)
+    if (is.null(labs)) labs <- seq_along(data)
+    warning(sprintf(paste0("`run_datetime` could not be determined for %s. ",
+                           "These chromatograms are placed last."),
+                    paste(sQuote(labs[is.na(vals)]), collapse = ", ")),
+            immediate. = TRUE)
+  }
+  if (all(is.na(vals))) return(data)
+  data[order(vals, na.last = TRUE)]
+}

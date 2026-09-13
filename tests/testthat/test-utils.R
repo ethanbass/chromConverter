@@ -74,3 +74,37 @@ test_that("get_filetype returns error for unknown filetype", {
   expect_error(get_filetype("testdata/dad1.csv"))
 })
 
+
+test_that("ms_bit_shift expands the 'ChemStation' MS intensity encoding", {
+  vals <- c(0L, 1L, 100L, 16383L, 16384L, 16385L, 32768L, 32769L, 49152L,
+            49157L, 65535L)
+
+  expect_equal(vapply(vals, ms_bit_shift, numeric(1)),
+    c(0, 1, 100, 16383, 0, 8, 0, 64, 0, 2560, 8388096))
+  expect_equal(ms_bit_shift(vals),
+    c(0, 1, 100, 16383, 0, 8, 0, 64, 0, 2560, 8388096))
+  expect_equal(ms_bit_shift(integer(0)), numeric(0))
+})
+
+test_that("`precision` maps onto rainbow's m/z grid arguments", {
+  # a power-of-ten grid, as `precision` has always produced
+  expect_equal(rb_precision_args(1),
+               list(bin_width = 0.1, display_precision = 1L))
+  expect_equal(rb_precision_args(0),
+               list(bin_width = 1, display_precision = 0L))
+  expect_equal(rb_precision_args(3),
+               list(bin_width = 0.001, display_precision = 3L))
+})
+
+test_that("`bin_width` overrides `precision` in `call_rainbow`", {
+  expect_equal(rb_precision_args(1, bin_width = 0.5),
+               list(bin_width = 0.5, display_precision = 1L))
+  # enough decimals that no two bins can share a label
+  expect_equal(rb_precision_args(1, bin_width = 0.25),
+               list(bin_width = 0.25, display_precision = 2L))
+  expect_error(rb_precision_args(1, bin_width = -1), "single positive number")
+  expect_error(rb_precision_args(1, bin_width = c(0.1, 0.2)),
+               "single positive number")
+  expect_error(rb_precision_args(1, bin_width = "0.5"),
+               "single positive number")
+})
