@@ -18,6 +18,9 @@
 ### Performance
 
 * Refactored internal 'Agilent' parsers for increased speed (~3.5-30x for the delta-encoded formats). The per-value `readBin()` loops used to decode them have been replaced by a single bulk read followed by vectorized decoding, which returns exactly the same values. For example, a 10.8 MB 'ChemStation' version 31 `.uv` file went from ~9 s to ~0.57 s.
+* Refactored 'Shimadzu' binary parsers for increased speed (7-55x) through vectorization of byte operations. Reading MS1 scans from a 40 MB `.qgd` file went from ~56 s to ~1 s, and reading a PDA stream from an `.lcd` file went from ~7 s to ~1 s.
+* The temporary files that are extracted from 'Shimadzu' OLE containers are now deleted once they have been read, instead of accumulating in the session's temporary directory until R exits. This matters most when converting many files at once.
+
 ### Metadata field changes
 
 * `detector_range` is now reserved for the numeric wavelength range recorded by `.uv` files. For 'ChemStation' versions 30 and 130 the signal descriptor was previously reported in this field, and is now reported as `signal_descriptor`.
@@ -39,6 +42,9 @@
 * Added `sample_position` metadata field for 'ChemStation' 179 files (`.ch` and `.it`).
 * The acquisition time of 'Agilent MassHunter' files is now converted to `POSIXct` instead of being attached as an unparsed string, which `extract_metadata` reported as `NA`.
 
+#### 'Shimadzu'
+
+* Fixed `read_shimadzu_lcd` so it can return PDA data in long format. `read_shimadzu_lcd(what = "pda", data_format = "long")` previously failed with an error about a missing `lambda` column, because the reshaping step was called with the wrong target format.
 
 
 ## chromConverter 0.9.1

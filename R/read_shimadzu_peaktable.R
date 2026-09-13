@@ -30,8 +30,9 @@ read_sz_tables <- function(path, format_out = "data.frame"){
 
 read_sz_table <- function(path, stream, format_out = "data.frame"){
   path_raw <- export_stream(path, stream)
+  on.exit(unlink_stream(path_raw), add = TRUE)
   f <- file(path_raw, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
   magic <- readBin(f, "raw", n = 4)
   magic <- paste(paste0("x", as.character(magic)), collapse = "/")
   read_sz_table <- switch(magic,

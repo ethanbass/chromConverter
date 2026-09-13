@@ -90,9 +90,10 @@ read_qgd_tic <- function(path, format_out = "data.frame",
                         read_metadata = TRUE){
 
   path_tic <- export_stream(path, c("GCMS Raw Data", "TIC Data"))
+  on.exit(unlink_stream(path_tic), add = TRUE)
 
   f <- file(path_tic, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
 
   seek(f, where = 0, origin = "end")
   bytes <- seek(f, where = 0, origin = "end")
@@ -114,16 +115,15 @@ read_qgd_tic <- function(path, format_out = "data.frame",
 #' @author Ethan Bass
 #' @noRd
 read_qgd_ms_scan <- function(f, offsets, scan_no){
-  scan <- readBin(f, "integer", size = 4, endian = "little")
-  rt <- readBin(f, "integer", size = 4, endian = "little")
-  u1 <- readBin(f, "integer", size = 4, endian = "little")
-  readBin(f, "integer", size = 4, endian = "little", n = 2) #skip
+  header <- readBin(f, "integer", size = 4, endian = "little", n = 5)
+  scan <- header[1]
+  rt <- header[2]
 
-  # number of bytes in intensity value
-  n_bytes <- readBin(f, "integer", size = 2, endian = "little")
+  # number of bytes in intensity value & number of values in block
+  header <- readBin(f, "integer", size = 2, endian = "little", n = 2)
+  n_bytes <- header[1]
+  nval <- header[2]
 
-  # number of values in block
-  nval <- readBin(f, "integer", size = 2, endian = "little")
   readBin(f, "integer", size = 4, endian = "little", n = 2) #skip
 
   expected_block_size <- 32 + nval * (2 + n_bytes)
@@ -137,31 +137,32 @@ read_qgd_ms_scan <- function(f, offsets, scan_no){
     }
   }
 
-  mat <- matrix(NA, nrow = nval, ncol = 4,
-                dimnames = list(NULL, c("scan", "rt", "mz", "intensity")))
+  # read the whole block at once and reshape so that each column is one record
+  record_size <- 2L + n_bytes
+  block <- matrix(readBin(f, what = "raw", n = nval * record_size),
+                  nrow = record_size, ncol = nval)
+
+  mz <- readBin(as.vector(block[1:2, , drop = FALSE]), what = "integer",
+                size = 2, endian = "little", n = nval)
+
   # we have to add a byte of 00s for odd numbers of bytes because R can't deal
   # with integers that have odd numbers of bytes
-  add_byte <- n_bytes %% 2 == 1
-  nb <- ifelse(add_byte, n_bytes + 1, n_bytes)
+  nb <- ifelse(n_bytes %% 2 == 1, n_bytes + 1L, n_bytes)
   signed <- ifelse(n_bytes == 2, FALSE, TRUE)
-  for (i in seq_len(nval)){
-    buffer <- readBin(f, what = "raw", n = (2 + n_bytes))
-    if (add_byte){
-      buffer <- c(buffer, as.raw(0x00))
-    }
-    mat[i,] <- c(scan, rt,
-      readBin(buffer[1:2], what = "integer", size = 2,
-            endian = "little", n = 1),
-      readBin(buffer[3:(3 + nb)], what = "integer", size = (nb),
-            endian = "little", n = 1, signed = signed)
-    )
+  intensity <- block[3:record_size, , drop = FALSE]
+  if (nb > n_bytes){
+    intensity <- rbind(intensity,
+                       matrix(as.raw(0x00), nrow = nb - n_bytes, ncol = nval))
   }
-  mat[,3] <- mat[,3]/20
-  mat[,"rt"] <- mat[,"rt"]/60000
+  intensity <- readBin(as.vector(intensity), what = "integer", size = nb,
+                       endian = "little", n = nval, signed = signed)
   if (n_bytes == 4){
-    mat[,4] <- bitwAnd(mat[,4],0x7FFFFFFF)
+    intensity <- bitwAnd(intensity, 0x7FFFFFFF)
   }
-  mat
+
+  matrix(c(rep.int(scan, nval), rep.int(rt/60000, nval), mz/20, intensity),
+         nrow = nval, ncol = 4,
+         dimnames = list(NULL, c("scan", "rt", "mz", "intensity")))
 }
 
 #' Read 'Shimadzu QGD' retention times
@@ -170,8 +171,9 @@ read_qgd_ms_scan <- function(f, offsets, scan_no){
 #' @noRd
 read_qgd_retention_times <- function(path){
   path_rts <- export_stream(path, c("GCMS Raw Data", "Retention Time"))
+  on.exit(unlink_stream(path_rts), add = TRUE)
   f <- file(path_rts, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
 
   seek(f, 0, origin = "end")
   last_byte <- seek(f, 0, origin = "end")
@@ -193,12 +195,13 @@ read_qgd_ms_stream <- function(path, format_out = "data.frame"){
   rts <- read_qgd_retention_times(path)
 
   path_ms <- export_stream(path, c("GCMS Raw Data", "MS Raw Data"))
+  on.exit(unlink_stream(path_ms), add = TRUE)
 
   offsets <- get_spectrum_offsets(path)
   offsets <- c(offsets, file.info(path_ms)$size)
 
   f <- file(path_ms, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
 
   xx <- lapply(seq_along(rts), function(i){
     tryCatch({
@@ -220,16 +223,17 @@ read_qgd_ms_stream <- function(path, format_out = "data.frame"){
 #' @noRd
 read_qgd_fp <- function(path){
   path_fp <- export_stream(path, "File Property")
+  on.exit(unlink_stream(path_fp), add = TRUE)
 
   f <- file(path_fp, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
 
   qgd_offsets <- get_sz_qgd_offsets()
 
   xx <- lapply(seq_len(nrow(qgd_offsets)), function(i){
     seek(f, as.numeric(qgd_offsets[i, "offset"]))
     switch(qgd_offsets[i, "type"],
-           "character" = readBin(f, what = "character"),
+           "character" = clean_vendor_string(readBin(f, what = "character")),
            "integer" = readBin(f, what = "integer", size = 4)
     )
   })
@@ -268,8 +272,9 @@ get_sz_qgd_offsets <- function(){
 #' @noRd
 get_spectrum_offsets <- function(path){
   path_spectrum_index <- export_stream(path, c("GCMS Raw Data", "Spectrum Index"))
+  on.exit(unlink_stream(path_spectrum_index), add = TRUE)
   f <- file(path_spectrum_index, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
   n_scans <- file.info(path_spectrum_index)$size/4
   offsets <- readBin(f, what = "integer", size = 4, endian = "little",
                      n = n_scans)

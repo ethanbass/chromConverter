@@ -8,55 +8,97 @@
 export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
                           verbose = FALSE){
   check_py_module("olefile")
-  reticulate::py_run_string('import olefile')
-  reticulate::py_run_string(paste0('ole = olefile.OleFileIO("', path, '")'))
-  python_stream <- paste0("[", paste(paste0("'", stream, "'"), collapse = ', '),"]")
-  stream_exists <- reticulate::py_eval(paste0("ole.exists(", python_stream, ")"))
-  if (!stream_exists){
+  if (missing(path_out)){
+    path_out <- fs::file_temp(pattern = gsub(" ", "_",
+                                             paste(c(fs::path_ext_remove(
+                                               basename(path)), stream),
+                                                     collapse="_")))
+    if (.Platform$OS.type == "windows") {
+      path_dir <- fs::path_dir(path_out)
+      path_file <- fs::path_file(path_out)
+
+      path_dir <- fs::path_real(path_dir)
+      path_out <- fs::path(path_dir, path_file)
+    }
+    path_out <- fs::path_expand(path_out)
+  }
+  found <- py_export_stream()(path, as.list(stream), path_out,
+                              remove_null_bytes)
+  if (!found){
     if (verbose){
-      warning(paste0("The stream ", sQuote(python_stream), " could not be found."),
-              immediate. = TRUE)
+      warning(paste0("The stream ", sQuote(paste(stream, collapse = "/")),
+                     " could not be found."), immediate. = TRUE)
     }
     return(NA)
-  } else{
-    reticulate::py_run_string(paste0("st = ole.openstream(", python_stream, ")"))
-    reticulate::py_run_string('data = st.read()')
-
-    if (missing(path_out)){
-      path_out <- fs::file_temp(pattern = gsub(" ", "_",
-                                               paste(c(fs::path_ext_remove(
-                                                 basename(path)), stream),
-                                                       collapse="_")))
-      if (.Platform$OS.type == "windows") {
-        path_dir <- fs::path_dir(path_out)
-        path_file <- fs::path_file(path_out)
-
-        path_dir <- fs::path_real(path_dir)
-        path_out <- fs::path(path_dir, path_file)
-      }
-    }
-    if (remove_null_bytes){
-      reticulate::py_run_string("data = data.replace(b'\\x00', b'')")
-    }
-    reticulate::py_run_string(paste0('with open("', path_out ,'", "wb") as binary_file:
-      binary_file.write(data)'))
-    path_out
   }
+  path_out
 }
 
+#' 'Python' implementation of `export_stream`
+#'
+#' The work is kept inside a 'Python' function so that the OLE handle, the
+#' stream and its contents are function-local and released as soon as it
+#' returns. Running the same statements through `py_run_string` would instead
+#' bind them in `__main__`, where they survive until the next call rebinds
+#' them, pinning an open handle and a full copy of the last stream read for the
+#' rest of the session.
+#'
+#' Passing the paths as arguments (rather than pasting them into the 'Python'
+#' source) also avoids having them interpreted as containing escape sequences,
+#' which broke 'Windows' paths containing backslashes.
+#' @noRd
+
+py_export_stream <- function(){
+  if (is.null(py_modules[["_cc_export_stream"]])){
+    init_python()
+    reticulate::py_run_string("
+import olefile
+
+def _cc_export_stream(path, stream, path_out, remove_null_bytes=False):
+    with olefile.OleFileIO(path) as ole:
+        if not ole.exists(stream):
+            return False
+        data = ole.openstream(stream).read()
+    if remove_null_bytes:
+        data = data.replace(b'\\x00', b'')
+    with open(path_out, 'wb') as binary_file:
+        binary_file.write(data)
+    return True
+")
+    py_modules[["_cc_export_stream"]] <- reticulate::py$`_cc_export_stream`
+  }
+  py_modules[["_cc_export_stream"]]
+}
+
+
+#' Remove a stream exported by `export_stream`
+#' `export_stream` writes each stream to a temporary file, which callers should
+#' delete once they are done reading it. Returns silently when the stream was
+#' not found (in which case `export_stream` returns `NA`).
+#' @author Ethan Bass
+#' @noRd
+
+unlink_stream <- function(path){
+  if (length(path) > 0 && !is.na(path[1]) && nzchar(path[1])){
+    unlink(path)
+  }
+  invisible(NULL)
+}
 
 #' Check OLE stream size
 #' @param min_size Minimum stream size in bytes. Defaults to 552.
 #' @author Ethan Bass
 #' @noRd
 
-check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
+check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks",
+                                         "qtof", "tlm", ""),
                           stream = NULL,
                           boolean = FALSE,
                           min_size = 1200){
-  what <- match.arg(what, c("pda", "chroms", "tic", "peaks", ""))
+  what <- match.arg(what, c("pda", "chroms", "tic", "peaks", "qtof", "tlm", ""))
   olefile <- py_import("olefile")
   ole <- olefile$OleFileIO(path)
+  on.exit(ole$close(), add = TRUE)
   if (what == "pda"){
     pda_exists <- ole$get_size("PDA 3D Raw Data/3D Raw Data") > min_size
     if (boolean){
@@ -81,6 +123,16 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
   }
 }
 
+#' Size of an OLE stream, or 0 if it cannot be read
+#' Takes an already-open `ole` handle so that callers checking several streams
+#' do not have to re-open and re-parse the container for each one.
+#' @noRd
+
+ole_stream_size <- function(ole, stream){
+  tryCatch(ole$get_size(paste0(stream, collapse = "/")),
+           error = function(e) 0)
+}
+
 #' Check OLE stream by name
 #' @noRd
 
@@ -88,10 +140,8 @@ check_stream <- function(path, stream = NULL,
                           boolean = FALSE, min_size = 552){
   olefile <- py_import("olefile")
   ole <- olefile$OleFileIO(path)
-  python_stream <- paste0(stream, collapse = "/")
-  pda_exists <- tryCatch(ole$get_size(python_stream),
-                         error=function(e) 0) > min_size
-  pda_exists
+  on.exit(ole$close(), add = TRUE)
+  ole_stream_size(ole, stream) > min_size
 }
 
 
@@ -103,6 +153,7 @@ ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
                              min_size = 552){
   olefile <- py_import("olefile")
   ole <- olefile$OleFileIO(path)
+  on.exit(ole$close(), add = TRUE)
   streams <- ole$listdir()
   if (!is.null(pattern)){
     idx <- grep(streams, pattern = pattern, ignore.case = ignore.case)
@@ -111,9 +162,9 @@ ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
     streams <- streams[idx]
   }
   if (!is.null(min_size)){
-    idx <- which(sapply(streams, function(stream){
-      check_stream(path, stream, min_size=min_size)
-    }))
+    idx <- which(vapply(streams, function(stream){
+      ole_stream_size(ole, stream) > min_size
+    }, FUN.VALUE = logical(1)))
     if (length(idx)==0)
       return(message(sprintf("All streams matching the specified pattern are smaller than %g bytes.",
                              min_size)))

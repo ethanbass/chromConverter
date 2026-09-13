@@ -100,9 +100,10 @@ read_shimadzu_gcd <- function(path, what = "chroms",
 #' @noRd
 decode_shimadzu_gcd <- function(path, stream){
   path_stream <- export_stream(path, stream = stream)
+  on.exit(unlink_stream(path_stream), add = TRUE)
 
   f <- file(path_stream, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
 
   block_start <- seek(f, NA, "current")
 

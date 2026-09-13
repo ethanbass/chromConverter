@@ -190,7 +190,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
     DI <- data.frame(DETN = NA, DSCN = NA, ADN = NA, detector.unit = NA)
   }
   if (data_format == "long"){
-    dat <- reshape_chrom(dat, data_format = "wide")
+    dat <- reshape_chrom(dat, data_format = "long")
   }
   dat <- convert_chrom_format(dat, format_out = format_out,
                               data_format = data_format)
@@ -379,14 +379,9 @@ decode_sz_tic <- function(f){
   seek(f, 0, "start")
   seek(f, 0, "start")
 
-  mat <- matrix(nrow = nval, ncol = 3)
-  count <- 1
   readBin(f, what = "integer", size = 4, n = 2) # skip 2
-  while(count < nval){
-    mat[count,] <- readBin(f, what = "integer", size = 4, n = 3)
-    readBin(f, what = "integer", size = 4, n = 1) # skip 1
-    count <- count + 1
-  }
+  mat <- matrix(readBin(f, what = "integer", size = 4, n = nval * 4),
+                ncol = 4, byrow = TRUE)[, 1:3, drop = FALSE]
   mat[,1] <- mat[,1]/1000
   colnames(mat) <- c("rt", "index", "intensity")
   mat
@@ -396,8 +391,9 @@ decode_sz_tic <- function(f){
 #' @noRd
 read_sz_chrom <- function(path, stream){
   path_raw <- export_stream(path, stream = stream)
+  on.exit(unlink_stream(path_raw), add = TRUE)
   f <- file(path_raw, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
   dat <- data.frame(intensity = decode_sz_block(f))
   seek(f, 4)
   seek(f, 4)
@@ -415,6 +411,7 @@ read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
                                             "PDA.1.METHOD")){
   method_path <- export_stream(path, stream = stream,
                                    remove_null_bytes = TRUE)
+  on.exit(unlink_stream(method_path), add = TRUE)
   if (is.na(method_path)){
     warning("Method stream could not be found -- unable to infer retention times.")
     return(NA)
@@ -463,12 +460,13 @@ get_sz_times <- function(sz_method, what = c("pda", "chromatogram"), nval){
 #' @noRd
 get_shimadzu_axis <- function(path){
   maxplot_path <- export_stream(path, stream =  c("PDA 3D Raw Data", "Max Plot"))
+  on.exit(unlink_stream(maxplot_path), add = TRUE)
   if (is.na(maxplot_path)){
       warning("Unable to infer number of rows in stream.")
       return(NA)
     } else {
       f <- file(maxplot_path, "rb")
-      on.exit(close(f))
+      on.exit(close(f), add = TRUE)
       seek(f,4)
       interval <- readBin(f, what = "integer", n = 1, size = 4, endian = "little")
       nrows <- readBin(f, what = "integer", n = 1, size = 4, endian = "little")
@@ -482,8 +480,9 @@ get_shimadzu_axis <- function(path){
 read_sz_pda <- function(path, n_lambdas = NULL){
   path_raw <- export_stream(path, stream =  c("PDA 3D Raw Data", "3D Raw Data"),
                             verbose = TRUE)
+  on.exit(unlink_stream(path_raw), add = TRUE)
   f <- file(path_raw, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
 
   seek(f, 0, 'end')
   fsize <- seek(f, NA, "current")
@@ -518,14 +517,11 @@ read_sz_pda <- function(path, n_lambdas = NULL){
 read_sz_wavelengths <- function(path){
   path_wavtab <- export_stream(path, stream =  c("PDA 3D Raw Data",
                                                  "Wavelength Table"))
+  on.exit(unlink_stream(path_wavtab), add = TRUE)
   f <- file(path_wavtab, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
   n_lambda <- readBin(f, what = "integer", size = 4)
-  count <- 1
-  lambdas <- sapply(seq_len(n_lambda), function(i){
-    readBin(f, what = "integer", size = 4)/100
-  })
-  lambdas
+  readBin(f, what = "integer", size = 4, n = n_lambda)/100
 }
 
 #' Read 'Shimadzu' LCD data block
@@ -546,99 +542,92 @@ decode_sz_block <- function(f) {
   readBin(f, what = "integer", n = 5, size = 2)
 
   signal <- numeric(n_lambda)
-  count <- 1
-  buffer <- list(0,0,0,0)
+  count <- 1L
 
-  while (count < length(signal)) {
+  while (count < n_lambda) {
     n_bytes <- readBin(f, "integer", n = 1, size = 2)
     if (length(n_bytes) == 0) break
 
-    raw <- readBin(f, "raw", n = n_bytes)
-
-    # Process the block in memory
-    pos <- 1
-    while (pos <= length(raw)) {
-      current_byte <- raw[pos]
-
-      if (current_byte == as.raw(0x82)) {
-        pos <- pos + 1
-        next
-      } else if (current_byte == as.raw(0x00)) {
-        buffer[[2]] <- 0
-        pos <- pos + 1
-      } else {
-        hex1 <- as.numeric(current_byte) %/% 16
-
-        if (hex1 == 0) {
-          buffer[[2]] <- as.integer(current_byte)
-          pos <- pos + 1
-        } else if (hex1 == 1) {
-          buffer[[2]] <- decode_sz_val(current_byte)
-          pos <- pos + 1
-        } else if (hex1 > 1) {
-          # Read additional bytes from the block
-          extra_bytes <- hex1 %/% 2
-          buffer[[2]] <- decode_sz_val(c(current_byte,
-                                         raw[(pos+1):(pos+extra_bytes)]))
-          pos <- pos + 1 + extra_bytes
-        }
-      }
-
-      buffer[[1]] <- buffer[[1]] + buffer[[2]]
-      signal[count] <- buffer[[1]]
-      count <- count + 1
+    values <- decode_sz_deltas(readBin(f, "raw", n = n_bytes))
+    n_values <- length(values)
+    if (n_values > 0){
+      signal[count:(count + n_values - 1L)] <- values
+      count <- count + n_values
     }
 
     # Read the end marker
     end <- readBin(f, "integer", n = 1, size = 2)
     # n_bytes == end
-    buffer[[1]] <- 0
   }
   signal
 }
 
-#' Return twos complement from binary string
-#' This function is called internally by `read_shimadzu_lcd`.
+#' Decode a delta-encoded 'Shimadzu' sub-block
+#'
+#' Decodes one sub-block of the delta-encoded data stream found in 'Shimadzu'
+#' `.lcd` files. The first hexadecimal digit of each value is a sign digit
+#' giving the number of hexadecimal digits used to encode the value; even
+#' sign digits denote positive deltas and odd ones negative deltas (encoded as
+#' two's complements). Values within a sub-block accumulate, so the decoded
+#' signal is the cumulative sum of the deltas.
+#'
+#' Records are scanned in a single pass to find their start positions, after
+#' which the deltas are decoded in bulk, grouped by record length.
+#' @param raw A raw vector containing one sub-block.
+#' @return A numeric vector of decoded values.
+#' @author Ethan Bass
 #' @noRd
-twos_complement <- function(bin, exp){
-  if (missing(exp)){
-    exp <- nchar(bin)
+decode_sz_deltas <- function(raw) {
+  n <- length(raw)
+  if (n == 0) return(numeric(0))
+
+  # pad so that a truncated record at the end reads as trailing `00`s
+  bytes <- c(as.integer(raw), 0L, 0L, 0L, 0L)
+  sign_digit <- bytes %/% 16L
+
+  # number of bytes in the record beginning at each position
+  len <- ifelse(sign_digit > 1L, 1L + sign_digit %/% 2L, 1L)
+  len[bytes == 0x82] <- 1L
+
+  # walk the sub-block once to find where each record starts
+  starts <- integer(n)
+  count <- 0L
+  pos <- 1L
+  while (pos <= n) {
+    count <- count + 1L
+    starts[count] <- pos
+    pos <- pos + len[pos]
   }
-  strtoi(bin, 2) - 2^exp
-}
+  starts <- starts[seq_len(count)]
 
-#' Convert integer to binary
-#' @author Stuart K. Grange
-#' @note This function is borrowed from the threadr package
-#' \url{https://github.com/skgrange/threadr/} where it's licensed under GPL3.
-#' @noRd
-as_binary <- function(x, n = 32) {
-  # Check type
-  if (!is.integer(x)) stop("Input must be an integer.", call. = FALSE)
-  # Do
-  x <- sapply(x, function(x) integer_to_binary(x, n))
-  # Return
-  x
-}
+  # `0x82` is a marker rather than a value
+  starts <- starts[bytes[starts] != 0x82]
 
-#' Convert integer to binary
-#' @author Stuart K. Grange
-#' @note This function is borrowed from the threadr package
-#' \url{https://github.com/skgrange/threadr/} where it's licensed under GPL3.
-#' @noRd
-integer_to_binary <- function(x, n) {
-  # Convert to a vector of integers
-  x <- intToBits(x)
-  # Drop leading zeros
-  x <- as.integer(x)
-  # Filter to a certain number of bits
-  x <- x[1:n]
-  # Reverse order of vector
-  x <- rev(x)
-  # Collapse vector into string
-  x <- stringr::str_c(x, collapse = "")
-  # Return
-  x
+  sign_digit <- sign_digit[starts]
+  n_bytes <- ifelse(sign_digit > 1L, 1L + sign_digit %/% 2L, 1L)
+  deltas <- numeric(length(starts))
+
+  # single-byte values
+  idx <- which(n_bytes == 1L)
+  if (length(idx) > 0){
+    value <- bytes[starts[idx]] %% 16L
+    deltas[idx] <- ifelse(sign_digit[idx] == 1L, value - 16L, value)
+  }
+
+  # multi-byte values, decoded in groups of equal length
+  for (size in unique(n_bytes[n_bytes > 1L])){
+    idx <- which(n_bytes == size)
+    pos <- starts[idx]
+    x <- 0
+    for (i in seq_len(size)) {
+      x <- x * 256 + bytes[pos + i - 1L]
+    }
+    value_bits <- 8L * size - 4L
+    value <- x %% 2^value_bits
+    deltas[idx] <- ifelse(sign_digit[idx] %% 2L == 1L,
+                          value - 2^value_bits, value)
+  }
+  cumsum(deltas)
 }
 
 #' Convert hexadecimal string to raw format
@@ -685,6 +674,7 @@ sz_decode_sto <- Vectorize(
 #' @noRd
 read_sz_file_properties <- function(path){
   path_prop <- export_stream(path, "File Property")
+  on.exit(unlink_stream(path_prop), add = TRUE)
   header <- readBin(path_prop, "raw", n = 9)
   if (readBin(header[5:9],"character") == "<?xml"){
     meta <- read_sz_file_properties_xml(path_prop)
@@ -698,7 +688,7 @@ read_sz_file_properties <- function(path){
 #' @noRd
 read_sz_file_properties_raw <- function(path){
   f <- file(path, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
   offsets <- c(SampleInfo.operator_name = 20,
                DataFileProperty.szVersion = 150,
                SampleInfo.smpl_vial = 196,
@@ -710,7 +700,7 @@ read_sz_file_properties_raw <- function(path){
 
   meta <- as.list(sapply(offsets, function(pos){
     seek(f, pos)
-    readBin(f, "character")
+    clean_vendor_string(readBin(f, "character"))
   }))
 
   seek(f, 548)
@@ -767,6 +757,7 @@ sz_decode_props <- function(x){
 #' @noRd
 read_sz_3DDI <- function(path){
   path_meta <- export_stream(path, c('PDA 3D Raw Data', '3D Data Item'))
+  on.exit(unlink_stream(path_meta), add = TRUE)
 
   raw <- readBin(path_meta, what = "raw", n = file.info(path_meta)$size)
   txt <- iconv(rawToChar(raw), from = "ISO-8859-1", to = "UTF-8")
@@ -793,6 +784,7 @@ read_sz_3DDI <- function(path){
 read_sz_2DDI <- function(path, read_file = TRUE, idx = 1){
   if(read_file){
     path_meta <- export_stream(path, c('LSS Data Processing', '2D Data Item'))
+    on.exit(unlink_stream(path_meta), add = TRUE)
     raw <- readBin(path_meta, what = "raw", n = file.info(path_meta)$size)
     txt <- iconv(rawToChar(raw), from = "ISO-8859-1", to = "UTF-8")
     doc <- xml2::read_xml(paste0("<root>", txt, "</root>"))
@@ -845,31 +837,4 @@ extract_axis_metadata <- function(x){
            )
     } else list(vf = NA, unit = NA)
   }), recursive = FALSE)
-}
-
-#' Decode 'Shimadzu' values
-#' @noRd
-decode_sz_val <- function(hex) {
-  # Convert raw vector to integer
-  total_bits <- 8*length(hex)
-  x <- 0
-  for (i in seq_along(hex)) {
-    x <- bitwOr(bitwShiftL(x, n = 8), as.integer(hex[i]))
-  }
-
-  # Calculate the number of value bits
-  value_bits <- total_bits - 4
-
-  # Extract the sign (leftmost 4 bits)
-  sign <- bitwAnd(bitwShiftR(x, n = value_bits), b = 0xF)
-
-  # Extract the value part
-  value_mask <- bitwShiftL(1, value_bits) - 1
-  value <- bitwAnd(x, b = value_mask)
-
-  if (sign %% 2 == 1) {
-    return(-(bitwShiftL(1, value_bits) - value))
-  } else {
-    return(value)
-  }
 }
