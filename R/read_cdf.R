@@ -33,6 +33,7 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
   data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   nc <- ncdf4::nc_open(path)
+  on.exit(ncdf4::nc_close(nc))
   if ("ordinate_values" %in% names(nc$var)){
     format <- "chrom"
   } else if (all(c("intensity_values", "mass_values",
@@ -41,12 +42,11 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
   } else {
     format <- "unknown"
   }
-  ncdf4::nc_close(nc)
   fn <- switch(format, chrom = read_andi_chrom, ms = read_andi_ms,
                unknown = function(...){
                  stop("The format of the provided cdf file could not be recognized.")
                })
-  fn(path = path, data_format = data_format, format_out = format_out,
+  fn(path = path, nc = nc, data_format = data_format, format_out = format_out,
      what = what, read_metadata = read_metadata,
      metadata_format = metadata_format, collapse = collapse, ...)
 }
@@ -72,7 +72,7 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
                             data_format = c("wide", "long"),
                             what = "chroms", read_metadata = TRUE,
                             metadata_format = "chromconverter",
-                            collapse = TRUE){
+                            collapse = TRUE, nc = NULL){
   metadata_format <- switch(metadata_format,
                             chromconverter = "andi_chrom", raw = "raw")
   what <- if(is.null(what)) "chroms" else what
@@ -81,8 +81,10 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
     what[which(what == "chromatogram")] <- "chroms"
   }
   what <- match.arg(what, c("chroms", "peak_table"), several.ok = TRUE)
-  nc <- ncdf4::nc_open(path)
-  on.exit(ncdf4::nc_close(nc))
+  if (is.null(nc)){
+    nc <- ncdf4::nc_open(path)
+    on.exit(ncdf4::nc_close(nc))
+  }
   if (any(what == "chroms")){
     y <- ncdf4::ncvar_get(nc, "ordinate_values")
     nvals <- ncdf4::ncvar_get(nc, "actual_run_time_length")
@@ -98,9 +100,12 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
       x$dim[[1]]$name
       }) == "peak_number"))
     if (length(peak_table_vars) > 0){
-      peak_table <- sapply(peak_table_vars, function(var){
+      # `lapply` + `as.data.frame`, not `sapply`: with a single peak `sapply`
+      # returns a vector and the table comes out transposed
+      peak_table <- lapply(peak_table_vars, function(var){
         ncdf4::ncvar_get(nc, varid = var)
       })
+      names(peak_table) <- peak_table_vars
       peak_table <- as.data.frame(peak_table)
     }
   }
@@ -153,15 +158,17 @@ read_andi_ms <- function(path,
                          ms_format = c("data.frame", "list"),
                          read_metadata = TRUE,
                          metadata_format = "chromconverter",
-                         collapse = TRUE){
+                         collapse = TRUE, nc = NULL){
   format_out <- check_format_out(format_out)
   metadata_format <- switch(metadata_format,
                             chromconverter = "andi_ms", raw = "raw")
   ms_format <- match.arg(ms_format, c("data.frame", "list"))
   what <- if(is.null(what)) c("MS1", "TIC") else what
   what <- match.arg(toupper(what), c("MS1", "TIC"), several.ok = TRUE)
-  nc <- ncdf4::nc_open(path)
-  on.exit(ncdf4::nc_close(nc))
+  if (is.null(nc)){
+    nc <- ncdf4::nc_open(path)
+    on.exit(ncdf4::nc_close(nc))
+  }
   if (any(what == "TIC")){
     x <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
     y <- ncdf4::ncvar_get(nc, "total_intensity")
@@ -175,17 +182,15 @@ read_andi_ms <- function(path,
     scan_idx <- ncdf4::ncvar_get(nc, "scan_index")
     n_scans <- ncdf4::ncvar_get(nc, "point_count")
     rt_scan <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
-    zeros <- as.list(rep(NA, length(which(scan_idx == 0)) - 1))
     if (ms_format == "data.frame"){
-      rts <- unlist(sapply(seq_along(rt_scan), function(i){
-        rep(rt_scan[i], n_scans[i])
-      }))
+      rts <- rep(rt_scan, n_scans)
       MS1 <- data.frame(rt = rts, mz = mz, intensity = int)
       if (format_out == "data.table"){
         data.table::setDT(MS1)
       }
     } else if (ms_format == "list"){
-      scans <- mapply(function(x, y){
+      zeros <- as.list(rep(NA, length(which(scan_idx == 0)) - 1))
+      scans <- Map(function(x, y){
         cbind(mz = x, int = y)
       }, split_at(mz, scan_idx + 1), split_at(int, scan_idx + 1))
       MS1 <- c(zeros, scans)

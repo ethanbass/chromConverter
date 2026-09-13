@@ -64,6 +64,11 @@
 * Fixed `read_varian_sms` for `format_out = "data.table"`, which failed previously with an error. The `TIC` and `BPC` returned by this parser also had their intensity column named `tic`/`bpc` instead of `intensity` for this value of `format_out`.
 * Added support for reading `instrument` and `method` metadata from Varian SMS files (read from the `InjectionLog` section).
 
+#### ANDI (netCDF)
+
+* Fixed the MS1 scans returned by `read_cdf` for 'ANDI MS' files in which every scan holds the same number of points (common when the instrument scans a fixed mass range). The retention times arrived as a matrix and were split into one column per scan, so a 20-scan file returned a table with `rt.1`, `rt.2`, ... `rt.20` columns instead of a single `rt` column. With `ms_format = "list"` the same files returned a list of individual numbers rather than a list of spectra. Files with a varying number of points per scan were unaffected, and their output is unchanged.
+* `read_cdf` no longer opens the netCDF file twice, and the peak table returned for 'ANDI chrom' files is no longer transposed when it holds a single peak.
+
 
 #### Metadata and printing
 
