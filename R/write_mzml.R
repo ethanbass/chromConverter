@@ -422,9 +422,14 @@ create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
     mz_encoded <- empty
     int_encoded <- empty
   }
+  spectrum_type <- if (ms_level > 1){
+    '<cvParam cvRef="MS" accession="MS:1000580" name="MSn spectrum"/>'
+  } else {
+    '<cvParam cvRef="MS" accession="MS:1000579" name="MS1 spectrum"/>'
+  }
 
   sprintf('<spectrum id="scan=%d" index="%d" defaultArrayLength="%d">
-    <cvParam cvRef="MS" accession="MS:1000580" name="MSn spectrum"/>
+    %s
     <cvParam cvRef="MS" accession="MS:1000511" name="ms level" value="%d"/>
     <cvParam cvRef="MS" accession="MS:1000127" name="centroid spectrum"/>
     <cvParam cvRef="MS" accession="MS:1000505" name="base peak intensity" unitAccession="MS:1000131" unitName="number of detector counts" unitCvRef="MS" value="%f"/>
@@ -450,7 +455,7 @@ create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
       </binaryDataArray>
     </binaryDataArrayList>
   </spectrum>',
-          scan, index, nrow(scan_data), ms_level, bpc, tic, as.character(rt),
+          scan, index, nrow(scan_data), spectrum_type, ms_level, bpc, tic, as.character(rt),
           nchar(mz_encoded$base64), mz_encoded$compression_param, mz_encoded$base64,
           nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64)
 }

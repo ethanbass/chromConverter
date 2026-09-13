@@ -75,7 +75,8 @@ init_python <- function(error = TRUE){
       pkg_state$uv_offline <- TRUE
       message("Could not reach the Python package index. Falling back on the ",
               "cached Python environment. `UV_OFFLINE` has been set for the ",
-              "rest of this session; set `UV_OFFLINE=1` in your .Renviron to ",
+              "rest of this session; call `Sys.unsetenv('UV_OFFLINE')` to try ",
+              "the index again, or set `UV_OFFLINE=1` in your .Renviron to ",
               "skip this check in future sessions.")
       return(TRUE)
     }
