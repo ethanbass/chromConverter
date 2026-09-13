@@ -100,6 +100,66 @@ test_that("long format preserves the wide format values exactly", {
   expect_equal(unique(xl$lambda), as.numeric(colnames(xw)))
 })
 
+test_that("`lambdas` subsets the wavelengths converted to long format", {
+  wide <- matrix(c(1.5, 2.5, 3.5,
+                   4.5, 5.5, 6.5), nrow = 2, byrow = TRUE,
+                 dimnames = list(c("0.1", "0.2"), c("210", "220", "230")))
+  attr(wide, "data_format") <- "wide"
+
+  sub <- reshape_chrom(wide, data_format = "long", format_out = "matrix",
+                       lambdas = c("210", "230"))
+  expect_equal(colnames(sub), c("rt", "lambda", "intensity"))
+  expect_equal(unique(sub[, "lambda"]), c(210, 230))
+  # row-major, as for the full matrix: every requested wavelength for the first
+  # retention time, then for the second
+  expect_identical(sub[, "intensity"],
+                   as.numeric(t(wide[, c("210", "230")])))
+  expect_identical(sub[, "rt"], rep(c(0.1, 0.2), each = 2))
+
+  # a single wavelength must keep all three columns: the subset is taken with
+  # `drop = FALSE`, and without it `t()` would flatten the wrong way
+  one <- reshape_chrom(wide, data_format = "long", format_out = "matrix",
+                       lambdas = "220")
+  expect_equal(dim(one), c(2L, 3L))
+  expect_equal(colnames(one), c("rt", "lambda", "intensity"))
+  expect_equal(unique(one[, "lambda"]), 220)
+  expect_identical(one[, "intensity"], unname(wide[, "220"]))
+
+  # numeric indices select positionally
+  expect_identical(
+    reshape_chrom(wide, data_format = "long", format_out = "matrix",
+                  lambdas = c(1, 3))[, "intensity"],
+    sub[, "intensity"])
+
+})
+
+test_that("long format honours `format_out` for multi-column data", {
+  wide <- matrix(c(1.5, 2.5, 3.5,
+                   4.5, 5.5, 6.5), nrow = 2, byrow = TRUE,
+                 dimnames = list(c("0.1", "0.2"), c("210", "220", "230")))
+  attr(wide, "data_format") <- "wide"
+
+  # the multi-column branch assembles a matrix, so `data.frame` used to fall
+  # through unconverted -- `write_mzml_chrom` still carries a local
+  # `as.data.frame` workaround from when that was the case
+  expect_s3_class(reshape_chrom(wide, data_format = "long",
+                                format_out = "data.frame"), "data.frame")
+  expect_s3_class(reshape_chrom(wide, data_format = "long",
+                                format_out = "data.table"), "data.table")
+  expect_true(is.matrix(reshape_chrom(wide, data_format = "long",
+                                      format_out = "matrix")))
+
+  # the values are the same whichever container is asked for
+  vals <- as.numeric(t(wide))
+  expect_identical(reshape_chrom(wide, data_format = "long",
+                                 format_out = "data.frame")$intensity, vals)
+  expect_identical(reshape_chrom(wide, data_format = "long",
+                                 format_out = "data.table")$intensity, vals)
+  expect_identical(reshape_chrom(wide, data_format = "long",
+                                 format_out = "matrix")[, "intensity"], vals)
+
+})
+
 test_that("extract_metadata function works", {
   meta <- extract_metadata(x1)
   expect_equal(class(meta), "data.frame")

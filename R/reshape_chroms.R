@@ -1,41 +1,3 @@
-#' Reshapes list of chromatograms from wide to long format
-#' @name reshape_chroms
-#' @param x A list of chromatographic matrices in wide format.
-#' @param idx Indices of chromatograms to convert
-#' @param sample_var String with name of new column containing sample IDs.
-#' @param lambdas Wavelength(s) to include.
-#' @param data_format Whether to return data in `wide` or `long` format.
-#' @param combine Whether to combine chromatograms into a single `data.frame`
-#' (applicable only if `data_format` is `TRUE`).
-#' @param ... Additional arguments to `reshape_chrom`.
-#' @return A list of chromatographic matrices in long format.
-#' @author Ethan Bass
-#' @noRd
-reshape_chroms <- function(x, idx, sample_var = "sample", lambdas = NULL,
-                           data_format, combine = TRUE, sparse = FALSE, ...){
-  if (missing(data_format)){
-    data_format <- switch(attr(x[[1]], "data_format"),
-           long = "wide", wide = "long")
-  }
-  if (missing(idx)){
-    idx <- seq_along(x)
-  }
-  dat <- lapply(idx, function(i){
-    xx <- reshape_chrom(x[[i]], lambdas = lambdas, data_format = data_format,
-                        ...)
-    if (data_format == "long"){
-      xx[, sample_var] <- names(x)[[i]]
-    }
-    xx
-  })
-  if (combine & data_format == "long"){
-    dat <- do.call(rbind,dat)
-  } else {
-    names(dat) <- names(x)
-  }
-  dat
-}
-
 #' Reshape chromatogram
 #' @noRd
 reshape_chrom <- function(x, data_format, ...){
@@ -48,11 +10,25 @@ reshape_chrom <- function(x, data_format, ...){
 
 #' Reshape chromatogram (long)
 #' Reshapes a single chromatogram from wide to long format
+#'
+#' The multi-column branch assembles the three columns directly instead of
+#' pivoting. The rows are laid out in row-major order (all wavelengths for the
+#' first time point, then the second, ...), which is the order
+#' [tidyr::pivot_longer] produced and which callers rely on: `write_spectra`
+#' walks the result one retention time at a time, and the wide/long round-trips
+#' in the test suite compare `unique(long$rt)` against the wide rownames.
+#'
+#' `as.numeric(t(x))` flattens in exactly that order, so no sort is needed.
+#' Avoiding the pivot also avoids the `apply(data, 2, as.numeric)` that followed
+#' it: `apply` coerces its argument with `as.matrix`, and because `rt` entered
+#' as a character vector (from the rownames) the whole table was routed through
+#' a character matrix, formatting every intensity with `getOption("digits")`
+#' and so rounding it to 7 significant figures.
+#'
 #' @name reshape_chrom
-#' @importFrom stats reshape
 #' @param x A chromatographic matrix in wide format.
 #' @param lambdas Wavelength(s) to include.
-#' @param names_to Argument to [tidyr::pivot_longer].
+#' @param names_to Name of the column to hold the wide column names.
 #' @return A chromatographic matrix in long format.
 #' @author Ethan Bass
 #' @noRd
@@ -66,29 +42,33 @@ reshape_chrom_long <- function(x, lambdas = NULL, format_out = NULL,
   }
 
   format_out <- check_format_out(format_out)
-  xx <- as.data.frame(x)
 
   if (ncol(x) == 1){
+    xx <- as.data.frame(x)
     data <- data.frame(rt = as.numeric(rownames(xx)), intensity = xx[,1],
                row.names = NULL)
   } else {
+    xx <- if (is.matrix(x)) x else as.matrix(x)
     if (!is.null(lambdas)){
       xx <- xx[, lambdas, drop = FALSE]
     }
-    data <- data.table::data.table(tidyr::pivot_longer(
-      data.frame(rt = rownames(xx), xx, check.names = FALSE),
-                                cols = -c("rt"), names_to = names_to,
-                                values_to = "intensity"))
+    rn <- rownames(xx)
+    if (is.null(rn)) rn <- seq_len(nrow(xx))
+    cn <- colnames(xx)
+    if (is.null(cn)) cn <- paste0("V", seq_len(ncol(xx)))
+
+    # non-numeric column names still become `NA` with a coercion warning, as
+    # they did when the whole table was coerced at once
+    data <- cbind(rt = rep(as.numeric(rn), each = ncol(xx)),
+                  lambda = rep(as.numeric(cn), times = nrow(xx)),
+                  intensity = as.numeric(t(xx)))
+    colnames(data)[2] <- names_to
     if (sparse){
-      data <- data[intensity != 0]
+      data <- data[data[, "intensity"] != 0, , drop = FALSE]
     }
-    data <- apply(data, 2, as.numeric)
   }
-  if (format_out %in% c("matrix", "data.table")){
-    fn <- switch(format_out, "matrix"=as.matrix,
-              "data.table" = data.table::as.data.table)
-    data <- fn(data)
-  }
+  data <- convert_chrom_format(data, format_out = format_out,
+                               data_format = "long")
   data <- transfer_metadata(data, x)
   attr(data, "data_format") <- "long"
   data
