@@ -57,26 +57,26 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
                            force = force, ext = "mzML")
 
-  con <- file(file_out, "wt")
-  on.exit(close(con))
+  w <- new_mzml_writer(file_out)
+  on.exit(close(w$con))
 
   if (any(what %in% c("MS1", "MS2", "DAD"))){
     n_scan <- sum(sapply(what[what %in% c("MS1", "MS2", "DAD")], function(i){
-      tryCatch(length(unique(data[[i]][,"rt"])), error = function(cond) NA)
+      tryCatch(count_scans(data[[i]]), error = function(cond) NA)
     }), na.rm = TRUE)
   } else n_scan <- 0
   if ("MS1" %in% what){
     meta <- attributes(data$MS1)
     } else meta <- attributes(data$DAD)
-  write_mzml_header(con, meta = meta, n_scan = n_scan,
+  write_mzml_header(w, meta = meta, n_scan = n_scan,
                     indexed = indexed, instrument_info = instrument_info,
                     sample_name = meta$sample_name)
   spectrum_indices <- c()
   if (any(what == "MS1")){
     if ("MS1" %in% names(data)){
-      MS1 <- write_spectra(con, data = data, what = "MS1", indexed = indexed,
-                             idx_start = 0, show_progress = show_progress,
-                             verbose = verbose)
+      MS1 <- write_spectra(w, data = data, what = "MS1", indexed = indexed,
+                             idx_start = 0, compress = compress,
+                             show_progress = show_progress, verbose = verbose)
       spectrum_indices <- c(spectrum_indices, MS1)
     } else{
       warning("MS1 data not found.")
@@ -86,75 +86,117 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
     if ("DAD" %in% names(data)){
       idx <- try(spectrum_indices[[length(spectrum_indices)]]$id)
       start <- ifelse(is.null(idx), 0, as.numeric(gsub("scan=", "", idx)))
-      DAD <- write_spectra(con, data, what = "DAD", indexed = indexed,
-                             idx_start = start, show_progress = show_progress,
-                             verbose = verbose)
+      DAD <- write_spectra(w, data, what = "DAD", indexed = indexed,
+                             idx_start = start, compress = compress,
+                             show_progress = show_progress, verbose = verbose)
       spectrum_indices <- c(spectrum_indices, DAD)
     } else{
       warning("DAD data not found.")
     }
   }
 
-  cat('  </spectrumList>\n', file = con) # close spectrumList
+  mz_write(w, '  </spectrumList>\n') # close spectrumList
   if (any(what %in% c("TIC","BPC"))){
-    chrom_indices <- write_mzml_chromlist(con, data,
+    chrom_indices <- write_mzml_chromlist(w, data,
                                          what = what[what %in% c("TIC", "BPC")],
                                          indexed = indexed, compress = compress,
                                          verbose = verbose)
   } else chrom_indices <- NULL
-  cat('   </run>\n  </mzML>\n', file = con)
+  mz_write(w, '   </run>\n  </mzML>\n')
   if (indexed){
     index_count <- 0
     if (length(spectrum_indices) > 0) index_count <- index_count + 1
     if (length(chrom_indices) > 0) index_count <- index_count + 1
 
-    indexListOffset <- seek(con, NA)
-    indexListOffset <- seek(con, NA) - 1
+    indexListOffset <- w$pos
 
-    cat(sprintf('<indexList count="%d">\n', index_count), file = con)
+    mz_write(w, sprintf('<indexList count="%d">\n', index_count))
 
     if (length(spectrum_indices) > 0) {
-      cat('\t<index name="spectrum">\n', file = con)
+      mz_write(w, '\t<index name="spectrum">\n')
       for (entry in spectrum_indices) {
-        cat(sprintf('\t\t<offset idRef="%s">%d</offset>\n', entry$id, entry$offset),
-            file = con)
+        mz_write(w, sprintf('\t\t<offset idRef="%s">%d</offset>\n',
+                            entry$id, entry$offset))
       }
-      cat('\t</index>\n', file = con)
+      mz_write(w, '\t</index>\n')
     }
 
     if (length(chrom_indices) > 0) {
-      cat('\t<index name="chromatogram">\n', file = con)
+      mz_write(w, '\t<index name="chromatogram">\n')
       for (entry in chrom_indices) {
-        cat(sprintf('\t\t<offset idRef="%s">%d</offset>\n', entry$id, entry$offset),
-            file = con)
+        mz_write(w, sprintf('\t\t<offset idRef="%s">%d</offset>\n',
+                            entry$id, entry$offset))
       }
-      cat('\t</index>\n', file = con)
+      mz_write(w, '\t</index>\n')
     }
-    cat('</indexList>\n', file = con)
+    mz_write(w, '</indexList>\n')
 
-    content <- readLines(file_out)
-    checksum <- digest::digest(content, algo = "sha1", serialize = FALSE)
-
-    # Write final tags
-    cat(sprintf(
-    '<indexListOffset>%d</indexListOffset>
-    <fileChecksum>%s</fileChecksum>\n
-  </indexedmzML>', indexListOffset, checksum), file = con)
+    # The checksum covers the file through the opening `fileChecksum` tag, so
+    # it has to be written in two parts, with the file flushed in between.
+    mz_write(w, sprintf('<indexListOffset>%d</indexListOffset>\n',
+                        indexListOffset))
+    mz_write(w, '<fileChecksum>')
+    flush(w$con)
+    checksum <- digest::digest(file = file_out, algo = "sha1")
+    mz_write(w, checksum, '</fileChecksum>\n</indexedmzML>\n')
 }
   return(invisible(file_out))
 }
 
+#' Open an mzML file for writing
+#'
+#' Returns an environment holding the connection and the number of bytes
+#' written so far. The byte count is what the `indexList` offsets are built
+#' from: `seek()` is documented as unreliable on a connection opened in text
+#' mode, and it does not account for the connection's write buffer, so the
+#' position is tracked explicitly instead. The connection is opened in binary
+#' mode so that a byte written is a byte on disk (no CRLF translation on
+#' Windows), which is what makes the offsets portable.
+#' @noRd
+new_mzml_writer <- function(file_out){
+  w <- new.env(parent = emptyenv())
+  w$con <- file(file_out, "wb")
+  w$pos <- 0
+  w
+}
+
+#' Write to an mzML file and advance the byte counter
+#'
+#' Arguments are pasted together and written as UTF-8. The counter is advanced
+#' by the number of *bytes*, not characters, so that non-ASCII metadata (sample
+#' names, Windows method paths) cannot desynchronize the index.
+#' @noRd
+mz_write <- function(w, ...){
+  bytes <- charToRaw(enc2utf8(paste0(...)))
+  writeBin(bytes, w$con)
+  w$pos <- w$pos + length(bytes)
+  invisible(w$pos)
+}
+
+#' Count the scans in a chromatogram
+#'
+#' Wide data carries one scan per row; long data carries one scan per unique
+#' retention time.
+#' @noRd
+count_scans <- function(x){
+  if (identical(attr(x, "data_format"), "wide")){
+    nrow(x)
+  } else {
+    length(unique(get_column(x, "rt")))
+  }
+}
+
 
 #' Write mzML header
-#' @param con Connection to write mzML file.
+#' @param w mzML writer (see `new_mzml_writer`).
 #' @param n_scan Number of scans to be included in mzML file.
 #' @param indexed Logical. Whether mzML file is to be indexed.
 #' @author Ethan Bass
 #' @noRd
-write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
+write_mzml_header <- function(w, meta, n_scan, indexed = TRUE,
                               instrument_info = NULL, sample_name){
   # Write XML declaration and opening tags
-  cat(
+  mz_write(w,
     '<?xml version="1.0" encoding="UTF-8"?>\n',
     ifelse(indexed, '<indexedmzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml">\n', ''),
     sprintf('<mzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml" id="%s" version="1.1.0">\n',
@@ -167,20 +209,20 @@ write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
   create_mzml_sample_list(meta),
   create_mzml_software_list(),
   '<instrumentConfigurationList count="1">
-    <instrumentConfiguration id="IC">\n', file = con, sep = "")
+    <instrumentConfiguration id="IC">\n')
 
 
   if (!is.null(instrument_info)) {
     for (param in instrument_info) {
-      cat(sprintf('      <cvParam cvRef="%s" accession="%s" name="%s" value="%s"/>\n',
-                  param$cvRef, param$accession, param$name, param$value), file = con)
+      mz_write(w, sprintf('      <cvParam cvRef="%s" accession="%s" name="%s" value="%s"/>\n',
+                  param$cvRef, param$accession, param$name, param$value))
     }
   } else {
-    cat('      <cvParam cvRef="MS" accession="MS:1000031" name="instrument model"/>\n', file = con)
+    mz_write(w, '      <cvParam cvRef="MS" accession="MS:1000031" name="instrument model"/>\n')
   }
   date_time <- tryCatch(format(meta$run_datetime[1], "%Y-%m-%dT%H:%M:%SZ"), error = function(err) NA)
   timestamp_attr <- if(is.na(date_time)) "" else sprintf(' startTimeStamp="%s"', date_time)
-  cat(sprintf('    </instrumentConfiguration>
+  mz_write(w, sprintf('    </instrumentConfiguration>
   </instrumentConfigurationList>
   <dataProcessingList count="1">
     <dataProcessing id="chromConverter_processing">
@@ -193,8 +235,7 @@ write_mzml_header <- function(con, meta, n_scan, indexed = TRUE,
     <spectrumList count="%d" defaultDataProcessingRef="%s">\n',
               timestamp_attr,
               n_scan,
-              "chromConverter_processing"),
-      file = con, sep = "")
+              "chromConverter_processing"))
 }
 
 #' Create mzml sample list
@@ -245,8 +286,9 @@ create_mzml_software_list <- function(){
 #' @importFrom data.table .SD
 #' @author Ethan Bass
 #' @noRd
-write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
-                          indexed = TRUE, idx_start = 0, show_progress = TRUE,
+write_spectra <- function(w, data, what = c("MS1", "MS2", "TIC", "DAD"),
+                          indexed = TRUE, idx_start = 0, compress = TRUE,
+                          show_progress = TRUE,
                           verbose = getOption("verbose")){
   what <- match.arg(toupper(what), c("MS1", "MS2", "TIC", "DAD"))
 
@@ -269,39 +311,43 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
                             "MS1" = create_mzml_ms1_spectrum,
                             "DAD" = create_mzml_dad_spectrum)
 
+  scans <- group_scans(spectra_data)
+  rts <- scans$rts
+  get_scan <- scans$get_scan
+
   if (what == 'MS1'){
     if (!is.null(data$TIC) && attr(data$TIC, "data_format") == "wide"){
       data$TIC <- data.frame(rt = as.numeric(rownames(data$TIC)),
                              intensity = data$TIC[,"intensity"])
     }
-    rts <- unique(spectra_data$rt)
-    n_scan <- ifelse(!is.null(data$TIC), nrow(data$TIC),
-                     length(unique(spectra_data$rt)))
+    n_scan <- ifelse(!is.null(data$TIC), nrow(data$TIC), length(rts))
     extra_vals <- n_scan - length(rts)
-    spectra_list <- split(spectra_data, spectra_data$rt)
 
     if (extra_vals > 0){
-      rts <- c(data$TIC[seq_len(extra_vals), "rt"], rts)
-      spectra_list <- c(rep(list(spectra_list[[1]][0]), extra_vals), spectra_list)
+      # the acquisition delay at the head of the TIC has no spectra of its own,
+      # so it is padded with empty scans
+      rts <- c(get_column(data$TIC, "rt")[seq_len(extra_vals)], rts)
+      empty_scan <- spectra_data[0]
+      inner_scan <- get_scan
+      get_scan <- function(i){
+        if (i <= extra_vals) empty_scan else inner_scan(i - extra_vals)
+      }
     }
   } else if (what == "DAD"){
-    rts <- get_times(spectra_data)
     n_scan <- length(rts)
-    spectra_list <- split(spectra_data, spectra_data$rt)
   }
-
 
   laplee(seq_len(n_scan), function(i){
     if (indexed){
-      offset <- seek(con, NA)
+      offset <- w$pos
     }
 
-    scan_data <- spectra_list[[i]]
+    scan_data <- get_scan(i)
 
     # Create and write spectrum
     spectrum_xml <- create_spectrum(scan_data = scan_data, scan = i,
                                     index = (i + idx_start - 1),
-                                    rt = rts[i],
+                                    rt = rts[i], compress = compress,
                                     tic = ifelse(!is.null(data$TIC),
                                                  data$TIC[[i, "intensity"]],
                                                  sum(scan_data$intensity)),
@@ -309,13 +355,39 @@ write_spectra <- function(con, data, what = c("MS1", "MS2", "TIC", "DAD"),
                                                  data$BPC[[i, "intensity"]],
                                                  ifelse(length(scan_data$intensity) == 0,
                                                         0, max(scan_data$intensity))))
-    writeLines(spectrum_xml, con)
+    mz_write(w, spectrum_xml, "\n")
     if (indexed){
       prefix <- switch(what, "MS1" = "scan=",
                             "DAD" = "controllerType=4 controllerNumber=1 scan=")
       list(id = paste0(prefix, i), offset = offset)
     }
   })
+}
+
+#' Group a long-format table into scans
+#'
+#' Returns the retention time of each scan and an accessor for its rows.
+#' Reshaping emits all of the rows for one retention time together, so the
+#' scans are contiguous ranges and can be sliced directly; materializing them
+#' with `split()` would copy the whole table into a list of per-scan tables.
+#' Retention times that are *not* contiguous (the same time appearing in two
+#' separate blocks) fall back to `split()`, which gathers them.
+#'
+#' The retention times are taken from the same grouping as the rows, so scan
+#' `i` and `rts[i]` cannot disagree.
+#' @noRd
+group_scans <- function(x){
+  rt <- get_column(x, "rt")
+  starts <- which(!duplicated(rt))
+  if (length(starts) == length(unique(rt))){
+    ends <- c(starts[-1] - 1L, length(rt))
+    list(rts = rt[starts],
+         get_scan = function(i) x[starts[i]:ends[i]])
+  } else {
+    scan_list <- split(x, rt)
+    list(rts = as.numeric(names(scan_list)),
+         get_scan = function(i) scan_list[[i]])
+  }
 }
 
 #' Create mzML MS1 spectrum node
@@ -344,8 +416,11 @@ create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
     mz_encoded <- encode_data(scan_data$mz, compress = compress)
     int_encoded <- encode_data(scan_data$intensity, compress)
   } else{
-    mz_encoded <- list(base64 = "", compression_param = "<cvParam cvRef=\"MS\" accession=\"MS:1000574\" name=\"zlib compression\" />")
-    int_encoded <- list(base64 = "", compression_param = "<cvParam cvRef=\"MS\" accession=\"MS:1000574\" name=\"zlib compression\" />")
+    # an empty array still has to declare the compression the file is using
+    empty <- list(base64 = "",
+                  compression_param = compression_param(compress))
+    mz_encoded <- empty
+    int_encoded <- empty
   }
 
   sprintf('<spectrum id="scan=%d" index="%d" defaultArrayLength="%d">
@@ -405,8 +480,7 @@ create_mzml_dad_spectrum <- function(scan_data, scan, index, rt, tic = NULL,
   wavelength_encoded <- encode_data(scan_data$lambda, compress = compress)
   int_encoded <- encode_data(scan_data$intensity, compress = compress)
   ID <- sprintf('controllerType=4 controllerNumber=1 scan=%d', scan)
-  block <- sprintf('
-  <spectrum id="%s" index="%d" defaultArrayLength="%d">
+  block <- sprintf('<spectrum id="%s" index="%d" defaultArrayLength="%d">
     <cvParam cvRef="MS" accession="MS:1000804" value="" name="electromagnetic radiation spectrum" />
     <cvParam cvRef="MS" accession="MS:1000525" value="" name="spectrum representation" />
     <cvParam cvRef="UO" accession="MS:1000619" value="%s" name="lowest observed wavelength" unitAccession="UO:0000018" unitName="nanometer" unitCvRef="MS" />
@@ -444,33 +518,33 @@ create_mzml_dad_spectrum <- function(scan_data, scan, index, rt, tic = NULL,
 #' Write mzML chromList
 #' @author Ethan Bass
 #' @noRd
-write_mzml_chromlist <- function(con, data, what = c("TIC", "BPC"),
+write_mzml_chromlist <- function(w, data, what = c("TIC", "BPC"),
                                  indexed = TRUE, compress = TRUE,
                                  verbose = getOption("verbose")){
   chroms <- match.arg(toupper(what), c("TIC", "BPC"), several.ok = TRUE)
   if (length(chroms) > 0){
     chrom_index <- vector("list", length(chroms))
-    cat(sprintf('    <chromatogramList count="%d" defaultDataProcessingRef="chromConverter_processing">\n',
-                length(chroms)), file = con)
+    mz_write(w, sprintf('    <chromatogramList count="%d" defaultDataProcessingRef="chromConverter_processing">\n',
+                length(chroms)))
     c_index <- 0
     if (any(chroms == "TIC")){
       if (indexed){
-        chrom_index[[c_index + 1]] <- list(id = c_index, offset = seek(con, NA))
+        chrom_index[[c_index + 1]] <- list(id = "TIC", offset = w$pos)
       }
-      write_mzml_chrom(con = con, data = data, index = c_index, what = "TIC",
+      write_mzml_chrom(w = w, data = data, index = c_index, what = "TIC",
                        compress = compress, verbose = verbose)
       c_index <- c_index + 1
     }
     if (any(chroms == "BPC")){
       if (indexed){
-        chrom_index[[c_index + 1]] <- list(id = c_index, offset = seek(con, NA))
+        # `idRef` must reference the element's `id`, which is the name
+        chrom_index[[c_index + 1]] <- list(id = "BPC", offset = w$pos)
       }
-      write_mzml_chrom(con = con, data = data, index = c_index, what = "BPC",
+      write_mzml_chrom(w = w, data = data, index = c_index, what = "BPC",
                        compress = compress, verbose = verbose)
       c_index <- c_index + 1
     }
-    cat('
-      </chromatogramList>\n', file = con)
+    mz_write(w, '      </chromatogramList>\n')
   }
   chrom_index
 }
@@ -478,7 +552,7 @@ write_mzml_chromlist <- function(con, data, what = c("TIC", "BPC"),
 #' Write mzML chromatogram
 #' @author Ethan Bass
 #' @noRd
-write_mzml_chrom <- function(con, index, data, what = c("TIC", "BPC"),
+write_mzml_chrom <- function(w, index, data, what = c("TIC", "BPC"),
                              compress = TRUE, verbose = getOption("verbose")){
   what <- match.arg(toupper(what), c("TIC", "BPC"))
   if (verbose) message(sprintf("Writing %s.", toupper(what)))
@@ -496,7 +570,7 @@ write_mzml_chrom <- function(con, index, data, what = c("TIC", "BPC"),
   cv_param <- switch(what, "TIC" = '<cvParam cvRef="MS" accession="MS:1000235" name="total ion current chromatogram" value=""/>',
                      "BPC" = '<cvParam cvRef="MS" accession="MS:1000628" name="basepeak chromatogram" value=""/>')
 
-  cat(sprintf('    <chromatogram id="%s" index="%d" defaultArrayLength="%d">
+  mz_write(w, sprintf('<chromatogram id="%s" index="%d" defaultArrayLength="%d">
       %s
         <binaryDataArrayList count="2">
             <binaryDataArray encodedLength="%d">
@@ -512,10 +586,9 @@ write_mzml_chrom <- function(con, index, data, what = c("TIC", "BPC"),
         <binary>%s</binary>
       </binaryDataArray>
     </binaryDataArrayList>
-        </chromatogram>', id, index, array_length, cv_param,
+        </chromatogram>\n', id, index, array_length, cv_param,
               nchar(rt_encoded$base64), rt_encoded$compression_param, rt_encoded$base64,
-              nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64),
-      file = con)
+              nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64))
 }
 
 #' Encode mzml data
@@ -530,9 +603,19 @@ encode_data <- function(x, compress) {
   bin_data <- writeBin(as.double(x), raw(), endian = "little")
   if (compress) {
     bin_data <- memCompress(bin_data, type = "gzip")
-    compression_param <- '<cvParam cvRef="MS" accession="MS:1000574" name="zlib compression" />'
-  } else {
-    compression_param <- '<cvParam cvRef="MS" accession="MS:1000576" name="no compression" />'
   }
-  list(base64 = base64enc::base64encode(bin_data), compression_param = compression_param)
+  list(base64 = base64enc::base64encode(bin_data),
+       compression_param = compression_param(compress))
+}
+
+#' Compression cvParam
+#' `memCompress(type = "gzip")` emits zlib-format output, which is what
+#' `MS:1000574` calls for.
+#' @noRd
+compression_param <- function(compress){
+  if (compress){
+    '<cvParam cvRef="MS" accession="MS:1000574" name="zlib compression" />'
+  } else {
+    '<cvParam cvRef="MS" accession="MS:1000576" name="no compression" />'
+  }
 }

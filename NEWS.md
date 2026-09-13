@@ -19,6 +19,7 @@
 * Refactored internal 'Agilent' parsers for increased speed through vectorization of byte operations (~3.5-30x for the delta-encoded formats).  For example, a 10.8 MB 'ChemStation' version 31 `.uv` file went from ~9 s to ~0.57 s.
 * Refactored 'Shimadzu' binary parsers for increased speed (7-55x) through vectorization of byte operations. Reading MS1 scans from a 40 MB `.qgd` file went from ~56 s to ~1 s, and reading a PDA stream from an `.lcd` file went from ~7 s to ~1 s.
 * Refactored `read_varian_sms` for increased speed (~8x) through vectorization. Reading `STRD15.SMS` (2.4 MB, 935k MS1 rows) drops from ~13 s to ~1.7 s. The stream is also bounded by the end of the `MSData` section rather than the end of the file, which reduced peak memory requirements for files carrying a large tail of peak tables and results.
+* Refactored `write_mzml` for increased speed (~1.4x) and lower memory use. The spectra are now sliced out of the long-format table in place instead of being copied into a list of per-scan tables, and the byte offsets for the index are accumulated as the file is written rather than probed with `seek()` once per scan. Writing 3432 scans (935k points) drops from ~1.24 s to ~0.87 s, with peak memory falling from ~384 MB to ~339 MB.
 * Refactored conversion to long format for increased speed (~150x). The reshaping step now assembles the three columns directly instead of pivoting the table and then coercing it, which also avoids the rounding described below. Reshaping a 4689 x 328 PDA matrix drops from ~2.0 s to ~0.012 s, with peak memory falling from ~455 MB to ~227 MB. This affects every parser called with `data_format = "long"` (or `format_out = "data.table"`, which implies long format), as well as the mzML and ANDI MS writers, which reshape to long format internally.
 * The temporary files that are extracted from 'Shimadzu' OLE containers are now deleted once they have been read, instead of accumulating in the session's temporary directory until R exits. This matters most when converting many files at once.
 
@@ -69,6 +70,14 @@
 * Fixed the MS1 scans returned by `read_cdf` for 'ANDI MS' files in which every scan holds the same number of points (common when the instrument scans a fixed mass range). The retention times arrived as a matrix and were split into one column per scan, so a 20-scan file returned a table with `rt.1`, `rt.2`, ... `rt.20` columns instead of a single `rt` column. With `ms_format = "list"` the same files returned a list of individual numbers rather than a list of spectra. Files with a varying number of points per scan were unaffected, and their output is unchanged.
 * `read_cdf` no longer opens the netCDF file twice, and the peak table returned for 'ANDI chrom' files is no longer transposed when it holds a single peak.
 
+#### mzML export
+
+* Fixed the `fileChecksum` written into indexed mzML files, which was the SHA-1 of the first line of the file (`<?xml version="1.0" encoding="UTF-8"?>`) rather than of the file itself, because the digest was taken over a multi-element character vector. Files are now checksummed as required by the mzML specification, over the bytes up to and including the opening `<fileChecksum>` tag, and the file no longer has to be read back into memory to do it.
+* Fixed the offsets in the `indexList` of mzML files. `<indexListOffset>` pointed one byte before `<indexList>`, and every offset in the DAD spectrum index pointed at the newline preceding its `<spectrum>` element rather than at the element. Offsets are now counted as the file is written instead of being probed with `seek()`, which is unreliable on a connection opened in text mode and ignores the write buffer.
+* Fixed the chromatogram index of mzML files. Each `<offset>` pointed four bytes before its `<chromatogram>` element, and its `idRef` named the element's `index` rather than its `id`, so no entry in the index resolved to the chromatogram it was meant to locate. 
+* Fixed `write_mzml(compress = FALSE)`, which was ignored for spectra (though not for chromatograms), since the argument was never passed on.
+* Fixed the `count` attribute of `<spectrumList>`, which was always written as `1` for data read as a `data.table`.
+* mzML files are now written as binary, so their line endings are `LF` on all platforms.
 
 #### Metadata and printing
 
