@@ -20,6 +20,20 @@ check_data_format <- function(data_format, format_out){
   match.arg(data_format, c("wide", "long"))
 }
 
+#' Extract a column by name
+#'
+#' Chromatograms are passed around as a `matrix`, `data.frame` or `data.table`,
+#' according to `format_out`, and no single subsetting idiom covers all three:
+#' `x[, j]` returns a one-column `data.table` rather than a vector when `x` is
+#' a `data.table`, while `x[[j]]` is not valid for a matrix.
+#' @param x A chromatogram.
+#' @param j Column name or index.
+#' @author Ethan Bass
+#' @noRd
+get_column <- function(x, j){
+  if (is.matrix(x)) x[, j] else x[[j]]
+}
+
 #' Convert chromatogram format
 #' @author Ethan Bass
 #' @noRd

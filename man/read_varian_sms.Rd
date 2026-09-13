@@ -72,7 +72,7 @@ following scheme:
 }
 \note{
 There is still only limited support for the extraction of metadata from
-this file format. Also, the timestamp conversions aren't quite right.
+this file format.
 }
 \examples{
 \dontrun{

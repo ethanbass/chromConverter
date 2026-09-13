@@ -19,6 +19,7 @@
 
 * Refactored internal 'Agilent' parsers for increased speed (~3.5-30x for the delta-encoded formats). The per-value `readBin()` loops used to decode them have been replaced by a single bulk read followed by vectorized decoding, which returns exactly the same values. For example, a 10.8 MB 'ChemStation' version 31 `.uv` file went from ~9 s to ~0.57 s.
 * Refactored 'Shimadzu' binary parsers for increased speed (7-55x) through vectorization of byte operations. Reading MS1 scans from a 40 MB `.qgd` file went from ~56 s to ~1 s, and reading a PDA stream from an `.lcd` file went from ~7 s to ~1 s.
+* Refactored `read_varian_sms` for increased speed (~8x) through vectorization. Reading `STRD15.SMS` (2.4 MB, 935k MS1 rows) drops from ~13 s to ~1.7 s. The stream is also bounded by the end of the `MSData` section rather than the end of the file, which reduced peak memory requirements for files carrying a large tail of peak tables and results.
 * The temporary files that are extracted from 'Shimadzu' OLE containers are now deleted once they have been read, instead of accumulating in the session's temporary directory until R exits. This matters most when converting many files at once.
 
 ### Metadata field changes
@@ -46,6 +47,13 @@
 
 * Fixed `read_shimadzu_lcd` so it can return PDA data in long format. `read_shimadzu_lcd(what = "pda", data_format = "long")` previously failed with an error about a missing `lambda` column, because the reshaping step was called with the wrong target format.
 
+
+#### 'Varian' SMS
+
+* Fixed the acquisition timestamps for 'Varian SMS' files. The corrected start matches the timestamp written by 'OpenChrom' for the same sample, and the interval between the start and end times matches the span of the chromatogram.
+* The `run_datetime` for 'Varian SMS' files is now the acquisition start time, as a single value rather than a start/end pair.
+* Fixed `read_varian_sms` for `format_out = "data.table"`, which failed previously with an error. The `TIC` and `BPC` returned by this parser also had their intensity column named `tic`/`bpc` instead of `intensity` for this value of `format_out`.
+* Added support for reading `instrument` and `method` metadata from Varian SMS files (read from the `InjectionLog` section).
 
 ## chromConverter 0.9.1
 

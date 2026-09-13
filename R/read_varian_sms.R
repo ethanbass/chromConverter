@@ -42,7 +42,7 @@
 #' specified by `format_out`.
 #' @author Ethan Bass
 #' @note There is still only limited support for the extraction of metadata from
-#' this file format. Also, the timestamp conversions aren't quite right.
+#' this file format.
 #' @examples \dontrun{
 #' read_varian_sms(path)
 #' }
@@ -61,6 +61,20 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
   f <- file(path, "rb")
   on.exit(close(f))
 
+  # Read the directory up front so the mass spectra stream can be bounded by the
+  # end of the MSData section instead of the end of the file. Some files carry a
+  # large tail of peak tables and results after the spectra. Tolerate a
+  # unreadable directory here and fall back to the file size; if metadata is
+  # actually requested the error is raised below instead.
+  offsets <- tryCatch(read_varian_offsets(f), error = function(e) NULL)
+  flen <- file.size(path)
+  if (!is.null(offsets)){
+    ms_end <- offsets$end[offsets$name == "MSData"]
+    if (length(ms_end) == 1 && !is.na(ms_end) && ms_end > 3238){
+      flen <- min(ms_end, flen)
+    }
+  }
+
   meta <- read_varian_msdata_header(f)
 
   chroms <- read_varian_chromatograms(f, n_time = meta$n_scan,
@@ -69,28 +83,45 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
 
   skip_null_bytes(f)
 
-  acq_delay <- max(which(chroms[, "tic"] == 0))
+  acq_delay <- max(which(get_column(chroms, "tic") == 0))
   n_scans <- nrow(chroms) - acq_delay
   if ("MS1" %in% what){
-    MS1 <- read_varian_ms_stream(f, n_scans = n_scans, format_out = format_out)
-    MS1[,1] <- chroms[(MS1[,1] + acq_delay), "rt"]
-    colnames(MS1) <- c("rt", "mz", "intensity")
+    MS1 <- read_varian_ms_stream(f, n_scans = n_scans, flen = flen,
+                                 format_out = format_out)
+    # the stream numbers its scans from the start of acquisition, so the scan
+    # column is translated into the retention time of the corresponding row of
+    # the chromatograms
+    rt <- get_column(chroms, "rt")[get_column(MS1, 1) + acq_delay]
+    if (inherits(MS1, "data.table")){
+      data.table::set(MS1, j = 1L, value = rt)
+      data.table::setnames(MS1, c("rt", "mz", "intensity"))
+    } else {
+      MS1[, 1] <- rt
+      colnames(MS1) <- c("rt", "mz", "intensity")
+    }
   }
 
   if (any(what == "TIC")){
-    TIC <- format_2d_chromatogram(rt = chroms[,"rt"], int = chroms[,"tic"],
+    TIC <- format_2d_chromatogram(rt = get_column(chroms, "rt"),
+                                  int = get_column(chroms, "tic"),
                                   data_format = data_format,
                                   format_out = format_out)
   }
   if (any(what == "BPC")){
-    BPC <- format_2d_chromatogram(rt = chroms[,"rt"], int = chroms[,"bpc"],
+    BPC <- format_2d_chromatogram(rt = get_column(chroms, "rt"),
+                                  int = get_column(chroms, "bpc"),
                                   data_format = data_format,
                                   format_out = format_out)
   }
   dat <- mget(what)
   if (read_metadata){
-    offsets <- read_varian_offsets(f)
+    if (is.null(offsets)){
+      offsets <- read_varian_offsets(f)
+    }
 
+    meta <- utils::modifyList(meta, read_varian_injection_log(f, offsets))
+
+    # the SamplePrep section is the more specific source for the sample name
     prep_offset <- offsets[grep("SamplePrep", offsets$name), "start"]
     seek(f, prep_offset)
     meta$sample_name <-  readBin(f, "character")
@@ -177,56 +208,145 @@ read_varian_chromatograms <- function(f, n_time, format_out = "data.frame",
   dat
 }
 
+#' Decode tables for the 'Varian SMS' mass spectra stream
+#'
+#' Values in the MS stream are variable-length big-endian integers whose length
+#' and bit-width are a pure function of the leading nibble (`d`) of the first
+#' byte, per the scheme documented in the details section of [read_varian_sms()]:
+#' `len = 1 + (d %/% 4)`, preserving the lowest `bits` of the value.
+#'
+#' `.sms_lead_mask` masks the *lead byte* rather than the assembled integer.
+#' This is equivalent -- in every case the preserved width exceeds
+#' `8 * (len - 1)`, so the mask only ever clips bits inside the lead byte -- but
+#' it keeps every intermediate within 28 bits. Assembling first and masking
+#' afterwards overflows `.Machine$integer.max` on 4-byte values and yields `NA`
+#' ("NAs introduced by coercion to integer range"), so do not reorder these.
+#' Both tables are indexed `[d + 1L]`.
+#' @noRd
+.sms_val_len   <- 1L + (0:15) %/% 4L
+.sms_lead_mask <- bitwShiftL(1L, c(rep(8L, 4), 13L, 13L, 14L, 14L,
+                                   21L, 21L, 22L, 22L,
+                                   27L, 27L, 28L, 28L) -
+                                 8L * ((0:15) %/% 4L)) - 1L
+
 #' Read 'Varian' MS stream
+#'
+#' Reads the whole stream into memory and decodes it with a single pass. Each
+#' scan is a run of (delta-encoded m/z, intensity) pairs terminated by two null
+#' bytes.
+#'
+#' A fully vectorized tokenizer is possible -- build `nxt[i] = i + len[i]` over
+#' every byte and recover all token starts by pointer doubling, then decode in
+#' bulk -- and benchmarks about 2x faster again (0.71s vs 1.66s on STRD15.SMS)
+#' at ~1.6x the peak memory. It is not used here because the format is still
+#' only partly reverse-engineered: this loop can be stepped through with
+#' `browser()` to find the exact offset where an unfamiliar file derails,
+#' whereas a wrong length rule in a vectorized walk silently misaligns every
+#' token downstream of it. Worth revisiting if batch conversion becomes a
+#' bottleneck.
+#'
 #' @param f Connection to a 'Varian' SMS file opened to the beginning of the
 #' mass spectra stream.
+#' @param n_scans Number of scans to read.
+#' @param flen Length of the file in bytes.
 #' @author Ethan Bass
 #' @noRd
-read_varian_ms_stream <- function(f, n_scans, format_out = "data.frame",
-                                  data_format = "wide"){
+read_varian_ms_stream <- function(f, n_scans, flen, format_out = "data.frame"){
   format_out <- ifelse(format_out == "matrix", "data.frame", format_out)
-  xx <- lapply(seq_len(n_scans), function(i){
-    xx <- read_varian_ms_block(f)
-    cbind(scan = i, xx)
-  })
-  dat <- do.call(rbind, xx)
-  dat <- convert_chrom_format(dat, format_out = format_out)
-  dat
+  b <- as.integer(readBin(f, "raw", n = flen - seek(f)))
+  cap <- length(b) %/% 2L # upper bound: each pair spans at least two bytes
+  sc <- integer(cap); mzv <- numeric(cap); iv <- numeric(cap)
+  k <- 0L; p <- 1L
+  for (s in seq_len(n_scans)){
+    mz <- 0
+    repeat {
+      lead <- b[p]
+      if (lead == 0L){
+        p <- p + 2L # two null bytes terminate the scan
+        break
+      }
+      d <- lead %/% 16L; len <- .sms_val_len[d + 1L]
+      v <- bitwAnd(lead, .sms_lead_mask[d + 1L])
+      if (len > 1L) for (j in seq_len(len - 1L)) v <- bitwShiftL(v, 8L) + b[p + j]
+      p <- p + len
+      mz <- mz + v # m/z is delta-encoded within each scan
+
+      lead <- b[p]
+      d <- lead %/% 16L; len <- .sms_val_len[d + 1L]
+      w <- bitwAnd(lead, .sms_lead_mask[d + 1L])
+      if (len > 1L) for (j in seq_len(len - 1L)) w <- bitwShiftL(w, 8L) + b[p + j]
+      p <- p + len
+
+      k <- k + 1L
+      sc[k] <- s; mzv[k] <- mz; iv[k] <- w
+    }
+  }
+  i <- seq_len(k)
+  dat <- cbind(scan = sc[i], mz = mzv[i]/10, intensity = iv[i])
+  convert_chrom_format(dat, format_out = format_out)
 }
 
-
-
-#' Read 'Varian' MS block
+#' Read 'Varian' InjectionLog metadata
+#'
+#' The InjectionLog section is a dump of an in-memory structure, most of which
+#' is stale pointers, but a handful of null-terminated strings sit at stable
+#' offsets from the start of the section. The offsets below were confirmed
+#' against the sample files available to us, which come from the same
+#' instrument and software build, so each field is validated before use and
+#' dropped if it does not look like text.
+#'
+#' Offset 2 holds the injection time as a little-endian Unix timestamp, which
+#' matches the acquisition start recorded in the MSData header.
+#'
+#' @param f Connection to a 'Varian' SMS file.
+#' @param offsets Directory returned by `read_varian_offsets`.
 #' @author Ethan Bass
 #' @noRd
-read_varian_ms_block <- function(f){
-  buffer <- list(0,0,0,0)
-  mat <- matrix(nrow = 1000, ncol = 2)
-  i = 1
-  buffer[[3]] <- readBin(f, "raw", n = 1)
-  while (buffer[[3]] != "00"){
-    for (j in c(1:2)){
-      hex1 <- extract_sign(buffer[[3]])
-      if (hex1 < 4){
-        buffer[[2]] <- strtoi(buffer[[3]], base = 16)
-      } else if (hex1 >= 4){
-        buffer[[4]] <- readBin(f, "raw", n = hex1 %/% 4)
-        buffer[[2]] <- decode_sms_val(c(buffer[[3]], buffer[[4]]))
-      }
-      if (j == 1){
-        buffer[[1]] <- buffer[[1]] + buffer[[2]]
-        mat[i,j] <- buffer[[1]]
-      } else if (j == 2){
-        mat[i,j] <- buffer[[2]]
-      }
-      buffer[[3]] <- readBin(f, "raw", n = 1)
-    }
-    i <- i + 1
+read_varian_injection_log <- function(f, offsets){
+  i <- which(offsets$name == "InjectionLog")
+  if (length(i) != 1) return(list())
+  n <- offsets$end[i] - offsets$start[i]
+  if (is.na(n) || n < 700) return(list())
+
+  seek(f, offsets$start[i])
+  b <- readBin(f, "raw", n = n)
+
+  fields <- c(sample_name = 6, control_software = 28,
+              control_software_version = 70, os_version = 112,
+              instrument = 196, method = 415, sample_list = 675)
+  out <- lapply(fields, function(off) read_null_terminated(b, off))
+  out$injection_time <- {
+    x <- readBin(b[3:6], "integer", size = 4, endian = "little")
+    if (is.na(x) || x <= 0) NA else as.POSIXct(x, origin = "1970-01-01",
+                                               tz = "UTC")
   }
-  readBin(f, "raw", n = 1) # skip null byte
-  mat <- mat[!is.na(mat[,1]),]
-  mat[,1] <- mat[,1]/10
-  mat
+  out[!vapply(out, is.null, logical(1))]
+}
+
+#' Extract a null-terminated string from a raw vector
+#'
+#' Returns `NULL` rather than a garbled string if the bytes at `offset` are not
+#' printable text, so that a file laid out differently than expected drops the
+#' field instead of reporting nonsense.
+#' @author Ethan Bass
+#' @noRd
+read_null_terminated <- function(b, offset, min_length = 1){
+  if (offset >= length(b)) return(NULL)
+  tail <- b[(offset + 1L):length(b)]
+  z <- which(tail == as.raw(0))[1]
+  if (is.na(z) || z <= min_length) return(NULL)
+  chars <- as.integer(tail[seq_len(z - 1L)])
+  if (any(chars < 32 | chars > 126)) return(NULL)
+  rawToChar(tail[seq_len(z - 1L)])
+}
+
+#' Read a little-endian 32-bit Unix timestamp
+#' @author Ethan Bass
+#' @noRd
+read_unix_time <- function(f){
+  x <- readBin(f, what = "integer", size = 4, endian = "little")
+  if (is.na(x) || x <= 0) return(NA)
+  as.POSIXct(x, origin = "1970-01-01", tz = "UTC")
 }
 
 #' Skip null bytes
@@ -240,60 +360,6 @@ skip_null_bytes <- function(f){
       break
     }
   }
-}
-
-#' Decode 'Varian SMS' value
-#' @author Ethan Bass
-#' @noRd
-decode_sms_val <- function(hex) {
-  num <- hex_to_int(hex)
-  d <- extract_sign(hex, num)
-
-  mask <- generate_mask(d)
-
-  result <- bitwAnd(num, mask)
-  return(result)
-}
-
-#' Generate mask for 'Varian' MS values
-#' @author Ethan Bass
-#' @noRd
-generate_mask <- function(d) {
-  # Define the mapping from leading digit to the number of bits
-  bit_map <- c(
-    '4' = 13, '5' = 13,
-    '6' = 14, '7' = 14,
-    '8' = 21, '9' = 21,
-    '10' = 22, '11' = 22,
-    '12' = 27, '13' = 27,
-    '14' = 28, '15' = 28 # predicted
-  )
-  n_bits <- bit_map[[as.character(d)]]
-  (2^n_bits) - 1
-}
-
-#' Extract leading digit from 'Varian' MS values
-#' @author Ethan Bass
-#' @noRd
-extract_sign <- function(hex, num) {
-  if (missing(num)){
-    num <- hex_to_int(hex)
-  }
-  # Calculate the number of value bits
-  value_bits <- 8*length(hex) - 4
-
-  # Extract the sign (leftmost 4 bits)
-  bitwAnd(bitwShiftR(num, n = value_bits), b = 0xF)
-}
-
-#' Translate hex (raw) to integer
-#' @noRd
-hex_to_int <- function(hex){
-  x <- 0
-  for (i in seq_along(hex)) {
-    x <- bitwOr(bitwShiftL(x, n = 8), as.integer(hex[i]))
-  }
-  x
 }
 
 #' Read 'Varian SMS' MSdata header
@@ -319,16 +385,14 @@ read_varian_msdata_header <- function(f){
   dac <- readBin(f, what = "integer", size = 2, endian = "little",
                  signed = FALSE)
 
+  # Acquisition start and end, as little-endian 32-bit Unix timestamps. The
+  # start matches the `startTimeStamp` OpenChrom writes for the same sample, and
+  # the interval between the two matches the span of the chromatogram.
+  acquisition_start <- read_unix_time(f)
+  acquisition_end <- read_unix_time(f)
+
   u1 <- readBin(f, what = "integer", size = 2, endian = "little",
                 signed = FALSE)
-
-  t2 <- readBin(f, what = "raw", n = 4, endian = "little")
-  t2 <- as.POSIXct(strtoi(paste(c(t2[2], t2[1], t2[3:4]), collapse = ""), 16),
-                   tz = "UTC")
-
-  t1 <- readBin(f, what = "raw", n = 4, endian = "little")
-  t1 <- as.POSIXct(strtoi(paste(c(t1[2], t1[1], t1[3:4]), collapse = ""), 16),
-                   tz = "UTC")
 
   u2 <- readBin(f, what = "integer", size = 2, endian = "little",
                 signed = FALSE)
@@ -400,34 +464,54 @@ read_varian_msdata_header <- function(f){
     i <- i + 1
   }
   readBin(f, what = "raw", n = 6)
-  mget(c("ion_time", "emission_current", "dac", "u1", "t1", "t2", "u2", "n_scan",
-  "max_ric_scan", "max_ric_val", "u3", "u4", "u5", "segment_metadata"))
+  mget(c("ion_time", "emission_current", "dac", "u1", "acquisition_start",
+  "acquisition_end", "u2", "n_scan", "max_ric_scan", "max_ric_val", "u3", "u4",
+  "u5", "segment_metadata"))
 }
 
 #' Read 'Varian SMS' offsets from header
+#'
+#' The DIRECTORY is a fixed-width table of 50-byte records running from byte 38
+#' to the end offset given by its own (first) record. Each record holds a 4-byte
+#' start offset, a 4-byte end offset, a 2-byte number, 8 bytes of timestamps and
+#' a 32-byte null-padded name. Unused slots are zero-filled.
+#'
+#' The records must be indexed by their fixed stride rather than by scanning for
+#' the null padding after each name: a start offset that is a multiple of 256
+#' begins with a null byte that is indistinguishable from padding, which shifts
+#' every field in that record by one byte (e.g. record 3 of `STRD15.SMS`).
+#'
 #' @param f Connection to a 'Varian SMS' file.
 #' @author Ethan Bass
 #' @noRd
 read_varian_offsets <- function(f){
-  seek(f, 28)
-  readBin(f, "raw", n = 10)
-  mat <- matrix(NA, 20, 4)
-  i <- 1
-  name <- ""
-  while (name != "InjectionLog"){
-    mat[i,1] <- readBin(f, "integer", size = 4)
+  seek(f, 0, origin = "end")
+  flen <- seek(f)
 
-    mat[i,2] <- readBin(f, "integer", size = 4)
-
-    mat[i,3] <- readBin(f, "integer", size = 2)
-
-    readBin(f, "raw", n = 8)
-    name <- readBin(f, "character")
-    mat[i,4] <- name
-    skip_null_bytes(f)
-    i <- i + 1
+  seek(f, 38) # 28-byte file header + 10 bytes
+  hdr <- readBin(f, "raw", n = 50) # the first record describes the DIRECTORY
+  dir_end <- readBin(hdr[5:8], "integer", size = 4, endian = "little")
+  if (is.na(dir_end) || dir_end <= 38){
+    stop("Could not read the directory of this 'Varian SMS' file.")
   }
-  mat <- mat[!is.na(mat[,1]),]
-  data.frame(start = as.numeric(mat[,1]), end = as.numeric(mat[,2]),
-             number = as.numeric(mat[,3]), name = mat[,4])
+  # don't trust a corrupt end offset to size the read
+  n <- min(dir_end, flen) %/% 50 - 38 %/% 50
+
+  seek(f, 38)
+  b <- readBin(f, "raw", n = n * 50)
+  o <- (seq_len(n) - 1L) * 50L
+
+  read_field <- function(idx, size){
+    vapply(o, function(p) readBin(b[p + idx], "integer", size = size,
+                                  endian = "little"), numeric(1))
+  }
+  name <- vapply(o, function(p){
+    nm <- b[p + 19:50]
+    z <- which(nm == as.raw(0))
+    if (length(z) && z[1] > 1) rawToChar(nm[seq_len(z[1] - 1L)]) else ""
+  }, character(1))
+
+  keep <- nzchar(name)
+  data.frame(start = read_field(1:4, 4)[keep], end = read_field(5:8, 4)[keep],
+             number = read_field(9:10, 2)[keep], name = name[keep])
 }
