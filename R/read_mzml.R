@@ -65,12 +65,20 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
         }
       })
     }
-    data <- data <- purrr::imap(data, function(x, h){
-      attach_metadata_minimal(x, format_out = format_out,
-                              data_format = ifelse(grepl("MS", h), "long",
-                                                   data_format),
-                              parser = "RaMS", source_file = path,
-                              source_file_format = "mzML", scale = NULL)
+    # dispatch through `attach_metadata` like every other format, so the
+    # file properties RaMS recovered end up as attributes where
+    # `extract_metadata` and `print.chrom_list` can see them
+    meta <- rams_meta_to_list(data[["metadata"]])
+    data <- purrr::imap(data, function(x, h){
+      x <- attach_metadata(x, meta = meta, format_in = "mzml",
+                           format_out = format_out,
+                           data_format = ifelse(grepl("MS", h), "long",
+                                                data_format),
+                           parser = "RaMS", source_file = path,
+                           source_file_format = "mzML", scale = NULL)
+      if (h == "metadata")
+        class(x) <- c("chromconverter_metadata", class(x))
+      x
       })
   } else if (parser == "mzR"){
     if (!requireNamespace("mzR", quietly = TRUE)) {
@@ -95,4 +103,25 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
     data <- convert_chrom_format(data, format_out = format_out)
   }
   data
+}
+
+#' Flatten the file metadata returned by RaMS into a named list
+#'
+#' `RaMS::grabMSdata` returns file-level properties as a one-row table rather
+#' than as the named list that [attach_metadata] expects, so this normalizes
+#' the shape before dispatch. Doing it here keeps the knowledge of RaMS's
+#' output in this file and lets the `"mzml"` branch read `meta$field` like
+#' every other format.
+#'
+#' Returns an empty list when no metadata was requested -- `what` need not
+#' include `"metadata"` -- in which case the branch fills every field with the
+#' `NA`s it already declares.
+#' @noRd
+rams_meta_to_list <- function(meta){
+  if (is.null(meta) || NROW(meta) == 0) return(list())
+  out <- lapply(as.list(meta), function(col){
+    val <- col[[1]]
+    if (length(val) == 0) NA else val
+  })
+  out[!vapply(out, function(v) all(is.na(v)), logical(1))]
 }

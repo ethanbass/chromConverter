@@ -88,6 +88,8 @@
 * Improved `print.chrom_list` formatting: datetimes are printed as formatted timestamps rather than raw epoch seconds; the header now shows values exactly as they appear in the table below it (sub-second digits were previously shown in one but not the other); the header wraps to the width of the console (a long field such as a Windows `method` path could previously produce a single line of up to 220 characters).
 * `print.chrom_list` no longer errors when none of the requested `cols` are present in the chromatograms, or when `n` is negative.
 * The default for the `n` argument of `print.chrom_list` is now `10`, matching its documented default (the code previously used `5`).
+* The file-level properties that `read_mzml` returns alongside the chromatograms are no longer counted as a chromatogram by `extract_metadata` and `print`. They remain available as the `metadata` element.
+* The file-level properties that `read_mzml` recovers are now also attached as attributes, so `extract_metadata` and `print.chrom_list` can see them. `run_datetime`, `time_range`, `time_unit` and `detector_range` previously came back as `NA` for mzML files even though 'RaMS' had parsed them, which also meant `read_chroms(sort_by = "acquisition_time")` could not order them. The `metadata` element is still returned in full, since it carries fields with no attribute equivalent.
 
 #### `read_chroms`
 

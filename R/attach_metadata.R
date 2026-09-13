@@ -623,6 +623,44 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               data_format = data_format,
               parser = parser,
               format_out = format_out)
+  }, "mzml" = {
+    # `meta` comes from `rams_meta_to_list`, which flattens the one-row table
+    # that `RaMS::grabMSdata` returns. `timestamp` is already a UTC `POSIXct`,
+    # so it is not routed through `convert_timestamp`. `time_unit` is fixed
+    # rather than read from the file: `RaMS:::grabSpectraRt` divides by 60
+    # unless the file says minutes, so the values it returns are always minutes
+    # whatever the file declared.
+    structure(x, sample_name = fs::path_ext_remove(basename(source_file)),
+              sample_id = NA,
+              file_version = NA,
+              file_type = NA,
+              instrument = NA,
+              detector = NA,
+              detector_id = NA,
+              detector_range = c(meta$lambda_lowest, meta$lambda_highest),
+              detector_y_unit = NA,
+              detector_x_unit = NA,
+              software = NA,
+              software_version = NA,
+              software_revision = NA,
+              method = NA,
+              batch = NA,
+              operator = NA,
+              run_datetime = meta$timestamp,
+              sample_injection_volume = NA,
+              sample_amount = NA,
+              time_range = c(meta$rt_start, meta$rt_end),
+              time_interval = NA,
+              time_unit = "Minutes",
+              intensity_multiplier = NA,
+              scaled = scale,
+              source_file = source_file,
+              source_file_format = source_file_format,
+              source_sha1 = digest::digest(source_file, algo = "sha1",
+                                           file = TRUE),
+              data_format = data_format,
+              parser = parser,
+              format_out = format_out)
   }, "default" = {
     structure(x, instrument = meta$Instrument,
               detector = NA,

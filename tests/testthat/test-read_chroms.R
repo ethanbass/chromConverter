@@ -625,3 +625,42 @@ test_that("read_chroms sorts and names nested samples correctly", {
   expect_equal(names(z), c("STRD15", "DCM1"))
   expect_true(is.matrix(z[[1]]))
 })
+
+test_that("mzML metadata is attached as attributes, not just returned as a slot", {
+  # RaMS returns file-level properties as a `metadata` table rather than as
+  # attributes, so `extract_metadata` and `print.chrom_list` used to report
+  # `NA` for fields that had in fact been parsed
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  wide <- read_chroms(test_path("testdata/dad1.uv"),
+                      format_in = "chemstation_uv", parser = "chromconverter",
+                      progress_bar = FALSE)[[1]]
+  path <- write_mzml(wide, path_out = tmp, force = TRUE, show_progress = FALSE)
+
+  lst <- read_chroms(path, format_in = "mzml", progress_bar = FALSE)
+  dad <- lst[[1]]$DAD
+
+  # mapped from the RaMS `metadata` table
+  expect_s3_class(attr(dad, "run_datetime"), "POSIXct")
+  expect_equal(attr(dad, "run_datetime"), lst[[1]]$metadata$timestamp[[1]])
+  expect_equal(attr(dad, "time_unit"), "Minutes")
+  expect_equal(attr(dad, "detector_range"),
+               c(lst[[1]]$metadata$lambda_lowest[[1]],
+                 lst[[1]]$metadata$lambda_highest[[1]]))
+
+  # visible through the attribute-based metadata API
+  # one row per chromatogram in the list, all carrying the mapped values
+  meta <- extract_metadata(lst)
+  expect_false(any(is.na(meta$run_datetime)))
+  expect_equal(unique(meta$time_unit), "Minutes")
+
+  # the slot is still returned in full
+  expect_true("metadata" %in% names(lst[[1]]))
+  expect_true(all(c("n_spectra", "ms_levels", "centroided", "polarity") %in%
+                    names(lst[[1]]$metadata)))
+
+  # and asking for a stream without metadata must still work
+  expect_named(read_mzml(path, what = "TIC"), "TIC")
+})
