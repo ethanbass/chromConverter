@@ -151,7 +151,8 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
   allowed_formats <- list(openchrom = c("msd", "csd", "wsd"),
                           chromconverter = c("agilent_d", "agilent_dx",
                                              "agilent_rslt", "asm",
-                                             "cdf", "chemstation_csv",
+                                             "cdf", "chemstation",
+                                             "chemstation_csv",
                                              "chemstation_ch", "chemstation_fid",
                                              "chemstation_uv", "chromeleon_uv",
                                              "chromatotec",
@@ -359,6 +360,22 @@ find_files <- function(paths, pattern){
     }
     files
   }))
+}
+
+#' Create a private temporary directory
+#'
+#' Returns a uniquely-named directory inside the session temp directory, so that
+#' callers can `unlink` it on exit without deleting `tempdir()` itself. R does
+#' not recreate `tempdir()`, so removing it breaks every later `tempfile()` in
+#' the session.
+#' @param name Optional path to the source file, used to label the directory.
+#' @noRd
+temp_directory <- function(name = NULL){
+  if (!is.null(name)){
+    name <- gsub("[^A-Za-z0-9._-]", "_", fs::path_ext_remove(basename(name)))
+  }
+  fs::dir_create(fs::file_temp(paste(c("chromConverter", name, ""),
+                                     collapse = "_")))
 }
 
 #' Set temp directory

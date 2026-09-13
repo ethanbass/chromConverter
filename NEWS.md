@@ -3,28 +3,27 @@
 ### New features
 
 * Added `read_agilent_rslt` function to read whole sequence of files from OpenLab and automatically attach corresponding metadata from the `acaml` file.
-* `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
 * Added `sort_by` argument to `read_chroms` to control chromatogram order. Options are "none" (default), "acquisition_time" (using `run_datetime` from metadata), and "file_time" (using file modification time). The default will change to "acquisition_time" in a future release.
 * Added a `detector` argument to `extract_metadata` to select which detectors to include (e.g. `detector = "UV"` or `detector = c("UV", "MS")`), matched case-insensitively against each chromatogram's `detector` attribute. This is useful for lists containing more than one detector per sample, such as those returned by the `rainbow` parser.
 * Added a `bin_width` argument to `call_rainbow` as an alternative to `precision`, for m/z grids that are not a power of ten (e.g. `bin_width = 0.5`). `precision` is unchanged and remains the default.
-* Added a `signal_descriptor` metadata field (e.g. `"DAD1A,Sig=210,4 Ref=off"` or `"FID1A, Front Signal"`), which is attached to every type of 2D 'Agilent' stream that records one, rather than only to versions 179 and 181.
 
 ### Improved handling of Python dependencies
 
-* chromConverter is now more robust when you are offline. Python is only started when a parser that needs it (`rainbow`, `olefile` or `Aston`) is actually called, so the formats read by the internal parsers no longer require an internet connection at all. When Python is needed and the package index can't be reached, chromConverter now falls back on a previously cached environment instead of failing.
+* chromConverter is now more robust when you are offline. Python is only started when a parser that needs it (`rainbow`, `olefile` or `Aston`) is actually called, so the formats read by the internal parsers no longer require an internet connection. When Python is needed and the package index can't be reached, chromConverter now falls back on a previously cached environment instead of failing.
 * Python packages are now requested only for the parser you actually call, so using the `rainbow` or `olefile` parsers no longer installs the 'Aston' requirements or constrains which version of `scipy` you can have.
 * chromConverter no longer creates Python module objects in your global environment when the package is loaded.
 * Fixed `configure_python_environment` so it accepts the `parser` argument it is called with, and removed its interactive prompts, which failed in non-interactive sessions.
 
 ### Performance
 
-* Refactored internal 'Agilent' parsers for increased speed (~3.5-30x for the delta-encoded formats). The per-value `readBin()` loops used to decode them have been replaced by a single bulk read followed by vectorized decoding, which returns exactly the same values. For example, a 10.8 MB 'ChemStation' version 31 `.uv` file went from ~9 s to ~0.57 s.
+* Refactored internal 'Agilent' parsers for increased speed through vectorization of byte operations (~3.5-30x for the delta-encoded formats).  For example, a 10.8 MB 'ChemStation' version 31 `.uv` file went from ~9 s to ~0.57 s.
 * Refactored 'Shimadzu' binary parsers for increased speed (7-55x) through vectorization of byte operations. Reading MS1 scans from a 40 MB `.qgd` file went from ~56 s to ~1 s, and reading a PDA stream from an `.lcd` file went from ~7 s to ~1 s.
 * Refactored `read_varian_sms` for increased speed (~8x) through vectorization. Reading `STRD15.SMS` (2.4 MB, 935k MS1 rows) drops from ~13 s to ~1.7 s. The stream is also bounded by the end of the `MSData` section rather than the end of the file, which reduced peak memory requirements for files carrying a large tail of peak tables and results.
 * The temporary files that are extracted from 'Shimadzu' OLE containers are now deleted once they have been read, instead of accumulating in the session's temporary directory until R exits. This matters most when converting many files at once.
 
 ### Metadata field changes
 
+* `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
 * `detector_range` is now reserved for the numeric wavelength range recorded by `.uv` files. For 'ChemStation' versions 30 and 130 the signal descriptor was previously reported in this field, and is now reported as `signal_descriptor`.
 * The `detector` field is now `NA` for 'ChemStation' `.ch` files. These files do not record a detector type; the field previously reported the detector module, duplicating `detector_id`.
 * The acquisition time of 'Thermo' RAW files is now named `run_datetime`, like every other format, rather than `run_date`.
@@ -38,17 +37,23 @@
 ### Bug fixes and other minor changes
 
 * Fixed the `rainbow` parser, which raised `read() no longer takes precision` on every call once `rainbow-api` v1.5.0 was released. v1.5.0 split `precision` into `bin_width` (the m/z grid, in daltons) and `display_precision` (label rounding, in decimals); chromConverter now derives both from `precision`, so the argument and the data it returns are unchanged. v1.5.0 is now the minimum required version.
+* String metadata read from 'Agilent ChemStation' and 'Shimadzu' files is now decoded as Latin-1 and stripped of control characters. Previously these fields could contain bytes that made the resulting string invalid in the session encoding, so `nchar()` and `toupper()` failed on them and `grepl()` could not match them. Accented characters in a path or sample name are now preserved rather than mangled.
+* Fixed a bug where the `thermoraw`, `openchrom`, `agilent_dx` and `agilent_amx` parsers deleted the whole session temporary directory on exit, instead of just the files they created. This behavior could potentially create conflicts with other packages. Each call now gets its own directory inside the session temp directory which is cleaned up on exit.
+* 'Shimadzu' OLE containers are now closed as soon as they have been read. Previously the contents of the last stream read were also kept in memory until R exited, and file handles were released only when garbage collection got around to them.
+* Fixed a bug on 'Windows' causing paths with backslashes to be rejected on Windows by the 'Shimadzu' binary parsers.
+* The 'OpenChrom' batch file is now deleted after the conversion, instead of accumulating in the export directory.
 
 #### 'Agilent'
 
 * Fixed missing `detector_id` for 'ChemStation' version 130 files.
 * Added `sample_position` metadata field for 'ChemStation' 179 files (`.ch` and `.it`).
 * The acquisition time of 'Agilent MassHunter' files is now converted to `POSIXct` instead of being attached as an unparsed string, which `extract_metadata` reported as `NA`.
+* Fixed a bug causing `read_agilent_dx`, `read_agilent_amx` and `read_agilent_rslt` to fail when `path_out` was supplied.
 
 #### 'Shimadzu'
 
 * Fixed `read_shimadzu_lcd` so it can return PDA data in long format. `read_shimadzu_lcd(what = "pda", data_format = "long")` previously failed with an error about a missing `lambda` column, because the reshaping step was called with the wrong target format.
-
+* Fixed export of OLE streams to a path containing `~`, which is not expanded by Python.
 
 #### 'Varian' SMS
 

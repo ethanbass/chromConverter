@@ -113,7 +113,7 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks",
                    "peaks" = "Peak Table|PT")
     selected_streams <- streams[grep(what, streams)]
     sizes <- sapply(selected_streams, function(x){
-      ole$get_size(paste0(x, collapse = "/"))})
+      ole_stream_size(ole, x)})
     if (boolean){
       return(any(sizes > min_size))
     } else{

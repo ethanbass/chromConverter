@@ -67,7 +67,7 @@ call_openchrom <- function(files, path_out = NULL, format_in,
     `csd` for flame ionization (FID), or `wsd` for DAD/UV data.")}
   export_format <- match.arg(export_format, c("mzml", "csv", "cdf", "animl"))
   if (is.null(path_out)){
-    path_out <- tempdir()
+    path_out <- temp_directory()
     on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
   } else{
     path_out <- fs::path_expand(path_out)
@@ -79,6 +79,7 @@ call_openchrom <- function(files, path_out = NULL, format_in,
   path_xml <- write_openchrom_batchfile(files = files, path_out = path_out,
                                         format_in = format_in,
                                         export_format = export_format)
+  on.exit(unlink(path_xml), add = TRUE)
   system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml),
          ignore.stdout = !verbose, ignore.stderr = !verbose)
   new_files <- fs::path(path_out,

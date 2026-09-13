@@ -41,7 +41,7 @@ read_thermoraw <- function(path, path_out = NULL,
     stop("File not found. Check path.")
   }
   if (is.null(path_out)){
-    path_out <- tempdir()
+    path_out <- temp_directory(path)
     on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
   } else{
     path_out <- fs::path_expand(path_out)
@@ -82,6 +82,12 @@ read_thermoraw <- function(path, path_out = NULL,
     meta <- do.call(rbind, meta)
     rownames(meta) <- meta[,1]
     meta <- as.list(meta[,-1])
+    # attach to the individual chromatograms as well as to the container:
+    # `read_chroms` sorts on the container's `run_datetime`, while
+    # `extract_metadata` and `print` see only the leaves.
+    x <- lapply(x, attach_metadata, meta = meta, format_in = metadata_format,
+                format_out = format_out, data_format = "long",
+                source_file = path)
     x <- attach_metadata(x, meta, format_in = metadata_format,
                          format_out = format_out, data_format = "long",
                          source_file = path)

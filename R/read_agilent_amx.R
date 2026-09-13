@@ -88,8 +88,10 @@ read_agilent_amx <- function(path, what = c("dad", "pump", "comp", "sampler"),
                                files$Name, value = TRUE), files_sel)
   what <- c("metadata", what)
   if (is.null(path_out)) {
-    tmp <- tempdir()
+    tmp <- temp_directory(path)
     on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+  } else {
+    tmp <- fs::path_expand(path_out)
   }
   path_out <- fs::path(tmp, basename(path))
   fs::dir_create(path_out, force = TRUE)

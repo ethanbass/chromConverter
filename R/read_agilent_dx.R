@@ -43,8 +43,10 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
     what <- what[vapply(files, length, FUN.VALUE = numeric(1)) > 0]
   }
   if (is.null(path_out)) {
-    tmp <- tempdir()
+    tmp <- temp_directory(path)
     on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
+  } else {
+    tmp <- fs::path_expand(path_out)
   }
   path_out <- fs::path(tmp, basename(path))
   fs::dir_create(path_out, force = TRUE)
