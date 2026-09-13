@@ -2,8 +2,20 @@
 # helper function to test equality
 elementwise.all.equal <- Vectorize(function(x, y, ...) {isTRUE(all.equal(x, y, ...))})
 
-# helper function to skip tests if we don't have the right python dependencies
-skip_if_missing_dependencies <- function(reqs = c("scipy","numpy", "aston", "pandas", "olefile")) {
+# helper to set (or, with `NA`, unset) an environment variable, returning its
+# previous value so a test can restore it with `on.exit`.
+set_env_var <- function(name, value){
+  old <- Sys.getenv(name, unset = NA)
+  if (is.na(value)){
+    Sys.unsetenv(name)
+  } else {
+    do.call(Sys.setenv, stats::setNames(list(value), name))
+  }
+  invisible(old)
+}
+
+# helper function to skip tests if we don't have the right python dependencies.
+skip_if_missing_dependencies <- function(reqs = c("numpy", "olefile")) {
   have_reqs <- sapply(reqs, reticulate::py_module_available)
   if (mean(have_reqs) < 1)
     skip(paste("required packages", reqs[!have_reqs],

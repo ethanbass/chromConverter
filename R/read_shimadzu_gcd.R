@@ -48,10 +48,7 @@ read_shimadzu_gcd <- function(path, what = "chroms",
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, "chromconverter" = "shimadzu_lcd",
                           "raw")
-  olefile_installed <- reticulate::py_module_available("olefile")
-  if (!olefile_installed){
-    configure_python_environment(parser = "olefile")
-  }
+  check_py_module("olefile")
 
   if (read_metadata){
     meta <- read_sz_file_properties(path)

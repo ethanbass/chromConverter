@@ -264,10 +264,6 @@ read_chroms <- function(paths,
                                                    read_metadata = read_metadata,
                                                    metadata_format = metadata_format,
                                                    ...),
-                        "aston" = partial(uv_converter, format_out = format_out,
-                                          data_format = data_format,
-                                          read_metadata = read_metadata,
-                                          metadata_format = metadata_format),
                         "entab" = entab_parser,
                         "rainbow" = rainbow_parser)
   } else if (format_in %in% c("chemstation_ms", "chemstation_2")){
@@ -381,10 +377,6 @@ read_chroms <- function(paths,
                          read_metadata = read_metadata, ...)
   } else {
     converter <- switch(parser,
-                        "aston" = partial(trace_converter, format_out = format_out,
-                                          data_format = data_format,
-                                          read_metadata = read_metadata,
-                                          metadata_format = metadata_format),
                         "entab" = entab_parser
     )
   }

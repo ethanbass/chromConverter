@@ -30,15 +30,18 @@ TRUE.}
 or \code{raw}.}
 }
 \value{
-A chromatogram in the format specified by the \code{format_out} and
-\code{data_format} arguments.
+There is no return value. Calling this function is an error.
 }
 \description{
-Converts a single chromatogram from ChemStation \code{.uv} format to R
-\code{data.frame}.
+Defunct. Use \link{read_chemstation_uv} instead.
 }
 \details{
-Uses the \href{https://github.com/bovee/aston}{Aston} file parser.
+This function wrapped 'Aston''s generic \code{TraceFile} reader, which imports
+\code{scipy.io.netcdf.NetCDFFile}. That symbol was removed in scipy v1.14, so
+\code{TraceFile} cannot be used without pinning \code{scipy < 1.14} for the whole
+Python session. Since \code{.uv} files are read by chromConverter's internal
+parser, \link{read_chemstation_uv}, this wrapper was retired rather than
+constrain scipy for everyone.
 }
 \seealso{
 Other external parsers:
@@ -49,3 +52,4 @@ Other external parsers:
 \code{\link[=sp_converter]{sp_converter()}}
 }
 \concept{external parsers}
+\keyword{internal}

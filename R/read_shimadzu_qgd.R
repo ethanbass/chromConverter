@@ -56,10 +56,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format, "chromconverter" = "shimadzu_lcd",
                             "raw")
-  olefile_installed <- reticulate::py_module_available("olefile")
-  if (!olefile_installed){
-    configure_python_environment(parser = "olefile")
-  }
+  check_py_module("olefile")
 
   if ("TIC" %in% what){
     TIC <- read_qgd_tic(path, format_out = format_out,

@@ -1,20 +1,21 @@
 #' Export OLE stream
-#' This function is called internally by `read_shimadzu_lcd`.
-#' Use olefile to export te specified stream.
+#' This function is called internally by shimadzu binary parsers.
+#' Use olefile to export the specified stream.
 #' @param path Path to ole file.
 #' @author Ethan Bass
 #' @noRd
 
 export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
                           verbose = FALSE){
+  check_py_module("olefile")
   reticulate::py_run_string('import olefile')
   reticulate::py_run_string(paste0('ole = olefile.OleFileIO("', path, '")'))
   python_stream <- paste0("[", paste(paste0("'", stream, "'"), collapse = ', '),"]")
   stream_exists <- reticulate::py_eval(paste0("ole.exists(", python_stream, ")"))
   if (!stream_exists){
     if (verbose){
-      warning(sprintf("The stream %s could not be found.",
-              sQuote(python_stream)), immediate. = TRUE)
+      warning(paste0("The stream ", sQuote(python_stream), " could not be found."),
+              immediate. = TRUE)
     }
     return(NA)
   } else{
@@ -54,7 +55,7 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
                           boolean = FALSE,
                           min_size = 1200){
   what <- match.arg(what, c("pda", "chroms", "tic", "peaks", ""))
-  olefile <- reticulate::import("olefile")
+  olefile <- py_import("olefile")
   ole <- olefile$OleFileIO(path)
   if (what == "pda"){
     pda_exists <- ole$get_size("PDA 3D Raw Data/3D Raw Data") > min_size
@@ -85,7 +86,7 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks", ""),
 
 check_stream <- function(path, stream = NULL,
                           boolean = FALSE, min_size = 552){
-  olefile <- reticulate::import("olefile")
+  olefile <- py_import("olefile")
   ole <- olefile$OleFileIO(path)
   python_stream <- paste0(stream, collapse = "/")
   pda_exists <- tryCatch(ole$get_size(python_stream),
@@ -100,7 +101,7 @@ check_stream <- function(path, stream = NULL,
 
 ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
                              min_size = 552){
-  olefile <- reticulate::import("olefile")
+  olefile <- py_import("olefile")
   ole <- olefile$OleFileIO(path)
   streams <- ole$listdir()
   if (!is.null(pattern)){

@@ -78,10 +78,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
   what <- match.arg(tolower(what), c("pda", "chroms", "tic", "peak_table"),
                     several.ok = TRUE)
 
-  olefile_installed <- reticulate::py_module_available("olefile")
-  if (!olefile_installed){
-    configure_python_environment(parser = "olefile")
-  }
+  check_py_module("olefile")
   if (any(what == "chroms")){
     chroms <- read_sz_lcd_2d(path, format_out = format_out,
                              data_format = data_format,
@@ -361,7 +358,7 @@ read_sz_tic <- function(path, format_out = "data.frame",
     return(NULL)
   }
   f <- file(path_tic, "rb")
-  on.exit(close(f))
+  on.exit(close(f), add = TRUE)
   dat <- decode_sz_tic(f)
   if (data_format == "wide"){
     row.names(dat) <- dat[, "rt"]

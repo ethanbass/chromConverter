@@ -17,7 +17,8 @@ call_rainbow(
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
   precision = 1,
-  sparse = TRUE
+  sparse = TRUE,
+  bin_width = NULL
 )
 }
 \arguments{
@@ -34,8 +35,8 @@ call_rainbow(
 \item{by}{How to order the list that is returned. Either \code{detector} (default)
 or \code{name}.}
 
-\item{what}{What types of data to return (e.g. \code{MS}, \code{UV}, \code{CAD},
-\code{ELSD}). This argument only applies if \code{by == "detector"}.}
+\item{what}{What types of data to return (e.g. \code{MS}, \code{UV}, \code{CAD}, \code{ELSD}).
+This argument only applies if \code{by == "detector"}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -45,11 +46,17 @@ or \code{raw}.}
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
 
-\item{precision}{Number of decimals to round mz values. Defaults to 1.}
+\item{precision}{Number of decimals to round mz values. Defaults to \code{1}.
+Ignored if \code{bin_width} is supplied.}
 
 \item{sparse}{Logical. Whether to return MS data in sparse format (excluding
 zeros). Defaults to \code{TRUE}. Applies only when data are requested in \code{long}
 format.}
+
+\item{bin_width}{Width of the m/z grid, in daltons. An alternative to
+\code{precision} for grids that are not a power of ten (e.g. \code{0.5}). Defaults to
+\code{NULL}, in which case the grid is derived from \code{precision} as
+\code{10^-precision}.}
 }
 \value{
 Returns a (nested) list of matrices or \code{data.frame}s according to

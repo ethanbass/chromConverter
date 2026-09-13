@@ -702,3 +702,42 @@ test_that("read_agilent_amx works correctly, part 3", {
   expect_equal(method3$pump$gradient$flow_mL_min,
                c(0.4,0.5,0.5,0.5,0.55,0.55,0.6,0.6,0.7,0.7))
 })
+test_that("`precision` and `bin_width` control the m/z grid from 'rainbow'", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_dependencies("rainbow")
+
+  path <- system.file("chemstation_MSD.MS",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  rb <- function(...) call_rainbow(path, format_in = "chemstation_ms", ...)
+
+  # `precision = N` is the same grid as `bin_width = 10^-N`
+  nominal <- rb(precision = 0)
+  expect_equal(dim(nominal), c(2534L, 841L))
+  expect_identical(rb(bin_width = 1), nominal)
+  expect_identical(rb(bin_width = 0.1), rb(precision = 1))
+
+  # `bin_width` reaches grids that `precision` cannot express
+  half <- rb(bin_width = 0.5)
+  expect_equal(dim(half), c(2534L, 1520L))
+  expect_gt(ncol(half), ncol(nominal))
+  expect_true(any(grepl("\\.5$", colnames(half))))
+
+  # binning re-distributes intensity without losing any of it
+  expect_equal(sum(half), sum(nominal))
+
+  # labels are written exactly, rather than rounded onto the coarser grid
+  quarter <- rb(bin_width = 0.25)
+  expect_equal(dim(quarter), c(2534L, 2548L))
+  expect_true("102.75" %in% colnames(quarter))
+  expect_false(anyDuplicated(colnames(quarter)) > 0)
+  expect_false(anyDuplicated(colnames(half)) > 0)
+
+  # `bin_width` reaches the parser through `read_chroms`
+  x <- read_chroms(path, parser = "rainbow", bin_width = 0.5,
+                   progress_bar = FALSE)[[1]]
+  expect_equal(dim(x), dim(half))
+  expect_equal(colnames(x), colnames(half))
+})

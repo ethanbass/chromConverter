@@ -152,11 +152,13 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                              "shimadzu_qgd", "shimadzu_lcd",
                                              "varian_sms",
                                              "waters_arw", "waters_raw",
-                                             "waters_chro"),
-                          aston = c("chemstation_uv", "chemstation_131",
-                                    "masshunter_dad", "other"),
-                          entab = c("chemstation_ms", "chemstation_mwd",
-                                    "chemstation_ch",
+                                             "waters_chro", "csv"),
+                          # 'Aston' is deprecated. `sp_converter` is the only
+                          # remaining binding (see `R/call_aston.R`), so
+                          # `masshunter_dad` is the only format it can read.
+                          aston = "masshunter_dad",
+                          entab = c("chemstation", "chemstation_ms",
+                                    "chemstation_mwd", "chemstation_ch",
                                     "chemstation_30", "chemstation_31",
                                     "chemstation_131", "chemstation_fid",
                                     "chemstation_uv", "masshunter_dad",
@@ -169,12 +171,9 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
                                       "agilent_d"),
                           thermoraw = c("thermoraw")
   )
+  all_formats <- allowed_formats
   if (find){
-    if (!reticulate::py_module_available("aston")){
-      allowed_formats <-
-        allowed_formats[-which(names(allowed_formats) == "aston")]
-    }
-    if (!reticulate::py_module_available("rainbow")){
+    if (!py_module_maybe_available("rainbow")){
       allowed_formats <-
         allowed_formats[-which(names(allowed_formats) == "rainbow")]
     }
@@ -182,25 +181,23 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
       allowed_formats <-
         allowed_formats[-which(names(allowed_formats) == "entab")]
     }
-    possible_parsers <- names(allowed_formats)[grep(format_in, allowed_formats)]
+    possible_parsers <- parsers_for_format(format_in, allowed_formats)
     if (length(possible_parsers) > 1){
       if (format_in == "waters_raw"){
         possible_parsers <- c("rainbow")
       } else{
-        possible_parsers <- possible_parsers[match(
-          c("thermoraw", "entab", "chromconverter", "rainbow", "aston"),
-          possible_parsers)]
-        if (any(is.na(possible_parsers))){
-          possible_parsers <- possible_parsers[-which(is.na(possible_parsers))]
-        }
+        possible_parsers <- rank_parsers(possible_parsers)
       }
     }
     parser <- possible_parsers[1]
+    if (length(parser) == 0 || is.na(parser)){
+      stop_no_parser(format_in, all_formats)
+    }
   } else{
     if (!(format_in %in% allowed_formats[[tolower(parser)]])){
       stop("Mismatched arguments!", "\n\n", "The ",
            paste0(sQuote(format_in), " format can be converted using the following parsers: ",
-        paste(sQuote(names(allowed_formats)[grep(format_in, allowed_formats)]),
+        paste(sQuote(parsers_for_format(format_in, allowed_formats)),
               collapse = ", "), ". \n \n",
         "The ", sQuote(parser), " parser can take the following formats as inputs: \n",
                                     paste(sQuote(allowed_formats[[parser]]),
@@ -214,6 +211,53 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
          call. = FALSE)
   }
   return(parser)
+}
+
+#' Which parsers can read a format
+#'
+#' Matches `format_in` exactly. (This was previously a `grep` over the format
+#' list coerced to strings, which matched substrings: `"chemstation"` picked up
+#' every parser listing a `chemstation_*` format, so auto-detection could select
+#' a parser that `check_parser` would reject if it were requested explicitly.)
+#' @noRd
+parsers_for_format <- function(format_in, formats){
+  names(formats)[vapply(formats, function(x) format_in %in% x, logical(1))]
+}
+
+#' Order candidate parsers by preference
+#'
+#' Parsers not named here are dropped. 'aston' is deliberately last: it is
+#' deprecated, so it is only selected when nothing else can read the format
+#' (in practice, `masshunter_dad` when the 'entab' package is not installed).
+#' @noRd
+rank_parsers <- function(possible_parsers){
+  priority <- c("thermoraw", "entab", "chromconverter", "rainbow", "aston")
+  possible_parsers[stats::na.omit(match(priority, possible_parsers))]
+}
+
+#' Error for formats with no usable parser
+#'
+#' Called by `check_parser` when automatic parser detection comes up empty,
+#' which happens when every parser that could read `format_in` is unavailable
+#' (e.g. `other`, which is only supported by the 'entab' parser).
+#' @noRd
+stop_no_parser <- function(format_in, all_formats){
+  candidates <- parsers_for_format(format_in, all_formats)
+  if (length(candidates) == 0){
+    stop(sprintf("The %s format is not supported by chromConverter.",
+                 sQuote(format_in)), call. = FALSE)
+  }
+  msg <- sprintf(paste0("No parser is available to read the %s format.\n",
+                        "This format can be read by the following ",
+                        "parser(s): %s."),
+                 sQuote(format_in), paste(sQuote(candidates), collapse = ", "))
+  if ("entab" %in% candidates && !requireNamespace("entab", quietly = TRUE)){
+    msg <- paste0(msg, "\n\nThe entab R package must be installed ",
+                  "separately:\n",
+                  "  install.packages('entab', ",
+                  "repos='https://ethanbass.github.io/drat/')")
+  }
+  stop(msg, call. = FALSE)
 }
 
 #' Remove unicode characters
@@ -380,24 +424,30 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 
 #' Configure python environment
 #'
-#' Configures python virtual environment or conda environment for parsers that
-#' have python dependencies, according to the value of `what`. While this
-#' should not be necessary in most cases starting with reticulate `v1.41.0`,
-#' this function can be used to create a dedicated chromConverter environment.
+#' Creates a dedicated python virtual environment (or conda environment) with
+#' the packages required by the parsers that have python dependencies. This
+#' should not be necessary in most cases, since (starting with reticulate
+#' `v1.41.0`) chromConverter declares its python requirements with
+#' [reticulate::py_require] and they are provisioned automatically the first
+#' time a python parser is called. It can still be useful if you need a
+#' persistent environment, e.g. to work offline or to avoid re-resolving
+#' packages.
 #'
 #' @name configure_python_environment
-#' @param envname The name of, or path to, a Python virtual environment.
-#' @param what What kind of virtual environment to create. A python virtual
+#' @param what What kind of environment to create. A python virtual
 #' environment (`"venv"`) or a conda environment (`"conda"`).
+#' @param envname The name of, or path to, a Python virtual environment.
+#' @param parser Which parser to install requirements for. Either `"all"`
+#' (default), `"aston"`, `"rainbow"` or `"olefile"`.
 #' @param python Argument to `reticulate::virtualenv_create`, specifying
 #' the path to a Python interpreter.
 #' @param ... Additional arguments to [reticulate::virtualenv_create] or
 #' [reticulate::conda_create] according to the value of `what`.
-#' @return There is no return value.
+#' @return Returns the name of the environment (invisibly).
 #' @section Side effects:
-#' Creates and configures either  a python virtual environment or conda
-#' environment (according to the value of `what`) with all the packages
-#' required for running chromConverter.
+#' Creates and configures either a python virtual environment or conda
+#' environment (according to the value of `what`) with the packages required
+#' for running the specified chromConverter parsers.
 #' @author Ethan Bass
 #' @import reticulate
 #' @keywords internal
@@ -406,48 +456,50 @@ split_at <- function(x, pos) unname(split(x, cumsum(seq_along(x) %in% pos)))
 
 configure_python_environment <- function(what = c("venv", "conda"),
                                          envname = "chromConverter",
-                                         python = reticulate::virtualenv_starter(),
-                                         ...){
+                                         parser = c("all", "aston", "rainbow",
+                                                    "olefile"),
+                                         python = NULL, ...){
   what <- match.arg(what, c("venv", "conda"))
-  packages <- c("Aston", "olefile", "pandas", "rainbow-api", "scipy")
-  install <- FALSE
-  if (!dir.exists(reticulate::miniconda_path())){
-    install <- readline(sprintf(
-      "It is recommended to install miniconda in your R library to use %s parsers. Install miniconda now? (y/n)"))
-    if (install %in% c('y', "Y", "YES", "yes", "Yes")){
-      reticulate::install_miniconda()
-    }
-  }
+  parser <- match.arg(tolower(parser), c("all", "aston", "rainbow", "olefile"))
+  packages <- get_parser_reqs(parser)
   check_name <- switch(what, "venv" = reticulate::virtualenv_exists,
                        "conda" = reticulate::condaenv_exists)
-  exists <- check_name(envname)
-  if (exists){
-    stop(sprintf('The %s environment, "%s" already exists. To create a new environment,
-                 please remove the existing environment first using `%s("%s")`.',
-                 switch(what,"venv" = "virtual", "conda" = "conda"), envname,
+  if (check_name(envname)){
+    stop(sprintf(paste0('The %s environment, "%s", already exists. To create ',
+                        'a new environment, please remove the existing one ',
+                        'first using `%s("%s")`.'),
+                 switch(what, "venv" = "virtual", "conda" = "conda"), envname,
                  switch(what, "venv" = "reticulate::virtualenv_remove",
                         "conda" = "reticulate::conda_remove"),
-                 envname))
+                 envname), call. = FALSE)
   }
   if (what == "venv"){
+    if (is.null(python)){
+      python <- reticulate::virtualenv_starter()
+    }
     reticulate::virtualenv_create(envname = envname, packages = packages,
                                   python = python, ...)
   } else if (what == "conda"){
-    reticulate::conda_create(envname = envname,
-                             packages = c("olefile", "pandas", "scipy"), ...)
-    reticulate::conda_install(envname = envname,
-                              packages=c("Aston", "rainbow-api"), pip = TRUE)
+    if (!reticulate::condaenv_exists() && !dir.exists(reticulate::miniconda_path())){
+      stop("No conda installation was found. Install one with ",
+           "`reticulate::install_miniconda()` or use `what = \"venv\"`.",
+           call. = FALSE)
+    }
+    conda_pkgs <- packages[grep("^(olefile|pandas|numpy)", packages)]
+    pip_pkgs <- setdiff(packages, conda_pkgs)
+    reticulate::conda_create(envname = envname, packages = conda_pkgs, ...)
+    if (length(pip_pkgs) > 0){
+      reticulate::conda_install(envname = envname, packages = pip_pkgs,
+                                pip = TRUE)
+    }
   }
-}
-
-#' Get required python packages for a parser
-#' @noRd
-get_parser_reqs <- function(parser){
-  switch(tolower(parser), "aston" = c("pandas", "scipy", "numpy", "Aston"),
-         "olefile" = c("olefile"),
-         "rainbow" = c("numpy", "rainbow-api"),
-         "all" = c("pandas", "scipy", "numpy", "Aston", "olefile",
-                   "numpy", "rainbow-api"))
+  message(sprintf(paste0('The "%s" environment was created. To use it, ',
+                         'restart R and call ',
+                         '`reticulate::use_%s("%s")` before loading ',
+                         'chromConverter.'),
+                  envname, switch(what, "venv" = "virtualenv",
+                                  "conda" = "condaenv"), envname))
+  invisible(envname)
 }
 
 #' Utility function to capitalize first letter of string

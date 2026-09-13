@@ -7,15 +7,19 @@
 configure_python_environment(
   what = c("venv", "conda"),
   envname = "chromConverter",
-  python = reticulate::virtualenv_starter(),
+  parser = c("all", "aston", "rainbow", "olefile"),
+  python = NULL,
   ...
 )
 }
 \arguments{
-\item{what}{What kind of virtual environment to create. A python virtual
+\item{what}{What kind of environment to create. A python virtual
 environment (\code{"venv"}) or a conda environment (\code{"conda"}).}
 
 \item{envname}{The name of, or path to, a Python virtual environment.}
+
+\item{parser}{Which parser to install requirements for. Either \code{"all"}
+(default), \code{"aston"}, \code{"rainbow"} or \code{"olefile"}.}
 
 \item{python}{Argument to \code{reticulate::virtualenv_create}, specifying
 the path to a Python interpreter.}
@@ -24,19 +28,23 @@ the path to a Python interpreter.}
 \link[reticulate:conda_create]{reticulate::conda_create} according to the value of \code{what}.}
 }
 \value{
-There is no return value.
+Returns the name of the environment (invisibly).
 }
 \description{
-Configures python virtual environment or conda environment for parsers that
-have python dependencies, according to the value of \code{what}. While this
-should not be necessary in most cases starting with reticulate \code{v1.41.0},
-this function can be used to create a dedicated chromConverter environment.
+Creates a dedicated python virtual environment (or conda environment) with
+the packages required by the parsers that have python dependencies. This
+should not be necessary in most cases, since (starting with reticulate
+\code{v1.41.0}) chromConverter declares its python requirements with
+\link[reticulate:py_require]{reticulate::py_require} and they are provisioned automatically the first
+time a python parser is called. It can still be useful if you need a
+persistent environment, e.g. to work offline or to avoid re-resolving
+packages.
 }
 \section{Side effects}{
 
-Creates and configures either  a python virtual environment or conda
-environment (according to the value of \code{what}) with all the packages
-required for running chromConverter.
+Creates and configures either a python virtual environment or conda
+environment (according to the value of \code{what}) with the packages required
+for running the specified chromConverter parsers.
 }
 
 \author{

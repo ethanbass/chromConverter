@@ -4,7 +4,26 @@
 
 * Added `read_agilent_rslt` function to read whole sequence of files from OpenLab and automatically attach corresponding metadata from the `acaml` file.
 * `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
-* Added `sort_by` argument to `read_chroms` to control chromatogram order. Options are "none" (default), "acquisition_time" (using run_datetime from metadata), and "file_time" (using file modification time). The default will change to "acquisition_time" in a future release.
+* Added `sort_by` argument to `read_chroms` to control chromatogram order. Options are "none" (default), "acquisition_time" (using `run_datetime` from metadata), and "file_time" (using file modification time). The default will change to "acquisition_time" in a future release.
+* Added a `bin_width` argument to `call_rainbow` as an alternative to `precision`, for m/z grids that are not a power of ten (e.g. `bin_width = 0.5`). `precision` is unchanged and remains the default.
+
+### Improved handling of Python dependencies
+
+* chromConverter is now more robust when you are offline. Python is only started when a parser that needs it (`rainbow`, `olefile` or `Aston`) is actually called, so the formats read by the internal parsers no longer require an internet connection at all. When Python is needed and the package index can't be reached, chromConverter now falls back on a previously cached environment instead of failing.
+* Python packages are now requested only for the parser you actually call, so using the `rainbow` or `olefile` parsers no longer installs the 'Aston' requirements or constrains which version of `scipy` you can have.
+* chromConverter no longer creates Python module objects in your global environment when the package is loaded.
+* Fixed `configure_python_environment` so it accepts the `parser` argument it is called with, and removed its interactive prompts, which failed in non-interactive sessions.
+
+
+### Deprecations
+
+* The `aston` parser is deprecated and will be removed in a future release. 'Aston' has been unmaintained since 2020. It is now used only by `sp_converter` to read 'Agilent MassHunter' `.sp` files (`format_in = "masshunter_dad"`), and `read_chroms` selects it automatically only as a last resort, when no other parser can read the file. Please use the internal chromConverter parsers or the `entab` parser (by the same author as 'Aston') instead.
+* `uv_converter` is now defunct; use `read_chemstation_uv` or the `entab` parser instead. The `aston` binding for `format_in = "other"` has also been removed; this format is still handled by the `entab` parser. Both relied on an 'Aston' reader that requires `scipy < 1.14`, which would otherwise constrain the Python environment for every user.
+* Deprecated `dat` argument in `read_chroms`. Instead, chrom_lists can be combined with `c()`.
+
+### Bug fixes and other minor changes
+
+* Fixed the `rainbow` parser, which raised `read() no longer takes precision` on every call once `rainbow-api` v1.5.0 was released. v1.5.0 split `precision` into `bin_width` (the m/z grid, in daltons) and `display_precision` (label rounding, in decimals); chromConverter now derives both from `precision`, so the argument and the data it returns are unchanged. v1.5.0 is now the minimum required version.
 * Added a `[.chrom_list` method so that subsetting a `chrom_list` preserves its class instead of dropping it to a plain `list`.
 * Added a `c.chrom_list` method so that combining `chrom_list` objects with `c()` preserves the class instead of dropping it to a plain `list`.
   
