@@ -477,7 +477,8 @@ test_that("read_peaklist can read `ChemStation` report files", {
                c("sample", "lambda", "rt", "width", "area", "height", "type"))
   expect_equal(attr(x, "fit"), "chemstation")
   expect_equal(attr(x, "class"), "peak_list")
-  x <- read_peaklist(path, format_in = "chemstation", data_format = "original")
+  x <- read_peaklist(path, format_in = "chemstation",
+                     peaktable_format = "original")
   expect_equal(class(x[[1]]), "list")
   expect_equal(class(x[[1]][[1]]), "data.frame")
   expect_equal(names(x[[1]]), c("254", "320", "360", "210", "230"))
@@ -490,6 +491,42 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(attr(x, "class"), "peak_list")
 })
 
+test_that("deprecated `data_format` argument to peak list readers still works", {
+  path <- test_path("testdata/RUTIN2.D/")
+  original_cols <- c("sample", "lambda", "Peak #", "RetTime [min]",
+                     "Width [min]", "Area [mAU*s]", "Height [mAU]", "Area %",
+                     "Type")
+
+  expect_warning(x <- read_peaklist(path, format_in = "chemstation",
+                                    data_format = "original"),
+                 "`data_format` argument is deprecated")
+  expect_equal(colnames(x[[1]][[1]]), original_cols)
+  expect_equal(x[[1]][[1]][[1, "sample"]], "RUTIN2")
+
+  expect_warning(y <- read_chemstation_reports(
+                   test_path("testdata/RUTIN2.D/Report.TXT"),
+                   data_format = "original"),
+                 "`data_format` argument is deprecated")
+  expect_equal(colnames(y[[1]][[1]]), original_cols)
+
+  # the new name produces the same result without warning
+  expect_silent(z <- read_peaklist(path, format_in = "chemstation",
+                                   peaktable_format = "original"))
+  expect_equal(x, z)
+})
+
+test_that("read_agilent_d can read a `ChemStation` peak table", {
+  x <- read_agilent_d(test_path("testdata/RUTIN2.D/"), what = "peak_table")
+  expect_length(x, 5)
+  # unlike `read_chemstation_reports`, the full signal descriptors are retained
+  expect_equal(sub(".*Sig=([0-9]+).*", "\\1", names(x)),
+               c("254", "320", "360", "210", "230"))
+  expect_s3_class(x[[1]], "data.frame")
+  expect_equal(colnames(x[[1]]),
+               c("rt", "width", "area", "height", "type"))
+  expect_equal(attr(x, "data_format"), "chromatographr")
+})
+
 test_that("read_peaklist can read `Shimadzu` fid files", {
   path <- test_path("testdata/ladder.txt")
   x <- read_peaklist(path, format_in = "shimadzu_fid", progress_bar = FALSE)
@@ -498,8 +535,8 @@ test_that("read_peaklist can read `Shimadzu` fid files", {
   expect_equal(colnames(x[[1]]),
                c("sample", "rt", "start", "end", "area", "height"))
 
-  x <- read_peaklist(path, format_in = "shimadzu_fid", data_format = "original",
-                     progress_bar = FALSE)
+  x <- read_peaklist(path, format_in = "shimadzu_fid",
+                     peaktable_format = "original", progress_bar = FALSE)
   expect_equal(class(x[[1]]), "data.frame")
   expect_equal(x[[1]][[1,"sample"]], "ladder")
   expect_equal(x[[1]][[1,"sample"]], "ladder")

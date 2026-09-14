@@ -10,11 +10,12 @@ read_peaklist(
   format_in = c("chemstation", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
     "shimadzu_gcd", "chromatotec"),
   pattern = NULL,
-  data_format = c("chromatographr", "original"),
+  peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
   read_metadata = TRUE,
   progress_bar,
-  cl = 1
+  cl = 1,
+  data_format = NULL
 )
 }
 \arguments{
@@ -31,7 +32,8 @@ include: \code{chemstation}, \code{shimadzu_fid}, \code{shimadzu_dad}, \code{shi
 \item{pattern}{A pattern (e.g. a file extension). Defaults to \code{NULL}, in
 which case the file extension will be deduced from \code{format_in}.}
 
-\item{data_format}{Either \code{chromatographr} or \code{original}.}
+\item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
+or \code{original} format.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
@@ -44,6 +46,8 @@ if \code{pbapply} is installed.}
 \item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
 of clusters to use or a cluster object created by
 \link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
+
+\item{data_format}{Deprecated. Use \code{peaktable_format} instead.}
 }
 \value{
 A list of \code{data.frame}s containing information about peaks where

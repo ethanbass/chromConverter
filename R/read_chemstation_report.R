@@ -3,10 +3,11 @@
 #' Reads 'Agilent ChemStation' reports into R.
 #'
 #' @param paths Paths to 'ChemStation' report files.
-#' @param data_format Format to output data. Either `chromatographr` or
-#' `chemstation`.
+#' @param peaktable_format Whether to return peak tables in `chromatographr`
+#' or `original` format.
 #' @param metadata_format Format to output metadata. Either `chromconverter` or
 #' `raw`.
+#' @param data_format Deprecated. Use `peaktable_format` instead.
 #' @return A `data.frame` containing the information from the specified
 #' 'ChemStation' report.
 #' @examples \dontrun{
@@ -16,16 +17,22 @@
 #' @family 'Agilent' parsers
 #' @export
 
-read_chemstation_reports <- function(paths, data_format = c("chromatographr",
-                                                            "original"),
-                                     metadata_format = c("chromconverter", "raw")){
-  data_format <- match.arg(tolower(data_format),
-                           c("chromatographr", "original"))
+read_chemstation_reports <- function(paths,
+                                     peaktable_format = c("chromatographr",
+                                                          "original"),
+                                     metadata_format = c("chromconverter", "raw"),
+                                     data_format = NULL){
+  if (!is.null(data_format)){
+    warn_renamed_arg("data_format", "peaktable_format")
+    peaktable_format <- data_format
+  }
+  peaktable_format <- match.arg(tolower(peaktable_format),
+                                c("chromatographr", "original"))
   metadata_format = match.arg(metadata_format, c("chromconverter", "raw"))
   names(paths) <- sub(".*/([^/]+)\\.D/.*$", "\\1", paths)
 
   pks <- lapply(seq_along(paths), function(i){
-    xx <- read_chemstation_report(paths[i], data_format = data_format,
+    xx <- read_chemstation_report(paths[i], peaktable_format = peaktable_format,
                                   metadata_format = metadata_format)
     dat <- lapply(seq_along(xx), function(ii){
       lambda <- sub(".*Sig=([0-9]+).*", "\\1", names(xx)[ii])
@@ -45,8 +52,8 @@ read_chemstation_reports <- function(paths, data_format = c("chromatographr",
 
 #' Read Agilent Chemstation Report
 #' @param path Path to file
-#' @param data_format Format to output data. Either `chromatographr` or
-#' `chemstation`.
+#' @param peaktable_format Whether to return peak tables in `chromatographr`
+#' or `original` format.
 #' @param combine Whether to combine peaklists into a single data.frame.
 #' @param metadata_format Format to output metadata. Either `chromconverter` or
 #' `raw`.
@@ -54,11 +61,14 @@ read_chemstation_reports <- function(paths, data_format = c("chromatographr",
 #' @family {Agilent parsers}
 #' @noRd
 
-read_chemstation_report <- function(path, data_format = c("chromatographr", "original"),
+read_chemstation_report <- function(path,
+                                    peaktable_format = c("chromatographr",
+                                                         "original"),
                                     combine = FALSE,
                                     read_metadata = TRUE,
                                     metadata_format = c("chromconverter", "raw")){
-  data_format <- match.arg(tolower(data_format), c("chromatographr", "original"))
+  peaktable_format <- match.arg(tolower(peaktable_format),
+                                c("chromatographr", "original"))
   metadata_format = match.arg(metadata_format, c("chromconverter", "raw"))
   metadata_format <- switch(metadata_format,
                             chromconverter = "chemstation_peaklist",
@@ -74,7 +84,7 @@ read_chemstation_report <- function(path, data_format = c("chromatographr", "ori
 
   peak_lists <- lapply(seq_along(signals[-length(signals)]),function(i){
     table <- x[signals[i]:(signals[i+1] - 1)]
-    convert_chemstation_peaklist(table, data_format = data_format)
+    convert_chemstation_peaklist(table, peaktable_format = peaktable_format)
   })
   names(peak_lists) <- x[signals[-length(signals)]]
   if (read_metadata){
@@ -103,7 +113,8 @@ read_chemstation_report <- function(path, data_format = c("chromatographr", "ori
     names(metadata) <- sapply(metadata, function(x)x[1])
     metadata <- lapply(metadata, function(x) x[2])
     peak_lists <- attach_metadata(peak_lists, metadata, format_in = metadata_format,
-                                  source_file = path, data_format = data_format,
+                                  source_file = path,
+                                  data_format = peaktable_format,
                                   format_out = "data.frame")
   }
   peak_lists
@@ -111,11 +122,11 @@ read_chemstation_report <- function(path, data_format = c("chromatographr", "ori
 
 #' Convert 'Chemstation' REPORT peak list to data.frame.
 #' @param table The table to convert.
-#' @param data_format Format to output data. Either `chromatographr` or
-#' `chemstation`.
+#' @param peaktable_format Whether to return the peak table in
+#' `chromatographr` or `original` format.
 #' @author Ethan Bass
 #' @noRd
-convert_chemstation_peaklist <- function(table, data_format =
+convert_chemstation_peaklist <- function(table, peaktable_format =
                                            c("chromatographr", "original")){
   markdown_table <- table[-which(table == "")]
   split.pos <- c(1,gregexpr("\\|",markdown_table[4])[[1]])
@@ -141,7 +152,7 @@ convert_chemstation_peaklist <- function(table, data_format =
   df2 <- as.data.frame(purrr::map_df(df[,-c(which(colnames(df) == "Type"))],
                                      as.numeric))
   df2 <- cbind(df2, df[, "Type", drop = FALSE])
-  if (data_format == "chromatographr"){
+  if (peaktable_format == "chromatographr"){
     df2 <- df2[, -c(1,6)]
     colnames(df2) <- c("rt", "width", "area", "height", "type")
   }

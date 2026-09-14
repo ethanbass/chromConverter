@@ -37,6 +37,7 @@
 * The `aston` parser is deprecated and will be removed in a future release. 'Aston' has been unmaintained since 2020. It is now used only by `sp_converter` to read 'Agilent MassHunter' `.sp` files (`format_in = "masshunter_dad"`), and `read_chroms` selects it automatically only as a last resort, when no other parser can read the file. Please use the internal chromConverter parsers or the `entab` parser (by the same author as 'Aston') instead.
 * `uv_converter` is now defunct; use `read_chemstation_uv` or the `entab` parser instead. The `aston` binding for `format_in = "other"` has also been removed; this format is still handled by the `entab` parser. Both relied on an 'Aston' reader that requires `scipy < 1.14`, which would otherwise constrain the Python environment for every user.
 * Deprecated `dat` argument in `read_chroms`. Instead, chrom_lists can be combined with `c()`.
+* Renamed the `data_format` argument of `read_peaklist` and `read_chemstation_reports` to `peaktable_format`. This argument selects `chromatographr` or `original` peak table layout, so it had nothing to do with the `data_format` argument of the chromatogram readers, which selects `wide` or `long` format. `peaktable_format` is the name already used for this option by `read_shimadzu`. The old name still works but warns, and will be removed in a future release.
 
 ### Bug fixes and other minor changes
 
@@ -54,6 +55,7 @@
 * Added `sample_position` metadata field for 'ChemStation' 179 files (`.ch` and `.it`).
 * The acquisition time of 'Agilent MassHunter' files is now converted to `POSIXct` instead of being attached as an unparsed string, which `extract_metadata` reported as `NA`.
 * Fixed a bug causing `read_agilent_dx`, `read_agilent_amx` and `read_agilent_rslt` to fail when `path_out` was supplied.
+* Fixed the documentation of the peak table format argument to `read_chemstation_reports`, which listed the accepted values as `chromatographr` or `chemstation`. The second value has always been `original`, so following the documentation raised an error.
 
 #### 'Shimadzu'
 

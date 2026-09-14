@@ -6,18 +6,21 @@
 \usage{
 read_chemstation_reports(
   paths,
-  data_format = c("chromatographr", "original"),
-  metadata_format = c("chromconverter", "raw")
+  peaktable_format = c("chromatographr", "original"),
+  metadata_format = c("chromconverter", "raw"),
+  data_format = NULL
 )
 }
 \arguments{
 \item{paths}{Paths to 'ChemStation' report files.}
 
-\item{data_format}{Format to output data. Either \code{chromatographr} or
-\code{chemstation}.}
+\item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
+or \code{original} format.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
+
+\item{data_format}{Deprecated. Use \code{peaktable_format} instead.}
 }
 \value{
 A \code{data.frame} containing the information from the specified

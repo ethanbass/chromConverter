@@ -72,7 +72,7 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table"),
   if (any(what == "peak_table")){
     if (length(files$peak_table) > 0){
     peak_table <- read_chemstation_report(files$peak_table,
-                                          data_format = "chromatographR")
+                                          peaktable_format = "chromatographr")
     } else{
       stop("Peak table data could not be found.")
     }

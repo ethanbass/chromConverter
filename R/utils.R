@@ -20,6 +20,21 @@ check_data_format <- function(data_format, format_out){
   match.arg(data_format, c("wide", "long"))
 }
 
+#' Warn that an argument has been renamed
+#'
+#' Called from the top of a function, so it warns once per call rather than
+#' once per file when a reader is mapped over many paths.
+#' @param old Name of the deprecated argument.
+#' @param new Name of the argument that supersedes it.
+#' @noRd
+
+warn_renamed_arg <- function(old, new){
+  warning("The `", old, "` argument is deprecated and will be removed in a ",
+          "future version. Please use `", new, "` instead.",
+          call. = FALSE, immediate. = TRUE)
+  invisible(NULL)
+}
+
 #' Extract a column by name
 #'
 #' Chromatograms are passed around as a `matrix`, `data.frame` or `data.table`,

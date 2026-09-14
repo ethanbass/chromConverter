@@ -12,7 +12,9 @@
 #' `shimadzu_gcd`.
 #' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
 #' which case the file extension will be deduced from `format_in`.
-#' @param data_format Either `chromatographr` or `original`.
+#' @param peaktable_format Whether to return peak tables in `chromatographr`
+#' or `original` format.
+#' @param data_format Deprecated. Use `peaktable_format` instead.
 #' @return A list of `data.frame`s containing information about peaks where
 #' each list element represents a sample and each row represents an individual
 #' peak in that sample.
@@ -31,10 +33,16 @@ read_peaklist <- function(paths, find_files,
                                       "shimadzu_dad", "shimadzu_lcd",
                                       "shimadzu_gcd", "chromatotec"),
                         pattern = NULL,
-                        data_format = c("chromatographr", "original"),
+                        peaktable_format = c("chromatographr", "original"),
                         metadata_format = c("chromconverter", "raw"),
-                        read_metadata = TRUE, progress_bar, cl = 1){
-  data_format <- match.arg(tolower(data_format), c("chromatographr", "original"))
+                        read_metadata = TRUE, progress_bar, cl = 1,
+                        data_format = NULL){
+  if (!is.null(data_format)){
+    warn_renamed_arg("data_format", "peaktable_format")
+    peaktable_format <- data_format
+  }
+  peaktable_format <- match.arg(tolower(peaktable_format),
+                                c("chromatographr", "original"))
   format_in <- match.arg(tolower(format_in),
                          c("chemstation", "shimadzu_fid", "shimadzu_dad",
                            "shimadzu_lcd", "shimadzu_gcd", "chromatotec"))
@@ -57,14 +65,14 @@ read_peaklist <- function(paths, find_files,
   if (format_in == "chemstation"){
     pattern <- ifelse(is.null(pattern), "report.txt", pattern)
     parser <- purrr::partial(read_chemstation_reports,
-                             data_format = data_format,
+                             peaktable_format = peaktable_format,
                              metadata_format = metadata_format)
   } else if (format_in %in% c("shimadzu_dad", "shimadzu_fid")){
     pattern <- ifelse(is.null(pattern), ".txt", pattern)
     parser <- partial(read_shimadzu, what = "peak_table",
                          data_format = "wide",
                          read_metadata = read_metadata,
-                         peaktable_format = data_format)
+                         peaktable_format = peaktable_format)
   } else if (format_in == "shimadzu_lcd"){
     pattern <- ifelse(is.null(pattern), "\\.lcd$", pattern)
     parser <- partial(read_shimadzu_lcd, what = "peak_table",
