@@ -108,7 +108,7 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
 #' Flatten the file metadata returned by RaMS into a named list
 #'
 #' `RaMS::grabMSdata` returns file-level properties as a one-row table rather
-#' than as the named list that [attach_metadata] expects, so this normalizes
+#' than as the named list that `attach_metadata` expects, so this normalizes
 #' the shape before dispatch. Doing it here keeps the knowledge of RaMS's
 #' output in this file and lets the `"mzml"` branch read `meta$field` like
 #' every other format.

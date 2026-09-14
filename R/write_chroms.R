@@ -7,8 +7,11 @@
 #' @param path_out Path to directory for writing files.
 #' @param export_format Format to export files: either `"mzml"`, `"cdf"`,
 #' `"csv"`, `"arw"`.
-#' @param what What to write. Argument to `write_cdf` and `write_mzml`. Either
-#' `"MS1"` or `"chrom"`.
+#' @param what What to write. Used by the `cdf` and `mzml` exporters only.
+#' For `export_format = "cdf"`, either `"MS1"` (written by `write_andi_ms`) or
+#' `"chrom"` (written by `write_andi_chrom`). For `export_format = "mzml"`,
+#' any of `"MS1"`, `"MS2"`, `"TIC"`, `"BPC"` and/or `"DAD"`. If it is not
+#' specified, the streams to write are inferred from the supplied data.
 #' @param force Logical. Whether to overwrite existing files. Defaults to `TRUE`.
 #' @param show_progress Logical. Whether to show progress bar. Defaults to `TRUE`.
 #' @param verbose Logical. Whether to print verbose output.
@@ -18,6 +21,12 @@
 #' Exports a chromatogram in the file format specified by `export_format` in the
 #' directory specified by `path_out`.
 #' @author Ethan Bass
+#' @examples
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+#'                       find_files = FALSE, progress_bar = FALSE)
+#' write_chroms(chroms, path_out = tempdir(), export_format = "csv",
+#'              show_progress = FALSE)
 #' @family write functions
 #' @export
 
@@ -36,22 +45,37 @@ write_chroms <- function(chrom_list, path_out,
       stop(paste0("The export directory '", path_out, "' could not be found."))
   }
 
-  make_exporter <- function(fn, ...) {
-    purrr::partial(fn, ..., force = force, show_progress = show_progress,
-                   verbose = verbose)
-  }
-
-  writer <- switch(export_format,
-         csv = make_exporter(export_csvs),
-         cdf = make_exporter(export_cdf, what = what),
-         mzml = make_exporter(export_mzml, what = what),
-         arw = make_exporter(export_arw)
-  )
-
+  writer <- get_exporter(export_format, force = force,
+                         show_progress = show_progress, verbose = verbose,
+                         what = what)
   if (verbose){
     message(sprintf("Writing to %s...", toupper(export_format)))
   }
   writer(chrom_list, path_out = path_out, ...)
+}
+
+#' Select an export function
+#'
+#' Shared by `write_chroms` and by the `export_format` argument of
+#' `read_chroms`. `chemstation_csv` is a `csv` written with 'utf-16' encoding,
+#' as 'ChemStation' writes it.
+#'
+#' @param export_format Format to export.
+#' @param what What to write. Passed on to `export_cdf` and `export_mzml` only.
+#' @noRd
+get_exporter <- function(export_format, force = FALSE, show_progress = TRUE,
+                         verbose = getOption("verbose"), ...){
+  make_exporter <- function(fn, ...) {
+    purrr::partial(fn, ..., force = force, show_progress = show_progress,
+                   verbose = verbose)
+  }
+  switch(export_format,
+         csv = make_exporter(export_csvs),
+         chemstation_csv = make_exporter(export_csvs, fileEncoding = "utf16"),
+         cdf = make_exporter(export_cdf, ...),
+         mzml = make_exporter(export_mzml, ...),
+         arw = make_exporter(export_arw)
+  )
 }
 
 #' Write ANDI chrom CDF file from chromatogram
@@ -78,6 +102,11 @@ write_chroms <- function(chrom_list, path_out,
 #' specified by `path_out`. The file will be named according to the value
 #' of `sample_name`. If no `sample_name` is provided, the `sample_name`
 #' attribute will be used if it exists.
+#' @examplesIf requireNamespace("ncdf4", quietly = TRUE)
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' chrom <- read_shimadzu(path, what = "chroms")
+#' # the file is named for the `sample_name` attribute unless one is supplied
+#' write_andi_chrom(chrom, path_out = tempdir(), force = TRUE)
 #' @family write functions
 #' @export
 
@@ -200,7 +229,8 @@ export_csvs <- function(data, path_out, fileEncoding = "utf8",
 #' @return Invisibly returns the path to the written CDF files.
 #' @noRd
 export_cdf <- function(data, path_out, what = "", force = FALSE,
-                       show_progress = TRUE, verbose = getOption("verbose")){
+                       show_progress = TRUE, verbose = getOption("verbose"),
+                       ...){
   check_for_pkg("ncdf4")
   if (!inherits(data, "list")){
     data <- list(data)
@@ -220,7 +250,7 @@ export_cdf <- function(data, path_out, what = "", force = FALSE,
   file_paths <- laplee(seq_along(data), function(i){
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i], ".cdf")))
     tryCatch({
-      write_fn(data[[i]], path_out = path_out, force = force)
+      write_fn(data[[i]], path_out = path_out, force = force, ...)
       }, error = function(e){
           warning(sprintf("`%s` failed for index %d: %s",
                           switch(what, "MS1" = "write_andi_ms",
@@ -257,9 +287,13 @@ infer_sample_names <- function(data){
 #' @author Ethan Bass
 #' @return Invisibly returns the path to the written mzML files.
 #' @noRd
-export_mzml <- function(data, path_out, force = FALSE,
+export_mzml <- function(data, path_out, what = NULL, force = FALSE,
                         show_progress = TRUE, verbose = getOption("verbose"),
                         ...){
+  # `write_chroms` says "not specified" with `""`, as `export_cdf` reads it,
+  # but `write_mzml` says it with `NULL`. Passed through verbatim, `""` reaches
+  # the `match.arg` in `write_mzml` and fails there.
+  if (identical(what, "")) what <- NULL
   laplee <- choose_apply_fnc(show_progress)
 
   data <- infer_sample_names(data)
@@ -267,7 +301,7 @@ export_mzml <- function(data, path_out, force = FALSE,
   file_paths <- laplee(seq_along(data), function(i){
     if (verbose) message(sprintf("Writing %s", paste0(names(data)[i],".mzml")))
     tryCatch({
-      write_mzml(data[[i]], path_out = path_out,
+      write_mzml(data[[i]], path_out = path_out, what = what,
                    show_progress = FALSE, force = force, ...)
              }, error = function(e){
                warning(sprintf("write_mzml failed for index %d: %s",

@@ -23,8 +23,11 @@ write_chroms(
 \item{export_format}{Format to export files: either \code{"mzml"}, \code{"cdf"},
 \code{"csv"}, \code{"arw"}.}
 
-\item{what}{What to write. Argument to \code{write_cdf} and \code{write_mzml}. Either
-\code{"MS1"} or \code{"chrom"}.}
+\item{what}{What to write. Used by the \code{cdf} and \code{mzml} exporters only.
+For \code{export_format = "cdf"}, either \code{"MS1"} (written by \code{write_andi_ms}) or
+\code{"chrom"} (written by \code{write_andi_chrom}). For \code{export_format = "mzml"},
+any of \code{"MS1"}, \code{"MS2"}, \code{"TIC"}, \code{"BPC"} and/or \code{"DAD"}. If it is not
+specified, the streams to write are inferred from the supplied data.}
 
 \item{force}{Logical. Whether to overwrite existing files. Defaults to \code{TRUE}.}
 
@@ -47,9 +50,17 @@ Exports a chromatogram in the file format specified by \code{export_format} in t
 directory specified by \code{path_out}.
 }
 
+\examples{
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
+chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+                      find_files = FALSE, progress_bar = FALSE)
+write_chroms(chroms, path_out = tempdir(), export_format = "csv",
+             show_progress = FALSE)
+}
 \seealso{
 Other write functions:
 \code{\link[=write_andi_chrom]{write_andi_chrom()}},
+\code{\link[=write_andi_ms]{write_andi_ms()}},
 \code{\link[=write_mzml]{write_mzml()}}
 }
 \author{

@@ -29,6 +29,10 @@
 #' @param show_progress Logical. Whether to show progress bar. Defaults to `TRUE`.
 #' @param verbose Logical. Whether or not to print status messages.
 #' @return Invisibly returns the path to the written mzML file.
+#' @examples \dontrun{
+#' chrom <- read_chroms("path/to/file.qgd", progress_bar = FALSE)
+#' write_mzml(chrom[[1]], path_out = "path/to/directory")
+#' }
 #' @author Ethan Bass
 #' @family write functions
 #' @export
@@ -38,8 +42,29 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
                       force = FALSE, show_progress = TRUE,
                        verbose = getOption("verbose")) {
   if (!inherits(data, "list")){
-    detector <- attr(data,"detector")
-    detector <- switch(detector, "UV" = "DAD", "MS" = "MS1", "DAD" = "DAD")
+    # A bare chromatogram has to say which kind of data it holds, since the
+    # mzML spectra are named for it. A list is already keyed by stream, so it
+    # skips this. Not every parser records a detector: 'Shimadzu' ASCII files
+    # give a `detector_id` but no `detector`, and 'ChemStation' `.ch` files
+    # report `NA`, so guessing here would silently mislabel the data.
+    streams <- c(UV = "DAD", MS = "MS1", DAD = "DAD")
+    detector <- attr(data, "detector")
+    # `NA` is how a parser says it looked and found nothing, so report it the
+    # same way as an absent attribute rather than as a detector called "NA"
+    unrecorded <- length(detector) == 0 ||
+      (length(detector) == 1 && is.na(detector))
+    if (unrecorded || !all(detector %in% names(streams)) ||
+        length(detector) != 1){
+      stop(sprintf(paste0("Could not determine what kind of data this is: ",
+                          "the `detector` attribute is %s.\nSet it to one of ",
+                          "%s, or supply a named list instead, ",
+                          "e.g. `list(DAD = x)`."),
+                   if (unrecorded) "missing" else
+                     paste(sQuote(detector), collapse = ", "),
+                   paste(sQuote(names(streams)), collapse = ", ")),
+           call. = FALSE)
+    }
+    detector <- streams[[detector]]
     data <- setNames(list(data), detector)
     what <- detector
   }
@@ -49,6 +74,24 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   }
   what <- match.arg(toupper(what), c("MS1", "MS2", "TIC", "BPC", "DAD"),
                     several.ok = TRUE)
+  # mzML stores scans of (m/z or wavelength, intensity), so a single trace has
+  # no axis to put in one: written as spectra it becomes one single-point scan
+  # per retention time. `TIC` and `BPC` are the exception, since the CV has
+  # terms for those MS-derived summaries and they go to `chromatogramList`.
+  # A UV or FID trace belongs in ANDI chrom instead. Checked here rather than
+  # in the branch above, so that a named list cannot slip past it.
+  if ("DAD" %in% what && is_unidimensional(data$DAD)){
+    why <- paste0("mzML has no place for a one-dimensional chromatogram: it ",
+                  "would be written as one single-point spectrum per ",
+                  "retention time.\nUse `write_andi_chrom()` for it, or ",
+                  "supply the full two-dimensional DAD data to write spectra.")
+    if (length(setdiff(what, "DAD")) == 0){
+      # dropping it would leave an empty file, so say so instead
+      stop(why, call. = FALSE)
+    }
+    warning("Skipping the DAD data. ", why, call. = FALSE, immediate. = TRUE)
+    what <- setdiff(what, "DAD")
+  }
   if (is.null(sample_name)){
     sample_name <- ifelse(inherits(data, "list"),
                           attr(data[[1]], "sample_name"),

@@ -6,12 +6,7 @@
 \usage{
 read_chroms(
   paths,
-  format_in = c("agilent_d", "agilent_dx", "agilent_rslt", "asm", "chemstation",
-    "chemstation_fid", "chemstation_ch", "chemstation_csv", "chemstation_ms",
-    "chemstation_uv", "masshunter_dad", "chromeleon_uv", "chromatotec", "mzml", "mzxml",
-    "mdf", "shimadzu_ascii", "shimadzu_dad", "shimadzu_fid", "shimadzu_gcd",
-    "shimadzu_qgd", "shimadzu_lcd", "thermoraw", "varian_sms", "waters_arw",
-    "waters_raw", "msd", "csd", "wsd", "csv", "other"),
+  format_in = supported_formats(),
   find_files,
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
@@ -34,12 +29,13 @@ read_chroms(
 \arguments{
 \item{paths}{Paths to data files or directories containing the files.}
 
-\item{format_in}{Format of files to be imported/converted. Current options
-include: \code{agilent_d}, \code{agilent_dx}, \code{chemstation}, \code{chemstation_uv},
-\code{chemstation_ch}, \code{chemstation_csv}, \code{chemstation_ms}, \code{masshunter},
-\code{masshunter_dad}, \code{chromeleon_uv}, \code{shimadzu_ascii}, \code{shimadzu_fid},
-\code{shimadzu_dad}, \code{thermoraw}, \code{waters_arw}, \code{waters_raw}, \code{mzml}, \code{mzxml},
-\code{cdf}, \code{mdf}, \code{msd}, \code{csd}, \code{wsd}, or \code{other}.}
+\item{format_in}{Format of the files to be imported or converted. One of:
+\code{agilent_d}, \code{agilent_dx} (or \code{openlab_dx}), \code{agilent_rslt} (or \code{rslt}, \code{sirslt}), \code{asm} (or \code{allotrope}), \code{cdf} (or \code{andi}), \code{chemstation_ch} (or \code{chemstation_fid}), \code{chemstation_csv}, \code{chemstation_ms}, \code{chemstation_uv}, \code{chromatotec}, \code{chromeleon_uv}, \code{csd}, \code{csv}, \code{masshunter_dad}, \code{mdf}, \code{msd}, \code{mzml}, \code{mzxml}, \code{other}, \code{shimadzu_ascii}, \code{shimadzu_dad}, \code{shimadzu_fid}, \code{shimadzu_gcd}, \code{shimadzu_lcd}, \code{shimadzu_qgd}, \code{thermoraw}, \code{varian_sms}, \code{waters_arw}, \code{waters_raw}, \code{wsd}.
+A name in parentheses is an alias, which behaves exactly like the format
+it follows. Version-specific names for the 'Agilent ChemStation' formats
+(\code{chemstation_130}, for instance) are accepted as well, but are normally
+supplied by chromConverter's own file-type detection rather than being
+provided by the user.}
 
 \item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
 the function with a folder or vector of folders containing the files.
@@ -95,7 +91,8 @@ input files by file modification time before reading, oldest first).}
 \item{dat}{Deprecated. Existing list of chromatograms to append results
 to. Use \code{c()} on the returned \code{chrom_list} objects instead. Defaults to \code{NULL}.}
 
-\item{...}{Additional arguments to parser.}
+\item{...}{Additional arguments to the parser. Arguments that the selected
+parser does not accept are ignored with a warning.}
 }
 \value{
 A list of chromatograms in \code{matrix}, \code{data.frame}, or \code{data.table}

@@ -39,8 +39,17 @@ of \code{sample_name}. If no \code{sample_name} is provided, the \code{sample_na
 attribute will be used if it exists.
 }
 
+\examples{
+\dontshow{if (requireNamespace("ncdf4", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
+chrom <- read_shimadzu(path, what = "chroms")
+# the file is named for the `sample_name` attribute unless one is supplied
+write_andi_chrom(chrom, path_out = tempdir(), force = TRUE)
+\dontshow{\}) # examplesIf}
+}
 \seealso{
 Other write functions:
+\code{\link[=write_andi_ms]{write_andi_ms()}},
 \code{\link[=write_chroms]{write_chroms()}},
 \code{\link[=write_mzml]{write_mzml()}}
 }

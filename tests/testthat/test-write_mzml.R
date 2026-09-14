@@ -148,3 +148,67 @@ test_that("write_mzml counts scans correctly for every input class", {
   # 1944 time points in dad1.uv, regardless of how the data was read
   expect_equal(unname(counts), rep(1944, 3))
 })
+
+test_that("write_mzml says what is wrong when it cannot identify the data", {
+  local_reproducible_output()
+  # a bare chromatogram is named for its `detector`, but not every parser
+  # records one: 'Shimadzu' ASCII files give a `detector_id` instead, and
+  # 'ChemStation' `.ch` files report `NA`
+  x <- matrix(1:2, nrow = 2, dimnames = list(c("1", "2"), "intensity"))
+  expect_error(write_mzml(x, path_out = tempdir()),
+               "`detector` attribute is missing")
+
+  # `NA` is how a parser reports that it looked and found nothing, so it is
+  # described as missing rather than as a detector called "NA"
+  attr(x, "detector") <- NA_character_
+  expect_error(write_mzml(x, path_out = tempdir()),
+               "`detector` attribute is missing")
+
+  # a detector the writer has no mzML stream for is named in the message
+  attr(x, "detector") <- "FID"
+  expect_error(write_mzml(x, path_out = tempdir()), "FID")
+
+  # a recognized detector gets past this check (and is stopped by the
+  # dimensionality check below instead)
+  msg <- function(expr) tryCatch({suppressWarnings(expr); ""},
+                                 error = conditionMessage)
+  attr(x, "detector") <- "UV"
+  expect_false(grepl("`detector` attribute",
+                     msg(write_mzml(x, path_out = tempdir()))))
+})
+
+test_that("write_mzml skips a one-dimensional chromatogram", {
+  local_reproducible_output()
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  # written as spectra, a single trace becomes one single-point scan per
+  # retention time, so it is sent to `write_andi_chrom` instead
+  x <- matrix(1:2, nrow = 2, dimnames = list(c("1", "2"), "intensity"))
+  attr(x, "detector") <- "UV"
+  # with nothing else to write, skipping would leave an empty file
+  expect_error(write_mzml(x, path_out = tmp), "write_andi_chrom",
+               fixed = TRUE)
+  # a named list must not slip past the check
+  expect_error(write_mzml(list(DAD = x), path_out = tmp),
+               "write_andi_chrom", fixed = TRUE)
+  # long format says the same thing by having no wavelength column
+  y <- data.frame(rt = c(1, 2), intensity = c(3, 4))
+  attr(y, "data_format") <- "long"
+  attr(y, "detector") <- "UV"
+  expect_error(write_mzml(y, path_out = tmp), "write_andi_chrom",
+               fixed = TRUE)
+
+  # alongside another stream it is dropped with a warning, rather than
+  # taking the streams that can be written down with it
+  tic <- data.frame(rt = c(1, 2), intensity = c(5, 6))
+  attr(tic, "data_format") <- "long"
+  expect_warning(f <- write_mzml(list(TIC = tic, DAD = x),
+                                 path_out = tmp, sample_name = "skip",
+                                 force = TRUE, show_progress = FALSE),
+                 "Skipping the DAD data")
+  expect_true(file.exists(f))
+  expect_match(paste(readLines(f, warn = FALSE), collapse = ""),
+               "chromatogramList")
+})

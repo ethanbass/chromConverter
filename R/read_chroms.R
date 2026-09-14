@@ -26,12 +26,7 @@
 #'
 #' @name read_chroms
 #' @param paths Paths to data files or directories containing the files.
-#' @param format_in Format of files to be imported/converted. Current options
-#' include: `agilent_d`, `agilent_dx`, `chemstation`, `chemstation_uv`,
-#' `chemstation_ch`, `chemstation_csv`, `chemstation_ms`, `masshunter`,
-#' `masshunter_dad`, `chromeleon_uv`, `shimadzu_ascii`, `shimadzu_fid`,
-#' `shimadzu_dad`, `thermoraw`, `waters_arw`, `waters_raw`, `mzml`, `mzxml`,
-#' `cdf`, `mdf`, `msd`, `csd`, `wsd`, or `other`.
+#' @eval format_in_doc()
 #' @param parser What parser to use (optional). Current option are
 #' `chromconverter`, `aston`,, `entab`, `thermoraw`, `openchrom`, `rainbow`.
 #' @param find_files Logical. Set to `TRUE` (default) if you are providing
@@ -70,7 +65,8 @@
 #' input files by file modification time before reading, oldest first).
 #' @param dat Deprecated. Existing list of chromatograms to append results
 #' to. Use `c()` on the returned `chrom_list` objects instead. Defaults to `NULL`.
-#' @param ... Additional arguments to parser.
+#' @param ... Additional arguments to the parser. Arguments that the selected
+#' parser does not accept are ignored with a warning.
 #' @return A list of chromatograms in `matrix`, `data.frame`, or `data.table`
 #' format, according to the value of `format_out`. Chromatograms may be returned
 #' in either `wide` or `long` format according to the value of `data_format`.
@@ -89,15 +85,7 @@
 #' @export read_chroms
 
 read_chroms <- function(paths,
-                        format_in = c("agilent_d", "agilent_dx", "agilent_rslt",
-                        "asm", "chemstation", "chemstation_fid",
-                        "chemstation_ch", "chemstation_csv", "chemstation_ms",
-                        "chemstation_uv", "masshunter_dad", "chromeleon_uv",
-                        "chromatotec", "mzml", "mzxml", "mdf",
-                        "shimadzu_ascii", "shimadzu_dad", "shimadzu_fid",
-                        "shimadzu_gcd", "shimadzu_qgd", "shimadzu_lcd",
-                        "thermoraw", "varian_sms", "waters_arw", "waters_raw",
-                        "msd", "csd", "wsd", "csv", "other"),
+                        format_in = supported_formats(),
                         find_files,
                         pattern = NULL,
                         parser = c("", "chromconverter", "aston", "entab",
@@ -131,45 +119,19 @@ read_chroms <- function(paths,
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
-  if (missing(find_files)){
-    if (length(format_in) == 1){
-      if (!(format_in %in% c("agilent_d", "waters_raw", "agilent_rslt"))){
-        ft <- all(file_test("-f", paths))
-      } else {
-        ext <- switch(format_in,
-                      agilent_d = "\\.d",
-                      agilent_rslt = "\\.rslt|\\.sirslt",
-                      waters_raw = "\\.raw")
-        ft <- all(grepl(ext, paths, ignore.case = TRUE))
-      }
-      find_files <- !ft
-    } else{
-      find_files <- FALSE
-    }
-  }
+  search_dirs <- if (missing(find_files)){
+    infer_search_dirs(paths, format_in)
+  } else find_files
   if (length(format_in) > 1){
-    if (!find_files){
+    if (!search_dirs){
       format_in <- get_filetype(paths[1])
     } else{
         stop("Files could not be identified. Please specify a file format using
              the `format_in` argument.")
     }
   }
-  format_in <- match.arg(tolower(format_in),
-                         c("agilent_d", "agilent_dx", "agilent_rslt", "asm",
-                           "chemstation", "chemstation_uv", "chemstation_ch",
-                           "chemstation_ms", "chemstation_2", "chemstation_30",
-                           "chemstation_31", "chemstation_130",
-                           "chemstation_131", "openlab_131", "chemstation_179",
-                           "chemstation_81", "chemstation_181",
-                           "chemstation_fid", "chemstation_csv",
-                           "masshunter_dad", "shimadzu_ascii", "shimadzu_dad",
-                           "shimadzu_fid", "shimadzu_gcd", "shimadzu_lcd",
-                           "shimadzu_qgd", "varian_sms", "chromeleon_uv",
-                           "chromatotec", "thermoraw", "mzml", "mzxml",
-                           "waters_arw", "waters_raw",
-                           "msd", "csd", "wsd", "mdf", "cdf", "csv",
-                           "other"))
+  format_in <- match.arg(tolower(format_in), supported_formats())
+  format_in <- canonical_format(format_in)
   if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
     if (is.na(parser)) stop(sprintf(
@@ -188,13 +150,12 @@ read_chroms <- function(paths,
     stop("The selected export format is currently only supported by `openchrom`
          parsers.")
 
-  exists <- dir.exists(paths) | file.exists(paths)
-  if (all(!exists)){
+  paths_exist <- dir.exists(paths) | file.exists(paths)
+  if (all(!paths_exist)){
     stop("Cannot locate files. None of the supplied paths exist.")
   }
-  if (export_format != "" || parser == "openchrom" || format_in == "thermoraw"){
-    export <- TRUE
-  } else export <- FALSE
+  export <- export_format != "" || parser == "openchrom" ||
+    format_in == "thermoraw"
   if (export){
     if (is.null(path_out)){
       path_out <- set_temp_directory()
@@ -211,227 +172,49 @@ read_chroms <- function(paths,
   if (is.null(dat)){
     dat <- list()
   }
-
-  entab_parser <- partial(call_entab, format_in = format_in,
-                          format_out = format_out,
-                          data_format = data_format,
-                          read_metadata = read_metadata)
-
-  rainbow_parser <- partial(call_rainbow, format_in = format_in,
-                            format_out = format_out, data_format = data_format,
-                            read_metadata = read_metadata,
-                            metadata_format = metadata_format, ...)
-
-  if (format_in == "agilent_d"){
-    converter <- switch(parser,
-                        "chromconverter" =  partial(read_agilent_d,
-                                                    format_out = format_out,
-                                                    data_format = data_format,
-                                                    read_metadata = read_metadata,
-                                                    metadata_format = metadata_format,
-                                                    ...),
-                        "rainbow" = rainbow_parser)
-  } else if (format_in == "agilent_dx"){
-    converter <- partial(read_agilent_dx, path_out = path_out,
-                         format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata,
-                         ...)
-  }  else if (format_in == "agilent_rslt"){
-    converter <- partial(read_agilent_rslt, path_out = path_out,
-                         format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata,
-                         sample_names = sample_names,
-                         ...)
-  } else if (format_in == "asm"){
-    converter <- partial(read_asm, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata,
-                         metadata_format = metadata_format)
-  } else if (format_in == "masshunter_dad"){
-    converter <- switch(parser,
-                        "aston" = partial(sp_converter, format_out = format_out,
-                                          data_format = data_format,
-                                          read_metadata = read_metadata,
-                                          metadata_format = metadata_format),
-                        "entab" = entab_parser)
-  } else if (format_in == "chemstation_uv" | grepl("31", format_in)){
-    converter <- switch(parser,
-                        "chromconverter" = partial(read_chemstation_uv,
-                                                   format_out = format_out,
-                                                   data_format = data_format,
-                                                   read_metadata = read_metadata,
-                                                   metadata_format = metadata_format,
-                                                   ...),
-                        "entab" = entab_parser,
-                        "rainbow" = rainbow_parser)
-  } else if (format_in %in% c("chemstation_ms", "chemstation_2")){
-    converter <- switch(parser,
-                        "chromconverter" = partial(read_chemstation_ms,
-                                                   format_out = format_out,
-                                                   data_format = data_format,
-                                                   read_metadata = read_metadata,
-                                                   metadata_format = metadata_format,
-                                                   ...),
-                        "entab" = entab_parser,
-                        "rainbow" = rainbow_parser)
-  } else if (format_in == "chromatotec"){
-    converter <- partial(read_chromatotec, what = "chrom",
-                         format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata,
-                         metadata_format = metadata_format)
-  } else if (format_in == "chromeleon_uv"){
-    converter <- partial(read_chromeleon, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata,
-                         metadata_format = metadata_format)
-  } else if (format_in == "shimadzu_fid"){
-    converter <- partial(read_shimadzu, include = "fid",
-                         format_out = format_out, data_format = data_format,
-                         read_metadata = read_metadata,
-                         metadata_format = metadata_format, ...)
-  } else if (format_in == "shimadzu_dad"){
-    converter <- partial(read_shimadzu, include = "dad",
-                         format_out = format_out, data_format = data_format,
-                         read_metadata = read_metadata,
-                         metadata_format = metadata_format, ...)
-  }  else if (format_in == "shimadzu_ascii"){
-    converter <- partial(read_shimadzu, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata,
-                         metadata_format = metadata_format, ...)
-  } else if (format_in == "shimadzu_gcd"){
-    converter <- partial(read_shimadzu_gcd, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata,
-                         metadata_format = metadata_format, ...)
-  } else if (format_in == "shimadzu_lcd"){
-    converter <- partial(read_shimadzu_lcd, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata, ...)
-  } else if (format_in == "shimadzu_qgd"){
-    converter <- partial(read_shimadzu_qgd, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata, ...)
-  } else if (format_in == "thermoraw"){
-    converter <- switch(parser,
-                        "thermoraw" = partial(read_thermoraw, path_out = path_out,
-                                              format_out = format_out,
-                                              read_metadata = read_metadata,
-                                              metadata_format = metadata_format,
-                                              verbose = verbose),
-                        "entab" = entab_parser)
-  } else if (format_in %in% c("mzml","mzxml")){
-    converter <- partial(read_mzml, format_out = format_out,
-                         data_format = data_format, ...)
-  } else if (format_in == "varian_sms"){
-    converter <- partial(read_varian_sms, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata, ...)
-  } else if (format_in == "waters_arw"){
-    converter <- partial(read_waters_arw, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata)
-  } else if (format_in == "waters_raw"){
-    converter <- switch(parser, "rainbow" = rainbow_parser,
-                        "chromconverter" = partial(read_waters_raw,
-                                                   format_out = format_out,
-                                                   data_format = data_format,
-                                                   read_metadata = read_metadata,
-                                                   metadata_format = metadata_format))
-  } else if (format_in == "chemstation_csv"){
-    converter <- partial(read_chemstation_csv, format_out = format_out,
-                         data_format = data_format, read_metadata = read_metadata)
-  } else if (grepl("chemstation", format_in)){
-    converter <- switch(parser,
-                        "chromconverter" = partial(read_chemstation_ch,
-                                                   format_out = format_out,
-                                                   data_format = data_format,
-                                                   read_metadata = read_metadata,
-                                                   metadata_format = metadata_format,
-                                                   ...),
-                        "rainbow" = rainbow_parser,
-                        "entab" = entab_parser)
-  }  else if (format_in == "csv"){
-    converter <- partial(read_csv, format_out = format_out,
-                         data_format = data_format, read_metadata = read_metadata)
-  } else if (format_in %in% c("msd", "csd", "wsd")){
-    if (is.null(pattern) & find_files){
-      stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
-    }
-    # return paths if animl is selected
-    return_paths <- ifelse(export_format == "animl", TRUE, FALSE)
-    converter <- partial(call_openchrom, path_out = path_out,
-                         format_in = format_in, export_format = export_format,
-                         format_out = format_out, data_format = data_format,
-                         return_paths = return_paths, verbose = verbose)
-  } else if (format_in == "mdf"){
-    converter <- partial(read_mdf, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata)
-  } else if (format_in == "cdf"){
-    converter <- partial(read_cdf, format_out = format_out,
-                         data_format = data_format,
-                         read_metadata = read_metadata, ...)
-  } else {
-    converter <- switch(parser,
-                        "entab" = entab_parser
-    )
+  if (format_is_batch(format_in) && is.null(pattern) && search_dirs){
+    stop("Please supply `pattern` (e.g. a suffix) or set `find_files = FALSE`")
   }
-  pattern <- ifelse(is.null(pattern), format_to_extension(format_in), pattern)
-  if (find_files){
-    files <- find_files(paths, pattern)
-  } else {
-    files <- paths
-    if (!is.null(pattern)){
-    match <- grep(pattern, files, ignore.case = TRUE)
-      if (length(match) == 0){
-        warning("The provided files do not match the expected file extension.
-        Please confirm that the specified format ('format_in') is correct.",
-                immediate. = TRUE)
-      } else if (length(match) < length(files)){
-          warning(paste("Some of the files do not have the expected file extension:",
-                        files[match]), immediate. = TRUE)
-        }
-    }
+
+  opts <- list(format_out = format_out, data_format = data_format,
+               read_metadata = read_metadata, metadata_format = metadata_format,
+               path_out = path_out, sample_names = sample_names,
+               verbose = verbose)
+  opts <- switch(parser,
+                 entab = c(opts, list(format_in = format_in)),
+                 rainbow = c(opts, list(format_in = format_in)),
+                 openchrom = c(opts,
+                               list(format_in = format_in,
+                                    export_format = export_format,
+                                    return_paths = export_format == "animl")),
+                 opts)
+  converter <- build_converter(format_in, parser, opts = opts, dots = list(...))
+
+  if (is.null(pattern)){
+    pattern <- format_to_extension(format_in)
   }
+  files <- collect_files(paths, pattern, search_dirs = search_dirs,
+                         dirs = format_is_dir(format_in))
   if (sort_by == "file_time"){
     files <- files[order(fs::file_info(files)$modification_time)]
   }
-  if (all(grepl("\\.[Dd]$|\\.[Dd]?[/\\\\]",files))){
-    file_names <- strsplit(files, "/")
-    file_names <- gsub("\\.[Dd]", "",
-                       sapply(file_names, function(n){
-                         ifelse(any(grepl("\\.[Dd]", n)),
-                                yes = grep("\\.[Dd]", n, value = TRUE),
-                                no = tail(n, 1))
-                       }))
-  } else {
-    file_names <- fs::path_ext_remove(basename(files))
-  }
+  file_names <- extract_filenames(files)
   if (verbose)
     message(sprintf("Reading %d %s files", length(files), sQuote(format_in)))
 
-  if (parser != "openchrom"){
-    laplee <- choose_apply_fnc(progress_bar, cl = cl)
-    data <- laplee(X = files, function(file){
-      if (verbose){
-        message(sprintf("Reading %s", basename(file)))
-      }
-      df <- try(converter(file), silent = TRUE)
-    })
-    errors <- which(sapply(data, function(x) inherits(x,"try-error")))
+  if (format_is_batch(format_in)){
+    data <- converter(files)
+  } else{
+    data <- read_files(files, converter, progress_bar = progress_bar, cl = cl,
+                       verbose = verbose)
+    errors <- which(vapply(data, inherits, logical(1), "try-error"))
     if (length(errors) > 0){
       warning(data[errors], immediate. = TRUE)
       message(paste0("The following chromatograms could not be interpreted: ",
-                    paste(errors, collapse = ", ")))
+                    paste(sQuote(file_names[errors]), collapse = ", ")))
       data <- data[-errors]
       file_names <- file_names[-errors]
     }
-  } else{
-    data <- converter(files)
   }
   if (format_in == "agilent_rslt"){
     data <- do.call(`c`, data)
@@ -466,18 +249,8 @@ read_chroms <- function(paths,
     }
   }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
-    make_exporter <- function(fn, ...) {
-      purrr::partial(fn, ..., force = force, show_progress = progress_bar,
-                     verbose = verbose)
-    }
-    writer <- switch(export_format,
-                     csv = make_exporter(export_csvs),
-                     chemstation_csv = make_exporter(export_csvs,
-                                                     fileEncoding = "utf16"),
-                     cdf = make_exporter(export_cdf),
-                     mzml = make_exporter(export_mzml),
-                     arw = make_exporter(export_arw)
-    )
+    writer <- get_exporter(export_format, force = force,
+                           show_progress = progress_bar, verbose = verbose)
     if (verbose){
       message(sprintf("Writing to %s...", toupper(export_format)))
     }
@@ -486,6 +259,69 @@ read_chroms <- function(paths,
   dat <- append(dat, data)
   class(dat) <- c("chrom_list", "list")
   dat
+}
+
+#' Infer whether the supplied paths are directories to search
+#'
+#' Called when `find_files` is not supplied. Most formats are single files, so
+#' anything that is not a file is taken to be a directory to search. The
+#' formats that are themselves directories (e.g. 'Agilent' `.d`) are instead
+#' recognized by their extension, which is matched unanchored so that a
+#' trailing separator does not defeat it.
+#' @noRd
+infer_search_dirs <- function(paths, format_in){
+  if (length(format_in) != 1) return(FALSE)
+  # `format_in` has not been through `match.arg` yet, so it may be unknown, in
+  # which case `format_lookup` returns `NULL` and the file test is used.
+  entry <- format_lookup(format_in)
+  if (isTRUE(entry$dir)){
+    pattern <- gsub("\\$", "", entry$ext)
+    ft <- all(grepl(pattern, paths, ignore.case = TRUE))
+  } else {
+    ft <- all(file_test("-f", paths))
+  }
+  !ft
+}
+
+#' Collect the files to read
+#'
+#' Either searches the supplied directories for files matching `pattern`, or
+#' takes the supplied paths as they are, warning if they do not look like the
+#' expected format.
+#' @noRd
+collect_files <- function(paths, pattern, search_dirs, dirs = FALSE){
+  if (search_dirs){
+    return(find_files(paths, pattern, dirs = dirs))
+  }
+  files <- paths
+  if (!is.null(pattern)){
+    match <- grep(pattern, files, ignore.case = TRUE)
+    if (length(match) == 0){
+      warning("The provided files do not match the expected file extension.
+      Please confirm that the specified format ('format_in') is correct.",
+              immediate. = TRUE)
+    } else if (length(match) < length(files)){
+      warning(paste("Some of the files do not have the expected file extension:",
+                    files[match]), immediate. = TRUE)
+    }
+  }
+  files
+}
+
+#' Apply a converter to each file
+#'
+#' Errors are collected rather than thrown, so that one unreadable file does
+#' not discard a whole batch.
+#' @noRd
+read_files <- function(files, converter, progress_bar, cl = 1,
+                       verbose = FALSE){
+  laplee <- choose_apply_fnc(progress_bar, cl = cl)
+  laplee(X = files, function(file){
+    if (verbose){
+      message(sprintf("Reading %s", basename(file)))
+    }
+    try(converter(file), silent = TRUE)
+  })
 }
 
 #' Sort a list of chromatograms by acquisition time

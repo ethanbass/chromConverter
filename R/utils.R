@@ -34,6 +34,17 @@ get_column <- function(x, j){
   if (is.matrix(x)) x[, j] else x[[j]]
 }
 
+#' Is a chromatogram a single trace rather than a set of spectra?
+#'
+#' Wide data carries one column per wavelength or mass, so a single column is
+#' a single trace. Long data names the wavelength or mass in a column of its
+#' own alongside `rt` and `intensity`, so its absence says the same thing.
+#' @noRd
+is_unidimensional <- function(x){
+  if (is.null(x)) return(FALSE)
+  if (identical(attr(x, "data_format"), "long")) ncol(x) <= 2 else ncol(x) == 1
+}
+
 #' Convert chromatogram format
 #' @author Ethan Bass
 #' @noRd
@@ -111,19 +122,18 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
                      "x43/x44/x46/x01" = "cdf",
                      "x50/x4b/x03/x04" = "zip"
   )
-  if (filetype == "zip" && fs::path_ext(path) == "dx"){
-    filetype <- "agilent_dx"
-  }
   if (is.null(filetype)){
     stop("File type not recognized. Please specify a filetype by providing an argument to `format_in`
           or file an issue at `https://github.com/ethanbass/chromConverter/issues`.")
+  }
+  if (filetype == "zip" && fs::path_ext(path) == "dx"){
+    filetype <- "agilent_dx"
   }
   if (filetype == "chemstation_131"){
     seek(f, 348)
     magic2 <- readBin(f, what="character", n = 2)
     magic2 <- paste(magic2, collapse = "")
-    filetype <- switch(magic2, "OL" = "openlab_131",
-                   "LC" = "chemstation_131")
+    filetype <- switch(magic2, "OL" = "openlab_131", "chemstation_131")
   } else if (filetype == "shimadzu_ole"){
     filetype <- paste("shimadzu", tolower(fs::path_ext(path)),sep = "_")
     # fp <- read_sz_file_properties(path)
@@ -148,44 +158,9 @@ get_filetype <- function(path, out = c("format_in", "filetype")){
 #' Check parser
 #' @noRd
 check_parser <- function(format_in, parser = NULL, find = FALSE){
-  allowed_formats <- list(openchrom = c("msd", "csd", "wsd"),
-                          chromconverter = c("agilent_d", "agilent_dx",
-                                             "agilent_rslt", "asm",
-                                             "cdf", "chemstation",
-                                             "chemstation_csv",
-                                             "chemstation_ch", "chemstation_fid",
-                                             "chemstation_uv", "chromeleon_uv",
-                                             "chromatotec",
-                                             "chemstation_2", "chemstation_ms",
-                                             "chemstation_30", "chemstation_31",
-                                             "chemstation_130", "chemstation_131",
-                                             "openlab_131", "chemstation_179",
-                                             "chemstation_81", "chemstation_181",
-                                             "mzml", "mzxml", "mdf",
-                                             "shimadzu_ascii", "shimadzu_dad",
-                                             "shimadzu_fid", "shimadzu_gcd",
-                                             "shimadzu_qgd", "shimadzu_lcd",
-                                             "varian_sms",
-                                             "waters_arw", "waters_raw",
-                                             "waters_chro", "csv"),
-                          # 'Aston' is deprecated. `sp_converter` is the only
-                          # remaining binding (see `R/call_aston.R`), so
-                          # `masshunter_dad` is the only format it can read.
-                          aston = "masshunter_dad",
-                          entab = c("chemstation", "chemstation_ms",
-                                    "chemstation_mwd", "chemstation_ch",
-                                    "chemstation_30", "chemstation_31",
-                                    "chemstation_131", "chemstation_fid",
-                                    "chemstation_uv", "masshunter_dad",
-                                    "thermoraw", "other"),
-                          rainbow = c("chemstation", "chemstation_ms",
-                                      "chemstation_ch",
-                                      "chemstation_130","chemstation_131",
-                                      "chemstation_fid", "chemstation_179",
-                                      "chemstation_uv", "waters_raw",
-                                      "agilent_d"),
-                          thermoraw = c("thermoraw")
-  )
+  # `parser -> formats`, inverted from the format registry
+  # (see `R/parser_registry.R`)
+  allowed_formats <- parser_formats()
   all_formats <- allowed_formats
   if (find){
     if (!py_module_maybe_available("rainbow")){
@@ -292,62 +267,20 @@ extract_filenames <- function(files){
                                 grep("\\.[Dd]", n, value = TRUE), tail(n, 1))
                        }))
   } else {
-    file_names <- sapply(strsplit(basename(files),"\\."), function(x) x[1])
+    file_names <- fs::path_ext_remove(basename(files))
   }
   file_names
 }
 
-#' Format extension
-#' @noRd
-format_to_extension <- function(format_in){
-  switch(format_in,
-         "agilent_d" = "\\.d$",
-         "agilent_dx" = "\\.dx$",
-         "agilent_rslt" = "\\.rslt$|\\.sirslt$",
-         "chemstation_ms" = "\\.ms$",
-         "chemstation_2" = "\\.ms$",
-         "chemstation_uv" = "\\.uv$",
-         "chemstation_31" = "\\.uv$",
-         "chemstation_131" = "\\.uv$",
-         "chemstation_ch" = "\\.ch$",
-         "chemstation_fid" = "\\.ch$",
-         "chemstation_179" = "\\.ch$",
-         "chemstation_181" = "\\.ch$",
-         "chemstation_81" = "\\.ch$",
-         "chemstation_8" = "\\.ch$",
-         "chemstation_30" = "\\.ch$",
-         "chemstation_130" = "\\.ch$",
-         "chemstation_csv" = "\\.csv$",
-         "masshunter_dad" = "\\.sp$",
-         "shimadzu_txt" = "\\.txt$",
-         "shimadzu_fid" = "\\.txt$",
-         "shimadzu_dad" = "\\.txt$",
-         "shimadzu_lcd" = "\\.lcd$",
-         "shimadzu_gcd" = "\\.gcd$",
-         "shimadzu_qgd" = "\\.qgd",
-         "chromeleon_uv" = "\\.txt$",
-         "chromatotec" = "\\.Chrom$",
-         "thermoraw" = "\\.raw$",
-         "cdf" = "\\.cdf$",
-         "mzml" = "\\.mzml$",
-         "mzxml" = "\\.mzxml$",
-         "varian_sms" = "\\.sms$",
-         "waters_arw" = "\\.arw$",
-         "waters_raw" = "\\.raw$",
-         "msd" = "\\.",
-         "csd" ="\\.",
-         "wsd" ="\\.",
-         "mdf" = "\\.mdf$",
-         "other" = "\\.",
-         "\\.")
-}
-
 #' Find files
+#'
+#' @param paths Paths to search.
+#' @param pattern Regular expression matching the file extension.
+#' @param dirs Whether the files being sought are directories (e.g. 'Agilent'
+#' `.d` directories). Supplied by the caller from the format registry.
 #' @noRd
-find_files <- function(paths, pattern){
+find_files <- function(paths, pattern, dirs = FALSE){
   files <- unlist(lapply(paths, function(path){
-    dirs <- ifelse(pattern %in% c("\\.raw$", "\\.d$", "\\.rslt$|\\.sirslt$"),
-                   TRUE, FALSE)
     files <- list.files(path = path, pattern = pattern, include.dirs = dirs,
                         full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
     if (length(files)==0){

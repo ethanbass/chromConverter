@@ -66,12 +66,28 @@ test_that("check_parser works as expected", {
   expect_error(check_parser(format_in = "csd", parser="rainbow", find = FALSE))
 })
 
+test_that("check_parser distinguishes 'ChemStation' file versions", {
+  # `entab` reads 'ChemStation' versions 30 and 31 but not 130 or 179;
+  # `rainbow` reads 130 and 179 but not 30 or 81. Auto-detection must respect
+  # that rather than assuming every version of a `.ch` file is interchangeable.
+  expect_equal(check_parser("chemstation_130", find = TRUE), "chromconverter")
+  expect_equal(check_parser("chemstation_181", find = TRUE), "chromconverter")
+  if (requireNamespace("entab", quietly = TRUE)){
+    expect_equal(check_parser("chemstation_30", find = TRUE), "entab")
+  }
+  expect_error(check_parser("chemstation_181", parser = "entab"),
+               "Mismatched arguments")
+  expect_error(check_parser("chemstation_30", parser = "rainbow"),
+               "Mismatched arguments")
+  expect_silent(check_parser("chemstation_130", parser = "rainbow"))
+})
+
 test_that("check for pkg returns error for fake package", {
   expect_error(check_for_pkg("made_up_package"))
 })
 
 test_that("get_filetype returns error for unknown filetype", {
-  expect_error(get_filetype("testdata/dad1.csv"))
+  expect_error(get_filetype("testdata/dad1.csv"), "File type not recognized")
 })
 
 

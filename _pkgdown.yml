@@ -42,6 +42,7 @@ reference:
 - title: "Write functions"
   contents:
   - write_andi_chrom
+  - write_andi_ms
   - write_mzml
 - title: "Methods"
   contents:

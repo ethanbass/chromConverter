@@ -5,6 +5,8 @@
 * Added `read_agilent_rslt` function to read whole sequence of files from OpenLab and automatically attach corresponding metadata from the `acaml` file.
 * Added `sort_by` argument to `read_chroms` to control chromatogram order. Options are "none" (default), "acquisition_time" (using `run_datetime` from metadata), and "file_time" (using file modification time). The default will change to "acquisition_time" in a future release.
 * Added a `detector` argument to `extract_metadata` to select which detectors to include (e.g. `detector = "UV"` or `detector = c("UV", "MS")`), matched case-insensitively against each chromatogram's `detector` attribute. This is useful for lists containing more than one detector per sample, such as those returned by the `rainbow` parser.
+* `write_andi_ms` is now exported, like `write_andi_chrom` and `write_mzml`. It was previously reachable only through `write_chroms(what = "MS1")` or `read_chroms(export_format = "cdf")`, which write a whole list of chromatograms and offer no control over the file name or the instrument settings.
+* `write_chroms(export_format = "cdf")` now forwards `...` to the underlying writer, as the `mzml` exporter already did. This makes the `ms_params` argument of `write_andi_ms` and the `lambda` argument of `write_andi_chrom` usable when writing a batch of files.
 * Added a `bin_width` argument to `call_rainbow` as an alternative to `precision`, for m/z grids that are not a power of ten (e.g. `bin_width = 0.5`). `precision` is unchanged and remains the default.
 
 ### Improved handling of Python dependencies
@@ -72,6 +74,9 @@
 
 #### mzML export
 
+* Fixed `write_chroms(export_format = "mzml")`, which failed for every file unless `what` was given explicitly. The streams to write are now inferred from the data, as they are when `write_mzml` is called directly.
+* `write_mzml` no longer writes a one-dimensional chromatogram as DAD spectra, and points to `write_andi_chrom` instead. mzML stores scans of (m/z or wavelength, intensity), so a single trace has no axis to put in one: it was written as a single-point spectrum per retention time, which for a 66,000-point trace meant 66,000 scans, as many warnings about empty ranges, and a 128 MB file. The trace is skipped with a warning if other streams were requested, and reported as an error if it was the only one, since skipping it would leave an empty file. `TIC` and `BPC` are unaffected, since the format has terms for those MS-derived summaries and they are written to the chromatogram list rather than as spectra.
+* `write_mzml` now throws a more informative error when handed a single chromatogram whose `detector` attribute is missing, `NA`, or names a detector it has no mzML stream for, rather than failing with `EXPR must be a length 1 vector` or quietly writing an unnamed stream.
 * Fixed the `fileChecksum` written into indexed mzML files, which was the SHA-1 of the first line of the file (`<?xml version="1.0" encoding="UTF-8"?>`) rather than of the file itself, because the digest was taken over a multi-element character vector. Files are now checksummed as required by the mzML specification, over the bytes up to and including the opening `<fileChecksum>` tag, and the file no longer has to be read back into memory to do it.
 * Fixed the offsets in the `indexList` of mzML files. `<indexListOffset>` pointed one byte before `<indexList>`, and every offset in the DAD spectrum index pointed at the newline preceding its `<spectrum>` element rather than at the element. Offsets are now counted as the file is written instead of being probed with `seek()`, which is unreliable on a connection opened in text mode and ignores the write buffer.
 * Fixed the chromatogram index of mzML files. Each `<offset>` pointed four bytes before its `<chromatogram>` element, and its `idRef` named the element's `index` rather than its `id`, so no entry in the index resolved to the chromatogram it was meant to locate. 
@@ -94,8 +99,14 @@
 
 #### `read_chroms`
 
-* For formats that return more than one chromatogram per sample, `sample_names = "sample_name"` named every sample with the literal string `"NULL"` and then warned about duplicate names. The `sample_name` attribute is attached to the individual chromatograms rather than to the list grouping them, so the lookup came up empty and the resulting `NULL` was coerced to a string. Samples with no recorded sample name now fall back to the file name, with a warning naming them.
+* Refactored the dispatch in `read_chroms`. A single internal table now records which formats it can read and, for each one, the file extension, and the reader each parser uses. These facts were previously spread across the argument list, an `if`/`else` chain, and several utility functions (`check_parser` and `format_to_extension`). The change is internal, but it resolves several problems listed below.
+* Arguments passed through `...` are now matched against the arguments the selected parser actually accepts. An unrecognized argument previously made every file fail, surfacing from inside `try()` as a warning with an unreadable message; such arguments are now ignored with a warning naming them.
+* When `format_in` is not supplied and the type of a file cannot be recognized, `read_chroms` now says so and asks for a format, rather than failing with `argument is of length zero`.
 * `read_chroms` now gives an informative error when no parser is available for a format, instead of failing with `missing value where TRUE/FALSE needed`.
+* When a file cannot be interpreted, `read_chroms` now names it instead of reporting its position in the list.
+* Some formats can now be named in more than one way. `format_in` accepts an alias as readily as the format's own name, and the two behave identically: `rslt` and `sirslt` for `agilent_rslt`, `openlab_dx` for `agilent_dx`, `chemstation_fid` for `chemstation_ch`, `andi` for `cdf`, and `allotrope` for `asm`.
+* The `shimadzu_ascii`, `csv`, `asm`, `openlab_131` and `chemstation` formats are now matched to the correct file extension, instead of falling through to a pattern matching any file containing a `.`.
+* The `metadata_format` agument now reaches the `agilent_dx`, `agilent_rslt`, `shimadzu_lcd`, `shimadzu_qgd`, `cdf` and `entab` parsers. Previously, `metadata_format = "raw"` was silently ignored for these formats.
 
 ## chromConverter 0.9.1
 

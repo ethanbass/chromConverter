@@ -60,9 +60,16 @@ tools. Support for MS2 may be added in a future release.
 If \code{indexed = TRUE}, the function will generate an indexed mzML file, which
 allows faster random access to spectra.
 }
+\examples{
+\dontrun{
+chrom <- read_chroms("path/to/file.qgd", progress_bar = FALSE)
+write_mzml(chrom[[1]], path_out = "path/to/directory")
+}
+}
 \seealso{
 Other write functions:
 \code{\link[=write_andi_chrom]{write_andi_chrom()}},
+\code{\link[=write_andi_ms]{write_andi_ms()}},
 \code{\link[=write_chroms]{write_chroms()}}
 }
 \author{

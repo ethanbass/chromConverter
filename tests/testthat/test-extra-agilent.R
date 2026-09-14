@@ -674,7 +674,7 @@ test_that("read_chroms can read 'Agilent' .dx files with OL179", {
   path <- system.file("agilent.dx", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, format_in = "agilent_dx", what = c("chroms", "instrument"),
+  x <- read_chroms(path, format_in = "openlab_dx", what = c("chroms", "instrument"),
                    progress_bar = FALSE)[[1]]
   expect_equal(class(x$chroms)[1], "matrix")
   expect_equal(colnames(x$chroms),"intensity")

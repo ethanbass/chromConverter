@@ -79,22 +79,7 @@ read_peaklist <- function(paths, find_files,
                       read_metadata = read_metadata,
                       metadata_format = metadata_format)
   }
-  if (find_files){
-    files <- find_files(paths, pattern)
-  } else {
-    files <- paths
-    if (!is.null(pattern)){
-      match <- grep(pattern, files, ignore.case = TRUE)
-      if (length(match) == 0){
-        warning("The provided files do not match the expected file extension.
-      Please confirm that the specified format ('format_in') is correct.",
-                immediate. = TRUE)
-      } else if (length(match) < length(files)){
-        warning(paste("Some of the files do not have the expected file extension:",
-                      files[match]), immediate. = TRUE)
-      }
-    }
-  }
+  files <- collect_files(paths, pattern, search_dirs = find_files)
   file_names <- extract_filenames(files)
   if (format_in == "chemstation"){
     data <- parser(files)

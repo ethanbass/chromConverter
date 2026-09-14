@@ -664,3 +664,47 @@ test_that("mzML metadata is attached as attributes, not just returned as a slot"
   # and asking for a stream without metadata must still work
   expect_named(read_mzml(path, what = "TIC"), "TIC")
 })
+
+test_that("read_chroms ignores arguments the parser cannot take", {
+  path_uv <- test_path("testdata/dad1.uv")
+  # `read_chemstation_uv` has no `...`, so an unrecognized argument used to
+  # make every file fail inside `try()`, surfacing as an unreadable warning
+  expect_warning(x <- read_chroms(path_uv, format_in = "chemstation_uv",
+                                  parser = "chromconverter",
+                                  progress_bar = FALSE, nonsense = 1),
+                 "not accepted")
+  expect_length(x, 1)
+  expect_equal(dim(x[[1]]), c(1944, 101))
+
+  # arguments the parser does accept are still forwarded
+  x1 <- expect_no_warning(read_chroms(path_uv, format_in = "chemstation_uv",
+                                      parser = "chromconverter",
+                                      progress_bar = FALSE, scale = FALSE))
+  expect_equal(x1[[1]], read_chemstation_uv(path_uv, scale = FALSE),
+               ignore_attr = TRUE)
+
+  # an argument that only some parsers take is reported against the parser
+  # that was actually selected
+  skip_if_not_installed("entab")
+  expect_warning(read_chroms(path_uv, format_in = "chemstation_uv",
+                             parser = "entab", progress_bar = FALSE,
+                             scale = FALSE),
+                 "call_entab")
+})
+
+test_that("read_chroms errors when the supplied paths do not exist", {
+  expect_error(read_chroms(test_path("testdata/does_not_exist.uv"),
+                           format_in = "chemstation_uv", progress_bar = FALSE),
+               "Cannot locate files")
+})
+
+test_that("collect_files warns when files do not match the expected extension", {
+  expect_warning(files <- collect_files("dad1.csv", "\\.uv$",
+                                        search_dirs = FALSE),
+                 "do not match the expected file extension")
+  expect_equal(files, "dad1.csv")
+  expect_warning(collect_files(c("dad1.uv", "dad1.csv"), "\\.uv$",
+                               search_dirs = FALSE),
+                 "Some of the files do not have the expected file extension")
+  expect_no_warning(collect_files("dad1.uv", "\\.uv$", search_dirs = FALSE))
+})
