@@ -83,10 +83,9 @@ read_agilent_rslt <- function(path, what = c("chroms","dad"), path_out = NULL,
       chrom
     }, data, basename(dx_files), SIMPLIFY = FALSE)
   }
-  if (sample_names == "basename"){
-    names(data) <- gsub("\\.dx$", "", basename(dx_files))
-  } else if (sample_names == "sample_name"){
-    names(data) <- sapply(data, function(x) attr(x,"acaml_metadata")$SampleName)
-  }
+  file_names <- gsub("\\.dx$", "", basename(dx_files), ignore.case = TRUE)
+  names(data) <- if (sample_names == "sample_name"){
+    name_by_sample_name(data, file_names)
+  } else file_names
   structure(data, class = "chrom_list")
 }

@@ -29,7 +29,10 @@ Invisibly returns \code{x}.
 Prints a summary of a \code{chrom_list} without displaying the underlying
 chromatographic data. Attributes that are constant across all chromatograms
 are collapsed into a single header line, while varying attributes are shown
-as a table truncated to the first \code{n} rows.
+as a table truncated to the first \code{n} rows. When a sample holds more than
+one chromatogram, its traces are printed as a block headed by the sample,
+and any attribute they all share is shown in that block's header rather
+than repeated down it.
 }
 \seealso{
 \link{extract_metadata}

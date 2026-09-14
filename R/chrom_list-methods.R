@@ -3,7 +3,10 @@
 #' Prints a summary of a `chrom_list` without displaying the underlying
 #' chromatographic data. Attributes that are constant across all chromatograms
 #' are collapsed into a single header line, while varying attributes are shown
-#' as a table truncated to the first `n` rows.
+#' as a table truncated to the first `n` rows. When a sample holds more than
+#' one chromatogram, its traces are printed as a block headed by the sample,
+#' and any attribute they all share is shown in that block's header rather
+#' than repeated down it.
 #'
 #' @param x A `chrom_list` object.
 #' @param n Integer. Maximum number of chromatograms to show in the table.
@@ -50,38 +53,66 @@ print.chrom_list <- function(x, n = 10,
       paste(l$path, collapse = "."), character(1)))
   }
 
-  # Group by everything above the leaf, so that the traces belonging to one
-  # sample are printed together under its name.
+  # Group by the sample -- the outermost name -- so that every trace belonging
+  # to it is printed together under it. Grouping by the whole path above the
+  # leaf instead would split one sample across several blocks whenever its
+  # traces sit at different depths, as they do for an 'Agilent' `.dx`, where
+  # `dad` is a chromatogram in its own right while `chroms` is a list of them.
   groups <- vapply(leaves, function(l)
-    paste(utils::head(l$path, -1), collapse = "."), character(1))
+    if (length(l$path) > 1) l$path[1] else "", character(1))
   grouped <- n_traces > 1 && any(nzchar(groups))
 
-  is_constant <- sapply(meta, function(col) length(unique(col)) == 1)
+  is_constant <- vapply(meta, function(col) length(unique(col)) == 1, logical(1))
   # In grouped mode the leaf names are the point of the table, so `name` is
   # always shown, even when a group holds a single trace.
   if (grouped) is_constant[names(meta) == "name"] <- FALSE
-  constant_cols <- meta[1, is_constant, drop = FALSE]
+  # A field that is constant only because it is empty everywhere -- an
+  # unnamed injection, say -- says nothing, and printing `sample_name: ` with
+  # nothing after it reads as a bug. Drop it from the header rather than
+  # moving it to the table, where it would be just as empty.
+  is_blank <- is_constant & vapply(meta, function(col) is_blank_value(col[[1]]),
+                                   logical(1))
+  constant_cols <- meta[1, is_constant & !is_blank, drop = FALSE]
   varying_meta  <- meta[, !is_constant, drop = FALSE]
 
-  if (any(is_constant)) {
-    # `format` rather than `as.character`, so that a value shown in the header
-    # renders exactly as `print.data.frame` would render it in the table below
-    # (`as.character` on a POSIXct keeps sub-second digits, `format` does not).
-    header <- paste(names(constant_cols), unlist(format(constant_cols)),
-                    sep = ": ", collapse = "  |  ")
-    cat(paste0(paste(strwrap(header, width = getOption("width"), exdent = 2),
-                     collapse = "\n"), "\n"))
+  if (ncol(constant_cols) > 0) {
+    cat(format_chrom_header(constant_cols), sep = "\n")
   }
 
   n_show <- min(n, n_traces)
   if (ncol(varying_meta) > 0) {
     if (grouped) {
-      varying_meta$name <- vapply(leaves, function(l) utils::tail(l$path, 1),
-                                  character(1))
-      print_grouped_meta(varying_meta[seq_len(n_show), , drop = FALSE],
-                         groups[seq_len(n_show)])
+      # the sample is named by the block header, so the rest of the path is
+      # what distinguishes one trace from another within it
+      varying_meta$name <- vapply(leaves, function(l)
+        if (length(l$path) > 1) paste(l$path[-1], collapse = ".") else l$path,
+        character(1))
+      # A field that is the same for every trace in a sample describes the
+      # sample rather than the trace, so it belongs in the block header instead
+      # of being repeated down every row of the block -- `sample_name` in a
+      # list read with `sample_names = "sample_name"` merely restates the label
+      # above it. Constancy is judged over the whole sample rather than over
+      # the rows `n` leaves room for, so that truncating the table cannot
+      # change what the header claims. A list mixing flat and nested entries
+      # groups all the flat ones together under an empty label, and they are
+      # not one sample, so it is left alone.
+      headers <- NULL
+      if (all(nzchar(groups))){
+        hoist <- names(varying_meta) != "name" &
+          vapply(varying_meta, constant_within, logical(1), groups)
+        if (any(hoist)){
+          first <- !duplicated(groups)
+          headers <- varying_meta[first, hoist, drop = FALSE]
+          rownames(headers) <- groups[first]
+          varying_meta <- varying_meta[, !hoist, drop = FALSE]
+        }
+      }
+      print_grouped_meta(truncate_meta(varying_meta[seq_len(n_show), ,
+                                                    drop = FALSE]),
+                         groups[seq_len(n_show)], headers = headers)
     } else {
-      print(varying_meta[seq_len(n_show), , drop = FALSE], row.names = TRUE)
+      print(truncate_meta(varying_meta[seq_len(n_show), , drop = FALSE]),
+            row.names = TRUE)
     }
   }
 
@@ -93,23 +124,129 @@ print.chrom_list <- function(x, n = 10,
   invisible(x)
 }
 
+#' Lay out the constant metadata fields as a header block
+#'
+#' `strwrap` would do the wrapping, but it normalizes runs of whitespace, which
+#' collapses the padding around the separators, and it breaks a line wherever a
+#' value happens to contain a space -- a Windows path in `method`, say -- rather
+#' than treating each `field: value` pair as a unit. So the fields are
+#' truncated to keep them legible and packed onto lines here.
+#'
+#' @param cols A one-row data frame of the constant fields.
+#' @param prefix Optional label to place before the fields, used by
+#' `print_grouped_meta` to head a block with the name of its sample.
+#' @return A character vector of lines, continuations indented by two spaces.
+#' @noRd
+format_chrom_header <- function(cols, width = getOption("width"),
+                                max_field = 60L, prefix = NULL){
+  # `format` rather than `as.character`, so that a value shown in the header
+  # renders as `print.data.frame` would render it in the table below
+  # (`as.character` on a POSIXct keeps sub-second digits, `format` does not).
+  vals <- truncate_middle(trimws(unlist(format(cols), use.names = FALSE)),
+                          max_field)
+  # a block header leads with the name of the sample, which is a label rather
+  # than a `field: value` pair, but wraps along with them
+  fields <- c(prefix, paste(names(cols), vals, sep = ": "))
+  sep <- "  |  "
+  lines <- character()
+  current <- fields[1]
+  for (field in fields[-1]){
+    if (nchar(current) + nchar(sep) + nchar(field) <= width){
+      current <- paste0(current, sep, field)
+    } else {
+      lines <- c(lines, current)
+      current <- paste0("  ", field)
+    }
+  }
+  c(lines, current)
+}
+
+#' Truncate the character columns of the metadata table
+#'
+#' `print.data.frame` does not truncate, so one long `source_file` or `method`
+#' is enough to push every other column off the edge of the terminal.
+#' @noRd
+truncate_meta <- function(meta, max_field = 40L){
+  for (col in names(meta)){
+    if (is.character(meta[[col]])){
+      meta[[col]] <- truncate_middle(meta[[col]], max_field)
+    }
+  }
+  meta
+}
+
+#' Shorten a string from the middle
+#'
+#' Both ends of these values carry information -- a path names its directory
+#' and its file -- so an elision in the middle keeps more than a trailing one.
+#' @noRd
+truncate_middle <- function(x, n){
+  long <- which(!is.na(x) & nchar(x) > n)
+  if (length(long) > 0){
+    keep <- n - 3L
+    head_n <- ceiling(keep / 2)
+    x[long] <- paste0(substr(x[long], 1, head_n), "...",
+                      substring(x[long], nchar(x[long]) - (keep - head_n) + 1))
+  }
+  x
+}
+
+#' Does a value amount to nothing worth printing?
+#'
+#' An unnamed injection leaves an empty `sample_name` behind, and printing
+#' `sample_name: ` with nothing after it reads as a bug.
+#' @noRd
+is_blank_value <- function(v){
+  is.na(v) || !nzchar(trimws(format(v)))
+}
+
+#' Is a column the same for every row within each group?
+#' @noRd
+constant_within <- function(col, groups){
+  all(vapply(split(col, groups), function(v) length(unique(v)) == 1,
+             logical(1)))
+}
+
 #' Print metadata in blocks, one per sample
 #'
 #' Delegates to `print.data.frame` and indents its output, so that column
 #' alignment and width truncation are handled by R rather than by hand. Row
 #' numbers run across the whole table, so they stay consistent with the
 #' "... with N more chromatograms" notice.
+#'
+#' @param headers Optional data frame of the fields that describe each sample
+#' as a whole, one row per group and named for it, shown alongside the sample's
+#' name at the head of its block.
 #' @noRd
-print_grouped_meta <- function(meta, groups){
+print_grouped_meta <- function(meta, groups, headers = NULL){
   for (group in unique(groups)){
     # a list mixing flat and nested entries gives the flat ones an empty group;
     # printing it would emit a bare blank line
-    if (nzchar(group)) cat(group, "\n", sep = "")
+    if (nzchar(group)){
+      fields <- if (is.null(headers)) NULL else
+        block_header_fields(headers[group, , drop = FALSE], group)
+      if (!is.null(fields) && ncol(fields) > 0){
+        cat(format_chrom_header(fields, prefix = group), sep = "\n")
+      } else cat(group, "\n", sep = "")
+    }
     block <- meta[groups == group, , drop = FALSE]
     cat(paste0("  ", utils::capture.output(print(block, row.names = TRUE))),
         sep = "\n")
   }
   invisible(NULL)
+}
+
+#' The fields worth showing at the head of a sample's block
+#'
+#' Drops those with no value to show, along with any that merely repeat the
+#' name of the sample: `sample_name` does exactly that in a list read with
+#' `sample_names = "sample_name"`.
+#' @noRd
+block_header_fields <- function(cols, group){
+  keep <- vapply(cols, function(col){
+    !is_blank_value(col[[1]]) && !identical(trimws(format(col[[1]])), group)
+  }, logical(1))
+  cols[, keep, drop = FALSE]
 }
 
 #' Subset a `chrom_list` object

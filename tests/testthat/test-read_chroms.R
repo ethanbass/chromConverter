@@ -606,6 +606,55 @@ test_that("get_sample_attr returns a single value", {
                as.POSIXct("2020-01-01", tz = "UTC"))
 })
 
+test_that("get_sample_attr treats empty and missing values as absent", {
+  expect_null(get_sample_attr(fake_chrom(name = ""), "sample_name"))
+  expect_null(get_sample_attr(fake_chrom(name = "  "), "sample_name"))
+  expect_null(get_sample_attr(fake_chrom(name = NA_character_), "sample_name"))
+
+  # an empty name on one trace must not hide a real one on the next
+  x <- list(MS1 = fake_chrom(name = ""), TIC = fake_chrom(name = "a"))
+  expect_equal(get_sample_attr(x, "sample_name"), "a")
+
+  # nor on the list itself
+  y <- structure(list(TIC = fake_chrom(name = "a")), sample_name = "")
+  expect_equal(get_sample_attr(y, "sample_name"), "a")
+})
+
+test_that("sample_attr_values gathers every leaf unless asked for the first", {
+  x <- list(MS1 = fake_chrom(name = "a"), TIC = fake_chrom(name = "b"),
+            BPC = fake_chrom())
+  expect_equal(sample_attr_values(x, "sample_name"), list("a", "b"))
+  expect_equal(sample_attr_values(x, "sample_name", first_only = TRUE),
+               list("a"))
+
+  # a value on the element describes the whole sample, so the leaves are moot
+  y <- structure(x, sample_name = "outer")
+  expect_equal(sample_attr_values(y, "sample_name"), list("outer"))
+})
+
+test_that("name_by_sample_name uses the sample name when the traces agree", {
+  data <- list(list(MS1 = fake_chrom(name = "a"), TIC = fake_chrom(name = "a")),
+               fake_chrom(name = "b"))
+  expect_silent(nms <- name_by_sample_name(data, c("f1", "f2")))
+  expect_equal(nms, c("a", "b"))
+})
+
+test_that("name_by_sample_name falls back when the traces disagree", {
+  data <- list(list(MS1 = fake_chrom(name = "a"), TIC = fake_chrom(name = "b")),
+               fake_chrom(name = "c"))
+  expect_warning(nms <- name_by_sample_name(data, c("f1", "f2")),
+                 "Conflicting .sample_name. attributes")
+  expect_equal(nms, c("f1", "c"))
+})
+
+test_that("name_by_sample_name falls back when no name was recorded", {
+  data <- list(list(MS1 = fake_chrom(), TIC = fake_chrom(name = "  ")),
+               fake_chrom(name = "c"))
+  expect_warning(nms <- name_by_sample_name(data, c("f1", "f2")),
+                 "could not be determined")
+  expect_equal(nms, c("f1", "c"))
+})
+
 test_that("sort_chroms_by_time orders nested samples oldest first", {
   data <- list(b = list(TIC = fake_chrom("2020-06-01")),
                a = list(TIC = fake_chrom("2019-01-01")),

@@ -221,18 +221,7 @@ read_chroms <- function(paths,
   } else if (sample_names == "basename"){
     names(data) <- file_names
   } else if (sample_names == "sample_name"){
-    nms <- vapply(data, function(x){
-      val <- get_sample_attr(x, "sample_name")
-      if (is.null(val) || is.na(val)) NA_character_ else as.character(val)
-    }, character(1))
-    if (anyNA(nms)){
-      warning(sprintf(paste0("`sample_name` could not be determined for %s. ",
-                             "Using the file name instead."),
-                      paste(sQuote(file_names[is.na(nms)]), collapse = ", ")),
-              immediate. = TRUE)
-      nms[is.na(nms)] <- file_names[is.na(nms)]
-    }
-    names(data) <- nms
+    names(data) <- name_by_sample_name(data, file_names)
   }
   if (anyDuplicated(names(data))){
     duplicated_names <- unique(names(data)[duplicated(names(data))])
@@ -322,6 +311,40 @@ read_files <- function(files, converter, progress_bar, cl = 1,
     }
     try(converter(file), silent = TRUE)
   })
+}
+
+#' Name each sample after its `sample_name` attribute
+#'
+#' A sample may be a single chromatogram or a (possibly nested) list of them,
+#' each trace carrying its own copy of the sample-level metadata, so the name
+#' is resolved with `sample_attr_values` rather than read straight off the
+#' element. The traces making up a sample should all give the same name; if
+#' they disagree there is no basis for preferring one over another, so the name
+#' is treated as unknown. Samples with no usable name fall back to the file
+#' name, which is what `sample_names = "basename"` would have given.
+#' @noRd
+name_by_sample_name <- function(data, file_names){
+  vals <- lapply(data, function(x){
+    unique(as.character(unlist(sample_attr_values(x, "sample_name"))))
+  })
+  nms <- vapply(vals, function(v) if (length(v) == 1) v else NA_character_,
+                character(1))
+  conflicting <- which(lengths(vals) > 1)
+  if (length(conflicting) > 0){
+    warning(sprintf(paste0("Conflicting `sample_name` attributes for %s. ",
+                           "Using the file name instead."),
+                    paste(sQuote(file_names[conflicting]), collapse = ", ")),
+            immediate. = TRUE)
+  }
+  unnamed <- which(lengths(vals) == 0)
+  if (length(unnamed) > 0){
+    warning(sprintf(paste0("`sample_name` could not be determined for %s. ",
+                           "Using the file name instead."),
+                    paste(sQuote(file_names[unnamed]), collapse = ", ")),
+            immediate. = TRUE)
+  }
+  nms[is.na(nms)] <- file_names[is.na(nms)]
+  unname(nms)
 }
 
 #' Sort a list of chromatograms by acquisition time

@@ -824,6 +824,226 @@ test_that("read_chroms can read 'Agilent' .dx files with OL130", {
   expect_equal(basename(attr(x$instrument[[1]], "source_file")), "MeOH1.dx")
 })
 
+test_that("read_chroms can read 'Agilent' .sirslt directories", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("openlab.sirslt", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path))
+
+  x <- read_chroms(path, format_in = "agilent_rslt", progress_bar = FALSE)
+  expect_s3_class(x, "chrom_list")
+  expect_equal(length(x), 1)
+
+  # injections are named after the source .dx file by default
+  expect_equal(names(x), "Norbert II-2026-05-26 16-19-41-05-00")
+
+  s <- x[[1]]
+  expect_equal(names(s), c("chroms", "dad"))
+  expect_equal(names(s$chroms), c("DAD1D,Sig=360,4  Ref=off",
+                                  "DAD1C,Sig=260,4  Ref=off",
+                                  "DAD1B,Sig=200,4  Ref=off",
+                                  "DAD1A,Sig=229,4  Ref=off"))
+  expect_equal(vapply(s$chroms, nrow, numeric(1), USE.NAMES = FALSE),
+               rep(1500, 4))
+  expect_equal(dim(s$dad), c(1500, 106))
+  expect_equal(as.numeric(head(colnames(s$dad), 1)), 190)
+  expect_equal(as.numeric(tail(colnames(s$dad), 1)), 400)
+
+  expect_equal(class(s$chroms[[1]])[1], "matrix")
+  expect_equal(colnames(s$chroms[[1]]), "intensity")
+  expect_equal(attr(s$chroms[[1]], "parser"), "chromconverter")
+  expect_equal(attr(s$chroms[[1]], "data_format"), "wide")
+  expect_equal(attr(s$chroms[[1]], "source_file_format"), "chemstation_179_8b")
+  expect_equal(attr(s$dad, "source_file_format"), "chemstation_131_OL")
+
+  expect_equal(head(get_times(s$chroms[[1]]), 1), 0.0054167, tolerance = .00001)
+  expect_equal(tail(get_times(s$chroms[[1]]), 1), 10, tolerance = .00001)
+  expect_equal(head(get_times(s$dad), 1), 0.0054167, tolerance = .00001)
+  expect_equal(tail(get_times(s$dad), 1), 9.99875, tolerance = .00001)
+
+  expect_equal(head(s$chroms[[1]][, 1], 3),
+               c(-0.6070137, -0.7395744, -0.8668900),
+               tolerance = .0001, ignore_attr = TRUE)
+  expect_equal(s$dad[1, 1:3], c(-1056, -2985, -4263), ignore_attr = TRUE)
+
+  # the .dx file inside the .sirslt directory is the source of the raw data
+  expect_equal(basename(attr(s$chroms[[1]], "source_file")),
+               "Norbert II-2026-05-26 16-19-41-05-00.dx")
+  expect_equal(basename(attr(s$dad, "source_file")),
+               "Norbert II-2026-05-26 16-19-41-05-00.dx")
+})
+
+test_that("read_agilent_rslt attaches metadata from the .acaml file", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("openlab.sirslt", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path))
+
+  s <- read_agilent_rslt(path)[[1]]
+
+  # acaml fields are attached to the list holding the injection's traces,
+  # not to the individual traces
+  expect_equal(attr(s, "instrument"), "Norbert II")
+  expect_equal(attr(s, "software_name"), "OpenLabCDS")
+  expect_equal(attr(s, "software_version"), "2.8 - Build  2.8.0-REL_2.8.0.1330")
+  expect_equal(attr(s, "method"), "flow_rate_simple_test")
+  expect_equal(attr(s, "batch"), "SingleSample")
+  expect_equal(attr(s, "sample_type"), "Sample")
+  expect_equal(attr(s, "sample_injection_volume"), 0)
+  expect_equal(attr(s, "sample_amount"), 0)
+
+  # `InjectionAcqDateTime` is converted to a POSIXct timestamp
+  expect_s3_class(attr(s, "run_datetime"), "POSIXct")
+  expect_equal(attr(s, "run_datetime"),
+               as.POSIXct("2026-05-26 21:20:23", tz = "UTC"))
+
+  # empty acaml fields (`SampleName`, `VialNumber`) are not attached
+  expect_null(attr(s, "sample_name"))
+  expect_null(attr(s, "sample_position"))
+
+  # the full acaml row is retained
+  meta <- attr(s, "acaml_metadata")
+  expect_s3_class(meta, "data.frame")
+  expect_equal(nrow(meta), 1)
+  expect_equal(meta$RawDataFileName, "Norbert II-2026-05-26 16-19-41-05-00.dx")
+  expect_equal(meta$InjectionId, "832b1278-5b39-4f20-b37b-3b4a6a1d449a")
+  expect_equal(meta$SourceFile, "Norbert II-2026-05-26 16-19-41-05-00.acaml")
+
+  # sample-level fields take precedence over the values read from the .dx file
+  x <- read_chroms(path, format_in = "agilent_rslt", progress_bar = FALSE)
+  mtd <- extract_metadata(x)
+  expect_true(all(mtd$instrument == "Norbert II"))
+  expect_true(all(mtd$method == "flow_rate_simple_test"))
+  expect_true(all(mtd$batch == "SingleSample"))
+
+  # `read_metadata = FALSE` skips the acaml file altogether
+  s0 <- read_agilent_rslt(path, read_metadata = FALSE)[[1]]
+  expect_null(attr(s0, "acaml_metadata"))
+  expect_null(attr(s0, "instrument"))
+  expect_equal(setdiff(names(attributes(s0$chroms[[1]])),
+                       c("dim", "dimnames")), character(0))
+
+  # `metadata_format = "raw"` reaches the underlying .dx parser
+  sr <- read_agilent_rslt(path, metadata_format = "raw")[[1]]
+  expect_true("metadata" %in% names(attributes(sr$chroms[[1]])))
+  expect_equal(attr(sr, "instrument"), "Norbert II")
+})
+
+test_that("read_agilent_rslt respects its arguments", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("openlab.sirslt", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path))
+
+  # `rslt` and `sirslt` are aliases for `agilent_rslt`
+  x <- read_chroms(path, format_in = "agilent_rslt", progress_bar = FALSE)
+  expect_equal(x, read_chroms(path, format_in = "rslt", progress_bar = FALSE))
+  expect_equal(x, read_chroms(path, format_in = "sirslt", progress_bar = FALSE))
+
+  # .sirslt directories are also found by scanning a parent directory
+  xp <- read_chroms(dirname(path), format_in = "sirslt", progress_bar = FALSE)
+  expect_equal(names(xp), "Norbert II-2026-05-26 16-19-41-05-00")
+
+  # a single element is collapsed unless `collapse = FALSE`
+  xc <- read_agilent_rslt(path, what = "chroms")[[1]]
+  expect_equal(names(xc), c("DAD1D,Sig=360,4  Ref=off",
+                            "DAD1C,Sig=260,4  Ref=off",
+                            "DAD1B,Sig=200,4  Ref=off",
+                            "DAD1A,Sig=229,4  Ref=off"))
+  expect_equal(names(read_agilent_rslt(path, what = "chroms",
+                                       collapse = FALSE)[[1]]), "chroms")
+
+  xd <- read_agilent_rslt(path, what = "dad")[[1]]
+  expect_true(inherits(xd, "matrix"))
+  expect_equal(dim(xd), c(1500, 106))
+
+  # `data_format` and `format_out` are passed through
+  x1 <- read_chroms(path, format_in = "rslt", data_format = "long",
+                    format_out = "data.frame", progress_bar = FALSE)[[1]]
+  expect_s3_class(x1$chroms[[1]], "data.frame")
+  expect_equal(dim(x1$chroms[[1]]), c(1500, 2))
+  expect_equal(colnames(x1$chroms[[1]]), c("rt", "intensity"))
+  expect_equal(dim(x1$dad), c(159000, 3))
+  expect_equal(colnames(x1$dad), c("rt", "lambda", "intensity"))
+  expect_equal(attr(x1$chroms[[1]], "data_format"), "long")
+  expect_equal(x1$chroms[[1]]$intensity,
+               as.numeric(read_agilent_rslt(path)[[1]]$chroms[[1]][, 1]))
+
+  x2 <- read_chroms(path, format_in = "rslt", format_out = "data.table",
+                    progress_bar = FALSE)[[1]]
+  expect_s3_class(x2$chroms[[1]], "data.table")
+
+  # `path_out` unzips the .dx file instead of using a temporary directory
+  tmp <- fs::path(tempdir(), "rslt_out")
+  on.exit(unlink(tmp, recursive = TRUE))
+  fs::dir_create(tmp)
+  expect_no_error(read_agilent_rslt(path, path_out = tmp))
+  expect_equal(sort(basename(list.files(tmp, recursive = TRUE))),
+               sort(c("82ca0ef5-42cd-4148-a513-b3c161895ad7.CH",
+                      "e3d7b495-7c9b-4502-9adf-61cf4c0df936.CH",
+                      "fa8d419e-53bd-4db9-bdf4-cd790cb61d06.CH",
+                      "fcc9759c-dca2-40b9-86fd-2818920958e8.UV",
+                      "fe2467a0-7b70-4fff-b616-1379efb3326c.CH")))
+})
+
+test_that("read_agilent_rslt handles missing files gracefully", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("openlab.sirslt", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path))
+
+  # a directory without .dx files is an error
+  empty <- fs::path(tempdir(), "empty.rslt")
+  fs::dir_create(empty)
+  on.exit(unlink(empty, recursive = TRUE), add = TRUE)
+  expect_error(read_agilent_rslt(empty), "No .dx files found")
+
+  # a .dx file with no corresponding acaml row is returned with a warning
+  mismatch <- fs::path(tempdir(), "mismatch.rslt")
+  fs::dir_create(mismatch)
+  on.exit(unlink(mismatch, recursive = TRUE), add = TRUE)
+  file.copy(list.files(path, pattern = "\\.dx$", full.names = TRUE),
+            fs::path(mismatch, "other.dx"))
+  file.copy(list.files(path, pattern = "\\.acaml$", full.names = TRUE),
+            fs::path(mismatch, "meta.acaml"))
+
+  expect_warning(xm <- read_agilent_rslt(mismatch),
+                 "No acaml metadata found for other.dx")
+  expect_equal(names(xm), "other")
+  expect_null(attr(xm[[1]], "acaml_metadata"))
+  expect_equal(names(xm[[1]]), c("chroms", "dad"))
+
+  # this file's acaml `SampleName` is blank, which is not a usable name, so
+  # `sample_names = "sample_name"` warns and falls back on the file name
+  expect_warning(xs <- read_agilent_rslt(path, sample_names = "sample_name"),
+                 "could not be determined")
+  expect_equal(names(xs), "Norbert II-2026-05-26 16-19-41-05-00")
+
+  # with no metadata read at all there is nothing to name the sample after
+  expect_warning(xn <- read_agilent_rslt(path, sample_names = "sample_name",
+                                         read_metadata = FALSE),
+                 "could not be determined")
+  expect_equal(names(xn), "Norbert II-2026-05-26 16-19-41-05-00")
+
+  # a `SampleName` that is actually filled in is used
+  named <- fs::path(tempdir(), "named.rslt")
+  fs::dir_create(named)
+  on.exit(unlink(named, recursive = TRUE), add = TRUE)
+  file.copy(list.files(path, pattern = "\\.dx$", full.names = TRUE), named)
+  acaml <- list.files(path, pattern = "\\.acaml$", full.names = TRUE)
+  writeLines(sub('SampleName=""', 'SampleName="RP_Frt_37C"',
+                 readLines(acaml, warn = FALSE), fixed = TRUE),
+             fs::path(named, basename(acaml)))
+
+  expect_silent(xy <- read_agilent_rslt(named, sample_names = "sample_name"))
+  expect_equal(names(xy), "RP_Frt_37C")
+  expect_equal(attr(xy[[1]], "sample_name"), "RP_Frt_37C")
+})
+
 test_that("read_chroms can read 'Agilent ACAML' files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

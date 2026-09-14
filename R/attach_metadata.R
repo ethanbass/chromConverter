@@ -872,7 +872,7 @@ extract_metadata <- function(chrom_list,
     chrom_list <- list(chrom_list)
     use_names <- FALSE
   } else use_names <- TRUE
-  chrom_list <- flatten_chrom_list(chrom_list)
+  chrom_list <- flatten_chrom_list(chrom_list, inherit = TRUE)
   if (!is.null(detector)){
     chrom_list <- filter_by_detector(chrom_list, detector)
   }
@@ -925,32 +925,90 @@ extract_metadata <- function(chrom_list,
 #' Both `extract_metadata` and `print.chrom_list` are built on this, so that
 #' they cannot disagree about how many chromatograms a list contains.
 #'
-#' @return A list of `list(path = <character vector>, chrom = <object>)`.
+#' Each leaf also carries the attributes of the lists it was reached through
+#' (`inherited`), since a parser may attach sample-level metadata to the list
+#' holding the traces rather than to the traces themselves --
+#' `read_agilent_rslt` writes the acaml fields this way.
+#'
+#' @return A list of
+#' `list(path = <character vector>, chrom = <object>, inherited = <list>)`.
 #' @noRd
 chrom_list_leaves <- function(x, path = character()){
   # elements a parser returns alongside the traces without being traces
   # themselves (e.g. the `metadata` table from `read_mzml`)
   if (inherits(x, "chromconverter_metadata")) return(list())
   if (!is.list(x) || inherits(x, c("matrix", "data.table", "data.frame"))){
-    return(list(list(path = path, chrom = x)))
+    return(list(list(path = path, chrom = x, inherited = list())))
   }
   if (length(x) == 0) return(list())
   nms <- names(x)
   if (is.null(nms)) nms <- rep("", length(x))
   nms[!nzchar(nms)] <- seq_along(x)[!nzchar(nms)]
-  unlist(lapply(seq_along(x), function(i){
+  # gather the leaves first, so that each list can be asked whether the traces
+  # beneath it agree about a field before it offers its own copy of one
+  leaves <- unlist(lapply(seq_along(x), function(i){
     chrom_list_leaves(x[[i]], c(path, nms[i]))
   }), recursive = FALSE)
+  for (nm in names(list_metadata_attrs(x))){
+    val <- attr(x, nm, exact = TRUE)
+    # a field the list records but reads nothing into is no value at all, and
+    # must not displace one the traces do have
+    if (is.null(usable_attr(val))) next
+    # a field the traces disagree about describes the trace rather than the
+    # sample -- `detector` in a multichannel file -- so the list's copy of it
+    # must not flatten them. Where they agree, the list is the better source:
+    # `read_agilent_rslt` has the method's name from the `acaml` file while
+    # every trace has the path to the method file from its own `.dx`.
+    vals <- unique(Filter(Negate(is.null), lapply(leaves, function(l){
+      usable_attr(attr(l$chrom, nm, exact = TRUE))
+    })))
+    if (length(vals) > 1) next
+    for (i in seq_along(leaves)){
+      # an inner list is the more specific description of the traces beneath
+      # it, so it wins over an outer one
+      if (is.null(leaves[[i]]$inherited[[nm]])){
+        leaves[[i]]$inherited[[nm]] <- val
+      }
+    }
+  }
+  leaves
+}
+
+#' Attributes of a list of chromatograms that describe the data
+#'
+#' Everything except the bookkeeping attributes that say how the list itself is
+#' put together.
+#' @noRd
+list_metadata_attrs <- function(x){
+  a <- attributes(x)
+  a[!(names(a) %in% c("names", "class", "dim", "dimnames", "row.names",
+                      "comment", "acaml_metadata"))]
 }
 
 #' Flatten a (possibly nested) list of chromatograms
 #'
 #' Nested chromatograms are named for the path taken to reach them, so a
 #' multichannel sample `blue` with a `UV` channel becomes `blue.UV`.
+#'
+#' @param inherit Whether to apply the attributes of the enclosing lists to
+#' each chromatogram. `chrom_list_leaves` decides which may be applied: a list
+#' describes the sample, so where its traces agree about a field it is the
+#' better source (`read_agilent_rslt` has the method's name from the `acaml`
+#' file, while every trace has the path to the method file), but where they
+#' disagree the field belongs to the trace and is left alone.
 #' @noRd
-flatten_chrom_list <- function(x){
+flatten_chrom_list <- function(x, inherit = FALSE){
   leaves <- chrom_list_leaves(x)
-  stats::setNames(lapply(leaves, `[[`, "chrom"),
+  chroms <- lapply(leaves, function(l){
+    chrom <- l$chrom
+    if (inherit){
+      # `chrom_list_leaves` has already dropped the values that must not be
+      # applied, so what is left describes the sample better than the trace does
+      for (nm in names(l$inherited)) attr(chrom, nm) <- l$inherited[[nm]]
+    }
+    chrom
+  })
+  stats::setNames(chroms,
                   vapply(leaves, function(l) paste(l$path, collapse = "."),
                          character(1)))
 }
@@ -962,20 +1020,51 @@ flatten_chrom_list <- function(x){
 #' them, and parsers only ever attach metadata to the individual traces. Look on
 #' the element itself first -- `read_agilent_rslt` writes acaml attributes
 #' directly onto whatever `read_agilent_dx` returned, which may be a list --
-#' then fall back to the first leaf that carries the attribute.
+#' then fall back to the first leaf that carries a usable value.
 #' @noRd
 get_sample_attr <- function(x, which){
-  val <- attr(x, which, exact = TRUE)
-  if (is.null(val)){
-    for (leaf in chrom_list_leaves(x)){
-      val <- attr(leaf$chrom, which, exact = TRUE)
-      if (!is.null(val)) break
+  vals <- sample_attr_values(x, which, first_only = TRUE)
+  if (length(vals) == 0) return(NULL)
+  vals[[1]]
+}
+
+#' Collect the usable values of a sample-level attribute
+#'
+#' An attribute on the element itself describes the whole sample, so it is used
+#' on its own. Otherwise every leaf is a candidate: with `first_only = TRUE` the
+#' search stops at the first usable value (what `get_sample_attr` wants), and
+#' otherwise all of them are returned so the caller can check that the traces
+#' making up a sample agree.
+#'
+#' @return A list of length-1 values, empty if the attribute is nowhere to be
+#' found.
+#' @noRd
+sample_attr_values <- function(x, which, first_only = FALSE){
+  val <- usable_attr(attr(x, which, exact = TRUE))
+  if (!is.null(val)) return(list(val))
+  vals <- list()
+  for (leaf in chrom_list_leaves(x)){
+    val <- usable_attr(attr(leaf$chrom, which, exact = TRUE))
+    if (!is.null(val)){
+      vals <- c(vals, list(val))
+      if (first_only) break
     }
   }
+  vals
+}
+
+#' Reduce an attribute to a single usable value, or `NULL` if it has none
+#' @noRd
+usable_attr <- function(val){
   if (length(val) == 0) return(NULL)
   # a parser may attach more than one value; `extract_metadata` takes the first
   # for `run_datetime` and this must agree with it
-  val[[1]]
+  val <- val[[1]]
+  if (!is.atomic(val) || length(val) != 1 || is.na(val)) return(NULL)
+  # a parser that locates the field but reads nothing out of it leaves an empty
+  # string behind, which is no more of a name than `NA` is
+  if (is.character(val) && !nzchar(trimws(val))) return(NULL)
+  val
 }
 
 #' Subset a list of chromatograms by detector

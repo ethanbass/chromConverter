@@ -55,14 +55,16 @@ test_that("print.chrom_list groups doubly nested chromatograms", {
 
   # the count reflects the chromatograms, not `length(x)`
   expect_equal(out[1], "A chrom_list with 1 sample (20 chromatograms)")
-  # leaves at different depths are grouped separately: `dad` sits directly
-  # under the sample, the other two groups a level below it
+  # leaves sit at different depths -- `dad` directly under the sample, the
+  # other two a level below it -- but they are all the same sample, so they
+  # belong in one block, headed by the sample and with the rest of each path
+  # in the `name` column
   expect_true("MeOH1" %in% out)
-  expect_true("MeOH1.chroms" %in% out)
-  expect_true("MeOH1.instrument" %in% out)
-  expect_true(any(grepl("dad", out, fixed = TRUE)))
-  expect_true(any(grepl("DAD1E,Sig=344,4", out, fixed = TRUE)))
-  expect_true(any(grepl("WPS1A,Temperature", out, fixed = TRUE)))
+  expect_false(any(c("MeOH1.chroms", "MeOH1.instrument") %in% out))
+  expect_equal(sum(out == "MeOH1"), 1)
+  expect_true(any(grepl(" dad ", out, fixed = TRUE)))
+  expect_true(any(grepl("chroms.DAD1E,Sig=344,4", out, fixed = TRUE)))
+  expect_true(any(grepl("instrument.WPS1A,Temperature", out, fixed = TRUE)))
   # the default `n` is 10, so the remainder is reported rather than dropped
   expect_match(paste(out, collapse = "\n"), "... with 10 more chromatograms",
                fixed = TRUE)
@@ -130,4 +132,169 @@ test_that("print.chrom_list does not error when no metadata is present", {
   expect_no_error(out <- capture.output(print(x)))
   expect_equal(out[1], "A chrom_list with 2 chromatograms")
   expect_match(paste(out, collapse = "\n"), "no metadata found")
+})
+
+test_that("extract_metadata falls back on sample-level attributes", {
+  # `read_agilent_rslt` attaches the acaml fields to the list holding the
+  # traces rather than to the traces, so reading only the leaves lost them
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  sample <- structure(list(uv = mk(detector = "UV"),
+                           ms = mk(detector = "MS", method = "from_trace")),
+                      sample_name = "s1", method = "from_sample")
+  x <- structure(list(s1 = sample), class = "chrom_list")
+
+  meta <- suppressWarnings(extract_metadata(x, c("sample_name", "detector",
+                                                 "method")))
+  expect_equal(meta$sample_name, c("s1", "s1"))
+  # a per-trace attribute is still per-trace
+  expect_equal(meta$detector, c("UV", "MS"))
+  # the traces do not disagree about `method` (only one records it), so the
+  # sample's value is taken as the better description of both
+  expect_equal(meta$method, c("from_sample", "from_sample"))
+
+  # the detector filter sees the inherited attributes too
+  expect_equal(nrow(suppressWarnings(
+    extract_metadata(x, what = "detector", detector = "MS"))), 1)
+})
+
+test_that("a blank sample-level value cannot displace a trace's own", {
+  # `usable_attr` counts `NA` and an empty string as no value, so a field the
+  # parser located but read nothing out of must not overwrite a real one
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  sample <- structure(list(a = mk(sample_name = "REAL", detector = "UV")),
+                      sample_name = "", detector = NA)
+  x <- structure(list(s1 = sample), class = "chrom_list")
+
+  meta <- suppressWarnings(extract_metadata(x, c("sample_name", "detector")))
+  expect_equal(meta$sample_name, "REAL")
+  expect_equal(meta$detector, "UV")
+})
+
+test_that("a stale sample-level copy cannot flatten a per-trace field", {
+  # a multichannel sample's traces each have their own `detector`; a copy of
+  # one of them on the enclosing list must not relabel the others
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  sample <- structure(list(a = mk(detector = "UV"), b = mk(detector = "MS")),
+                      detector = "UV")
+  x <- structure(list(s1 = sample), class = "chrom_list")
+
+  meta <- suppressWarnings(extract_metadata(x, "detector"))
+  expect_equal(meta$detector, c("UV", "MS"))
+})
+
+test_that("print.chrom_list omits a field that is empty everywhere", {
+  local_reproducible_output()
+  mk <- function(d) structure(matrix(1:4, nrow = 2), sample_name = "",
+                              method = "m", detector = d)
+  x <- structure(list(a = mk("UV"), b = mk("MS")), class = "chrom_list")
+
+  out <- capture.output(print(x))
+  # an unnamed injection would otherwise print as "sample_name: " with
+  # nothing after it
+  expect_false(any(grepl("sample_name", out, fixed = TRUE)))
+  expect_true(any(grepl("method: m", out, fixed = TRUE)))
+})
+
+test_that("print.chrom_list keeps the padding around header separators", {
+  local_reproducible_output()
+  mk <- function(d) structure(matrix(1:4, nrow = 2), sample_name = "s",
+                              method = "m", detector = d)
+  x <- structure(list(a = mk("UV"), b = mk("MS")), class = "chrom_list")
+
+  out <- capture.output(print(x))
+  # `strwrap` used to collapse the double spaces to single ones
+  expect_true(any(grepl("sample_name: s  |  method: m", out, fixed = TRUE)))
+})
+
+test_that("print.chrom_list shortens a long metadata value from the middle", {
+  local_reproducible_output()
+  long <- paste0("C:\\CDSProjects\\", strrep("directory", 9), "\\method.amx")
+  mk <- function(d) structure(matrix(1:4, nrow = 2), method = long,
+                              detector = d)
+  x <- structure(list(a = mk("UV"), b = mk("MS")), class = "chrom_list")
+
+  out <- capture.output(print(x))
+  expect_false(any(nchar(out) > getOption("width")))
+  # both ends survive, so the value stays identifiable
+  expect_true(any(grepl("method: C:\\CDSProjects\\", out, fixed = TRUE)))
+  expect_true(any(grepl("...", out, fixed = TRUE)))
+  expect_true(any(grepl("\\method.amx", out, fixed = TRUE)))
+})
+
+test_that("print.chrom_list heads each block with the sample's own fields", {
+  local_reproducible_output()
+  mk <- function(name, time, d) structure(matrix(1:4, nrow = 2),
+                                          sample_name = name, method = "m",
+                                          detector = d,
+                                          run_datetime = as.POSIXct(time,
+                                                                    tz = "UTC"))
+  x <- structure(list(f1 = list(MS1 = mk("DCM1", "2020-01-01", "MS"),
+                                TIC = mk("DCM1", "2020-01-01", "MS")),
+                      f2 = list(MS1 = mk("STRD15", "2021-01-01", "MS"),
+                                TIC = mk("STRD15", "2021-01-01", "MS"))),
+                 class = "chrom_list")
+
+  out <- capture.output(print(x))
+  # constant across the whole list, so it stays in the top header
+  expect_true(any(grepl("method: m", out, fixed = TRUE)))
+  # constant within each sample but not across them: shown once per block
+  # rather than repeated on every row of it
+  expect_true("f1  |  sample_name: DCM1  |  run_datetime: 2020-01-01" %in% out)
+  expect_true("f2  |  sample_name: STRD15  |  run_datetime: 2021-01-01" %in% out)
+  expect_equal(sum(grepl("DCM1", out, fixed = TRUE)), 1)
+  # only the leaf names are left to tell the traces apart
+  expect_false(any(grepl("sample_name", grep("^ ", out, value = TRUE),
+                         fixed = TRUE)))
+  expect_true(any(grepl("^ +1 +MS1$", out)))
+})
+
+test_that("print.chrom_list keeps a field that varies within a sample", {
+  local_reproducible_output()
+  mk <- function(name, d) structure(matrix(1:4, nrow = 2), sample_name = name,
+                                    detector = d)
+  x <- structure(list(f1 = list(UV = mk("a", "UV"), MS = mk("a", "MS")),
+                      f2 = list(UV = mk("b", "UV"), MS = mk("b", "MS"))),
+                 class = "chrom_list")
+
+  out <- capture.output(print(x))
+  expect_true("f1  |  sample_name: a" %in% out)
+  # `detector` describes the trace, not the sample, so it stays in the table
+  expect_true(any(grepl("detector", out, fixed = TRUE)))
+  expect_true(any(grepl("^ +1 +UV +UV$", out)))
+})
+
+test_that("print.chrom_list block header drops empty and redundant fields", {
+  local_reproducible_output()
+  mk <- function(name, time) structure(matrix(1:4, nrow = 2),
+                                       sample_name = name, detector = "MS",
+                                       run_datetime = as.POSIXct(time,
+                                                                 tz = "UTC"))
+  x <- structure(list(DCM1 = list(MS1 = mk("DCM1", "2020-01-01"),
+                                  TIC = mk("DCM1", "2020-01-01")),
+                      f2 = list(MS1 = mk("", "2021-01-01"),
+                                TIC = mk("", "2021-01-01"))),
+                 class = "chrom_list")
+
+  out <- capture.output(print(x))
+  # the sample is already named `DCM1` by the label, as it is whenever
+  # `read_chroms` was called with `sample_names = "sample_name"`
+  expect_true("DCM1  |  run_datetime: 2020-01-01" %in% out)
+  # and an unnamed injection must not print as "sample_name: "
+  expect_true("f2  |  run_datetime: 2021-01-01" %in% out)
+})
+
+test_that("print.chrom_list leaves a mix of flat and nested samples alone", {
+  local_reproducible_output()
+  mk <- function(name) structure(matrix(1:4, nrow = 2), sample_name = name,
+                                 detector = "MS")
+  # the flat entries share one empty group label, so they are not one sample
+  # and their fields cannot be hoisted into a header
+  x <- structure(list(a = mk("a"),
+                      b = list(MS1 = mk("b"), TIC = mk("b"))),
+                 class = "chrom_list")
+
+  out <- capture.output(print(x))
+  expect_true("b" %in% out)
+  expect_true(any(grepl("sample_name", out, fixed = TRUE)))
+  expect_equal(sum(grepl(" a ", out)), 1)
 })
