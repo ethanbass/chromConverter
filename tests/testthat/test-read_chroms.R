@@ -459,7 +459,12 @@ test_that("read_chroms exports CDF files correctly", {
   expect_equal(attr(x1[[1]],"sample_name"), attr(x1_out,"sample_name"))
   expect_equal(as.numeric(attr(x1[[1]],"sample_injection_volume")),
                attr(x1_out,"sample_injection_volume"))
-  expect_equal(as.numeric(attr(x1[[1]],"sample_amount")), attr(x1_out,"sample_amount"))
+  # 'Shimadzu' ASCII files record an injection volume but no sample amount,
+  # which used to be reported as a copy of the injection volume. The ANDI
+  # writer has no representation for a missing numeric field, so the absent
+  # value comes back as an empty string rather than `NA`.
+  expect_true(is.na(attr(x1[[1]], "sample_amount")))
+  expect_equal(attr(x1_out, "sample_amount"), "")
   expect_equal(attr(x1[[1]],"time_unit"), attr(x1_out,"time_unit"))
 })
 

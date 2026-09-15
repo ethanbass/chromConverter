@@ -903,7 +903,7 @@ test_that("read_agilent_rslt attaches metadata from the .acaml file", {
   # acaml fields are attached to the list holding the injection's traces,
   # not to the individual traces
   expect_equal(attr(s, "instrument"), "Norbert II")
-  expect_equal(attr(s, "software_name"), "OpenLabCDS")
+  expect_equal(attr(s, "software"), "OpenLabCDS")
   expect_equal(attr(s, "software_version"), "2.8 - Build  2.8.0-REL_2.8.0.1330")
   expect_equal(attr(s, "method"), "flow_rate_simple_test")
   expect_equal(attr(s, "batch"), "SingleSample")

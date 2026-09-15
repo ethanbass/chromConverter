@@ -41,8 +41,8 @@ test_that("read_chroms can read Varian SMS", {
   expect_equal(x$BPC[, "intensity"], x1$BPC$int)
 
   # check metadata
-  expect_equal(attr(x$TIC, "software_name"), "MS Workstation (Upgrade)")
-  expect_equal(attr(x$TIC, "no_scans"), 3432)
+  expect_equal(attr(x$TIC, "software"), "MS Workstation (Upgrade)")
+  expect_equal(attr(x$TIC, "n_scans"), 3432)
   expect_equal(attr(x$TIC, "sample_name"), "STRD15")
   expect_equal(attr(x$TIC, "ms_params")$max_ric_scan, 1445)
   expect_equal(attr(x$TIC, "ms_params")$max_ric_val, 39285)

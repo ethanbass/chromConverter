@@ -27,10 +27,13 @@
 
 ### Metadata field changes
 
+* The metadata field names are now defined in one place, so the names the readers attach and the names `extract_metadata` reports cannot drift apart. Four fields had drifted and are renamed: `software_name` is now `software` ('Shimadzu', 'Varian' SMS and `read_agilent_rslt`); `injection_volume` is now `sample_injection_volume` ('Thermo' RAW); `time_start` and `time_end` (or `end_time`) are now the two ends of `time_range` (ANDI, 'Lumex' MDF and 'Varian' SMS); and the two formats that record a scan count, 'Varian' SMS and ANDI MS, now both report it as `n_scans`, matching the `n_` prefix used for counts throughout the package, rather than `no_scans` in one and `ms_params$n_scans` in the other. `extract_metadata` accepts the old names and maps them to the new ones.
 * `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
 * `detector_range` is now reserved for the numeric wavelength range recorded by `.uv` files. For 'ChemStation' versions 30 and 130 the signal descriptor was previously reported in this field, and is now reported as `signal_descriptor`.
 * The `detector` field is now `NA` for 'ChemStation' `.ch` files. These files do not record a detector type; the field previously reported the detector module, duplicating `detector_id`.
 * The acquisition time of 'Thermo' RAW files is now named `run_datetime`, like every other format, rather than `run_date`.
+* `sample_amount` is no longer copied from the injection volume ('Shimadzu' ASCII, 'ChemStation' `.ch`, `.uv` and `.ms` files, 'ChemStation' report files, and 'MassHunter'). None of these records a sample amount, so it is now `NA`. 'Lumex' MDF likewise no longer reports an injection volume and amount of `1`, which the file does not record.
+* A 'Varian' SMS file is acquired in segments, and the bounds of each are now reported as `segment_start_time` and `segment_end_time` within `ms_params`. `time_range` gives the span of the whole run, as it does for every other format.
 
 ### Deprecations
 
@@ -97,9 +100,12 @@
 * `extract_metadata` now returns a row for every chromatogram, however deeply nested, and reads sample-level attributes from the list enclosing a sample's traces as well as from the traces themselves. Previously only the top level of the list was examined, so nested traces, and any metadata held on the list grouping them, were left out of the table. A field that varies from trace to trace, such as `detector` in a multichannel file, stays with the trace; where the traces agree, the value on the enclosing list is used, since it describes the sample as a whole.
 * `extract_metadata` now matches attribute names exactly. Previously a requested element could be filled in from a different attribute that merely started with the same characters, so a chromatogram with no `detector` attribute could report its `detector_y_unit` as its detector.
 * `extract_metadata` now returns `NA` instead of a metadata frame with only a `name` column when none of the requested metadata elements are found.
+* Fixed `extract_metadata`, which by default asked for an injection volume under a name only one format used, so the value was missing from the table for every other format. It also missed the acquisition software for 'Shimadzu' and 'Varian' files.
 * `print.chrom_list` now handles lists holding more than one trace per sample, such as a multichannel 'Shimadzu' file or an 'Agilent' `.dx` read with `what = c("chroms", "dad")`. Traces are grouped under the sample they belong to, however deeply nested, and attributes shared by all of a sample's traces are shown in that sample's block header instead of being repeated on every row. Previously only the top-level elements were counted, so the chromatogram count was wrong and only the first trace of each sample was shown.
 * Improved `print.chrom_list` formatting: datetimes print as timestamps rather than raw epoch seconds; the header wraps to the width of the console, breaking between fields; long values, such as a 'Windows' `method` path, are shortened from the middle; and a field that is empty for every chromatogram is dropped. `print` no longer errors when none of the requested `cols` are present or when `n` is negative, and `n` now defaults to `10`, as documented.
 * The file-level properties that `read_mzml` recovers are now attached as attributes, so `extract_metadata` and `print.chrom_list` can see them, and the `metadata` element carrying them is no longer counted as a chromatogram. `run_datetime`, `time_range`, `time_unit` and `detector_range` previously came back as `NA` for mzML files even though 'RaMS' had parsed them, which also meant `read_chroms(sort_by = "acquisition_time")` could not order them. The element is still returned in full, since it carries fields with no attribute equivalent.
+* Fixed the intensity units and scan count written to ANDI MS files, which were always empty because the writer read names that nothing attaches.
+* Fixed 'Thermo' RAW metadata deleting fields rather than leaving them `NA`. `read_thermoraw` reads the mzML it exports and then attaches its own metadata over the top, so a field absent from the RAW file removed the one mzML had set.
 
 #### `read_chroms`
 

@@ -93,12 +93,14 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
       meta$max_ionization_time <- sapply(meta$segment_metadata, function(x){
         x$max_ionization_time
       })
+      segment_start <- sapply(meta$segment_metadata, function(x) x$start_time)
+      segment_end <- sapply(meta$segment_metadata, function(x) x$end_time)
       structure(x,
                 sample_name = sample_name_or_file(meta, "sample_name", source_file),
                 instrument = get_metadata_field(meta, "instrument"),
                 detector = "MS",
                 detector_id = NA,
-                software_name = get_metadata_field(meta, "software"),
+                software = get_metadata_field(meta, "software"),
                 software_version = get_metadata_field(meta, "version"),
                 method = get_metadata_field(meta, "method"),
                 batch = NA,
@@ -106,15 +108,18 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 run_datetime = get_metadata_field(meta, "acquisition_start"),
                 sample_injection_volume = NA,
                 sample_amount = NA,
-                time_start = sapply(meta$segment_metadata, function(x){
-                  x$start_time}),
-                end_time = sapply(meta$segment_metadata, function(x){
-                  x$end_time}),
-                no_scans = meta$n_scan,
-                ms_params = meta[c("ion_time", "emission_current", "max_ric_scan",
-                                    "max_ric_val", "max_ionization_time",
-                                   "temp_trap", "temp_manifold", "temp_transferline",
-                                   "axial_modulation")],
+                # an SMS file is acquired in segments, so the per-segment
+                # bounds go in `ms_params` and `time_range` reports the span of
+                # the whole run, as it does for every other format
+                time_range = c(min(segment_start), max(segment_end)),
+                n_scans = meta$n_scan,
+                ms_params = c(meta[c("ion_time", "emission_current",
+                                     "max_ric_scan", "max_ric_val",
+                                     "max_ionization_time", "temp_trap",
+                                     "temp_manifold", "temp_transferline",
+                                     "axial_modulation")],
+                              list(segment_start_time = segment_start,
+                                   segment_end_time = segment_end)),
                 time_interval = NA,
                 time_interval_unit = NA,
                 time_unit = "Minutes",
@@ -185,7 +190,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               instrument = get_metadata_field(meta, "Instrument Name"),
               detector = "DAD",
               detector_id = get_metadata_field(meta, "Detector Name"),
-              software_name = get_metadata_field(meta, "Application Name"),
+              software = get_metadata_field(meta, "Application Name"),
               software_version = get_metadata_field(meta, "Version"),
               method = get_metadata_field(meta, "Method File"),
               batch = get_metadata_field(meta, "Batch File"),
@@ -196,7 +201,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               sample_id = get_metadata_field(meta, "Sample ID"),
               sample_position = NA,
               sample_injection_volume = get_metadata_field(meta, "Injection Volume"),
-              sample_amount = get_metadata_field(meta, "Injection Volume"),
+              sample_amount = NA,
               time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
               time_interval = meta$`Interval(msec)`,
               time_interval_unit = get_time_unit(
@@ -218,7 +223,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
     structure(x,
               instrument = get_metadata_field(meta, "Instrument Name"),
               detector_id = get_metadata_field(meta, "Detector Name"),
-              software_name = get_metadata_field(meta, "Application Name"),
+              software = get_metadata_field(meta, "Application Name"),
               software_version = get_metadata_field(meta, "Version"),
               method = get_metadata_field(meta, "Method File"),
               batch = get_metadata_field(meta, "Batch File"),
@@ -229,7 +234,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               sample_id = get_metadata_field(meta, "Sample ID"),
               sample_position = NA,
               sample_injection_volume = get_metadata_field(meta, "Injection Volume"),
-              sample_amount = get_metadata_field(meta, "Injection Volume"),
+              sample_amount = NA,
               time_range = c(meta$`Start Time(min)`, meta$`End Time(min)`),
               time_interval = meta$`Interval(msec)`,
               time_interval_unit = get_time_unit(
@@ -254,7 +259,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               instrument = get_metadata_field(meta, "DSN"),
               detector = get_metadata_field(meta, "DETN"),
               detector_id = get_metadata_field(meta, "DSID"),
-              # software_name = get_metadata_field(meta, "Application Name"),
+              # software = get_metadata_field(meta, "Application Name"),
               software_version = get_metadata_field(meta, "DataFileProperty.szVersion"),
               method = get_metadata_field(meta, "SampleInfoFile.methodfile"),
               batch = get_metadata_field(meta, "SampleInfoFile.batchfile"),
@@ -377,7 +382,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               operator = meta$operator,
               run_datetime = get_metadata_field(meta, "date"),
               sample_injection_volume = meta$InjVolume,
-              sample_amount = meta$InjVolume,
+              sample_amount = NA,
               time_range = meta$time_range,
               time_interval = NA,
               time_unit = "Minutes",
@@ -399,7 +404,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               run_datetime = NA,
               sample_name = sample_name_or_file(meta, "Sample Name", source_file),
               sample_injection_volume = meta$`Inj Volume`,
-              sample_amount = meta$`Inj Volume`,
+              sample_amount = NA,
               time_range = NA,
               time_interval = NA,
               time_unit = NA,
@@ -423,7 +428,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 sample_name = sample_name_or_file(meta, "Sample Name", source_file),
                 sample_id = meta$`Sample ID`,
                 sample_injection_volume = meta$`Inj Vol`,
-                sample_amount = meta$`Inj Vol`,
+                sample_amount = NA,
                 time_range = NA,
                 time_interval = NA,
                 time_unit = NA,
@@ -451,8 +456,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               sample_type = get_metadata_field(meta, "sample_type"),
               sample_injection_volume = get_metadata_field(meta, "sample_injection_volume"),
               sample_amount = get_metadata_field(meta, "sample_amount"),
-              time_start = NA,
-              time_end = NA,
+              time_range = NA,
               time_interval = NA,
               time_unit = get_metadata_field(meta, "retention_unit"),
               detector_range = get_metadata_field(meta, "detector_method_comments"),
@@ -480,8 +484,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               sample_type = get_metadata_field(meta, "sample_type"),
               sample_injection_volume = get_metadata_field(meta, "sample_injection_volume"),
               sample_amount = get_metadata_field(meta, "sample_amount"),
-              time_start = NA,
-              time_end = NA,
+              time_range = NA,
               time_interval = NA,
               time_unit = get_metadata_field(meta, "raw_data_time_units"),
               detector_range = NA,
@@ -489,8 +492,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               detector_x_unit = get_metadata_field(meta, "raw_data_mass_units"),
               intensity_multiplier = get_metadata_field(meta, "raw_data_intensity_factor"),
               intensity_offset = get_metadata_field(meta, "raw_data_intensity_offset"),
-              ms_params = list(n_scans = get_metadata_field(meta, "raw_data_nscans"),
-                               ionization_mode = get_metadata_field(meta, "test_ionization_mode"),
+              n_scans = get_metadata_field(meta, "raw_data_nscans"),
+              ms_params = list(ionization_mode = get_metadata_field(meta, "test_ionization_mode"),
                                polarity = get_metadata_field(meta, "test_ionization_polarity"),
                                detector_type = get_metadata_field(meta, "test_detector_type")),
               source_file = source_file,
@@ -512,12 +515,12 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               sample_name = sample_name_or_file(meta, "sample_name", source_file),
               sample_id = get_metadata_field(meta, "sample_id"),
               sample_type = "unknown",
-              sample_injection_volume = 1,
-              sample_amount = 1,
-              time_start = meta[meta$Group == "Interval Time" &
-                                  meta$Property == "From", "Value"],
-              time_end = meta[meta$Group == "Interval Time" &
-                                meta$Property == "To", "Value"],
+              sample_injection_volume = NA,
+              sample_amount = NA,
+              time_range = c(meta[meta$Group == "Interval Time" &
+                                    meta$Property == "From", "Value"],
+                             meta[meta$Group == "Interval Time" &
+                                    meta$Property == "To", "Value"]),
               time_interval = meta[meta$Group == "Interval Time" &
                                      meta$Property == "Step", "Value"],
               time_unit = meta[meta$Group == "Interval Time" &
@@ -544,12 +547,17 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                                                  c("%m/%d/%Y %H:%M:%S",
                                                    "%d/%m/%Y %H:%M:%S")),
               sample_name = fs::path_ext_remove(basename(meta$`RAW file path`)),
-              sample_id = meta$`Sample id`,
-              sample_position = meta$`Sample vial`,
-              injection_volume = meta$`Sample injection volume`,
-              sample_dilution = meta$`Sample dilution factor`,
-              time_range = meta$`Time range`,
-              time_interval = meta$`Interval(msec)`,
+              # `get_metadata_field` rather than `meta$x`: this branch stamps
+              # over the `"mzml"` one, since `read_thermoraw` reads the mzML it
+              # exported, and a `NULL` here would delete the field mzml had set
+              # rather than leaving it `NA`
+              sample_id = get_metadata_field(meta, "Sample id"),
+              sample_position = get_metadata_field(meta, "Sample vial"),
+              sample_injection_volume = get_metadata_field(
+                meta, "Sample injection volume"),
+              sample_dilution = get_metadata_field(meta, "Sample dilution factor"),
+              time_range = get_metadata_field(meta, "Time range"),
+              time_interval = get_metadata_field(meta, "Interval(msec)"),
               source_file = source_file,
               source_sha1 = source_sha1(source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
@@ -636,7 +644,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               sample_name = sample_name_or_file(meta, "Sample Name", source_file),
               sample_id = meta$`Sample ID`,
               sample_injection_volume = meta$`Inj Vol`,
-              sample_amount = meta$`Inj Vol`,
+              sample_amount = NA,
               time_range = NA,
               time_interval = NA,
               time_unit = NA,
@@ -851,7 +859,12 @@ read_waters_metadata <- function(file){
 #'
 #' @param chrom_list A list of chromatograms with attached metadata (as returned
 #' by `read_chroms` with `read_metadata = TRUE`).
-#' @param what A character vector specifying the metadata elements to extract.
+#' @param what A character vector specifying the metadata elements to
+#' extract. Defaults to every field chromConverter attaches; no format
+#' records all of them, so the elements a format does not provide are
+#' simply absent from the result. Superseded names (`injection_volume`,
+#' `software_name`, `time_start`) are accepted and mapped to the names
+#' that replaced them.
 #' @param detector A character vector of detectors to include (e.g. `"UV"` or
 #' `c("UV", "MS")`), matched case-insensitively against each chromatogram's
 #' `detector` attribute. Defaults to `NULL`, in which case all chromatograms
@@ -864,19 +877,12 @@ read_waters_metadata <- function(file){
 #' columns.
 #' @export
 extract_metadata <- function(chrom_list,
-                             what = c("instrument", "detector", "detector_id",
-                                      "software", "method", "batch", "operator",
-                                      "run_datetime", "sample_position",
-                                      "sample_name", "sample_id",
-                                      "injection_volume", "time_range",
-                                      "time_interval", "time_unit", "detector_range",
-                                      "detector_y_unit", "detector_x_unit",
-                                      "intensity_multiplier", "scaled", "source_file",
-                                      "source_file_format", "source_sha1",
-                                      "data_format", "parser", "format_out"),
+                             what = chrom_metadata_fields(),
                              detector = NULL,
                              format_out = c("data.frame", "data.table", "tibble")
 ){
+  defaulted <- identical(what, chrom_metadata_fields())
+  what <- resolve_metadata_fields(what)
   if (inherits(chrom_list, c("matrix", "data.table", "data.frame"))){
     chrom_list <- list(chrom_list)
     use_names <- FALSE
@@ -901,7 +907,9 @@ extract_metadata <- function(chrom_list,
   if (nrow(metadata) == 0){
     stop("The specified metadata elements were not found")
   }
-  if (length(what) < 25 && length(missing) > 0){
+  # only warn about fields the caller actually asked for: the default asks for
+  # everything chromConverter can attach, and no format records all of it
+  if (!defaulted && length(missing) > 0){
     warning(sprintf("The following metadata elements were not found: %s.",
                     paste(sQuote(missing),collapse = ", ")),immediate. = TRUE)
   }
@@ -990,8 +998,10 @@ chrom_list_leaves <- function(x, path = character()){
 #' @noRd
 list_metadata_attrs <- function(x){
   a <- attributes(x)
-  a[!(names(a) %in% c("names", "class", "dim", "dimnames", "row.names",
-                      "comment", "acaml_metadata"))]
+  # beyond the structural attributes, `comment` and the acaml table describe the
+  # list as a whole; copying either onto every trace beneath it would be
+  # meaningless, and the acaml table is a data.frame per injection
+  a[!(names(a) %in% c(bookkeeping_attrs(), "comment", "acaml_metadata"))]
 }
 
 #' Flatten a (possibly nested) list of chromatograms
@@ -1108,8 +1118,7 @@ filter_by_detector <- function(chrom_list, detector){
 #' Transfer metadata
 #'@noRd
 transfer_metadata <- function (new_object, old_object,
-                               exclude = c("names", "row.names",
-                                           "class", "dim", "dimnames")){
+                               exclude = bookkeeping_attrs()){
   a <- attributes(old_object)
   a[exclude] <- NULL
   attributes(new_object) <- c(attributes(new_object), a)

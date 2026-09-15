@@ -6,12 +6,7 @@
 \usage{
 extract_metadata(
   chrom_list,
-  what = c("instrument", "detector", "detector_id", "software", "method", "batch",
-    "operator", "run_datetime", "sample_position", "sample_name", "sample_id",
-    "injection_volume", "time_range", "time_interval", "time_unit", "detector_range",
-    "detector_y_unit", "detector_x_unit", "intensity_multiplier", "scaled",
-    "source_file", "source_file_format", "source_sha1", "data_format", "parser",
-    "format_out"),
+  what = chrom_metadata_fields(),
   detector = NULL,
   format_out = c("data.frame", "data.table", "tibble")
 )
@@ -20,7 +15,12 @@ extract_metadata(
 \item{chrom_list}{A list of chromatograms with attached metadata (as returned
 by \code{read_chroms} with \code{read_metadata = TRUE}).}
 
-\item{what}{A character vector specifying the metadata elements to extract.}
+\item{what}{A character vector specifying the metadata elements to
+extract. Defaults to every field chromConverter attaches; no format
+records all of them, so the elements a format does not provide are
+simply absent from the result. Superseded names (\code{injection_volume},
+\code{software_name}, \code{time_start}) are accepted and mapped to the names
+that replaced them.}
 
 \item{detector}{A character vector of detectors to include (e.g. \code{"UV"} or
 \code{c("UV", "MS")}), matched case-insensitively against each chromatogram's

@@ -164,3 +164,39 @@ test_that("sample_name_or_file falls back to the file name", {
   # a name is returned unchanged, not reshaped like the `ifelse` it replaced
   expect_equal(sample_name_or_file(list(n = c("a", "b")), "n", f), c("a", "b"))
 })
+
+test_that("the metadata vocabulary is the single source for `what`", {
+  fields <- chrom_metadata_fields()
+  expect_type(fields, "character")
+  expect_false(anyDuplicated(fields) > 0)
+  # `extract_metadata` must not keep its own copy of the list
+  expect_equal(eval(formals(extract_metadata)$what), fields)
+  # the drift this replaced: the reader asked for a name one format set, and
+  # not the name seventeen of them set
+  expect_true("sample_injection_volume" %in% fields)
+  expect_false("injection_volume" %in% fields)
+  expect_true("software" %in% fields)
+  expect_false("software_name" %in% fields)
+})
+
+test_that("superseded metadata field names are still accepted", {
+  expect_equal(resolve_metadata_fields("injection_volume"),
+               "sample_injection_volume")
+  expect_equal(resolve_metadata_fields("software_name"), "software")
+  expect_equal(resolve_metadata_fields(c("time_start", "time_end")), "time_range")
+  # unknown and current names pass through untouched
+  expect_equal(resolve_metadata_fields(c("sample_name", "nonsense")),
+               c("sample_name", "nonsense"))
+})
+
+test_that("bookkeeping_attrs is only the structural set", {
+  expect_equal(bookkeeping_attrs(),
+               c("names", "class", "dim", "dimnames", "row.names"))
+  # `transfer_metadata` must keep the acaml table -- a reshaped chromatogram is
+  # the same chromatogram -- while `list_metadata_attrs` must not copy it onto
+  # every trace beneath a list
+  x <- structure(1:4, acaml_metadata = data.frame(a = 1), instrument = "LC")
+  expect_equal(attr(transfer_metadata(1:4, x), "acaml_metadata"),
+               data.frame(a = 1))
+  expect_named(list_metadata_attrs(x), "instrument")
+})

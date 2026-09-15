@@ -156,3 +156,35 @@ test_that("write_chroms can export any of the advertised formats", {
 })
 
 # test write chroms, various formats round robin
+
+test_that("write_andi_ms reads the metadata names chromConverter attaches", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_not_installed("ncdf4")
+
+  path <- system.file("HP_MS.CDF", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chroms(path, format_in = "cdf", find_files = FALSE,
+                   progress_bar = FALSE)[[1]]
+
+  # The writer read `detector_unit` and `ms_params$n_scans`, neither of which
+  # anything sets -- the canonical names are `detector_y_unit` and `n_scans` --
+  # so these two fields were always written empty. No test file records a unit
+  # for an MS detector, so set them here rather than relying on a fixture.
+  for (nm in names(x)) attr(x[[nm]], "detector_y_unit") <- "Total Counts"
+  attr(x$MS1, "n_scans") <- 1234L
+
+  tmp <- fs::path(tempdir(), "andi_ms_names")
+  fs::dir_create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+  write_andi_ms(x, path_out = tmp, sample_name = "unit_probe")
+
+  nc <- ncdf4::nc_open(fs::path(tmp, "unit_probe", ext = "cdf"))
+  on.exit(ncdf4::nc_close(nc), add = TRUE, after = FALSE)
+  global <- ncdf4::ncatt_get(nc, 0)
+
+  expect_equal(global$raw_data_intensity_units, "Total Counts")
+  expect_equal(global$raw_data_total_intensity_units, "Total Counts")
+  expect_equal(global$raw_data_nscans, 1234)
+})
