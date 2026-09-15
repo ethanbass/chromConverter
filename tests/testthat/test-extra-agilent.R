@@ -734,6 +734,26 @@ test_that("read_chroms can read 'Agilent' .dx files with OL179", {
                              progress_bar = FALSE))
   expect_error(read_agilent_dx(path, what = "dad"))
 
+  # A failed read is one condition, not a warning plus a message. The list of
+  # affected files used to be a `message`, which `suppressWarnings` could not
+  # silence and a caller handling `warning` never saw.
+  conditions <- list(warnings = character(), messages = character())
+  withCallingHandlers(
+    read_chroms(path, format_in = "agilent_dx", what = "dad",
+                progress_bar = FALSE),
+    warning = function(w){
+      conditions$warnings <<- c(conditions$warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    },
+    message = function(m){
+      conditions$messages <<- c(conditions$messages, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    })
+  expect_length(conditions$warnings, 1)
+  expect_length(conditions$messages, 0)
+  expect_match(conditions$warnings, "could not be interpreted")
+  expect_match(conditions$warnings, "agilent")
+
   expect_equal(x1$instrument[[1]]$intensity, x$instrument[[1]][,1],
                ignore_attr=TRUE)
   expect_equal(x1$instrument[[1]]$rt, as.numeric(rownames(x$instrument[[1]])),

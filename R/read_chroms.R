@@ -209,9 +209,10 @@ read_chroms <- function(paths,
                        verbose = verbose)
     errors <- which(vapply(data, inherits, logical(1), "try-error"))
     if (length(errors) > 0){
-      warning(data[errors], immediate. = TRUE)
-      message(paste0("The following chromatograms could not be interpreted: ",
-                    paste(sQuote(file_names[errors]), collapse = ", ")))
+      warning(paste0(unlist(data[errors]), collapse = ""),
+              "The following chromatograms could not be interpreted: ",
+              paste(sQuote(file_names[errors]), collapse = ", "),
+              immediate. = TRUE)
       data <- data[-errors]
       file_names <- file_names[-errors]
     }

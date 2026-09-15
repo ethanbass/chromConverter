@@ -105,6 +105,7 @@
 * When `format_in` is not supplied and the type of a file cannot be recognized, `read_chroms` now says so and asks for a format, rather than failing with `argument is of length zero`.
 * `read_chroms` now gives an informative error when no parser is available for a format, instead of failing with `missing value where TRUE/FALSE needed`.
 * When a file cannot be interpreted, `read_chroms` now names it instead of reporting its position in the list.
+* A file that cannot be interpreted now produces a single warning naming it, rather than a warning followed by a separate message. The message could not be silenced with `suppressWarnings` and was invisible to callers handling the warning.
 * Some formats can now be named in more than one way. `format_in` accepts an alias as readily as the format's own name, and the two behave identically: `rslt` and `sirslt` for `agilent_rslt`, `openlab_dx` for `agilent_dx`, `chemstation_fid` for `chemstation_ch`, `andi` for `cdf`, and `allotrope` for `asm`.
 * The `shimadzu_ascii`, `csv`, `asm`, `openlab_131` and `chemstation` formats are now matched to the correct file extension, instead of falling through to a pattern matching any file containing a `.`.
 * The `metadata_format` argument now reaches the `agilent_dx`, `agilent_rslt`, `shimadzu_lcd`, `shimadzu_qgd`, `cdf` and `entab` parsers. Previously, `metadata_format = "raw"` had no effect for these formats.
