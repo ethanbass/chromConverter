@@ -730,10 +730,6 @@ test_that("read_chroms can read 'Agilent' .dx files with OL179", {
   expect_equal(dim(x1$instrument[["PMP1C,Solvent Ratio A"]]), c(43253, 2))
   expect_equal(attr(x1$chroms,"data_format"),"long")
 
-  expect_warning(read_chroms(path, format_in = "agilent_dx", what = "dad",
-                             progress_bar = FALSE))
-  expect_error(read_agilent_dx(path, what = "dad"))
-
   # A failed read is one condition, not a warning plus a message. The list of
   # affected files used to be a `message`, which `suppressWarnings` could not
   # silence and a caller handling `warning` never saw.
@@ -753,6 +749,7 @@ test_that("read_chroms can read 'Agilent' .dx files with OL179", {
   expect_length(conditions$messages, 0)
   expect_match(conditions$warnings, "could not be interpreted")
   expect_match(conditions$warnings, "agilent")
+  expect_error(read_agilent_dx(path, what = "dad"))
 
   expect_equal(x1$instrument[[1]]$intensity, x$instrument[[1]][,1],
                ignore_attr=TRUE)

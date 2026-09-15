@@ -135,3 +135,32 @@ test_that("check_metadata_format resolves the reader's tag", {
   expect_equal(check_metadata_format("ChromConverter", "asm"), "asm")
   expect_error(check_metadata_format("nonsense", "asm"))
 })
+
+test_that("source_sha1 hashes files and returns NA for anything else", {
+  f <- test_path("testdata/dad1.uv")
+  expect_match(source_sha1(f), "^[0-9a-f]{40}$")
+  # no `names`: the value used to be built with `ifelse(fs::is_file(x), ...)`,
+  # and `fs::is_file` returns a *named* logical, so the hash carried the
+  # absolute path of the file as a name attribute
+  expect_null(names(source_sha1(f)))
+
+  # directories are a legitimate `source_file` for several formats -- a Waters
+  # `.raw`, an 'Agilent' `.D` -- and `digest` errors on them
+  expect_equal(source_sha1(test_path("testdata/RUTIN2.D")), NA)
+  expect_equal(source_sha1(NA), NA)
+  expect_equal(source_sha1(character(0)), NA)
+  expect_equal(source_sha1("no/such/file"), NA)
+})
+
+test_that("sample_name_or_file falls back to the file name", {
+  f <- "/tmp/sequence/blue_run.uv"
+  expect_equal(sample_name_or_file(list(`Sample Name` = "blue"),
+                                   "Sample Name", f), "blue")
+  expect_equal(sample_name_or_file(list(), "Sample Name", f), "blue_run")
+  expect_equal(sample_name_or_file(list(`Sample Name` = NULL),
+                                   "Sample Name", f), "blue_run")
+  expect_equal(sample_name_or_file(list(`Sample Name` = character(0)),
+                                   "Sample Name", f), "blue_run")
+  # a name is returned unchanged, not reshaped like the `ifelse` it replaced
+  expect_equal(sample_name_or_file(list(n = c("a", "b")), "n", f), c("a", "b"))
+})

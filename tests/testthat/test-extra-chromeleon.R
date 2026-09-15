@@ -14,6 +14,10 @@ test_that("read_chroms can read 'Chromeleon' comma-separated files", {
   expect_equal(dim(x), c(3241, 1))
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "data_format"), "wide")
+  # a 2D file records no scan range. `NULL == "3DFIELD"` is `logical(0)`, so
+  # the same `ifelse` set a zero-length attribute, which `unlist` then dropped
+  # from `extract_metadata` rather than reporting as `NA`
+  expect_equal(attr(x, "detector_range"), NA)
 
   x1 <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE,
                     format_out = "data.frame", data_format = "long")[[1]]
@@ -97,6 +101,10 @@ test_that("read_chroms can read 'Chromeleon' 3D data files", {
   expect_equal(attr(x, "sample_injection_volume"), "1.000")
   expect_equal(attr(x, "time_unit"), "Minutes")
   expect_equal(attr(x, "detector_y_unit"), "mAU")
+  # the scan range was assembled with `ifelse()`, whose result is shaped like
+  # its *test*, so only the lower bound survived
+  expect_length(attr(x, "detector_range"), 2)
+  expect_equal(as.numeric(attr(x, "detector_range")), c(200, 800))
 
   x1 <- read_chroms(path, format_in = "chromeleon", progress_bar = FALSE,
                     format_out = "data.frame", data_format = "long")[[1]]

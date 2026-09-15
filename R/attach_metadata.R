@@ -21,7 +21,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
     "raw" = {
       structure(x, metadata = meta, data_format = data_format, parser = parser,
                 source_file = source_file,
-                source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE))
+                source_sha1 = source_sha1(source_file))
     }, "asm" = {
         structure(x,
                   sample_name = meta$`sample document`$written_name,
@@ -51,8 +51,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                   intensity_multiplier = NA,
                   source_file = source_file,
                   source_file_format = source_file_format,
-                  source_sha1 = digest::digest(source_file, algo = "sha1",
-                                               file = TRUE),
+                  source_sha1 = source_sha1(source_file),
                   data_format = data_format,
                   parser = parser,
                   format_out = format_out)
@@ -61,9 +60,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                           c("%d %b %y %I:%M %p %z", "%d-%b-%Y %H:%M:%S",
                             "%d-%b-%y, %H:%M:%S", "%d %b %y %I:%M %p"))
       structure(x,
-                sample_name = ifelse(is.null(meta$notebook),
-                                     fs::path_ext_remove(basename(source_file)),
-                                     meta$notebook),
+                sample_name = sample_name_or_file(meta, "notebook", source_file),
                 sample_position = meta$vialpos,
                 file_version = NA,
                 file_type =  NA,
@@ -88,10 +85,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 scaled = NA,
                 source_file = source_file,
                 source_file_format = source_file_format,
-                source_sha1 = ifelse(fs::is_file(source_file),
-                                     digest::digest(source_file, algo = "sha1",
-                                                    file = TRUE),
-                                     NA),
+                source_sha1 = source_sha1(source_file),
                 data_format = data_format,
                 parser = parser,
                 format_out = format_out)
@@ -100,9 +94,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
         x$max_ionization_time
       })
       structure(x,
-                sample_name = ifelse(is.null(meta$sample_name),
-                                     fs::path_ext_remove(basename(source_file)),
-                                             meta$sample_name),
+                sample_name = sample_name_or_file(meta, "sample_name", source_file),
                 instrument = get_metadata_field(meta, "instrument"),
                 detector = "MS",
                 detector_id = NA,
@@ -134,7 +126,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 scaled = FALSE,
                 source_file = source_file,
                 source_file_format = source_file_format,
-                source_sha1 = digest::digest(source_file, algo = "sha1", file = TRUE),
+                source_sha1 = source_sha1(source_file),
                 data_format = data_format,
                 parser = "chromconverter",
                 format_out = format_out)
@@ -146,23 +138,20 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 batch = get_metadata_field(meta, "Sample Set Name"),
                 operator = NA,
                 run_datetime = NA,
-                sample_name = ifelse(is.null(meta$SampleName),
-                                     fs::path_ext_remove(basename(source_file)),
-                                     meta$SampleName),
+                sample_name = sample_name_or_file(meta, "SampleName", source_file),
                 sample_injection_volume = NA,
                 sample_amount = NA,
                 time_range = c(get_metadata_field(meta, "Data Start"),
                                get_metadata_field(meta, "Data End")),
                 time_interval = NA,
                 time_unit = NA,
-                detector_range = ifelse("Channel Description" %in% names(meta),
-                                          get_metadata_field(meta, "Channel Description"),
-                                          get_metadata_field(meta, "Channel")
-                                        ),
+                detector_range = if ("Channel Description" %in% names(meta))
+                                   get_metadata_field(meta, "Channel Description") else
+                                   get_metadata_field(meta, "Channel"),
                 detector_y_unit = get_metadata_field(meta, "Det. Units"),
                 source_file = source_file,
                 source_file_format = source_file_format,
-                source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+                source_sha1 = source_sha1(source_file),
                 data_format = data_format,
                 parser = "chromconverter",
                 format_out = format_out)
@@ -177,9 +166,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                                               collapse = " "),
                                         format = "%d-%b-%Y %I:%M:%S",
                                         tz = "UTC"),
-              sample_name = ifelse(is.null(meta$`Acquired Name`),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta$`Acquired Name`),
+              sample_name = sample_name_or_file(meta, "Acquired Name", source_file),
               sample_injection_volume = NA,
               sample_amount = NA,
               time_range = NA,
@@ -189,7 +176,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               detector_y_unit = get_metadata_field(meta, "Detector_Unit"),
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = NA,
+              source_sha1 = source_sha1(source_file),
               data_format = data_format,
               parser = "chromconverter",
               format_out = format_out)
@@ -205,9 +192,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               operator = get_metadata_field(meta, "Operator Name"),
               run_datetime = as.POSIXct(meta$Acquired,
                                         format = "%m/%d/%Y %I:%M:%S %p", tz = "UTC"),
-              sample_name = ifelse(is.null(meta[["Sample Name"]]),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta[["Sample Name"]]),
+              sample_name = sample_name_or_file(meta, "Sample Name", source_file),
               sample_id = get_metadata_field(meta, "Sample ID"),
               sample_position = NA,
               sample_injection_volume = get_metadata_field(meta, "Injection Volume"),
@@ -225,7 +210,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               detector_y_unit = NA,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+              source_sha1 = source_sha1(source_file),
               data_format = data_format,
               parser = "chromconverter",
               format_out = format_out)
@@ -240,9 +225,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               operator = get_metadata_field(meta, "Operator Name"),
               run_datetime = as.POSIXct(meta$Acquired,
                                         format = "%m/%d/%Y %I:%M:%S %p", tz = "UTC"),
-              sample_name = ifelse(is.null(meta[["Sample Name"]]),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta[["Sample Name"]]),
+              sample_name = sample_name_or_file(meta, "Sample Name", source_file),
               sample_id = get_metadata_field(meta, "Sample ID"),
               sample_position = NA,
               sample_injection_volume = get_metadata_field(meta, "Injection Volume"),
@@ -262,7 +245,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               scaled = scale,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+              source_sha1 = source_sha1(source_file),
               data_format = data_format,
               parser = "chromconverter",
               format_out = format_out)
@@ -277,9 +260,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               batch = get_metadata_field(meta, "SampleInfoFile.batchfile"),
               operator = get_metadata_field(meta, "SampleInfo.operator_name"),
               run_datetime = as.POSIXct(meta$time_acq, tz = "UTC"),
-              sample_name = ifelse(is.null(meta[["SampleInfo.smpl_name"]]),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta[["SampleInfo.smpl_name"]]),
+              sample_name = sample_name_or_file(meta, "SampleInfo.smpl_name", source_file),
               sample_id = get_metadata_field(meta, "SampleInfo.smpl_id"),
               sample_position = get_metadata_field(meta, 'SampleInfo.smpl_vial'),
               sample_type = get_metadata_field(meta, "SampleInfo.smpl_type"),
@@ -298,7 +279,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
              scaled = scale,
              source_file = source_file,
              source_file_format = source_file_format,
-             source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+             source_sha1 = source_sha1(source_file),
              data_format = data_format,
              parser = "chromconverter",
              format_out = format_out)
@@ -332,6 +313,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
     if (is.null(meta$Name) && !is.null(meta$Injection)){
       meta$Name <- meta$Injection
     }
+    volume_field <- grep("Volume", names(meta), value = TRUE)[1]
     if (is.null(meta$`Signal Unit`)){
       unit <- grep("Signal Min", names(meta), value = TRUE)
       unit <- sub(".*(?:\\((.*)\\)).*|.*", "\\1", unit)
@@ -345,11 +327,10 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               batch = meta$Sequence,
               operator = meta$`Operator`,
               run_datetime = datetime,
-              sample_name = ifelse(is.null(meta$Name),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta$Name),
+              sample_name = sample_name_or_file(meta, "Name", source_file),
               sample_position = meta$Position,
-              sample_injection_volume = meta[[which(grepl("Volume",names(meta)))]],
+              sample_injection_volume = if (is.na(volume_field)) NA else
+                                          get_metadata_field(meta, volume_field),
               sample_amount = NA,
               sample_dilution = meta$`Dilution Factor`,
               sample_type = get_metadata_field(meta, "Type"),
@@ -360,15 +341,14 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 }, error = function(err) NA),
               time_interval_unit = time_interval_unit,
               time_unit = time_unit,
-              detector_range = ifelse(meta$`Spectral Field` == "3DFIELD",
-                                      c(get_metadata_field(meta, "Scan Min. (nm)"),
-                                        get_metadata_field(meta, "Scan Max. (nm)")),
-                                      NA),
+              detector_range = if (identical(meta$`Spectral Field`, "3DFIELD"))
+                                 c(get_metadata_field(meta, "Scan Min. (nm)"),
+                                   get_metadata_field(meta, "Scan Max. (nm)")) else
+                                 NA,
               detector_y_unit = meta$`Signal Unit`,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo = "sha1",
-                                           file = TRUE),
+              source_sha1 = source_sha1(source_file),
               format_out = format_out,
               data_format = data_format,
               parser = "chromconverter"
@@ -405,8 +385,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               scaled = scale,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo = "sha1",
-                                           file = TRUE),
+              source_sha1 = source_sha1(source_file),
               data_format = data_format,
               parser = parser,
               format_out = format_out)
@@ -418,9 +397,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               batch = NA,
               operator = meta$`Acq. Operator`,
               run_datetime = NA,
-              sample_name = ifelse(is.null(meta[["Sample Name"]]),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta[["Sample Name"]]),
+              sample_name = sample_name_or_file(meta, "Sample Name", source_file),
               sample_injection_volume = meta$`Inj Volume`,
               sample_amount = meta$`Inj Volume`,
               time_range = NA,
@@ -430,7 +407,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               detector_y_unit = NA,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+              source_sha1 = source_sha1(source_file),
               data_format = data_format,
               parser = parser,
               format_out = format_out)
@@ -443,9 +420,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 operator = meta$OperatorName,
                 run_datetime = convert_timestamp(meta$AcqTime,
                                                  datetime_formats = masshunter_datetime_formats),
-                sample_name = ifelse(is.null(meta[["Sample Name"]]),
-                                     fs::path_ext_remove(basename(source_file)),
-                                     meta[["Sample Name"]]),
+                sample_name = sample_name_or_file(meta, "Sample Name", source_file),
                 sample_id = meta$`Sample ID`,
                 sample_injection_volume = meta$`Inj Vol`,
                 sample_amount = meta$`Inj Vol`,
@@ -456,7 +431,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                 detector_y_unit = NA,
                 source_file = source_file,
                 source_file_format = source_file_format,
-                source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+                source_sha1 = source_sha1(source_file),
                 data_format = data_format,
                 parser = parser,
                 format_out = format_out)
@@ -471,9 +446,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               run_datetime = as.POSIXct(
                 get_metadata_field(meta, "injection_date_time_stamp"),
                                         format = "%Y%m%d%H%M%S%z", tz = "UTC"),
-              sample_name = ifelse(is.null(meta[["sample_name"]]),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta[["sample_name"]]),
+              sample_name = sample_name_or_file(meta, "sample_name", source_file),
               sample_id = get_metadata_field(meta, "sample_id"),
               sample_type = get_metadata_field(meta, "sample_type"),
               sample_injection_volume = get_metadata_field(meta, "sample_injection_volume"),
@@ -486,8 +459,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               # detector_end = NA,
               detector_y_unit = get_metadata_field(meta, "detector_unit"),
               detector_x_unit = NA,
-              source_file = ifelse(missing(source_file), NA, source_file),
-              source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+              source_file = source_file,
+              source_sha1 = source_sha1(source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
               parser = "chromconverter")
@@ -502,9 +475,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               run_datetime = as.POSIXct(
                 get_metadata_field(meta, "experiment_date_time_stamp"),
                 format = "%Y%m%d%H%M%S%z", tz = "UTC"),
-              sample_name = ifelse(is.null(meta[["sample_name"]]),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta[["sample_name"]]),
+              sample_name = sample_name_or_file(meta, "sample_name", source_file),
               sample_id = get_metadata_field(meta, "sample_id"),
               sample_type = get_metadata_field(meta, "sample_type"),
               sample_injection_volume = get_metadata_field(meta, "sample_injection_volume"),
@@ -522,10 +493,9 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                                ionization_mode = get_metadata_field(meta, "test_ionization_mode"),
                                polarity = get_metadata_field(meta, "test_ionization_polarity"),
                                detector_type = get_metadata_field(meta, "test_detector_type")),
-              source_file = ifelse(missing(source_file), NA, source_file),
+              source_file = source_file,
               source_file_format = get_metadata_field(meta, "source_file_format"),
-              source_sha1 = digest::digest(source_file, algo = "sha1",
-                                           file = TRUE),
+              source_sha1 = source_sha1(source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
               parser = "chromconverter")
@@ -539,9 +509,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               run_datetime = as.POSIXct(
                 meta[meta$Property == "Time", "Value"],
                 format = "%d.%m.%Y %H:%M:%S", tz = "UTC"),
-              sample_name = ifelse(is.null(meta[["sample_name"]]),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta[["sample_name"]]),
+              sample_name = sample_name_or_file(meta, "sample_name", source_file),
               sample_id = get_metadata_field(meta, "sample_id"),
               sample_type = "unknown",
               sample_injection_volume = 1,
@@ -558,8 +526,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               # detector_end = meta[meta$Property == "Wave", "Value"],
               detector_y_unit = meta[meta$Group == "Array photometric" &
                                      meta$Property == "Units", "Value"],
-              source_file = ifelse(missing(source_file), NA, source_file),
-              source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+              source_file = source_file,
+              source_sha1 = source_sha1(source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
               parser = "chromconverter")
@@ -582,8 +550,8 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               sample_dilution = meta$`Sample dilution factor`,
               time_range = meta$`Time range`,
               time_interval = meta$`Interval(msec)`,
-              source_file = ifelse(missing(source_file), NA, source_file),
-              source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+              source_file = source_file,
+              source_sha1 = source_sha1(source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = "long",
               parser = "ThermoRawFileParser"
@@ -615,8 +583,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               scaled = scale,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo = "sha1",
-                                           file = TRUE),
+              source_sha1 = source_sha1(source_file),
               data_format = data_format,
               parser = parser,
               format_out = format_out)
@@ -653,8 +620,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               scaled = scale,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo = "sha1",
-                                           file = TRUE),
+              source_sha1 = source_sha1(source_file),
               data_format = data_format,
               parser = parser,
               format_out = format_out)
@@ -667,9 +633,7 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               operator = meta$OperatorName,
               run_datetime = convert_timestamp(meta$AcqTime,
                                                datetime_formats = masshunter_datetime_formats),
-              sample_name = ifelse(is.null(meta[["Sample Name"]]),
-                                   fs::path_ext_remove(basename(source_file)),
-                                   meta[["Sample Name"]]),
+              sample_name = sample_name_or_file(meta, "Sample Name", source_file),
               sample_id = meta$`Sample ID`,
               sample_injection_volume = meta$`Inj Vol`,
               sample_amount = meta$`Inj Vol`,
@@ -680,11 +644,22 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
               detector_y_unit = NA,
               source_file = source_file,
               source_file_format = source_file_format,
-              source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+              source_sha1 = source_sha1(source_file),
               format_out = ifelse(missing(format_out), NA, format_out),
               data_format = ifelse(missing(data_format), NA, data_format),
               parser = ifelse(missing(parser), NA, parser)
               )
+  },
+  {
+    warning(sprintf(paste("Metadata for the %s format could not be",
+                          "interpreted. Returning the data with its source",
+                          "file and parser recorded, but without the",
+                          "instrument metadata."),
+                    sQuote(format_in)), call. = FALSE)
+    attach_metadata_minimal(x, format_out = format_out,
+                            data_format = data_format, parser = parser,
+                            source_file = source_file,
+                            source_file_format = source_file_format)
   }
  )
 }
@@ -708,6 +683,35 @@ clean_vendor_string <- function(x){
   broken <- !is.na(x) & !validUTF8(x)
   x[broken] <- iconv(x[broken], from = "ISO-8859-1", to = "UTF-8")
   gsub("[[:cntrl:]]", "", x)
+}
+
+#' Sample name recorded by the file, or the file's own name
+#'
+#' Most formats record a sample name, but not all files fill it in, so the
+#' basename of the source file is the fallback. Written out with `ifelse()` in
+#' every branch that needed it, which is the hazard described under
+#' [get_metadata_field]: the result is shaped like the *test*, so a name that
+#' arrived as anything but a length-1 vector was silently truncated.
+#' @noRd
+sample_name_or_file <- function(meta, field, source_file){
+  val <- meta[[field]]
+  if (is.null(val) || length(val) == 0){
+    return(fs::path_ext_remove(basename(source_file)))
+  }
+  val
+}
+
+#' SHA-1 of the source file
+#'
+#' `NA` for anything that is not a file, rather than an error. Several formats
+#' are directories -- a Waters `.raw`, an 'Agilent' `.D` -- and `digest` errors
+#' on those, which each branch worked around differently: `rainbow` guarded with
+#' `fs::is_file`, `waters_raw` hardcoded `NA`, and the rest would have failed had
+#' they ever been handed one.
+#' @noRd
+source_sha1 <- function(path){
+  if (length(path) != 1 || is.na(path) || !fs::is_file(path)) return(NA)
+  digest::digest(path, algo = "sha1", file = TRUE)
 }
 
 #' Get a metadata field
@@ -772,7 +776,7 @@ read_chemstation_metadata <- function(file, what = c("metadata", "peaktable")){
         names(meta2) <- meta$Title
         meta2
       } else if (what == "peaktable"){
-        pktab <- as.data.frame(readxl::read_xls(rep, sheet = "Peak"))
+        pktab <- as.data.frame(readxl::read_xls(reps[1], sheet = "Peak"))
         pktab <- pktab[, -c(1:2)]
         pktab
       }
@@ -787,6 +791,12 @@ read_chemstation_metadata <- function(file, what = c("metadata", "peaktable")){
 #' @author Ethan Bass
 #' @noRd
 read_masshunter_metadata <- function(file){
+  # Both are left `NULL` when the sidecar they come from is absent, so that a
+  # path without a `sample_info.xml` returns `NULL` rather than raising
+  # "object 'meta_sample' not found". The masshunter field map reads `meta$x`
+  # throughout, which is `NULL` either way.
+  meta_sample <- NULL
+  meta_devices <- NULL
   # check for .D folder
   folder <- gsub(basename(file), "", file)
   if (grepl("\\.D/|\\.d/$", folder, ignore.case = TRUE)){
@@ -812,7 +822,9 @@ read_masshunter_metadata <- function(file){
         ))
         names(meta_devices) <- name
       }
-      meta_sample$Instrument <- meta_devices
+      if (!is.null(meta_sample) && !is.null(meta_devices)){
+        meta_sample$Instrument <- meta_devices
+      }
     }
   }
   meta_sample
@@ -1174,7 +1186,7 @@ attach_metadata_minimal <- function(x, format_out, data_format,
             detector_y_unit = NA,
             source_file = source_file,
             source_file_format = source_file_format,
-            source_sha1 = digest::digest(source_file, algo="sha1", file=TRUE),
+            source_sha1 = source_sha1(source_file),
             data_format = data_format,
             parser = parser,
             format_out = format_out)
