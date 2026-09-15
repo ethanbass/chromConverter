@@ -62,10 +62,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                                 scale = TRUE, collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(tolower(metadata_format),
-                               c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format,
-                            chromconverter = "shimadzu_lcd", raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
 
   if (missing(what)){
     what <- ifelse(check_streams(path, "pda", boolean = TRUE),

@@ -491,6 +491,45 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(attr(x, "class"), "peak_list")
 })
 
+test_that("`ChemStation` report metadata survives to `extract_metadata`", {
+  path <- test_path("testdata/RUTIN2.D/")
+
+  # Two things used to lose this metadata. `attach_metadata` collapsed any
+  # `format_in` matching "chemstation" onto the `"chemstation"` branch, which
+  # made the `"chemstation_peaklist"` branch unreachable and applied the
+  # chromatogram field map to a report's metadata. `read_chemstation_reports`
+  # then rebuilt the per-wavelength list and dropped the attributes anyway.
+  x <- read_peaklist(path, format_in = "chemstation")
+
+  expect_equal(attr(x[[1]], "sample_name"), "Rutin_2")
+  expect_equal(attr(x[[1]], "operator"), "AK")
+  expect_equal(attr(x[[1]], "instrument"), "Instrument 1")
+  expect_equal(attr(x[[1]], "source_file_format"), "chemstation_peaklist")
+
+  meta <- suppressWarnings(extract_metadata(x, what = c("sample_name",
+                                                        "operator")))
+  expect_equal(nrow(meta), 5L)
+  expect_equal(unique(meta$sample_name), "Rutin_2")
+  expect_equal(unique(meta$operator), "AK")
+})
+
+test_that("read_chroms attaches metadata for an unnamed format read by entab", {
+  skip_on_cran()
+  skip_if_not_installed("entab")
+  path <- test_path("testdata/dad1.uv")
+
+  # `call_entab` passed its `format_in` straight to `attach_metadata`, whose
+  # `switch` has no default arm, so `format_in = "other"` matched nothing and
+  # the chromatogram was replaced by `NULL`.
+  x <- read_chroms(path, format_in = "other", parser = "entab",
+                   find_files = FALSE, progress_bar = FALSE)[[1]]
+
+  expect_false(is.null(x))
+  expect_gt(nrow(x), 0)
+  expect_equal(attr(x, "parser"), "entab")
+  expect_match(attr(x, "source_sha1"), "^[0-9a-f]{40}$")
+})
+
 test_that("deprecated `data_format` argument to peak list readers still works", {
   path <- test_path("testdata/RUTIN2.D/")
   original_cols <- c("sample", "lambda", "Peak #", "RetTime [min]",

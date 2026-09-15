@@ -55,7 +55,7 @@ read_shimadzu <- function(path, what = "chroms",
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   peaktable_format <- match.arg(peaktable_format, c("chromatographr", "original"))
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  metadata_format <- check_metadata_format(metadata_format, "shimadzu_chrom")
   ms_format <- match.arg(ms_format, c("data.frame", "list"))
 
   x <- readLines(path)
@@ -90,6 +90,7 @@ read_shimadzu <- function(path, what = "chroms",
         read_shimadzu_chrom(path = path, x = x, chrom.idx = idx,
                             sep = sep, data_format = data_format,
                             read_metadata = read_metadata,
+                            metadata_format = metadata_format,
                             format_out = format_out, scale = scale)
       })
       names(xx) <- x[chrom.idx[[i]]]
@@ -205,7 +206,8 @@ read_shimadzu_metadata <- function(x, met = NULL, sep){
 #' @author Ethan Bass
 #' @noRd
 read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
-                                       read_metadata, format_out, scale = TRUE){
+                                       read_metadata, format_out, scale = TRUE,
+                                       metadata_format = "shimadzu_chrom"){
   header <- try(extract_shimadzu_header(x = x, chrom.idx = chrom.idx,
                                         sep = sep))
   met <- header[[1]]
@@ -238,7 +240,7 @@ read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
   }
   xx <- convert_chrom_format(xx, format_out = format_out, data_format = data_format)
   if (read_metadata){
-    xx <- attach_metadata(xx, meta, format_in = "shimadzu_chrom",
+    xx <- attach_metadata(xx, meta, format_in = metadata_format,
                           source_file = path, format_out = format_out,
                           data_format = data_format,
                           parser = "chromConverter", scale = scale)
@@ -251,7 +253,8 @@ read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
 #' @author Ethan Bass
 #' @noRd
 read_shimadzu_dad <- function(path, x, chrom.idx, sep, data_format,
-                              read_metadata, format_out, scale = NULL){
+                              read_metadata, format_out, scale = NULL,
+                              metadata_format = "shimadzu_chrom"){
   header <- try(extract_shimadzu_header(x = x, chrom.idx = chrom.idx,
                                         sep = sep))
   met <- header[[1]]
@@ -277,7 +280,7 @@ read_shimadzu_dad <- function(path, x, chrom.idx, sep, data_format,
                              data_format = data_format)
   if (read_metadata){
     meta <- read_shimadzu_metadata(x, met = met, sep = sep)
-    xx <- attach_metadata(xx, meta, format_in = "shimadzu_chrom",
+    xx <- attach_metadata(xx, meta, format_in = metadata_format,
                           source_file = path, format_out = format_out,
                           data_format = data_format,
                           parser = "chromConverter")

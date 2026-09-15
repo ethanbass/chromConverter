@@ -20,6 +20,32 @@ check_data_format <- function(data_format, format_out){
   match.arg(data_format, c("wide", "long"))
 }
 
+#' Check Metadata Format Argument
+#'
+#' Resolves `metadata_format` to the tag that `attach_metadata` dispatches on:
+#' the reader's own tag when the vendor metadata is to be mapped onto
+#' chromConverter's vocabulary, or `"raw"` to attach the vendor's list
+#' unchanged.
+#'
+#' Every reader used to inline this as a `match.arg` plus a `switch` over its
+#' own literal tag, which invited two kinds of typo that are invisible until a
+#' user passes `metadata_format = "raw"`: an unquoted `raw` on the right-hand
+#' side, which resolves to `base::raw` and errors, and a `switch` whose second
+#' arm is unnamed, which yields `""`. Neither names a branch in
+#' `attach_metadata`, whose `switch` has no default arm and so returns `NULL`,
+#' silently discarding the chromatogram.
+#'
+#' @param metadata_format Either `chromconverter` or `raw`, as supplied by the
+#' user.
+#' @param tag The reader's own metadata format tag.
+#' @noRd
+
+check_metadata_format <- function(metadata_format, tag){
+  metadata_format <- match.arg(tolower(metadata_format),
+                               c("chromconverter", "raw"))
+  switch(metadata_format, chromconverter = tag, raw = "raw")
+}
+
 #' Warn that an argument has been renamed
 #'
 #' Called from the top of a function, so it warns once per call rather than

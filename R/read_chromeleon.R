@@ -24,9 +24,7 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
                             decimal_mark = NULL){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, chromconverter = "chromeleon",
-                           raw = raw)
+  metadata_format <- check_metadata_format(metadata_format, "chromeleon")
   if (!is.null(decimal_mark)){
     decimal_mark <- match.arg(decimal_mark, c(".", ","))
   }

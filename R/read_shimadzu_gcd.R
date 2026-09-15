@@ -45,9 +45,7 @@ read_shimadzu_gcd <- function(path, what = "chroms",
                               collapse = TRUE){
   format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, "chromconverter" = "shimadzu_lcd",
-                          "raw")
+  metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
   check_py_module("olefile")
 
   if (read_metadata){

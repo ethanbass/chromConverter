@@ -22,10 +22,7 @@ read_waters_raw <- function(path, format_out = c("matrix", "data.frame", "data.t
 
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(tolower(metadata_format),
-                               c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format,
-                            chromconverter = "waters_raw", raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "waters_raw")
   uv_paths <- list.files(path, pattern="_CHRO", full.names = TRUE, ignore.case = TRUE)
   meta_path <- grep("\\.INF$", uv_paths, value = TRUE, ignore.case = TRUE)
   uv_paths <- grep("\\.INF$", uv_paths, invert = TRUE, value = TRUE, ignore.case = TRUE)

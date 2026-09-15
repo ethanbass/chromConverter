@@ -24,9 +24,7 @@ read_waters_arw <- function(path, format_out = c("matrix", "data.frame", "data.t
                             metadata_format = c("chromconverter", "raw")){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format,
-                            chromconverter = "waters_arw", raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "waters_arw")
   includes_metadata <- grepl('"', readLines(path, n = 1, encoding = "latin1"))
   skip <- ifelse(includes_metadata, 2, 0)
   x <- read.csv(path, sep = "\t", skip = skip, header = FALSE, row.names = 1)

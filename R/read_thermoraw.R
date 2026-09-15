@@ -34,9 +34,7 @@ read_thermoraw <- function(path, path_out = NULL,
                            metadata_format = c("chromconverter", "raw"),
                            verbose = getOption("verbose")){
   format_out <- match.arg(format_out, c("matrix", "data.frame"))
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, chromconverter = "thermoraw",
-                             raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "thermoraw")
   if(!file.exists(path)){
     stop("File not found. Check path.")
   }

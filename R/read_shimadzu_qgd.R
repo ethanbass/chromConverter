@@ -53,9 +53,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   what <- match.arg(toupper(what), c("MS1", "TIC"), several.ok = TRUE)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, "chromconverter" = "shimadzu_lcd",
-                            "raw")
+  metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
   check_py_module("olefile")
 
   if ("TIC" %in% what){

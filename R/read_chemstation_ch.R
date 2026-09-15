@@ -36,9 +36,7 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
                                 scale = TRUE, source_file = NULL){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, chromconverter = "chemstation",
-                            raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "chemstation")
   source_file <- ifelse(is.null(source_file), path, source_file)
   f <- file(path, "rb")
   on.exit(close(f))
@@ -263,9 +261,7 @@ read_chemstation_it <- function(path, format_out = c("matrix", "data.frame",
                                 scale = TRUE, source_file = NULL){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, chromconverter = "chemstation",
-                            raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "chemstation")
   source_file <- ifelse(is.null(source_file), path, source_file)
 
   f <- file(path, "rb")

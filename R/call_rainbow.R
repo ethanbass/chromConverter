@@ -46,9 +46,7 @@ call_rainbow <- function(path,
   by <- match.arg(by, c("detector", "name"))
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(tolower(metadata_format),
-                               c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, "chromconverter" = "rainbow", "")
+  metadata_format <- check_metadata_format(metadata_format, "rainbow")
 
   if (grepl("chemstation", format_in)){
     format_in <- "chemstation"

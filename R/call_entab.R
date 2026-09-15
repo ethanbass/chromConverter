@@ -22,9 +22,8 @@ call_entab <- function(path, data_format = c("wide", "long"),
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
 
-  metadata_format <- match.arg(tolower(metadata_format), c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format,
-                            chromconverter = format_in, raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format,
+                                           entab_metadata_tag(format_in))
   r <- entab::Reader(path)
   file_format <- r$parser()
   x <- entab::as.data.frame(r)
@@ -66,9 +65,26 @@ call_entab <- function(path, data_format = c("wide", "long"),
     if (exists("metadata_from_file") && !inherits(metadata_from_file, "try-error")){
       meta <- c(meta, metadata_from_file)
     }
-    x <- attach_metadata(x, meta, format_in = format_in, format_out = format_out,
+    x <- attach_metadata(x, meta, format_in = metadata_format,
+                         format_out = format_out,
                          data_format = data_format, parser = "entab",
                          source_file = path, source_file_format = file_format)
   }
   x
+}
+
+#' Metadata format tag for a format read by 'entab'
+#'
+#' 'entab' reports its own set of metadata fields whatever the file format, and
+#' `call_entab` renames them onto the names the `"chemstation"` branch of
+#' `attach_metadata` reads, so that branch describes every format it can read.
+#' The exception is `masshunter_dad`, whose fields come from the
+#' `sample_info.xml` sidecar that `call_entab` merges in.
+#'
+#' Passing `format_in` through unchanged, as `call_entab` used to, left
+#' `format_in = "other"` matching no branch at all, so `attach_metadata`
+#' returned `NULL` and the chromatogram was discarded.
+#' @noRd
+entab_metadata_tag <- function(format_in){
+  if (identical(format_in, "masshunter_dad")) "masshunter_dad" else "chemstation"
 }

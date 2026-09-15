@@ -26,9 +26,7 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
                          metadata_format = c("chromconverter", "raw")){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format,
-                            chromconverter = "masshunter_dad", raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "masshunter_dad")
   trace_file <- check_aston_configuration()
   x <- trace_file$agilent_uv$AgilentDAD(path)
   x <- setNames(data.frame(x$data$values,

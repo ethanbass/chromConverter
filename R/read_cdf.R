@@ -73,8 +73,7 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
                             what = "chroms", read_metadata = TRUE,
                             metadata_format = "chromconverter",
                             collapse = TRUE, nc = NULL){
-  metadata_format <- switch(metadata_format,
-                            chromconverter = "andi_chrom", raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "andi_chrom")
   what <- if(is.null(what)) "chroms" else what
   if (any(what == "chromatogram")){
     warning("The `chromatogram` argument to `what` is deprecated. Please use `chroms` instead.")
@@ -160,8 +159,7 @@ read_andi_ms <- function(path,
                          metadata_format = "chromconverter",
                          collapse = TRUE, nc = NULL){
   format_out <- check_format_out(format_out)
-  metadata_format <- switch(metadata_format,
-                            chromconverter = "andi_ms", raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "andi_ms")
   ms_format <- match.arg(ms_format, c("data.frame", "list"))
   what <- if(is.null(what)) c("MS1", "TIC") else what
   what <- match.arg(toupper(what), c("MS1", "TIC"), several.ok = TRUE)

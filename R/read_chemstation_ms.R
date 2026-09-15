@@ -35,9 +35,7 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
                                 collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, chromconverter = "chemstation",
-                            raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "chemstation")
   what <- match.arg(what, c("MS1", "BPC", "TIC"), several.ok = TRUE)
   f <- file(path, "rb")
   on.exit(close(f))

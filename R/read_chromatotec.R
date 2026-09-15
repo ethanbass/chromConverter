@@ -24,9 +24,7 @@ read_chromatotec <- function(path, what = c("chrom", "peak_table"),
                              collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format, chromconverter = "chromatotec",
-                            raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "chromatotec")
   what <- match.arg(what, c("chrom", "peak_table"), several.ok = TRUE)
   f <- file(path, "rb")
   on.exit(close(f))

@@ -89,6 +89,8 @@
 
 #### Metadata and printing
 
+* Fixed `metadata_format`, which several readers mishandled. `metadata_format = "raw"` errored for 'Chromeleon' files and returned `NULL` instead of a chromatogram for the `rainbow` parser; the `entab` parser and `read_shimadzu` ignored the argument altogether; and `parser = "entab"` with `format_in = "other"` returned `NULL`. The argument is now resolved in one place instead of separately by each reader.
+* Metadata from 'Agilent ChemStation' report files is now attached to the peak lists that `read_peaklist` returns, so `extract_metadata` can see it.
 * `extract_metadata` now returns a row for every chromatogram, however deeply nested, and reads sample-level attributes from the list enclosing a sample's traces as well as from the traces themselves. Previously only the top level of the list was examined, so nested traces, and any metadata held on the list grouping them, were left out of the table. A field that varies from trace to trace, such as `detector` in a multichannel file, stays with the trace; where the traces agree, the value on the enclosing list is used, since it describes the sample as a whole.
 * `extract_metadata` now matches attribute names exactly. Previously a requested element could be filled in from a different attribute that merely started with the same characters, so a chromatogram with no `detector` attribute could report its `detector_y_unit` as its detector.
 * `extract_metadata` now returns `NA` instead of a metadata frame with only a `name` column when none of the requested metadata elements are found.

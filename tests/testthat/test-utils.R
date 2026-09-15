@@ -124,3 +124,14 @@ test_that("`bin_width` overrides `precision` in `call_rainbow`", {
   expect_error(rb_precision_args(1, bin_width = "0.5"),
                "single positive number")
 })
+
+test_that("check_metadata_format resolves the reader's tag", {
+  expect_equal(check_metadata_format("chromconverter", "chemstation"),
+               "chemstation")
+  expect_equal(check_metadata_format("raw", "chemstation"), "raw")
+  # readers pass the full default vector when the user supplies nothing
+  expect_equal(check_metadata_format(c("chromconverter", "raw"), "waters_arw"),
+               "waters_arw")
+  expect_equal(check_metadata_format("ChromConverter", "asm"), "asm")
+  expect_error(check_metadata_format("nonsense", "asm"))
+})

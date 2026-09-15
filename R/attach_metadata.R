@@ -17,9 +17,6 @@ attach_metadata <- function(x, meta, format_in, format_out, data_format,
                             parser = NULL, source_file,
                             source_file_format = format_in,
                             scale = NULL){
-  if (grepl("chemstation", format_in)){
-    format_in <- "chemstation"
-  }
   switch(format_in,
     "raw" = {
       structure(x, metadata = meta, data_format = data_format, parser = parser,

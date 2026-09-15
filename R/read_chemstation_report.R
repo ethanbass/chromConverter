@@ -39,7 +39,9 @@ read_chemstation_reports <- function(paths,
       cbind(sample = names(paths)[i], lambda = lambda, xx[[ii]])
     })
     names(dat) <- sub(".*Sig=([0-9]+).*", "\\1", names(xx))
-    dat
+    # `read_chemstation_report` attaches the sample's metadata to the list it
+    # returns, so rebuilding that list here would otherwise discard it
+    transfer_metadata(dat, xx)
   })
   names(pks) <- names(paths)
   structure(pks,
@@ -69,10 +71,7 @@ read_chemstation_report <- function(path,
                                     metadata_format = c("chromconverter", "raw")){
   peaktable_format <- match.arg(tolower(peaktable_format),
                                 c("chromatographr", "original"))
-  metadata_format = match.arg(metadata_format, c("chromconverter", "raw"))
-  metadata_format <- switch(metadata_format,
-                            chromconverter = "chemstation_peaklist",
-                            raw = "raw")
+  metadata_format <- check_metadata_format(metadata_format, "chemstation_peaklist")
   x <- readLines(path, encoding = "UTF-16LE", skipNul = TRUE)
   x[1] <- gsub("\xff\xfe", "", x[1], useBytes = TRUE)
   x <- gsub("\xb5", "<b5>", x, useBytes = TRUE)

@@ -122,3 +122,24 @@ test_that("read_chroms can read 'Chromeleon' 3D data files", {
     c(0.000238, 0.02569, -0.078201, -0.191271, 0.13274, 0.446737, 0.407219, 
     0.350237, 0.499487, 0.180602, 0.363827, 0.016391)) 
 })
+
+test_that("read_chroms can return raw 'Chromeleon' metadata", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("chromeleon_3D.txt",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  # `metadata_format = "raw"` used to error, because the `switch` resolving it
+  # had an unquoted `raw` on the right-hand side, which evaluates to
+  # `base::raw`. The chromatogram was dropped with a warning.
+  x <- read_chroms(path, format_in = "chromeleon_uv", metadata_format = "raw",
+                   progress_bar = FALSE)[[1]]
+  expect_false(is.null(x))
+  meta <- attr(x, "metadata")
+  expect_type(meta, "list")
+  expect_true("Detector" %in% names(meta))
+  # the chromConverter vocabulary is not applied in raw mode
+  expect_null(attr(x, "detector"))
+})
