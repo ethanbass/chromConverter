@@ -13,7 +13,9 @@ read_agilent_rslt(
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
-  sample_names = c("basename", "sample_name")
+  sample_names = c("basename", "sample_name"),
+  progress_bar = FALSE,
+  cl = 1
 )
 }
 \arguments{
@@ -44,6 +46,16 @@ element. Defaults to \code{TRUE}.}
 \item{sample_names}{How to name the chromatograms that are returned. Either
 \code{basename} (default), to use the name of the source \code{.dx} file, or
 \code{sample_name}, to use the sample name field from the metadata.}
+
+\item{progress_bar}{Logical. Whether to show a progress bar while reading
+the sequence's \code{.dx} files. Defaults to \code{FALSE}, since \link{read_chroms} already
+reports progress over the directories it found and a second bar inside each
+one would be redrawn per directory. Set to \code{TRUE} when calling this function
+directly on a sequence with many injections.}
+
+\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
+of clusters to use or a cluster object created by
+\link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
 }
 \value{
 A list of chromatograms (one \code{read_agilent_dx}-style result per

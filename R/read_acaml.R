@@ -14,6 +14,11 @@
 #' @param find_files Logical. Set to `TRUE` (default) if you are providing
 #' the function with a folder or vector of folders containing the files.
 #' Otherwise, set to `FALSE`.
+#' @param progress_bar Logical. Whether to show a progress bar. Defaults to
+#' `FALSE`, unlike [read_chroms], because an ACAML file usually accompanies a
+#' sequence rather than arriving in bulk: [read_agilent_rslt] calls this
+#' function on the single `.acaml` file in a `.rslt` directory, where a
+#' progress bar over one element is just noise.
 #' @return A `data.frame`, `data.table` or `tibble` (according to the value of
 #' `format_out`) containing sample metadata derived from the supplied ACAML
 #' files.
@@ -23,7 +28,7 @@
 #' @export
 read_acaml <- function(path, find_files,
                        format_out = c("data.frame", "data.table", "tibble"),
-                       progress_bar = TRUE, cl = 1){
+                       progress_bar = FALSE, cl = 1){
   format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
   laplee <- choose_apply_fnc(progress_bar, cl = cl)
   if (missing(find_files)){

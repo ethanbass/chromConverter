@@ -103,7 +103,7 @@ test_that("Shimadzu Anthocyanin peak tables match", {
   skip_if_not(file.exists(path_lcd))
 
   x <- read_peaklist(path_ascii, format_in = "shimadzu_dad",
-                     data_format = "original",
+                     peaktable_format = "original",
                      progress_bar = FALSE)[[1]]
 
   x1 <- read_shimadzu_lcd(path_lcd, what="peak_table")
@@ -290,7 +290,7 @@ test_that("Shimadzu multichannel peak tables match", {
   skip_if_not(file.exists(path_lcd))
 
   x <- read_peaklist(path_asc, format_in = "shimadzu_dad",
-                     data_format = "original",
+                     peaktable_format = "original",
                      progress_bar = FALSE)[[1]]
 
   x1 <- read_peaklist(path_lcd, format_in = "shimadzu_lcd",
@@ -356,7 +356,7 @@ test_that("Shimadzu FID peak tables match", {
   skip_if_not(file.exists(path_gcd))
 
   x <- read_peaklist(path_asc, format_in = "shimadzu_dad",
-                     data_format = "original",
+                     peaktable_format = "original",
                      progress_bar = FALSE)[[1]]
 
   x1 <- read_peaklist(path_gcd, format_in = "shimadzu_gcd", progress_bar=FALSE)

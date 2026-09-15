@@ -8,7 +8,7 @@ read_acaml(
   path,
   find_files,
   format_out = c("data.frame", "data.table", "tibble"),
-  progress_bar = TRUE,
+  progress_bar = FALSE,
   cl = 1
 )
 }
@@ -22,8 +22,11 @@ Otherwise, set to \code{FALSE}.}
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
-if \code{pbapply} is installed.}
+\item{progress_bar}{Logical. Whether to show a progress bar. Defaults to
+\code{FALSE}, unlike \link{read_chroms}, because an ACAML file usually accompanies a
+sequence rather than arriving in bulk: \link{read_agilent_rslt} calls this
+function on the single \code{.acaml} file in a \code{.rslt} directory, where a
+progress bar over one element is just noise.}
 
 \item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
 of clusters to use or a cluster object created by

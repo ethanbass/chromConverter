@@ -12,6 +12,14 @@
 #' @param sample_names How to name the chromatograms that are returned. Either
 #' `basename` (default), to use the name of the source `.dx` file, or
 #' `sample_name`, to use the sample name field from the metadata.
+#' @param progress_bar Logical. Whether to show a progress bar while reading
+#' the sequence's `.dx` files. Defaults to `FALSE`, since [read_chroms] already
+#' reports progress over the directories it found and a second bar inside each
+#' one would be redrawn per directory. Set to `TRUE` when calling this function
+#' directly on a sequence with many injections.
+#' @param cl Argument to [pbapply][pbapply::pbapply] specifying the number
+#' of clusters to use or a cluster object created by
+#' [makeCluster][parallel::makeCluster]. Defaults to `1`.
 #' @return A list of chromatograms (one `read_agilent_dx`-style result per
 #' injection in the sequence), in the format specified by `data_format` and
 #' `format_out`. If `read_metadata` is `TRUE`, injection-level metadata parsed
@@ -28,7 +36,8 @@ read_agilent_rslt <- function(path, what = c("chroms","dad"), path_out = NULL,
                               read_metadata = TRUE,
                               metadata_format = c("chromconverter", "raw"),
                               collapse = TRUE,
-                              sample_names = c("basename", "sample_name")){
+                              sample_names = c("basename", "sample_name"),
+                              progress_bar = FALSE, cl = 1){
   format_out <- match.arg(format_out, c("matrix", "data.frame", "data.table"))
   data_format <- match.arg(data_format, c("wide", "long"))
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
@@ -45,10 +54,11 @@ read_agilent_rslt <- function(path, what = c("chroms","dad"), path_out = NULL,
     read_acaml(acaml_file[1])
   } else NULL
 
-  data <- lapply(dx_files, read_agilent_dx, what = what, path_out = path_out,
-                   format_out = format_out, data_format = data_format,
-                   read_metadata = read_metadata,
-                   metadata_format = metadata_format, collapse = collapse)
+  laplee <- choose_apply_fnc(progress_bar, cl = cl)
+  data <- laplee(dx_files, read_agilent_dx, what = what, path_out = path_out,
+                 format_out = format_out, data_format = data_format,
+                 read_metadata = read_metadata,
+                 metadata_format = metadata_format, collapse = collapse)
   acaml_field_map <- c(
     SampleName           = "sample_name",
     VialNumber           = "sample_position",
