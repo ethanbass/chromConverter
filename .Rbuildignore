@@ -17,3 +17,5 @@
 ^vignettes$
 ^\.positai$
 ^\.claude$
+^dev$
+^logo_fonts\.png$
