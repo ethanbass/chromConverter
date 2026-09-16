@@ -25,7 +25,9 @@ read_sz_lcd_2d(
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
 
-\item{scale}{Whether to scale the data by the value factor.}
+\item{scale}{Whether to scale the data by the calibration factor and the
+value factor, converting the encoded integers into the unit reported by
+'Lab Solutions' (e.g. \code{mV}).}
 }
 \value{
 One or more 2D chromatograms from the chromatogram streams in

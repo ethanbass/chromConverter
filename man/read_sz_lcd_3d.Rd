@@ -26,7 +26,8 @@ read_sz_lcd_3d(
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
-\item{scale}{Whether to scale the data by the value factor.}
+\item{scale}{This argument currently has no effect. PDA data is returned as
+it is encoded in the file; see the note in \code{\link[=read_shimadzu_lcd]{read_shimadzu_lcd()}}.}
 }
 \value{
 A 3D chromatogram from the PDA stream in \code{matrix}, \code{data.frame}, or

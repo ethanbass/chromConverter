@@ -46,8 +46,30 @@
 #' The `format_out` argument determines whether chromatograms are returned
 #' in `matrix`, `data.frame`, or `data.table` format. Metadata will be
 #' attached to the chromatogram as [attributes] when `read_metadata` is `TRUE`.
-#' @note My parsing of the date-time format seems to be a little off, since
-#' the acquisition times diverge slightly from the ASCII file.
+#' @note Times are stored as a 'Windows' `FILETIME`, which is always UTC, so
+#' `run_datetime` is reported in UTC. The files also record the offset of the
+#' local time zone (e.g. `+01'00'`), but this is the standard offset of the
+#' zone rather than the offset that was in force, and it seems that no daylight
+#' saving information is stored anywhere in the file. The local times displayed by
+#' 'Lab Solutions' therefore cannot be reconstructed from the recorded offset
+#' alone: where daylight saving time applied, they are an hour ahead of it.
+#' Rendering `run_datetime` in the zone where the data were acquired, e.g.
+#' `format(attr(x, "run_datetime"), tz = "Europe/Paris")`, recovers them
+#' exactly.
+#'
+#' As of `v0.10.0`, 2D chromatograms are scaled by the calibration factor and the
+#' value factor recorded for each channel, so their intensities match those
+#' reported by 'Lab Solutions'. PDA data is instead returned as it is encoded in
+#' the file, matching the `[PDA 3D]` section of a 'Lab Solutions' ASCII export,
+#' which declares no intensity unit or multiplier. The `3D Data Item` describes
+#' the absorbance axis in `mAU` with a value factor of `1000`, which would imply
+#' scaling the values by `0.001`, but the `[PDA Multi Chromatogram]` traces in
+#' the ASCII export, which are extracted from the same data, report values on
+#' the same scale as the raw data with a multiplier of `1`. Until this can be
+#' resolved, PDA data is left unscaled and the `scale` argument is ignored. Note
+#' that the `Max Plot` chromatogram is derived from the PDA data but is read as
+#' a 2D chromatogram, so the value factor is applied to it and it currently
+#' differs from the PDA data by a factor of `1000`.
 #' @examples \dontrun{
 #' read_shimadzu_lcd(path)
 #' }
@@ -144,7 +166,8 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either `chromconverter`
 #' or `raw`.
-#' @param scale Whether to scale the data by the value factor.
+#' @param scale This argument currently has no effect. PDA data is returned as
+#' it is encoded in the file; see the note in [read_shimadzu_lcd()].
 #' @examples \dontrun{
 #' read_sz_lcd_3d("path/to/file.lcd")
 #' }
@@ -240,7 +263,9 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' @param read_metadata Logical. Whether to attach metadata.
 #' @param metadata_format Format to output metadata. Either `chromconverter` or
 #' `raw`.
-#' @param scale Whether to scale the data by the value factor.
+#' @param scale Whether to scale the data by the calibration factor and the
+#' value factor, converting the encoded integers into the unit reported by
+#' 'Lab Solutions' (e.g. `mV`).
 #' @examples \dontrun{
 #' read_sz_lcd_2d("path/to/file.lcd")
 #' }
@@ -274,18 +299,32 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
     dat <- read_sz_chrom(path, stream = stream)
     idx <- ifelse(stream[2] == "Max Plot", "PDA",
                   as.numeric(gsub("\\D", "", stream[2])))
+    status <- read_sz_chrom_status(path, stream)
+    cf <- if (is.null(status) || is.na(status$CF)) 1 else status$CF
+
     data_item_exists <- check_stream(path,c('LSS Data Processing', '2D Data Item'))
     if (data_item_exists){
       DI <- read_sz_2DDI(path, idx = idx)
       times <- seq(DI$DLT, DI$AT, length.out = nrow(dat))
       rownames(dat) <- times
-      if (scale){
-        dat <- dat*DI$detector.vf
-      }
+      multiplier <- DI$detector.vf
     } else{
-      DI <- data.frame(DETN = sapply(existing_streams,"[",2),
-                       DSCN = NA, ADN = NA, detector.unit = NA)
-      times <- rownames(dat)
+      # files written by 'LCsolution' have no data item, but the status record
+      # accompanying the raw data carries the same factors and the same unit
+      DI <- data.frame(DETN = stream[[2]], DSCN = NA, ADN = NA,
+                       detector.unit = if (is.null(status)){
+                         NA_character_
+                       } else status$unit)
+      times <- as.numeric(rownames(dat))
+      multiplier <- if (is.null(status) || is.na(status$VF)){
+        NA_real_
+      } else 1/status$VF
+    }
+    scaled <- scale && length(multiplier) == 1 && !is.na(multiplier)
+    if (scaled){
+      dat <- dat*multiplier*cf
+    } else{
+      DI$detector.unit <- sz_stored_unit(DI, cf = cf)
     }
     if (data_format == "long"){
       dat <- data.frame(rt = times, intensity = dat$int, detector = DI$DETN,
@@ -297,18 +336,26 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
     if (read_metadata){
       dat <- attach_metadata(dat, c(meta, DI), format_in = metadata_format,
                              source_file = path, data_format = data_format,
-                             format_out = format_out, scale = scale,
+                             format_out = format_out,
+                             scale = scaled,
                              source_file_format = "shimadzu_lcd")
     }
     dat
   })
   if (!is.null(attr(dat[[1]],"detector")) |
       !is.null(attr(dat[[1]], "wavelength"))){
-    names(dat) <- sapply(dat, function(x){
+    names(dat) <- vapply(dat, function(x){
       det <- gsub("Detector ", "", attr(x, "detector"))
       wv <- attr(x, "wavelength")
-      ifelse(wv == "", det, paste(det, wv, sep = ", "))
-    })
+      if (length(det) != 1 || is.na(det)){
+        return(NA_character_)
+      }
+      if (length(wv) != 1 || is.na(wv) || !nzchar(wv)){
+        det
+      } else{
+        paste(det, wv, sep = ", ")
+      }
+    }, FUN.VALUE = character(1))
   } else{
     names(dat) <-  sapply(existing_streams, "[", 2)
   }
@@ -776,6 +823,112 @@ read_sz_3DDI <- function(path){
   meta
 }
 
+#' Read 'Shimadzu' chromatogram status record
+#'
+#' Returns the scaling factors for a 2D chromatogram stream. The calibration
+#' factor (`CF`) converts the delta-encoded integers in the stream into the base
+#' unit of the detector (e.g. `uV` or `nRI`), and must be applied before the
+#' value factor (`VF`), which gives the number of base units in the unit
+#' selected for display (e.g. `mV` or `uRI`). So an intensity in the unit
+#' reported by 'Lab Solutions' is the encoded integer times `CF` divided by
+#' `VF`. `1/VF` is what 'Lab Solutions' calls the `Intensity Multiplier` in its
+#' ASCII exports, while the calibration factor is already folded into the
+#' intensities of those exports.
+#'
+#' The gain factor (`GF`) is `1` in all of the files I have seen, so it is not
+#' applied anywhere.
+#'
+#' The factors are stored alongside the raw data in a `Chromatogram Status`
+#' stream (or `Max Plot Status`, for the PDA max plot), which consists of a
+#' 64-byte record for each channel, indexed by the same channel number as the
+#' corresponding `Chromatogram Ch<#>` stream. Each record consists of the
+#' following fields:
+#'
+#' * 4 bytes: Little-endian integer flagging whether the channel contains data.
+#' * 4 bytes of `00`s.
+#' * 4 bytes: Little-endian integer specifying the duration of the run (in
+#' milliseconds).
+#' * 4 bytes of `00`s.
+#' * 8 bytes: Little-endian double specifying the calibration factor (`CF`).
+#' * 8 bytes: Little-endian double specifying the gain factor (`GF`).
+#' * 8 bytes: Little-endian double specifying the value factor (`VF`).
+#' * 24 bytes: Null-terminated string naming the unit selected for display
+#' (e.g. `mV`, `mAU` or `kgf/cm2`), padded with `00`s.
+#'
+#' The same factors are also encoded in the `2D Data Item` stream accompanying
+#' the raw data, where they agree with the status record for every channel I
+#' have checked. They must be matched to the channel by `DSID` there, though,
+#' since that stream also describes the status log channels, which are numbered
+#' separately. The `CF` in the `LSS Data Processing` copy of the
+#' `2D Data Item` is always `1`. Older files, written by 'LCsolution' rather
+#' than 'Lab Solutions', have no `2D Data Item` at all, so the status record is
+#' the only source of these factors.
+#' @param path Path to 'Shimadzu' `.lcd` file.
+#' @param stream Name of the chromatogram stream.
+#' @return A list with the calibration factor (`CF`), gain factor (`GF`),
+#' value factor (`VF`) and the name of the display `unit`, each `NA` where the
+#' record does not supply it, or `NULL` if the record could not be read.
+#' @author Ethan Bass
+#' @noRd
+
+read_sz_chrom_status <- function(path, stream){
+  idx <- suppressWarnings(as.numeric(gsub("\\D", "", stream[length(stream)])))
+  if (is.na(idx)){
+    idx <- 1
+  }
+  stream[length(stream)] <- paste(gsub(" Ch\\d+$", "",
+                                       stream[length(stream)]), "Status")
+  path_status <- export_stream(path, stream)
+  if (length(path_status) == 0 || is.na(path_status[1])){
+    return(NULL)
+  }
+  on.exit(unlink_stream(path_status), add = TRUE)
+
+  offset <- (idx - 1)*64
+  size <- file.info(path_status)$size
+  if (size < (offset + 40)){
+    return(NULL)
+  }
+  f <- file(path_status, "rb")
+  on.exit(close(f), add = TRUE)
+  seek(f, where = offset)
+  record <- readBin(f, what = "raw", n = min(64, size - offset))
+
+  factors <- readBin(record[17:40], what = "double", n = 3, size = 8,
+                     endian = "little")
+  if (length(factors) < 3){
+    return(NULL)
+  }
+  factors <- as.list(factors)
+  names(factors) <- c("CF", "GF", "VF")
+
+  # an unpopulated record is all `00`s
+  factors[] <- lapply(factors, function(x){
+    if (!is.finite(x) || x <= 0) NA_real_ else x
+  })
+  unit <- read_null_terminated(record, offset = 40)
+  factors$unit <- if (is.null(unit)) NA_character_ else unit
+  factors
+}
+
+#' Read 'Shimadzu' calibration factor
+#'
+#' Returns the calibration factor (`CF`) from the `Chromatogram Status` record
+#' for a stream, or `1` where it could not be found. See
+#' `read_sz_chrom_status()` for the layout of the record.
+#' @param path Path to 'Shimadzu' `.lcd` file.
+#' @param stream Name of the chromatogram stream.
+#' @author Ethan Bass
+#' @noRd
+
+read_sz_calibration_factor <- function(path, stream){
+  status <- read_sz_chrom_status(path, stream)
+  if (is.null(status) || is.na(status$CF)){
+    return(1)
+  }
+  status$CF
+}
+
 #' Read 'Shimadzu' 2D Data Item
 #' @noRd
 read_sz_2DDI <- function(path, read_file = TRUE, idx = 1){
@@ -821,17 +974,71 @@ extract_axis_metadata <- function(x){
   ax <- lapply(idx, function(i){
     ax <- xml2::xml_find_all(x, paste0(".//Axis[@ID='", i, "']"))
     dus <- as.numeric(xml2::xml_attr(ax, "DUS"))
-    if (dus != 0){
-      xml2::xml_find_all(ax, "US")[[dus]]
+    us <- xml2::xml_find_all(ax, "US")
+    if (length(dus) == 1 && !is.na(dus) && dus != 0 && length(us) >= dus){
+      list(selected = us[[dus]], available = us)
     } else NA
 
   })
   names(ax) <- c("detector", "time")
   unlist(lapply(ax, function(x){
-    if (inherits(x, "xml_node")){
-      list(vf = xml2::xml_find_all(x, "VF") |> xml2::xml_text() |> sz_float(),
-           unit = xml2::xml_find_all(x, "Unit") |> xml2::xml_text()
+    if (is.list(x)){
+      list(vf = xml2::xml_find_all(x$selected, "VF") |> xml2::xml_text() |>
+             sz_float(),
+           unit = xml2::xml_find_all(x$selected, "Unit") |> xml2::xml_text(),
+           base_unit = extract_sz_base_unit(x$selected, x$available)
            )
-    } else list(vf = NA, unit = NA)
+    } else list(vf = NA, unit = NA, base_unit = NA)
   }), recursive = FALSE)
+}
+
+#' Find the base unit of an axis
+#'
+#' Each axis offers a choice of units, grouped by unit type (`UT`), one of which
+#' is selected for display by the `DUS` attribute of the axis. Within a group,
+#' the value factor (`VF`) of each unit gives the number of base units it
+#' represents, so the base unit is the one with a factor of `1`. For example, an
+#' absorbance axis offers `µAU` (`1`), `mAU` (`1000`) and `AU` (`1e6`), so the
+#' values are encoded in `µAU`.
+#' @param selected The `US` node selected for display.
+#' @param us All of the `US` nodes belonging to the axis.
+#' @return The name of the base unit, or `NA` if it could not be identified.
+#' @author Ethan Bass
+#' @noRd
+
+extract_sz_base_unit <- function(selected, us){
+  ut <- xml2::xml_text(xml2::xml_find_first(selected, "UT"))
+  uts <- vapply(us, function(x){
+    xml2::xml_text(xml2::xml_find_first(x, "UT"))
+  }, FUN.VALUE = character(1))
+  vfs <- vapply(us, function(x){
+    sz_float(xml2::xml_text(xml2::xml_find_first(x, "VF")))
+  }, FUN.VALUE = numeric(1))
+  idx <- which(uts == ut & vfs == 1)
+  if (length(idx) != 1){
+    return(NA_character_)
+  }
+  xml2::xml_text(xml2::xml_find_first(us[[idx]], "Unit"))
+}
+
+#' Unit of the values as they are encoded in the file
+#'
+#' The integers in a data stream are encoded in the base unit of the detector,
+#' but only once the calibration factor has been applied to them. Where the
+#' calibration factor is not `1`, the unscaled values are raw converter counts,
+#' so the unit selected for display is left in place rather than claiming a
+#' unit the unscaled values do not have.
+#' @param DI Data item metadata.
+#' @param cf The calibration factor applied to the stream.
+#' @author Ethan Bass
+#' @noRd
+
+sz_stored_unit <- function(DI, cf = 1){
+  base_unit <- DI$detector.base_unit
+  if (length(cf) == 1 && !is.na(cf) && cf == 1 &&
+      length(base_unit) == 1 && !is.na(base_unit)){
+    base_unit
+  } else{
+    DI$detector.unit
+  }
 }

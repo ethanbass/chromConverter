@@ -2,6 +2,7 @@
 
 ### Breaking changes
 
+* 2D chromatograms from 'Shimadzu' `.lcd` files are now scaled by the calibration factor as well as the value factor, so the intensities match those reported by 'Lab Solutions'. The calibration factor converts the encoded integers into the base unit of the detector, and is stored alongside the raw data in the `Chromatogram Status` stream. The parser was instead taking it from the copy of the `2D Data Item` under `LSS Data Processing`, where it is always `1`. Channels where it is not `1` were off by a constant factor, such as ~42x for an SPD-20A UV detector and ~310x for an RID-10A refractive index detector, so any factor applied by hand to match 'Lab Solutions' should now be removed. Older files, written by 'LCsolution' rather than 'Lab Solutions', have no `2D Data Item` at all, so neither factor reached them; both are now read from the status record, changing the scale of those chromatograms by up to ~5000x. `scale = FALSE` still returns the unscaled integers.
 * Fixed a loss of precision in long-format data. The conversion from wide to long format finished by coercing the assembled table with `apply(x, 2, as.numeric)`. Because retention times entered that table as character (from the rownames), the coercion routed every column through a character matrix, formatting each intensity with `getOption("digits")` and so rounding it to 7 significant figures. Long-format intensities now match the wide-format values exactly. Exported files were affected too, since `write_mzml` and `write_andi_ms` reshape to long format before encoding.
 * The names of several metadata fields have changed, and some functions and arguments have been deprecated or removed. See the "Metadata field changes" and "Deprecations" sections below.
 
@@ -37,6 +38,7 @@
 * `detector_range` is now reserved for the numeric wavelength range recorded by `.uv` files. For 'ChemStation' versions 30 and 130 the signal descriptor was previously reported in this field, and is now reported as `signal_descriptor`.
 * The `detector` field is now `NA` for 'ChemStation' `.ch` files. These files do not record a detector type; the field previously reported the detector module, duplicating `detector_id`.
 * `sample_amount` is no longer copied from the injection volume ('Shimadzu' ASCII, 'ChemStation' `.ch`, `.uv` and `.ms` files, 'ChemStation' report files, and 'MassHunter'). None of these records a sample amount, so it is now `NA`. 'Lumex' MDF likewise no longer reports an injection volume and amount of `1`, which the file does not record.
+* 'Shimadzu' `.lcd`, `.gcd` and `.qgd` files now report `file_version`, the version of the container format (`5.01` for files written by 'Lab Solutions'; absent in the older files, which report only a `software_version` of `1.x`).
 * `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
 * A 'Varian' SMS file is acquired in segments, and the bounds of each are now reported as `segment_start_time` and `segment_end_time` within `ms_params`. `time_range` gives the span of the whole run, as it does for every other format.
 
@@ -67,6 +69,8 @@
 
 #### 'Shimadzu'
 
+* Fixed the acquisition time reported for 'Shimadzu' ASCII files, which was `NA` for every export not written by a machine using a 12-hour month-first date format. Note that the times in an ASCII export are local to that machine, which does not record its time zone, whereas `.lcd` files record the acquisition instant in UTC.
+* Fixed `read_shimadzu_lcd` for `.lcd` files that do not contain a `2D Data Item`, which failed with `'names' attribute [4] must be the same length as the vector [2]`. This bug seems to affect older files, which store their chromatograms under `LC Raw Data` rather than `LSS Raw Data`.
 * Fixed `read_shimadzu_lcd` so it can return PDA data in long format. `read_shimadzu_lcd(what = "pda", data_format = "long")` previously failed with an error about a missing `lambda` column, because the reshaping step was called with the wrong target format.
 * Fixed export of OLE streams to a path containing `~`, which is not expanded by Python.
 

@@ -57,6 +57,63 @@ clean_vendor_string <- function(x){
   gsub("[[:cntrl:]]", "", x)
 }
 
+#' Parse a date-time from a 'Shimadzu' ASCII export
+#'
+#' 'Lab Solutions' writes the timestamps in its ASCII exports using the date and
+#' time format of the machine that produced the export, so no single format
+#' string can read them. The variants seen so far are a 12-hour month-first
+#' format (`4/26/2021 11:01:11 PM`) and 24-hour day-first formats separated by
+#' either slashes (`02/08/2023 17:08:21`) or hyphens (`29-03-2022 10:12:19`).
+#'
+#' A leading component greater than `12` can only be a day, which settles the
+#' order on its own. Otherwise the 12-hour clock is taken as the signal:
+#' 'Windows' pairs it with the month-first format, so a timestamp written on a
+#' 24-hour clock is read as day-first. Both orders are tried in either case, so
+#' an unrecognized combination still parses if it is unambiguous.
+#'
+#' Note that the wall clock time is local to the machine that wrote the export,
+#' which does not record its time zone, so the result is a local time labelled
+#' as UTC rather than a true UTC instant.
+#' @param x Character vector of date-times.
+#' @return A `POSIXct` vector, with `NA` wherever the value could not be read.
+#' @author Ethan Bass
+#' @noRd
+
+parse_shimadzu_ascii_datetime <- function(x){
+  out <- .POSIXct(rep(NA_real_, length(x)), tz = "UTC")
+  if (length(x) == 0){
+    return(.POSIXct(NA_real_, tz = "UTC"))
+  }
+  x <- trimws(as.character(x))
+
+  month_first <- c("%m/%d/%Y %I:%M:%S %p", "%m-%d-%Y %I:%M:%S %p",
+                   "%m/%d/%Y %H:%M:%S", "%m-%d-%Y %H:%M:%S")
+  day_first <- c("%d/%m/%Y %H:%M:%S", "%d-%m-%Y %H:%M:%S",
+                 "%d/%m/%Y %I:%M:%S %p", "%d-%m-%Y %I:%M:%S %p")
+  iso <- c("%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S")
+
+  leading <- suppressWarnings(as.numeric(sub("^(\\d+)\\D.*$", "\\1", x)))
+  twelve_hour <- grepl("[AP]M[[:space:]]*$", x, ignore.case = TRUE)
+  prefer_day <- !twelve_hour | (!is.na(leading) & leading > 12)
+
+  for (i in seq_along(x)){
+    if (is.na(x[i]) || !nzchar(x[i])) next
+    formats <- if (prefer_day[i]){
+      c(day_first, iso, month_first)
+    } else{
+      c(month_first, iso, day_first)
+    }
+    for (format in formats){
+      parsed <- as.POSIXct(x[i], format = format, tz = "UTC")
+      if (!is.na(parsed)){
+        out[i] <- parsed
+        break
+      }
+    }
+  }
+  out
+}
+
 #' Sample name recorded by the file, or the file's own name
 #'
 #' Most formats record a sample name, but not all files fill it in, so the

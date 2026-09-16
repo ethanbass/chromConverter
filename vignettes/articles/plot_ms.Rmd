@@ -30,7 +30,7 @@ download.file("https://raw.github.com/ethanbass/chromConverterExtraTests/master/
 dat <- read_chroms(path_sms, format_in = "varian_sms", format_out = "data.frame")
 ```
 
-## Plot TIC and mass spectra use base R syntax
+## Plot TIC and mass spectra using base R syntax
 
 ```{r plot_tic_base}
 x <- dat[[1]]$MS1

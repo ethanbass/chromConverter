@@ -85,8 +85,30 @@ complements. The value at each position is derived by subtracting the delta
 at each position from the previous value.
 }
 \note{
-My parsing of the date-time format seems to be a little off, since
-the acquisition times diverge slightly from the ASCII file.
+Times are stored as a 'Windows' \code{FILETIME}, which is always UTC, so
+\code{run_datetime} is reported in UTC. The files also record the offset of the
+local time zone (e.g. \verb{+01'00'}), but this is the standard offset of the
+zone rather than the offset that was in force, and it seems that no daylight
+saving information is stored anywhere in the file. The local times displayed by
+'Lab Solutions' therefore cannot be reconstructed from the recorded offset
+alone: where daylight saving time applied, they are an hour ahead of it.
+Rendering \code{run_datetime} in the zone where the data were acquired, e.g.
+\code{format(attr(x, "run_datetime"), tz = "Europe/Paris")}, recovers them
+exactly.
+
+As of \code{v0.10.0}, 2D chromatograms are scaled by the calibration factor and the
+value factor recorded for each channel, so their intensities match those
+reported by 'Lab Solutions'. PDA data is instead returned as it is encoded in
+the file, matching the \verb{[PDA 3D]} section of a 'Lab Solutions' ASCII export,
+which declares no intensity unit or multiplier. The \verb{3D Data Item} describes
+the absorbance axis in \code{mAU} with a value factor of \code{1000}, which would imply
+scaling the values by \code{0.001}, but the \verb{[PDA Multi Chromatogram]} traces in
+the ASCII export, which are extracted from the same data, report values on
+the same scale as the raw data with a multiplier of \code{1}. Until this can be
+resolved, PDA data is left unscaled and the \code{scale} argument is ignored. Note
+that the \verb{Max Plot} chromatogram is derived from the PDA data but is read as
+a 2D chromatogram, so the value factor is applied to it and it currently
+differs from the PDA data by a factor of \code{1000}.
 }
 \examples{
 \dontrun{

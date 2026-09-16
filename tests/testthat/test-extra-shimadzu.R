@@ -186,6 +186,160 @@ test_that("read_chroms can read 'Shimadzu' PDA comma-separated file", {
   expect_equal(attr(x, "sample_name"), "Pinoresinol Standard")
 })
 
+test_that("'Shimadzu' ASCII exports report the acquisition time", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_us <- system.file("shimadzuDAD_comma.txt",
+                         package = "chromConverterExtraTests")
+  path_eu <- system.file("shimadzuDAD_Anthocyanin.txt",
+                         package = "chromConverterExtraTests")
+  path_chrom <- system.file("multichannel_chrom.txt",
+                            package = "chromConverterExtraTests")
+  skip_if_not(all(file.exists(path_us, path_eu, path_chrom)))
+
+  us <- read_chroms(path_us, format_in = "shimadzu_dad",
+                    progress_bar = FALSE)[[1]]
+  eu <- read_chroms(path_eu, format_in = "shimadzu_dad",
+                    progress_bar = FALSE)[[1]]
+  chrom <- read_chroms(path_chrom, format_in = "shimadzu_ascii",
+                       what = "chroms", progress_bar = FALSE)[[1]][[1]]
+
+  expect_equal(format(attr(us, "run_datetime"), "%Y-%m-%d %H:%M:%S"),
+               "2021-04-26 23:01:11")
+  expect_equal(format(attr(eu, "run_datetime"), "%Y-%m-%d %H:%M:%S"),
+               "2022-03-29 10:12:19")
+  expect_equal(format(attr(chrom, "run_datetime"), "%Y-%m-%d %H:%M:%S"),
+               "2023-08-02 17:08:21")
+
+  # the ASCII export records local time, while the LCD records the UTC instant,
+  # so the two agree only once the acquisition time zone is applied
+  path_lcd <- system.file("multichannel_chrom.lcd",
+                          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lcd))
+  lcd <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
+                     progress_bar = FALSE)[[1]][[1]]
+  expect_equal(format(attr(lcd, "run_datetime"), tz = "Europe/Paris",
+                      "%Y-%m-%d %H:%M:%S"),
+               format(attr(chrom, "run_datetime"), "%Y-%m-%d %H:%M:%S"))
+})
+
+test_that("'Shimadzu' LCD calibration factors are read from the raw data", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_lcd <- system.file("multichannel_chrom.lcd",
+                          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lcd))
+
+  # one factor per channel, indexed by the channel number in the stream name.
+  # These are full scale over 2^22: 100000/2^22 for the two UV channels and
+  # 13550/2^22 for the refractive index channel.
+  expect_equal(read_sz_calibration_factor(path_lcd,
+                                          c("LSS Raw Data", "Chromatogram Ch1")),
+               100000/2^22)
+  expect_equal(read_sz_calibration_factor(path_lcd,
+                                          c("LSS Raw Data", "Chromatogram Ch2")),
+               100000/2^22)
+  expect_equal(read_sz_calibration_factor(path_lcd,
+                                          c("LSS Raw Data", "Chromatogram Ch3")),
+               13550/2^22)
+
+  # the PDA max plot uses a separate status stream with a single record
+  expect_equal(read_sz_calibration_factor(path_lcd,
+                                          c("PDA 3D Raw Data", "Max Plot")), 1)
+
+  # falls back on 1 when the status stream is missing
+  expect_equal(read_sz_calibration_factor(path_lcd,
+                                          c("No Such Storage", "Chromatogram Ch1")), 1)
+
+  # the record also carries the gain factor and the value factor, which the
+  # older 'LCsolution' files rely on since they have no `2D Data Item`
+  status <- read_sz_chrom_status(path_lcd, c("LSS Raw Data", "Chromatogram Ch3"))
+  expect_equal(status$CF, 13550/2^22)
+  expect_equal(status$GF, 1)
+  expect_equal(status$VF, 1000)
+  expect_null(read_sz_chrom_status(path_lcd,
+                                  c("No Such Storage", "Chromatogram Ch1")))
+
+  # the record also names the unit selected for display, which is the only
+  # source of it in files that have no `2D Data Item`
+  expect_equal(status$unit, "mV")
+
+  # the PDA max plot keeps its factors in a status stream of its own
+  path_pda <- system.file("Anthocyanin.lcd",
+                          package = "chromConverterExtraTests")
+  if (file.exists(path_pda)){
+    max_plot <- read_sz_chrom_status(path_pda, c("PDA 3D Raw Data", "Max Plot"))
+    expect_equal(max_plot$unit, "mAU")
+    expect_equal(max_plot$CF, 1)
+    expect_equal(max_plot$VF, 1000)
+  }
+
+  # these must agree with the data item accompanying the raw data
+  DI <- read_sz_2DDI(path_lcd, idx = 3)
+  expect_equal(status$VF, 1/DI$detector.vf)
+  expect_equal(status$unit, DI$detector.unit)
+
+  # all three of this file's channels hold data, so all three have a record
+  expect_equal(read_sz_chrom_status(path_lcd,
+                                    c("LSS Raw Data", "Chromatogram Ch1"))$CF,
+               100000/2^22)
+  # a channel with no data has an empty record, reported as NA rather than zeros
+  empty <- read_sz_chrom_status(path_lcd, c("LSS Raw Data", "Chromatogram Ch4"))
+  expect_true(all(is.na(unlist(empty))))
+  # reading past the end of the table gives nothing at all
+  expect_null(read_sz_chrom_status(path_lcd,
+                                   c("LSS Raw Data", "Chromatogram Ch10")))
+})
+
+test_that("'Shimadzu' LCD files report the container format version", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_lcd <- system.file("multichannel_chrom.lcd",
+                          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lcd))
+
+  x <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
+                   progress_bar = FALSE)
+  meta <- extract_metadata(x, what = c("file_version", "software_version"))
+  expect_equal(nrow(meta), 3)
+  expect_equal(unique(meta$file_version), "5.01")
+  expect_equal(unique(meta$software_version), "5.54 SP2")
+})
+
+test_that("'Shimadzu' LCD chromatograms report the unit of the values returned", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_lcd <- system.file("multichannel_chrom.lcd",
+                          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lcd))
+
+  scaled <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
+                        progress_bar = FALSE)[[1]]
+  expect_equal(unname(sapply(scaled, attr, "detector_y_unit")),
+               rep("mV", 3))
+  expect_true(all(sapply(scaled, attr, "scaled")))
+
+  # each chromatogram must describe a single detector. A vector here used to
+  # make the naming step generate more names than there are chromatograms
+  expect_equal(vapply(scaled, function(x) length(attr(x, "detector")),
+                      integer(1)),
+               rep(1L, 3), ignore_attr = TRUE)
+  expect_length(names(scaled), 3)
+
+  # every channel in this file has a calibration factor, so the unscaled values
+  # are converter counts rather than the base unit, and the unit reported for
+  # display is left in place
+  unscaled <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
+                          scale = FALSE, progress_bar = FALSE)[[1]]
+  expect_equal(unname(sapply(unscaled, attr, "detector_y_unit")),
+               rep("mV", 3))
+  expect_false(any(sapply(unscaled, attr, "scaled")))
+})
+
 test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD files", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
@@ -204,30 +358,37 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
   x1 <- read_chroms(path_asc, format_in = "shimadzu_ascii", what = "chroms",
                     progress_bar = FALSE)[[1]]
 
-  # check intensities
-  expect_equal(x[[1]],x1[[1]][-1,]*40, ignore_attr = TRUE, tolerance = .1)
-  expect_equal(x[[2]],x1[[2]][-1,]*40, ignore_attr = TRUE, tolerance = .1)
-  expect_equal(x[[3]],x1[[3]][-1,]*310, ignore_attr = TRUE, tolerance = .1)
+  # check intensities. The intensities in the ASCII export are rounded to three
+  # decimal places, so compare them on an absolute scale: they agree with the
+  # decoded values to within half of the last retained digit.
+  expect_lt(max(abs(as.numeric(x[[1]]) - as.numeric(x1[[1]][-1,]))), 5e-4)
+  expect_lt(max(abs(as.numeric(x[[2]]) - as.numeric(x1[[2]][-1,]))), 5e-4)
+  expect_lt(max(abs(as.numeric(x[[3]]) - as.numeric(x1[[3]][-1,]))), 5e-4)
 
   # exact values from the LCD decoder. The comparison against the ASCII export
-  # above needs an ad hoc scaling factor and a loose tolerance, so pin the
-  # decoded values directly as well.
+  # above is limited by the rounding in the export, so pin the decoded values
+  # directly as well.
   expect_equal(names(x), c("A, 260nm", "A, 210nm", "B"))
   expect_equal(dim(x[[1]]), c(3359, 1))
   expect_equal(dim(x[[2]]), c(3359, 1))
   expect_equal(dim(x[[3]]), c(3360, 1))
-  expect_equal(x[[1]][1:5, 1], c(-0.029, -0.069, -0.062, 0.003, 0.074),
+  expect_equal(x[[1]][1:5, 1],
+               c(-0.00069141387939453125, -0.0016450881958007815,
+                 -0.0014781951904296875, 0.00007152557373046875,
+                 0.0017642974853515625),
                ignore_attr = TRUE)
-  expect_equal(x[[2]][1:5, 1], c(-0.034, 0.012, -0.053, -0.143, -0.214),
+  expect_equal(x[[2]][1:5, 1],
+               c(-0.00081062316894531261, 0.000286102294921875,
+                 -0.00126361846923828125, -0.0034093856811523442,
+                 -0.0051021575927734375),
                ignore_attr = TRUE)
-  expect_equal(x[[3]][1:5, 1], c(0.06, 0.007, 0, 0.023, -0.025),
+  expect_equal(x[[3]][1:5, 1],
+               c(1.9383430480957031e-04, 2.2614002227783205e-05, 0,
+                 7.4303150177001948e-05, -8.0764293670654297e-05),
                ignore_attr = TRUE)
-  expect_equal(sum(x[[1]]), 7998.1729999999743)
-  expect_equal(sum(x[[2]]), 529714.86499999929)
-  expect_equal(sum(x[[3]]), 1708960.8040000028)
-
-  # (the shape of the signals approximately match but the scaling is off. The values
-  # in the text file may also be rounded?)
+  expect_equal(sum(x[[1]]), 190.69130420684814)
+  expect_equal(sum(x[[2]]), 12629.3865442276)
+  expect_equal(sum(x[[3]]), 5520.9204898357493)
 
   # check retention times
   expect_equal(as.numeric(rownames(x[[1]])),

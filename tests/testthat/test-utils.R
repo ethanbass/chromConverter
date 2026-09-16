@@ -201,3 +201,26 @@ test_that("bookkeeping_attrs is only the structural set", {
                data.frame(a = 1))
   expect_named(list_metadata_attrs(x), "instrument")
 })
+
+test_that("'Shimadzu' ASCII date-times are read in any locale's format", {
+  p <- function(x) format(parse_shimadzu_ascii_datetime(x), "%Y-%m-%d %H:%M:%S")
+
+  # 12-hour month-first, as written by a US locale
+  expect_equal(p("4/26/2021 11:01:11 PM"), "2021-04-26 23:01:11")
+  expect_equal(p("1/2/2021 3:04:05 AM"), "2021-01-02 03:04:05")
+  # 24-hour day-first, with either separator
+  expect_equal(p("02/08/2023 17:08:21"), "2023-08-02 17:08:21")
+  expect_equal(p("29-03-2022 10:12:19"), "2022-03-29 10:12:19")
+  expect_equal(p("19-01-2021 14:55:46"), "2021-01-19 14:55:46")
+  # a leading component over 12 can only be a day
+  expect_equal(p("13/01/2021 08:00:00"), "2021-01-13 08:00:00")
+  # ISO order is also accepted
+  expect_equal(p("2022-03-29 10:12:19"), "2022-03-29 10:12:19")
+
+  expect_true(is.na(parse_shimadzu_ascii_datetime("")))
+  expect_true(is.na(parse_shimadzu_ascii_datetime(NA)))
+  expect_true(is.na(parse_shimadzu_ascii_datetime("not a date")))
+  expect_length(parse_shimadzu_ascii_datetime(character(0)), 1)
+  expect_s3_class(parse_shimadzu_ascii_datetime("29-03-2022 10:12:19"), "POSIXct")
+  expect_equal(attr(parse_shimadzu_ascii_datetime("29-03-2022 10:12:19"), "tzone"), "UTC")
+})
