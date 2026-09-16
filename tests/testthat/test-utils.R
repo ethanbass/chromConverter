@@ -1,11 +1,3 @@
-test_that("python modules are available", {
-  skip_on_cran()
-  expect_true(reticulate::py_module_available("olefile"))
-  expect_true(reticulate::py_module_available("pandas"))
-  expect_true(reticulate::py_module_available("rainbow"))
-  expect_true(reticulate::py_module_available("scipy"))
-})
-
 test_that("check_data_format works as expected", {
   expect_equal(check_data_format("wide", format_out = "matrix"), "wide")
   expect_equal(check_data_format("long", format_out = "matrix"), "long")

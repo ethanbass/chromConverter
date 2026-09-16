@@ -212,10 +212,12 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
   allowed_formats <- parser_formats()
   all_formats <- allowed_formats
   if (find){
-    if (!py_module_maybe_available("rainbow")){
-      allowed_formats <-
-        allowed_formats[-which(names(allowed_formats) == "rainbow")]
-    }
+    # 'entab' is dropped when it isn't installed, while 'rainbow' is not.
+    # `requireNamespace` is free and authoritative, whereas asking whether a
+    # Python module is importable means initializing Python just to rank the
+    # candidates. A missing 'rainbow' is instead reported by `check_py_module`
+    # when the parser is called, which names the remedy rather than substituting
+    # another parser.
     if (!requireNamespace("entab", quietly = TRUE)){
       allowed_formats <-
         allowed_formats[-which(names(allowed_formats) == "entab")]
@@ -223,6 +225,12 @@ check_parser <- function(format_in, parser = NULL, find = FALSE){
     possible_parsers <- parsers_for_format(format_in, allowed_formats)
     if (length(possible_parsers) > 1){
       if (format_in == "waters_raw"){
+        # 'rainbow' overrides the ranking here, which would otherwise prefer
+        # 'chromconverter'. `read_waters_raw` reads only the analog `_CHRO`
+        # traces, not the `_FUNC` streams holding the MS and PDA data, so it
+        # would return a subset of the detectors without reporting that the
+        # rest had been skipped. Select it explicitly with `parser` for files
+        # that hold analog traces alone.
         possible_parsers <- c("rainbow")
       } else{
         possible_parsers <- rank_parsers(possible_parsers)

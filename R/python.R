@@ -24,6 +24,35 @@ get_parser_reqs <- function(parser){
                    "rainbow-api>=1.5.0"))
 }
 
+#' Parsers other than the one requiring `module` that can read `format_in`
+#'
+#' Derived from the registry rather than asserted at the call site, so the
+#' suggestion made by `check_py_module` cannot drift from the parsers that
+#' actually support the format. The parser requiring a module is named after it
+#' ('rainbow' and 'aston' both), so `module` is what gets excluded. 'entab' is
+#' dropped when it isn't installed, since it could not be selected.
+#' @noRd
+alternative_parsers <- function(module, format_in){
+  if (is.null(format_in) || length(format_in) != 1L) return(character())
+  out <- setdiff(parsers_for_format(format_in, parser_formats()), module)
+  if (!requireNamespace("entab", quietly = TRUE)) out <- setdiff(out, "entab")
+  out
+}
+
+#' PyPI distribution providing a module
+#'
+#' The name a module is imported under is not always the name it is installed
+#' under: `import rainbow` comes from the 'rainbow-api' distribution, and
+#' 'rainbow' on PyPI is an unrelated package. Used to make the installation
+#' instructions in `check_py_module` actionable.
+#' @noRd
+py_distribution <- function(module){
+  switch(module,
+         "rainbow" = "rainbow-api",
+         "aston" = "Aston",
+         module)
+}
+
 #' Package-local state (deprecation warnings, etc.)
 #' @noRd
 pkg_state <- new.env(parent = emptyenv())
@@ -116,33 +145,35 @@ try_py_init <- function(){
 #'
 #' Initializes Python (if necessary) and checks that `module` can be imported,
 #' throwing an informative error otherwise.
+#'
+#' @param module Name of the required Python module.
+#' @param format_in Format being read. When supplied, and the registry lists
+#' another parser that can read it, the error names that parser and points at
+#' the `parser` argument of `read_chroms`. Omitted by the 'olefile' callers,
+#' where the module backs the only parser for the format, so that the error
+#' does not advertise an alternative that does not exist.
 #' @noRd
-check_py_module <- function(module){
+check_py_module <- function(module, format_in = NULL){
   init_python()
   if (!reticulate::py_module_available(module)){
+    alt <- alternative_parsers(module, format_in)
+    alternative <- if (length(alt) == 0L) "" else
+      sprintf(paste0(" The %s parser%s can also read this format; select %s ",
+                     "with the `parser` argument of `read_chroms`."),
+              paste0("'", alt, "'", collapse = " and "),
+              if (length(alt) > 1L) "s" else "",
+              if (length(alt) > 1L) "one" else "it")
     stop(sprintf(paste0("The '%s' Python module is required to read this ",
                         "format but could not be found in the active Python ",
                         "environment (%s). It can be installed with ",
                         "`reticulate::py_install(\"%s\")` or by creating a ",
                         "dedicated environment with ",
-                        "`configure_python_environment()`."),
-                 module, reticulate::py_config()$python, module),
+                        "`configure_python_environment()`.%s"),
+                 module, reticulate::py_config()$python,
+                 py_distribution(module), alternative),
          call. = FALSE)
   }
   invisible(TRUE)
-}
-
-#' Check whether a Python module could be available
-#'
-#' Used to filter the list of candidate parsers without paying the cost of
-#' starting Python (which, on a fresh install, means downloading packages). If
-#' Python has not been initialized yet, the module is assumed to be available,
-#' since the requirements declared in `.onLoad` are provisioned on demand. Any
-#' real problem is reported by `check_py_module` when the parser is actually
-#' called.
-#' @noRd
-py_module_maybe_available <- function(module){
-  if (py_initialized()) reticulate::py_module_available(module) else TRUE
 }
 
 #' Cache of imported Python modules

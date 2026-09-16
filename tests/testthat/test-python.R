@@ -7,6 +7,65 @@ test_that("parser auto-detection does not initialize Python", {
   expect_false(reticulate::py_available(initialize = FALSE))
 })
 
+test_that("auto-detection picks 'rainbow' for waters_raw without probing it", {
+  skip_if_not_installed("reticulate")
+  skip_if(reticulate::py_available(initialize = FALSE),
+          "Python is already initialized.")
+  # 'waters_raw' is the one format for which auto-detection prefers 'rainbow'
+  # over the internal parser, so it is the only place the availability of the
+  # Python module could have changed the outcome. It is no longer consulted: a
+  # missing module is reported by `check_py_module` when the parser runs.
+  expect_equal(check_parser("waters_raw", find = TRUE), "rainbow")
+  expect_false(reticulate::py_available(initialize = FALSE))
+})
+
+test_that("check_py_module names the parsers that can read the format", {
+  skip_if_not_installed("reticulate")
+  local_mocked_bindings(init_python = function(...) TRUE)
+  local_mocked_bindings(
+    py_module_available = function(...) FALSE,
+    py_config = function(...) list(python = "/fake/python"),
+    .package = "reticulate")
+
+  # 'waters_raw' is readable by 'chromconverter' too, and it is named
+  err <- expect_error(check_py_module("rainbow", format_in = "waters_raw"))
+  expect_match(conditionMessage(err), "chromconverter", fixed = TRUE)
+  expect_match(conditionMessage(err), "select it with the `parser` argument",
+               fixed = TRUE)
+  # the distribution is 'rainbow-api'; 'rainbow' on PyPI is a different package
+  expect_match(conditionMessage(err),
+               "reticulate::py_install(\"rainbow-api\")", fixed = TRUE)
+
+  # more than one alternative is pluralized
+  skip_if_not_installed("entab")
+  err <- expect_error(check_py_module("rainbow", format_in = "chemstation_uv"))
+  expect_match(conditionMessage(err), "parsers can also read", fixed = TRUE)
+  expect_match(conditionMessage(err), "select one with the `parser` argument",
+               fixed = TRUE)
+})
+
+test_that("check_py_module offers no alternative when there is none", {
+  skip_if_not_installed("reticulate")
+  local_mocked_bindings(init_python = function(...) TRUE)
+  local_mocked_bindings(
+    py_module_available = function(...) FALSE,
+    py_config = function(...) list(python = "/fake/python"),
+    .package = "reticulate")
+
+  # 'olefile' backs the only parser for the 'Shimadzu' OLE formats, so its
+  # callers supply no `format_in` and the error advertises no other route
+  err <- expect_error(check_py_module("olefile"))
+  expect_false(grepl("`parser` argument", conditionMessage(err), fixed = TRUE))
+  expect_match(conditionMessage(err), "configure_python_environment")
+
+  # an unrecognized format yields no suggestion rather than an error
+  expect_equal(alternative_parsers("rainbow", "not_a_format"), character())
+  expect_equal(alternative_parsers("rainbow", NULL), character())
+  # a non-scalar format_in is ignored rather than propagated into the registry
+  expect_equal(alternative_parsers("rainbow", c("waters_raw", "agilent_d")),
+               character())
+})
+
 test_that("init_python falls back on the uv cache when offline", {
   local_mocked_bindings(py_initialized = function() FALSE)
   attempts <- 0

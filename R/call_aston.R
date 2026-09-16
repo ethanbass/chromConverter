@@ -92,7 +92,7 @@ uv_converter <- function(path, format_out = c("matrix","data.frame","data.table"
 check_aston_configuration <- function(){
   warn_aston_deprecated()
   reticulate::py_require(get_parser_reqs("aston"))
-  check_py_module("aston")
+  check_py_module("aston", format_in = "masshunter_dad")
   py_import("aston.tracefile")
 }
 

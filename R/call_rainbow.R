@@ -42,7 +42,7 @@ call_rainbow <- function(path,
                          metadata_format = c("chromconverter", "raw"),
                          collapse = TRUE, precision = 1, sparse = TRUE,
                          bin_width = NULL){
-  rb <- check_rb_configuration()
+  rb <- check_rb_configuration(format_in)
   by <- match.arg(by, c("detector", "name"))
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
@@ -154,8 +154,8 @@ extract_rb_names <- function(xx){
 #' Check 'rainbow' configuration
 #' This function is called internally by `call_rainbow`.
 #' @noRd
-check_rb_configuration <- function(){
-  check_py_module("rainbow")
+check_rb_configuration <- function(format_in = NULL){
+  check_py_module("rainbow", format_in = format_in)
   v <- numeric_version(py_import("importlib.metadata")$version("rainbow-api"))
   if (v < numeric_version("1.5.0")) {
     stop("chromConverter requires rainbow-api >= 1.5.0 (found ", v,
