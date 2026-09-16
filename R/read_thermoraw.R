@@ -85,10 +85,12 @@ read_thermoraw <- function(path, path_out = NULL,
     # `extract_metadata` and `print` see only the leaves.
     x <- lapply(x, attach_metadata, meta = meta, format_in = metadata_format,
                 format_out = format_out, data_format = "long",
-                source_file = path)
+                source_file = path,
+                source_file_format = "thermoraw")
     x <- attach_metadata(x, meta, format_in = metadata_format,
                          format_out = format_out, data_format = "long",
-                         source_file = path)
+                         source_file = path,
+                source_file_format = "thermoraw")
   }
   x
 }

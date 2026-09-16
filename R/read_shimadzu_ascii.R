@@ -241,9 +241,11 @@ read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
   xx <- convert_chrom_format(xx, format_out = format_out, data_format = data_format)
   if (read_metadata){
     xx <- attach_metadata(xx, meta, format_in = metadata_format,
-                          source_file = path, format_out = format_out,
+                          source_file = path,
+                          source_file_format = "shimadzu_ascii",
+                          format_out = format_out,
                           data_format = data_format,
-                          parser = "chromConverter", scale = scale)
+                          parser = "chromconverter", scale = scale)
   }
   xx
 }
@@ -281,9 +283,11 @@ read_shimadzu_dad <- function(path, x, chrom.idx, sep, data_format,
   if (read_metadata){
     meta <- read_shimadzu_metadata(x, met = met, sep = sep)
     xx <- attach_metadata(xx, meta, format_in = metadata_format,
-                          source_file = path, format_out = format_out,
+                          source_file = path,
+                          source_file_format = "shimadzu_ascii",
+                          format_out = format_out,
                           data_format = data_format,
-                          parser = "chromConverter")
+                          parser = "chromconverter")
   }
   xx
 }

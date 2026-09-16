@@ -9,6 +9,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+## Loading example data
+
 ```{r setup}
 library(chromConverter)
 library(ggplot2)
@@ -28,7 +30,7 @@ download.file("https://raw.github.com/ethanbass/chromConverterExtraTests/master/
 dat <- read_chroms(path_sms, format_in = "varian_sms", format_out = "data.frame")
 ```
 
-### Plot TIC and mass spectra use base R syntax
+## Plot TIC and mass spectra use base R syntax
 
 ```{r plot_tic_base}
 x <- dat[[1]]$MS1
@@ -60,7 +62,7 @@ spec <- x[x$rt == times[100], -1]
 plot_spec(spec)
 ```
 
-### Plot TIC and mass spectra using *dplyr* syntax
+## Plot TIC and mass spectra using *dplyr* syntax
 
 Plot TIC with dplyr:
 
@@ -79,7 +81,7 @@ dplyr::filter(x, rt == 7.26355) |>
   plot_spec()
 ```
 
-### Plot TIC and mass spectra using *data.table* syntax
+## Plot TIC and mass spectra using *data.table* syntax
 
 Convert to `data.table`:
 
@@ -115,7 +117,7 @@ To obtain a mass spectrum we just filter by retention time as before:
 plot_spec(x[rt == 7.26355, c('mz', 'intensity')])
 ```
 
-### Plot TIC and mass spectra using *ggplot*
+## Plot TIC and mass spectra using *ggplot*
 
 ```{r plot_tic_ggplot}
 ggplot(data = tic, aes(x=rt, y=intensity)) + 

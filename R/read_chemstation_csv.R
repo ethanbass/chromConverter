@@ -69,10 +69,11 @@ read_csv <- function(path, fileEncoding = "",
   data <- convert_chrom_format(data, format_out = format_out,
                                data_format = data_format)
   if (read_metadata){
-    data <- attach_metadata_minimal(data, data_format = data_format,
-                                    format_out = format_out,
-                                    parser = "chromconverter", source_file = path,
-                                    source_file_format = "chemstation_csv")
+    data <- attach_metadata(data, meta = list(),
+                            format_in = "chemstation_csv",
+                            data_format = data_format, format_out = format_out,
+                            parser = "chromconverter", source_file = path,
+                            source_file_format = "chemstation_csv")
   }
   data
 }

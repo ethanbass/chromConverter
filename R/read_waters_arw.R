@@ -52,8 +52,9 @@ read_waters_arw <- function(path, format_out = c("matrix", "data.frame", "data.t
       x <- attach_metadata(x, meta, format_in = metadata_format,
                            format_out = format_out,
                            data_format = data_format,
-                           parser = "chromConverter",
-                           source_file = path)
+                           parser = "chromconverter",
+                           source_file = path,
+                           source_file_format = "waters_arw")
     }
   }
   x

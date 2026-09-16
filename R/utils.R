@@ -20,6 +20,14 @@ check_data_format <- function(data_format, format_out){
   match.arg(data_format, c("wide", "long"))
 }
 
+#' Default value for `NULL`
+#'
+#' `x` unless it is `NULL` or empty, otherwise `y`. Base R gained `%||%` in
+#' 4.4.0, but `DESCRIPTION` declares `R (>= 4.1.0)`, so it is defined here
+#' rather than depended on.
+#' @noRd
+`%||%` <- function(x, y) if (length(x) == 0) y else x
+
 #' Check Metadata Format Argument
 #'
 #' Resolves `metadata_format` to the tag that `attach_metadata` dispatches on:

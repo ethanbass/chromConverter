@@ -183,6 +183,7 @@ test_that("superseded metadata field names are still accepted", {
   expect_equal(resolve_metadata_fields("injection_volume"),
                "sample_injection_volume")
   expect_equal(resolve_metadata_fields("software_name"), "software")
+  expect_equal(resolve_metadata_fields("run_date"), "run_datetime")
   expect_equal(resolve_metadata_fields(c("time_start", "time_end")), "time_range")
   # unknown and current names pass through untouched
   expect_equal(resolve_metadata_fields(c("sample_name", "nonsense")),

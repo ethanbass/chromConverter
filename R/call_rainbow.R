@@ -48,6 +48,10 @@ call_rainbow <- function(path,
   data_format <- check_data_format(data_format, format_out)
   metadata_format <- check_metadata_format(metadata_format, "rainbow")
 
+  # `source_file_format` describes the file, and `format_in` is about to be
+  # collapsed for parser selection -- and would otherwise fall back to the
+  # metadata tag, reporting the file format as "rainbow"
+  source_file_format <- format_in
   if (grepl("chemstation", format_in)){
     format_in <- "chemstation"
   }
@@ -77,6 +81,7 @@ call_rainbow <- function(path,
         extract_rb_data(xx, format_out = format_out, data_format = data_format,
                         read_metadata = read_metadata, meta = x$metadata,
                         metadata_format = metadata_format, source_file = path,
+                        source_file_format = source_file_format,
                         sparse = sparse)
       })
       names(dtr_dat) <- extract_rb_names(dtr)
@@ -88,6 +93,7 @@ call_rainbow <- function(path,
       extract_rb_data(xx, format_out = format_out, data_format = data_format,
                       read_metadata = read_metadata, meta = x$metadata,
                       metadata_format = metadata_format, source_file = path,
+                        source_file_format = source_file_format,
                       sparse = sparse)
     })
     names(xx) <- names(x$by_name)
@@ -95,6 +101,7 @@ call_rainbow <- function(path,
     xx <- extract_rb_data(x, format_out = format_out, data_format = data_format,
                           read_metadata = read_metadata, meta = x$metadata,
                           metadata_format = metadata_format, source_file = path,
+                        source_file_format = source_file_format,
                           sparse = sparse)
   }
   xx
@@ -109,7 +116,8 @@ extract_rb_data <- function(xx, format_out = "matrix",
                             read_metadata = TRUE,
                             metadata_format = "rainbow",
                             meta = NULL,
-                            source_file, sparse = TRUE){
+                            source_file, source_file_format = NA,
+                            sparse = TRUE){
   data_format <- check_data_format(data_format, format_out)
   data <- xx$data
   try(rownames(data) <- xx$xlabels)
@@ -128,7 +136,8 @@ extract_rb_data <- function(xx, format_out = "matrix",
     meta <- c(meta, xx$metadata, detector = xx$detector)
     data <- attach_metadata(data, meta = meta, format_in = metadata_format,
                             format_out = format_out, data_format = data_format,
-                            parser = "rainbow", source_file = source_file)
+                            parser = "rainbow", source_file = source_file,
+                            source_file_format = source_file_format)
   }
   data
 }

@@ -65,7 +65,8 @@ read_shimadzu_gcd <- function(path, what = "chroms",
                                   format_out = format_out)
       if (read_metadata){
         x <- attach_metadata(x, c(meta,DI), format_in = metadata_format,
-                             source_file = path, data_format = data_format,
+                             source_file = path, source_file_format = "shimadzu_gcd",
+                             data_format = data_format,
                              format_out = format_out)
       }
       x
@@ -82,7 +83,8 @@ read_shimadzu_gcd <- function(path, what = "chroms",
     peak_table <- read_sz_tables(path, format_out = format_out)
     if (read_metadata){
       peak_table <- attach_metadata(peak_table, meta, format_in = metadata_format,
-                           source_file = path, data_format = data_format,
+                           source_file = path, source_file_format = "shimadzu_gcd",
+                             data_format = data_format,
                            format_out = "data.frame")
     }
   }

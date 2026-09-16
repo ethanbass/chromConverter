@@ -79,7 +79,7 @@ call_entab <- function(path, data_format = c("wide", "long"),
 #' `call_entab` renames them onto the names the `"chemstation"` branch of
 #' `attach_metadata` reads, so that branch describes every format it can read.
 #' The exception is `masshunter_dad`, whose fields come from the
-#' `sample_info.xml` sidecar that `call_entab` merges in.
+#' `sample_info.xml` file that `call_entab` merges in.
 #'
 #' Passing `format_in` through unchanged, as `call_entab` used to, left
 #' `format_in = "other"` matching no branch at all, so `attach_metadata`
