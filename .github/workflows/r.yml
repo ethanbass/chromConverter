@@ -29,7 +29,7 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -40,7 +40,7 @@ jobs:
           use-public-rspm: true
 
       - name: Set up Python 3.9
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v7
         with:
           python-version: 3.9
 
@@ -49,7 +49,7 @@ jobs:
           install.packages(c("remotes", "rcmdcheck"))
           remotes::install_deps(dependencies = TRUE)
           install.packages(c("ncdf4"))
-          install.packages("chromConverterExtraTests", repos = "https://ethanbass.github.io/drat/")
+          remotes::install_github("ethanbass/chromConverterExtraTests")
         shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v2
