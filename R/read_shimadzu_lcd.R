@@ -457,7 +457,7 @@ read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
                                    remove_null_bytes = TRUE)
   on.exit(unlink_stream(method_path), add = TRUE)
   if (is.na(method_path)){
-    warning("Method stream could not be found -- unable to infer retention times.")
+    warning("Method stream could not be found --- unable to infer retention times.")
     return(NA)
   } else{
     method_stream <- xml2::read_xml(method_path)
@@ -578,10 +578,11 @@ decode_sz_block <- function(f) {
   readBin(f, what = "integer", n = 6, size = 1) #skip
   readBin(f, what = "integer", n = 1, size = 2)
 
+  # the value count is a 4-byte field: read as 2 bytes, a 2D stream with
+  # 32768-65535 points yields a negative count and `numeric()` then errors
   n_lambda <- readBin(f, what = "integer", n = 1,
-                      size = 2, endian = "little")
+                      size = 4, endian = "little")
 
-  readBin(f, what = "integer", n = 1, size = 2)
   block_length <- readBin(f, what = "integer", n = 1, size = 2)
   readBin(f, what = "integer", n = 5, size = 2)
 
@@ -625,7 +626,8 @@ decode_sz_deltas <- function(raw) {
   n <- length(raw)
   if (n == 0) return(numeric(0))
 
-  # pad so that a truncated record at the end reads as trailing `00`s
+  # pad so that a truncated record at the end reads as trailing `00`s. Four is
+  # enough because records longer than 4 bytes are rejected below.
   bytes <- c(as.integer(raw), 0L, 0L, 0L, 0L)
   sign_digit <- bytes %/% 16L
 
@@ -648,6 +650,14 @@ decode_sz_deltas <- function(raw) {
   starts <- starts[bytes[starts] != 0x82]
 
   sign_digit <- sign_digit[starts]
+  # A sign digit of 8 or more implies a record of 5+ bytes, which has never
+  # been observed and which the previous scalar decoder could not represent at
+  # all (it assembled values with 32-bit shifts). Refuse rather than return a
+  # plausible-looking number from an encoding we cannot validate.
+  if (any(sign_digit >= 8L)){
+    stop("Unsupported 'Shimadzu' delta record: sign digit ",
+         max(sign_digit), " implies a record longer than 4 bytes.")
+  }
   n_bytes <- ifelse(sign_digit > 1L, 1L + sign_digit %/% 2L, 1L)
   deltas <- numeric(length(starts))
 
@@ -662,14 +672,14 @@ decode_sz_deltas <- function(raw) {
   for (size in unique(n_bytes[n_bytes > 1L])){
     idx <- which(n_bytes == size)
     pos <- starts[idx]
-    x <- 0
-    for (i in seq_len(size)) {
-      x <- x * 256 + bytes[pos + i - 1L]
+    # accumulate the value without the sign digit: including it would push the
+    # total past 2^53, where a double can no longer hold every integer
+    value <- bytes[pos] %% 16L
+    for (i in seq_len(size)[-1]) {
+      value <- value * 256 + bytes[pos + i - 1L]
     }
-    value_bits <- 8L * size - 4L
-    value <- x %% 2^value_bits
     deltas[idx] <- ifelse(sign_digit[idx] %% 2L == 1L,
-                          value - 2^value_bits, value)
+                          value - 2^(8L * size - 4L), value)
   }
   cumsum(deltas)
 }

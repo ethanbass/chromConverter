@@ -93,6 +93,7 @@
 * Fixed `read_shimadzu_lcd` for `.lcd` files that do not contain a `2D Data Item`, which failed with `'names' attribute [4] must be the same length as the vector [2]`. This bug seems to affect older files, which store their chromatograms under `LC Raw Data` rather than `LSS Raw Data`.
 * Fixed `read_shimadzu_lcd` so it can return PDA data in long format. `read_shimadzu_lcd(what = "PDA", data_format = "long")` previously failed with an error about a missing `lambda` column, because the reshaping step was called with the wrong target format.
 * Fixed export of OLE streams to a path containing `~`, which is not expanded by Python.
+* Fixed the number of points per record in `.lcd` data streams, which was read as a signed 2-byte field rather than the 4-byte field it is. A 2D chromatogram with 32,768 to 65,535 points failed with `invalid 'length' argument`, and one with more than 65,535 points was truncated to the remainder. Files below that threshold, such as the 30,000-point chromatograms in the test suite, were read correctly.
 
 #### 'Varian' SMS
 
