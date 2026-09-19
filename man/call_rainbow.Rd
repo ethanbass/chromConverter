@@ -70,6 +70,11 @@ be provided to the \code{path} argument. If \code{format_in} is \code{"chemstati
 \code{.uv} file should be provided. Data can be filtered by detector type using
 the \code{what} argument.
 }
+\examples{
+\dontrun{
+call_rainbow("path/to/file.D", format_in = "agilent_d")
+}
+}
 \seealso{
 Other external parsers:
 \code{\link[=call_entab]{call_entab()}},

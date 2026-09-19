@@ -42,6 +42,12 @@ in \code{cols}. Unlike \code{print}, nothing is collapsed into a header, abbrevi
 or truncated to the first few rows, so the result can be filtered and
 joined against.
 }
+\examples{
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
+chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+                      find_files = FALSE, progress_bar = FALSE)
+summary(chroms)
+}
 \seealso{
 \link{extract_metadata}, \link{print.chrom_list}
 }

@@ -317,6 +317,11 @@ read_waters_metadata <- function(file){
 #' @return A `data.frame`, `tibble`, or `data.table` (according to the value of
 #' `format_out`), with samples as rows and the specified metadata elements as
 #' columns, or `NA` if none of the specified elements could be found.
+#' @examples
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+#'                       find_files = FALSE, progress_bar = FALSE)
+#' extract_metadata(chroms, what = c("sample_name", "instrument", "run_datetime"))
 #' @export
 extract_metadata <- function(chrom_list,
                              what = chrom_metadata_fields(),

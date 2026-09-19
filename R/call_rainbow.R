@@ -28,6 +28,9 @@
 #' @author Ethan Bass
 #' @return Returns a (nested) list of matrices or `data.frame`s according to
 #' the value of `format_out`. Data is ordered according to the value of `by`.
+#' @examples \dontrun{
+#' call_rainbow("path/to/file.D", format_in = "agilent_d")
+#' }
 #' @family external parsers
 #' @export
 

@@ -74,6 +74,11 @@ call from R.
 by \code{export_format} in the folder specified by \code{path_out}.
 }
 
+\examples{
+\dontrun{
+call_openchrom("path/to/file.RAW", format_in = "msd", export_format = "mzml")
+}
+}
 \references{
 Wenig, Philip and Odermatt, Juergen. OpenChrom: A Cross-Platform Open Source
 Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{

@@ -22,6 +22,11 @@ the path to OpenChrom command-line application.
 Configures \href{https://lablicate.com/platform/openchrom}{OpenChrom} to use
 command-line interface. Requires OpenChrom version prior to 0.5.0.
 }
+\examples{
+\dontrun{
+configure_openchrom(cli = "status")
+}
+}
 \seealso{
 \code{\link{call_openchrom}}
 }

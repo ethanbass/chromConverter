@@ -16,6 +16,11 @@
 #'
 #' @return Invisibly returns `x`.
 #'
+#' @examples
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+#'                       find_files = FALSE, progress_bar = FALSE)
+#' print(chroms)
 #' @seealso [extract_metadata]
 #'
 #' @export
@@ -179,6 +184,11 @@ cols_doc <- function(extra = character()){
 #' monitoring several transitions, is collapsed to a comma-separated string so
 #' that it occupies one column.
 #'
+#' @examples
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+#'                       find_files = FALSE, progress_bar = FALSE)
+#' summary(chroms)
 #' @seealso [extract_metadata], [print.chrom_list]
 #'
 #' @export

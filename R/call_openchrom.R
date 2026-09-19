@@ -47,6 +47,9 @@
 #' Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{
 #' BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405.
 #' \doi{10.1186/1471-2105-11-405}.
+#' @examples \dontrun{
+#' call_openchrom("path/to/file.RAW", format_in = "msd", export_format = "mzml")
+#' }
 #' @family external parsers
 #' @export
 
@@ -185,6 +188,9 @@ write_openchrom_batchfile <- function(files, path_out,
 #' indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
 #' the path to OpenChrom command-line application.
 #' @author Ethan Bass
+#' @examples \dontrun{
+#' configure_openchrom(cli = "status")
+#' }
 #' @seealso [`call_openchrom`]
 #' @export
 

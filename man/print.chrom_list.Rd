@@ -29,6 +29,12 @@ one chromatogram, its traces are printed as a block headed by the sample,
 and any attribute they all share is shown in that block's header rather
 than repeated down it.
 }
+\examples{
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
+chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+                      find_files = FALSE, progress_bar = FALSE)
+print(chroms)
+}
 \seealso{
 \link{extract_metadata}
 }

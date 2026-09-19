@@ -36,6 +36,11 @@ A chromatogram in the format specified by the \code{format_out} and
 Converts chromatography date files using \href{https://github.com/bovee/entab}{entab}
 parsers.
 }
+\examples{
+\dontrun{
+call_entab("path/to/file.uv", format_in = "chemstation_uv")
+}
+}
 \seealso{
 Other external parsers:
 \code{\link[=call_openchrom]{call_openchrom()}},

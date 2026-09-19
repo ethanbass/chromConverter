@@ -7,6 +7,9 @@
 #' @param path Path to file.
 #' @param format_in Format of input.
 #' @inherit shared_params return
+#' @examples \dontrun{
+#' call_entab("path/to/file.uv", format_in = "chemstation_uv")
+#' }
 #' @family external parsers
 #' @export
 

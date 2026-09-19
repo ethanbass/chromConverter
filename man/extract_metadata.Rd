@@ -60,3 +60,9 @@ columns, or \code{NA} if none of the specified elements could be found.
 Extract metadata as a \code{data.frame}, \code{data.table} or \code{tibble} from a list of
 chromatograms.
 }
+\examples{
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
+chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+                      find_files = FALSE, progress_bar = FALSE)
+extract_metadata(chroms, what = c("sample_name", "instrument", "run_datetime"))
+}
