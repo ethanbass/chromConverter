@@ -7,8 +7,9 @@ Reads 'Agilent ChemStation' reports into R.
 ``` r
 read_chemstation_reports(
   paths,
-  data_format = c("chromatographr", "original"),
-  metadata_format = c("chromconverter", "raw")
+  peaktable_format = c("chromatographr", "original"),
+  metadata_format = c("chromconverter", "raw"),
+  data_format = NULL
 )
 ```
 
@@ -18,13 +19,18 @@ read_chemstation_reports(
 
   Paths to 'ChemStation' report files.
 
-- data_format:
+- peaktable_format:
 
-  Format to output data. Either `chromatographr` or `chemstation`.
+  Whether to return peak tables in `chromatographr` or `original`
+  format.
 
 - metadata_format:
 
   Format to output metadata. Either `chromconverter` or `raw`.
+
+- data_format:
+
+  Deprecated. Use `peaktable_format` instead.
 
 ## Value
 
@@ -36,6 +42,7 @@ A `data.frame` containing the information from the specified
 Other 'Agilent' parsers:
 [`read_agilent_d()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_d.md),
 [`read_agilent_dx()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_dx.md),
+[`read_agilent_rslt()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_rslt.md),
 [`read_chemstation_ch()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md),
 [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md),
 [`read_chemstation_ms()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.md),
@@ -44,3 +51,11 @@ Other 'Agilent' parsers:
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_chemstation_reports("path/to/report.txt")
+} # }
+```

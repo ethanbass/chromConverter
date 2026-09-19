@@ -15,7 +15,7 @@ the first column of the chromatogram will be exported."><meta property="og:image
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,6 +101,7 @@ attribute will be used if it exists.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other write functions:
+<code><a href="write_andi_ms.html">write_andi_ms()</a></code>,
 <code><a href="write_chroms.html">write_chroms()</a></code>,
 <code><a href="write_mzml.html">write_mzml()</a></code></p></div>
     </div>
@@ -109,6 +110,14 @@ attribute will be used if it exists.</p>
     <p>Ethan Bass</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ladder.txt"</span>, package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">chrom</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_shimadzu.html">read_shimadzu</a></span><span class="op">(</span><span class="va">path</span>, what <span class="op">=</span> <span class="st">"chroms"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># the file is named for the `sample_name` attribute unless one is supplied</span></span></span>
+<span class="r-in"><span><span class="fu">write_andi_chrom</span><span class="op">(</span><span class="va">chrom</span>, path_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

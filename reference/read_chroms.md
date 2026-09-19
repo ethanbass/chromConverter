@@ -13,12 +13,7 @@ either an internal parser or bindings to an external library, such as
 ``` r
 read_chroms(
   paths,
-  format_in = c("agilent_d", "agilent_dx", "asm", "chemstation", "chemstation_fid",
-    "chemstation_ch", "chemstation_csv", "chemstation_ms", "chemstation_uv",
-    "masshunter_dad", "chromeleon_uv", "chromatotec", "mzml", "mzxml", "mdf",
-    "shimadzu_ascii", "shimadzu_dad", "shimadzu_fid", "shimadzu_gcd", "shimadzu_qgd",
-    "shimadzu_lcd", "thermoraw", "varian_sms", "waters_arw", "waters_raw", "msd", "csd",
-    "wsd", "csv", "other"),
+  format_in = supported_formats(),
   find_files,
   pattern = NULL,
   parser = c("", "chromconverter", "aston", "entab", "thermoraw", "openchrom", "rainbow"),
@@ -33,6 +28,7 @@ read_chroms(
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = c("basename", "sample_name"),
+  sort_by = c("none", "acquisition_time", "file_time"),
   dat = NULL,
   ...
 )
@@ -46,12 +42,20 @@ read_chroms(
 
 - format_in:
 
-  Format of files to be imported/converted. Current options include:
-  `agilent_d`, `agilent_dx`, `chemstation`, `chemstation_uv`,
-  `chemstation_ch`, `chemstation_csv`, `chemstation_ms`, `masshunter`,
-  `masshunter_dad`, `chromeleon_uv`, `shimadzu_ascii`, `shimadzu_fid`,
-  `shimadzu_dad`, `thermoraw`, `waters_arw`, `waters_raw`, `mzml`,
-  `mzxml`, `cdf`, `mdf`, `msd`, `csd`, `wsd`, or `other`.
+  Format of the files to be imported or converted. One of: `agilent_d`,
+  `agilent_dx` (or `openlab_dx`), `agilent_rslt` (or `rslt`, `sirslt`),
+  `asm` (or `allotrope`), `cdf` (or `andi`), `chemstation_ch` (or
+  `chemstation_fid`), `chemstation_csv`, `chemstation_ms`,
+  `chemstation_uv`, `chromatotec`, `chromeleon_uv`, `csd`, `csv`,
+  `masshunter_dad`, `mdf`, `msd`, `mzml`, `mzxml`, `other`,
+  `shimadzu_ascii`, `shimadzu_dad`, `shimadzu_fid`, `shimadzu_gcd`,
+  `shimadzu_lcd`, `shimadzu_qgd`, `thermoraw`, `varian_sms`,
+  `waters_arw`, `waters_raw`, `wsd`. A name in parentheses is an alias,
+  which behaves exactly like the format it follows. Version-specific
+  names for the 'Agilent ChemStation' formats (`chemstation_130`, for
+  instance) are accepted as well, but are normally supplied by
+  chromConverter's own file-type detection rather than being provided by
+  the user.
 
 - find_files:
 
@@ -126,13 +130,24 @@ read_chroms(
   (default) or `sample_name` to use the sample name encoded in the file
   metadata.
 
+- sort_by:
+
+  How to sort the chromatograms. Either `none` (default, preserves
+  current arbitrary/file-order behavior), `acquisition_time` (sorts by
+  the `run_datetime` attribute attached to each chromatogram when
+  `read_metadata = TRUE`, oldest first), or `file_time` (sorts the input
+  files by file modification time before reading, oldest first).
+
 - dat:
 
-  Existing list of chromatograms to append results. Defaults to `NULL`.
+  Deprecated. Existing list of chromatograms to append results to. Use
+  [`c()`](https://rdrr.io/r/base/c.html) on the returned `chrom_list`
+  objects instead. Defaults to `NULL`.
 
 - ...:
 
-  Additional arguments to parser.
+  Additional arguments to the parser. Arguments that the selected parser
+  does not accept are ignored with a warning.
 
 ## Value
 

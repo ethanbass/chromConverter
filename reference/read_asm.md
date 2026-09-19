@@ -1,7 +1,7 @@
 # Read 'Allotrope Simple Model' (ASM) 2D chromatograms
 
-Reads ['Allotrope Simple Model'](https://www.allotrope.org/asm) files
-into R.
+Reads ['Allotrope Simple
+Model'](https://allotropefoundation.org/our-technology/) files into R.
 
 ## Usage
 
@@ -58,3 +58,11 @@ chromatogram as [attributes](https://rdrr.io/r/base/attributes.html) if
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_asm("path/to/file.json")
+} # }
+```

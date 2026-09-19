@@ -19,6 +19,8 @@
   : Read files from 'Agilent ChemStation' .D directories
 - [`read_agilent_dx()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_dx.md)
   : Read 'Agilent' DX files
+- [`read_agilent_rslt()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_rslt.md)
+  : Read files from 'Agilent' .rslt directories
 - [`read_chemstation_ch()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md)
   : Read 'Agilent ChemStation' CH files
 - [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md)
@@ -42,10 +44,6 @@
   : Read 'Shimadzu' LCD
 - [`read_shimadzu_qgd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.md)
   : Read 'Shimadzu' QGD files
-- [`read_sz_lcd_2d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.md)
-  : Read 'Shimadzu' LCD 2D data
-- [`read_sz_lcd_3d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.md)
-  : Read 'Shimadzu' LCD 3D data
 
 ## Waters parsers
 
@@ -95,6 +93,8 @@
 
 - [`write_andi_chrom()`](https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.md)
   : Write ANDI chrom CDF file from chromatogram
+- [`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md)
+  : Write ANDI MS CDF file from chromatogram
 - [`write_mzml()`](https://ethanbass.github.io/chromConverter/reference/write_mzml.md)
   : Write mzML
 
@@ -102,3 +102,5 @@
 
 - [`print(`*`<chrom_list>`*`)`](https://ethanbass.github.io/chromConverter/reference/print.chrom_list.md)
   : Print a chrom_list object
+- [`summary(`*`<chrom_list>`*`)`](https://ethanbass.github.io/chromConverter/reference/summary.chrom_list.md)
+  : Summarize a chrom_list object

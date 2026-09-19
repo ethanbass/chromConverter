@@ -55,3 +55,11 @@ Other external parsers:
 [`read_thermoraw()`](https://ethanbass.github.io/chromConverter/reference/read_thermoraw.md),
 [`sp_converter()`](https://ethanbass.github.io/chromConverter/reference/sp_converter.md),
 [`uv_converter()`](https://ethanbass.github.io/chromConverter/reference/uv_converter.md)
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+call_entab("path/to/file.uv", format_in = "chemstation_uv")
+} # }
+```

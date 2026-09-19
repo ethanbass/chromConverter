@@ -17,7 +17,7 @@ the what argument.'><meta property="og:image" content="https://ethanbass.github.
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,7 +69,8 @@ the <code>what</code> argument.</p>
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
 <span>  collapse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  precision <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  sparse <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  sparse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  bin_width <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -101,8 +102,8 @@ or <code>name</code>.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>What types of data to return (e.g. <code>MS</code>, <code>UV</code>, <code>CAD</code>,
-<code>ELSD</code>). This argument only applies if <code>by == "detector"</code>.</p></dd>
+<dd><p>What types of data to return (e.g. <code>MS</code>, <code>UV</code>, <code>CAD</code>, <code>ELSD</code>).
+This argument only applies if <code>by == "detector"</code>.</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
@@ -120,13 +121,21 @@ element. Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-precision">precision<a class="anchor" aria-label="anchor" href="#arg-precision"></a></dt>
-<dd><p>Number of decimals to round mz values. Defaults to 1.</p></dd>
+<dd><p>Number of decimals to round mz values. Defaults to <code>1</code>.
+Ignored if <code>bin_width</code> is supplied.</p></dd>
 
 
 <dt id="arg-sparse">sparse<a class="anchor" aria-label="anchor" href="#arg-sparse"></a></dt>
 <dd><p>Logical. Whether to return MS data in sparse format (excluding
 zeros). Defaults to <code>TRUE</code>. Applies only when data are requested in <code>long</code>
 format.</p></dd>
+
+
+<dt id="arg-bin-width">bin_width<a class="anchor" aria-label="anchor" href="#arg-bin-width"></a></dt>
+<dd><p>Width of the m/z grid, in daltons. An alternative to
+<code>precision</code> for grids that are not a power of ten (e.g. <code>0.5</code>). Defaults to
+<code>NULL</code>, in which case the grid is derived from <code>precision</code> as
+<code>10^-precision</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -148,6 +157,13 @@ the value of <code>format_out</code>. Data is ordered according to the value of 
     <p>Ethan Bass</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="fu">call_rainbow</span><span class="op">(</span><span class="st">"path/to/file.D"</span>, format_in <span class="op">=</span> <span class="st">"agilent_d"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -39,7 +39,9 @@ read_sz_lcd_3d(
 
 - scale:
 
-  Whether to scale the data by the value factor.
+  This argument currently has no effect. PDA data is returned as it is
+  encoded in the file; see the note in
+  [`read_shimadzu_lcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md).
 
 ## Value
 
@@ -61,8 +63,9 @@ The 24 byte header consists of the following fields:
 
 - 4 bytes: segment label (`17234`).
 
-- 4 bytes: Little-endian integer specifying the wavelength bandwidth
-  (?).
+- 4 bytes: Little-endian integer specifying the sampling rate along the
+  spectral axis (?), where the equivalent field of a 2D stream gives the
+  sampling rate along the time axis.
 
 - 4 bytes: Little-endian integer specifying the number of wavelength
   values in the segment.
@@ -92,8 +95,17 @@ Other 'Shimadzu' parsers:
 [`read_shimadzu_gcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_gcd.md),
 [`read_shimadzu_lcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md),
 [`read_shimadzu_qgd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.md),
-[`read_sz_lcd_2d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.md)
+[`read_sz_lcd_2d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.md),
+[`read_sz_tables()`](https://ethanbass.github.io/chromConverter/reference/read_sz_tables.md)
 
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_sz_lcd_3d("path/to/file.lcd")
+} # }
+```

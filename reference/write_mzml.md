@@ -38,8 +38,9 @@ write_mzml(
 
 - what:
 
-  Which streams to write to mzML: `"MS1"`, `"MS2"`, `"TIC"`, `"BPC"`,
-  and/or `"DAD"`.
+  Which streams to write to mzML: `"MS1"`, `"TIC"`, `"BPC"`, and/or
+  `"DAD"`. `"MS2"` is accepted but skipped with a warning, as MS2
+  spectra are not written yet.
 
 - instrument_info:
 
@@ -86,8 +87,18 @@ which allows faster random access to spectra.
 
 Other write functions:
 [`write_andi_chrom()`](https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.md),
+[`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md),
 [`write_chroms()`](https://ethanbass.github.io/chromConverter/reference/write_chroms.md)
 
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+chrom <- read_chroms("path/to/file.qgd", progress_bar = FALSE)
+write_mzml(chrom[[1]], path_out = "path/to/directory")
+} # }
+```

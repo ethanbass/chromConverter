@@ -9,7 +9,7 @@ data.frame using the Aston file parser."><meta property="og:image" content="http
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,6 +84,17 @@ or <code>raw</code>.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A chromatogram in the format specified by the <code>format_out</code> and
 <code>data_format</code> arguments.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="deprecation">Deprecation<a class="anchor" aria-label="anchor" href="#deprecation"></a></h2>
+
+
+<p>The 'aston' parser is deprecated and will be removed in a future release.
+'Aston' has been unmaintained since 2020. This is the only remaining 'aston'
+binding, and <a href="read_chroms.html">read_chroms</a> selects it automatically only as a last resort,
+when no other parser can read the file. Please use the 'entab' parser (by
+the same author as 'Aston') instead, e.g.
+<code>read_chroms(path, format_in = "masshunter_dad", parser = "entab")</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

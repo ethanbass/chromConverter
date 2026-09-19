@@ -55,3 +55,11 @@ Other 'Waters' parsers:
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_waters_arw("path/to/file.arw")
+} # }
+```

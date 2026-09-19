@@ -68,3 +68,11 @@ A chromatogram in the format specified by the `format_out` and
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_cdf("path/to/file.cdf")
+} # }
+```

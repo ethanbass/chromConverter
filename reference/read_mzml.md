@@ -64,3 +64,11 @@ of `format_out`.
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_mzml("path/to/file.mzML")
+} # }
+```

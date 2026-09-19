@@ -35,3 +35,11 @@ to OpenChrom command-line application.
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+configure_openchrom(cli = "status")
+} # }
+```

@@ -34,8 +34,12 @@ write_chroms(
 
 - what:
 
-  What to write. Argument to `write_cdf` and `write_mzml`. Either
-  `"MS1"` or `"chrom"`.
+  What to write. Used by the `cdf` and `mzml` exporters only. For
+  `export_format = "cdf"`, either `"MS1"` (written by `write_andi_ms`)
+  or `"chrom"` (written by `write_andi_chrom`). For
+  `export_format = "mzml"`, any of `"MS1"`, `"MS2"`, `"TIC"`, `"BPC"`
+  and/or `"DAD"`. If it is not specified, the streams to write are
+  inferred from the supplied data.
 
 - force:
 
@@ -66,8 +70,19 @@ in the directory specified by `path_out`.
 
 Other write functions:
 [`write_andi_chrom()`](https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.md),
+[`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md),
 [`write_mzml()`](https://ethanbass.github.io/chromConverter/reference/write_mzml.md)
 
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
+chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+                      find_files = FALSE, progress_bar = FALSE)
+write_chroms(chroms, path_out = tempdir(), export_format = "csv",
+             show_progress = FALSE)
+```

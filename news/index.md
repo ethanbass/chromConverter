@@ -1,6 +1,655 @@
 # Changelog
 
+## chromConverter 0.10.0
+
+### Breaking changes
+
+- 2D chromatograms from ‘Shimadzu’ `.lcd` files are now scaled by the
+  calibration factor as well as the value factor, so the intensities
+  match those reported by ‘Lab Solutions’. The calibration factor
+  converts the encoded integers into the base unit of the detector, and
+  is stored alongside the raw data in the `Chromatogram Status` stream.
+  The parser was instead taking it from the copy of the `2D Data Item`
+  under `LSS Data Processing`, where it is always `1`. Channels where it
+  is not `1` were off by a constant factor, such as ~42x for an SPD-20A
+  UV detector and ~310x for an RID-10A refractive index detector, so any
+  factor applied by hand to match ‘Lab Solutions’ should now be removed.
+  Older files, written by ‘LCsolution’ rather than ‘Lab Solutions’, have
+  no `2D Data Item` at all, so neither factor reached them; both are now
+  read from the status record, changing the scale of those chromatograms
+  by up to ~5000x. `scale = FALSE` still returns the unscaled integers.
+- Fixed a loss of precision in long-format data. The conversion from
+  wide to long format finished by coercing the assembled table with
+  `apply(x, 2, as.numeric)`. Because retention times entered that table
+  as character (from the rownames), the coercion routed every column
+  through a character matrix, formatting each intensity with
+  `getOption("digits")` and so rounding it to 7 significant figures.
+  Long-format intensities now match the wide-format values exactly.
+  Exported files were affected too, since `write_mzml` and
+  `write_andi_ms` reshape to long format before encoding.
+- Mass spectra are no longer coerced to a matrix. With
+  `format_out = "matrix"`, which is the default, `read_shimadzu_qgd`,
+  `read_chemstation_ms` and `read_cdf` returned MS1 as a matrix, and
+  `read_varian_sms` returned a data.frame but recorded `format_out` as
+  `matrix`. Long spectral data has no useful matrix representation: the
+  coercion promoted `scan` and `rt` to double alongside the intensities
+  and gave up `$`. All four now return a `data.table` for this value of
+  `format_out`, and record it. `data.frame` and `data.table` are
+  returned as requested, and the two-dimensional streams (`TIC`, `BPC`)
+  still honor `matrix`.
+- The names of several metadata fields have changed, and some functions
+  and arguments have been deprecated or removed. See the “Metadata field
+  changes” and “Deprecations and removals” sections below.
+- A photodiode array trace from a ‘Shimadzu’ `.lcd` or `.gcd` file now
+  reports its `detector` as `DAD` rather than `PDA`, matching the
+  vocabulary used by every other parser. `read_shimadzu_lcd` also
+  returns the stream under the name `DAD` rather than `pda`, so a result
+  indexed as `x$pda` needs updating — though only where more than one
+  stream was requested, or `collapse = FALSE`, since a single-stream
+  read returns the object itself, unnamed. `what` takes either spelling,
+  so the two are interchangeable throughout.
+- When `parser` is not specified, reading a ‘Waters’ `.raw` directory
+  now requires the `rainbow` Python module, and reports how to install
+  it when it is missing. Auto-detection previously fell back on the
+  internal parser, which reads only the analog `_CHRO` traces and
+  reported nothing about the MS and PDA data it had skipped, so a file
+  with three detectors could come back with one. The fallback also
+  depended on a test that started Python for every file, including the
+  formats that need no Python at all. `rainbow-api` is requested
+  automatically, so only hand-managed environments are affected;
+  `parser = "chromconverter"` still selects the internal parser for
+  files that hold analog traces alone.
+
+### New features
+
+- Added `read_agilent_rslt` function to read whole sequence of files
+  from OpenLab and automatically attach corresponding metadata from the
+  `acaml` file.
+- `read_shimadzu_lcd` can now read mass spectra from `.lcd` files, with
+  `what = "MS1"`, `"MS2"`, or `"MS"` (to retrieve both levels). Two
+  types of containers are supported: `QTFL RawData` (centroided
+  quadrupole time-of-flight) and `TLM Raw Data` (triple quadrupole full
+  scan, product-ion scan, MRM and SIM). `what = "TIC"` reads the total
+  ion current from either container. QTOF m/z are computed from the TOF
+  calibration stored in the file, with the mass correction
+  ‘LabSolutions’ cached for the run folded in, which reproduces its mass
+  axis exactly. Where a file carries no cached correction, the
+  calibration is refit against the lock mass reference ions found in the
+  data instead, which is good to a few tenths of a ppm. A new `sparse`
+  argument controls whether zeros are dropped from triple quadrupole
+  profile spectra.
+- Added `sort_by` argument to `read_chroms` to control chromatogram
+  order. Options are “none” (default), “acquisition_time” (using
+  `run_datetime` from metadata), and “file_time” (using file
+  modification time). The default will change to “acquisition_time” in a
+  future release.
+- Added a `bin_width` argument to `call_rainbow` as an alternative to
+  `precision`, for m/z grids that are not a power of ten
+  (e.g. `bin_width = 0.5`). `precision` is unchanged and remains the
+  default.
+- Added a `summary` method for `chrom_list` objects, which returns what
+  `print` displays as a table: one row per chromatogram, with the sample
+  it belongs to, its dimensions and relevant metadata fields, such as
+  `wavelength` or `detector_range` for an optical detector, `scan_type`,
+  `polarity`, `precursor_mz`, `product_mz` and `mz_range` for a mass
+  spectrometer.
+- Added an `expand` argument to `extract_metadata` for the nested
+  metadata fields, whose value is itself a list or table rather than a
+  single value per chromatogram: the `ms_params` instrument settings,
+  the `acaml_metadata` injection record `read_agilent_rslt` reads from
+  the `.acaml` file, or the whole vendor list when
+  `metadata_format = "raw"`.
+- Added a `collapse` argument to `extract_metadata`, which renders a
+  field holding more than one value as a single comma-separated string
+  instead of spreading it over numbered columns (`time_range1`,
+  `time_range2`).
+- Added a `detector` argument to `extract_metadata` to select which
+  detectors to include (e.g. `detector = "UV"` or
+  `detector = c("UV", "MS")`), matched case-insensitively against each
+  chromatogram’s `detector` attribute. This is useful for lists
+  containing more than one detector per sample, such as those returned
+  by the `rainbow` parser.
+- `write_andi_ms` is now exported, like `write_andi_chrom` and
+  `write_mzml`. It was previously reachable only through
+  `write_chroms(what = "MS1")` or `read_chroms(export_format = "cdf")`,
+  which write a whole list of chromatograms and offer no control over
+  the file name or the instrument settings.
+- `write_chroms(export_format = "cdf")` now forwards `...` to the
+  underlying writer, as the `mzml` exporter already did. This makes the
+  `ms_params` argument of `write_andi_ms` and the `lambda` argument of
+  `write_andi_chrom` usable when writing a batch of files.
+
+### Improved handling of Python dependencies
+
+- chromConverter is now more robust when you are offline. Python is only
+  started when a parser that needs it (`rainbow`, `olefile` or `Aston`)
+  is actually called, so the formats read by the internal parsers no
+  longer require an internet connection. When Python is needed and the
+  package index can’t be reached, chromConverter now falls back on a
+  previously cached environment instead of failing.
+- Python packages are now requested only for the parser you actually
+  call, so using the `rainbow` or `olefile` parsers no longer installs
+  the ‘Aston’ requirements or constrains which version of `scipy` you
+  can have.
+- chromConverter no longer creates Python module objects in your global
+  environment when the package is loaded.
+- Fixed `configure_python_environment` so it accepts the `parser`
+  argument it is called with, and removed its interactive prompts, which
+  failed in non-interactive sessions.
+
+### Performance
+
+- Refactored internal ‘Agilent’ parsers for increased speed through
+  vectorization of byte operations (~3.5-30x for the delta-encoded
+  formats). For example, a 10.8 MB ‘ChemStation’ version 31 `.uv` file
+  went from ~9 s to ~0.57 s.
+- Refactored ‘Shimadzu’ binary parsers for increased speed (7-55x)
+  through vectorization of byte operations. Reading MS1 scans from a 40
+  MB `.qgd` file went from ~56 s to ~1 s, and reading a PDA stream from
+  an `.lcd` file went from ~7 s to ~1 s.
+- Refactored `read_varian_sms` for increased speed (~8x) through
+  vectorization. Reading `STRD15.SMS` (2.4 MB, 935k MS1 rows) drops from
+  ~13 s to ~1.7 s. The stream is also bounded by the end of the `MSData`
+  section rather than the end of the file, which reduced peak memory
+  requirements for files carrying a large tail of peak tables and
+  results.
+- Refactored `write_mzml` for increased speed (~1.4x) and lower memory
+  use. The spectra are now sliced out of the long-format table in place
+  instead of being copied into a list of per-scan tables, and the byte
+  offsets for the index are accumulated as the file is written rather
+  than probed with [`seek()`](https://rdrr.io/r/base/seek.html) once per
+  scan. Writing 3432 scans (935k points) drops from ~1.24 s to ~0.87 s,
+  with peak memory falling from ~384 MB to ~339 MB.
+- Refactored conversion to long format for increased speed (~150x). The
+  reshaping step now assembles the three columns directly instead of
+  pivoting the table and then coercing it, which also avoids the
+  rounding described below. Reshaping a 4689 x 328 PDA matrix drops from
+  ~2.0 s to ~0.012 s, with peak memory falling from ~455 MB to ~227 MB.
+  This affects every parser called with `data_format = "long"` (or
+  `format_out = "data.table"`, which implies long format), as well as
+  the mzML and ANDI MS writers, which reshape to long format internally.
+- The temporary files that are extracted from ‘Shimadzu’ OLE containers
+  are now deleted once they have been read, instead of accumulating in
+  the session’s temporary directory until R exits. This matters most
+  when converting many files at once.
+- The SHA-1 of the source file, recorded as the `source_sha1` metadata
+  attribute, is now computed once per file instead of once per
+  chromatogram. Formats that return several chromatograms from one file
+  hashed it again for each of them, which dominated the read for large
+  files: a 40 MB `.qgd` drops from ~2.2 s to ~1.3 s.
+
+### Metadata field changes
+
+- The metadata field names are now defined in one place, so the names
+  the readers attach and the names `extract_metadata` reports cannot
+  drift apart. Five fields had drifted and are renamed: `software_name`
+  is now `software` (‘Shimadzu’, ‘Varian’ SMS and `read_agilent_rslt`);
+  `run_date` is now `run_datetime` and `injection_volume` is now
+  `sample_injection_volume` (‘Thermo’ RAW); `time_start` and `time_end`
+  (or `end_time`) are now the two ends of `time_range` (ANDI, ‘Lumex’
+  MDF and ‘Varian’ SMS); and the two formats that record a scan count,
+  ‘Varian’ SMS and ANDI MS, now both report it as `n_scans`, matching
+  the `n_` prefix used for counts throughout the package, rather than
+  `no_scans` in one and `ms_params$n_scans` in the other.
+  `extract_metadata` accepts the old names and maps them to the new
+  ones.
+- The `parser` attribute is now always spelled `chromconverter`. With
+  `metadata_format = "raw"`, some readers reported `chromConverter`
+  instead.
+- `sample_amount` is no longer copied from the injection volume
+  (‘Shimadzu’ ASCII, ‘ChemStation’ `.ch`, `.uv` and `.ms` files,
+  ‘ChemStation’ report files, and ‘MassHunter’). None of these records a
+  sample amount, so it is now `NA`. ‘Lumex’ MDF likewise no longer
+  reports an injection volume and amount of `1`, which the file does not
+  record.
+- `detector_id` is renamed as `detector_model`. Every format that fills
+  the field supplies a module or a model number, and says as much
+  internally: `detector_model` for ‘ChemStation’, ‘OpenLab’ and
+  ‘Chromatotec’ (`G1315B`, `HP G1530A`), `detector_model_number` for
+  ASM, `detector_name` for ANDI (`9065 UV-DAD`) and `Detector Name` for
+  the ‘Shimadzu’ ascii exports. None supplies a serial number or any
+  other identifier of a particular unit, so the old name was misleading.
+  `extract_metadata` accepts `detector_id` and maps it to the new name.
+
+#### ‘Agilent’
+
+- `detector_range` is now reserved for the numeric wavelength range
+  recorded by `.uv` files. For ‘ChemStation’ versions 30 and 130 the
+  signal descriptor was previously reported in this field, and is now
+  reported as `signal_descriptor`.
+- The `detector` field is now `NA` for ‘ChemStation’ `.ch` files. These
+  files do not record a detector type; the field previously reported the
+  detector module, duplicating `detector_id`.
+- `read_acaml` now also returns the injection volume (`InjectionVolume`,
+  `InjectionVolume_unit`) and the acquisition software name and version
+  (`Software`, `SoftwareVersion`).
+
+#### ‘Shimadzu’
+
+- The `wavelength` attribute of a ‘Shimadzu’ 2D chromatogram is now `NA`
+  rather than an empty string when the channel records none, as a
+  refractive index or FID trace does. An empty string printed as a blank
+  cell instead of as a missing value.
+- ‘Shimadzu’ `.lcd`, `.gcd` and `.qgd` files now report `file_version`,
+  the version of the container format (`5.01` for files written by ‘Lab
+  Solutions’; absent in the older files, which report only a
+  `software_version` of `1.x`).
+- ‘Shimadzu’ `.lcd` and `.gcd` files now report the instrument the file
+  was acquired on, rather than the detector module of whichever trace
+  you are looking at: one run on one HPLC previously came back as
+  `SPD-20A` on two channels and `RID-10A` on a third. `instrument` is
+  taken from the `SystemInformation` stream (`Instrument2`, `HPLC RID`,
+  `GC-2014`), the same string the ascii exports report as
+  `Instrument Name`, so a run exported both ways now agrees. The module
+  is now reported as `detector_model`. A mass spectrometry trace has no
+  module of its own, so it reports whatever unit `SystemInformation`
+  lists for the mass spectrometer instead. That is a model number on
+  newer software (`LCMS-9030`), but older versions list the generic
+  platform name (e.g., `LCMS-3030` for every triple quadrupole).
+- The channel a ‘Shimadzu’ `.lcd` or `.gcd` trace was read from
+  (`LC.1.1.DET.1.CH#1`, `PDA.1.1.PDA.1.3D`) is now reported as
+  `channel_id`, (replacing `detector_id`). This field is used to name
+  the peak table belonging to a trace (`PT-LC.1.1.DET.1.CH#1`), so the
+  two can still be matched up.
+
+#### ‘Varian’ SMS
+
+- A ‘Varian’ SMS file is acquired in segments, and the bounds of each
+  are now reported as `segment_start_time` and `segment_end_time` within
+  `ms_params`. `time_range` gives the span of the whole run, as it does
+  for every other format.
+
+### Deprecations and removals
+
+- The `aston` parser is deprecated and will be removed in a future
+  release. ‘Aston’ has been unmaintained since 2020. It is now used only
+  by `sp_converter` to read ‘Agilent MassHunter’ `.sp` files
+  (`format_in = "masshunter_dad"`), and `read_chroms` selects it
+  automatically only as a last resort, when no other parser can read the
+  file. Please use the internal chromConverter parsers or the `entab`
+  parser (by the same author as ‘Aston’) instead.
+- `uv_converter` is now defunct; use `read_chemstation_uv` or the
+  `entab` parser instead. The `aston` binding for `format_in = "other"`
+  has also been removed; this format is still handled by the `entab`
+  parser. Both relied on an ‘Aston’ reader that requires `scipy < 1.14`,
+  which would otherwise constrain the Python environment for every user.
+- Deprecated `dat` argument in `read_chroms`. Instead, chrom_lists can
+  be combined with [`c()`](https://rdrr.io/r/base/c.html).
+- Renamed the `data_format` argument of `read_peaklist` and
+  `read_chemstation_reports` to `peaktable_format`. This argument
+  selects `chromatographr` or `original` peak table layout, so it had
+  nothing to do with the `data_format` argument of the chromatogram
+  readers, which selects `wide` or `long` format. `peaktable_format` is
+  the name already used for this option by `read_shimadzu`. The old name
+  still works but warns, and will be removed in a future release.
+- `read_sz_lcd_2d` and `read_sz_lcd_3d` are no longer exported. Each
+  reads a single stream of an `.lcd` file and neither has to be called
+  directly: `read_shimadzu_lcd(what = ...)` picks the reader a stream
+  needs. Their documentation remains, since each records the layout of
+  the stream it reads, but is marked internal and no longer appears in
+  the reference index.
+
+### Bug fixes and other minor changes
+
+- Fixed a bug causing data to be discarded when metadata could not be
+  interpreted. The data is now returned with a warning, and with its
+  source file and parser recorded.
+- Fixed `format_out = "data.frame"`, which returned a `data.table` for
+  any parser that assembles its result as one. The conversion tested the
+  object with `inherits`, and a data.table inherits from data.frame, so
+  the conversion was skipped.
+- Fixed the `rainbow` parser, which raised
+  `read() no longer takes precision` on every call once `rainbow-api`
+  v1.5.0 was released. v1.5.0 split `precision` into `bin_width` (the
+  m/z grid, in daltons) and `display_precision` (label rounding, in
+  decimals); chromConverter now derives both from `precision`, so the
+  argument and the data it returns are unchanged. v1.5.0 is now the
+  minimum required version.
+- String metadata read from ‘Agilent ChemStation’ and ‘Shimadzu’ files
+  is now decoded as Latin-1 and stripped of control characters.
+  Previously these fields could contain bytes that made the resulting
+  string invalid in the session encoding, so
+  [`nchar()`](https://rdrr.io/r/base/nchar.html) and
+  [`toupper()`](https://rdrr.io/r/base/chartr.html) failed on them and
+  [`grepl()`](https://rdrr.io/r/base/grep.html) could not match them.
+  Accented characters in a path or sample name are now preserved rather
+  than mangled.
+- Fixed error (`input string 1 is invalid UTF-8`) when printing a
+  `chrom_list` read from a ‘Shimadzu’ `.lcd` written in a non-Latin
+  locale. The hex-encoded `@StoX@` fields, which hold the `method` and
+  `batch` paths, skipped the Latin-1 decoding applied to the rest of the
+  file’s strings. Undecodable bytes are now replaced with `?`, and
+  `print.chrom_list` repairs whatever it is handed, so one mangled path
+  cannot take down the summary.
+- Fixed a bug where the `thermoraw`, `openchrom`, `agilent_dx` and
+  `agilent_amx` parsers deleted the whole session temporary directory on
+  exit, instead of just the files they created. This behavior could
+  potentially create conflicts with other packages. Each call now gets
+  its own directory inside the session temp directory which is cleaned
+  up on exit.
+- ‘Shimadzu’ OLE containers are now closed as soon as they have been
+  read. Previously the contents of the last stream read were also kept
+  in memory until R exited, and file handles were released only when
+  garbage collection got around to them.
+- Fixed a bug on ‘Windows’ causing paths with backslashes to be rejected
+  on Windows by the ‘Shimadzu’ binary parsers.
+- The ‘OpenChrom’ batch file is now deleted after the conversion,
+  instead of accumulating in the export directory.
+- The error reported when a required Python module is missing now names
+  the distribution the module is installed from rather than the name it
+  is imported under. It previously suggested
+  `reticulate::py_install("rainbow")`, which installs an unrelated
+  package; the ‘rainbow’ module comes from `rainbow-api`.
+
+#### ‘Agilent’
+
+- Fixed missing `detector_id` for ‘ChemStation’ version 130 files.
+- Added `sample_position` metadata field for ‘ChemStation’ 179 files
+  (`.ch` and `.it`).
+- The acquisition time of ‘Agilent MassHunter’ files is now converted to
+  `POSIXct` instead of being attached as an unparsed string, which
+  `extract_metadata` reported as `NA`.
+- Fixed a bug causing `read_agilent_dx`, `read_agilent_amx` and
+  `read_agilent_rslt` to fail when `path_out` was supplied.
+- Fixed the documentation of the peak table format argument to
+  `read_chemstation_reports`, which listed the accepted values as
+  `chromatographr` or `chemstation`. The second value has always been
+  `original`, so following the documentation raised an error.
+
+#### ‘Shimadzu’
+
+- Fixed the acquisition time reported for ‘Shimadzu’ ASCII files, which
+  was `NA` for every export not written by a machine using a 12-hour
+  month-first date format. Note that the times in an ASCII export are
+  local to that machine, which does not record its time zone, whereas
+  `.lcd` files record the acquisition instant in UTC.
+- Fixed the metadata of ‘Shimadzu’ PDA ascii exports, which were read
+  through the field map for the 2D exports. A PDA export reported no
+  `detector` and no `detector_range`; it now reports `DAD` and the
+  wavelength range the detector covered.
+- Fixed `read_shimadzu_lcd` for `.lcd` files that do not contain a
+  `2D Data Item`, which failed with
+  `'names' attribute [4] must be the same length as the vector [2]`.
+  This bug seems to affect older files, which store their chromatograms
+  under `LC Raw Data` rather than `LSS Raw Data`.
+- Fixed `read_shimadzu_lcd` so it can return PDA data in long format.
+  `read_shimadzu_lcd(what = "PDA", data_format = "long")` previously
+  failed with an error about a missing `lambda` column, because the
+  reshaping step was called with the wrong target format.
+- `format_out` now reaches the peak tables of ‘Shimadzu’ `.lcd` and
+  `.gcd` files. `read_shimadzu_lcd(what = "peak_table")` and
+  `read_shimadzu_gcd(what = "peak_table")` accepted the argument and
+  then dropped it, so a table always came back as a `data.frame`.
+  `data.table` is now returned when asked for — `matrix`, which has no
+  useful representation for a peak table, resolves to `data.table` as it
+  does for mass spectra.
+- Fixed export of OLE streams to a path containing `~`, which is not
+  expanded by Python.
+- Fixed the number of points per record in `.lcd` data streams, which
+  was read as a signed 2-byte field rather than the 4-byte field it is.
+  A 2D chromatogram with 32,768 to 65,535 points failed with
+  `invalid 'length' argument`, and one with more than 65,535 points was
+  truncated to the remainder. Files below that threshold, such as the
+  30,000-point chromatograms in the test suite, were read correctly.
+
+#### ‘Varian’ SMS
+
+- Fixed the acquisition timestamps for ‘Varian SMS’ files. The corrected
+  start matches the timestamp written by ‘OpenChrom’ for the same
+  sample, and the interval between the start and end times matches the
+  span of the chromatogram.
+- The `run_datetime` for ‘Varian SMS’ files is now the acquisition start
+  time, as a single value rather than a start/end pair.
+- Fixed `read_varian_sms` for `format_out = "data.table"`, which failed
+  previously with an error. The `TIC` and `BPC` returned by this parser
+  also had their intensity column named `tic`/`bpc` instead of
+  `intensity` for this value of `format_out`.
+- Added support for reading `instrument` and `method` metadata from
+  Varian SMS files (read from the `InjectionLog` section).
+
+#### ANDI (netCDF)
+
+- Fixed the MS1 scans returned by `read_cdf` for ‘ANDI MS’ files in
+  which every scan holds the same number of points (common when the
+  instrument scans a fixed mass range). The retention times arrived as a
+  matrix and were split into one column per scan, so a 20-scan file
+  returned a table with `rt.1`, `rt.2`, … `rt.20` columns instead of a
+  single `rt` column. With `ms_format = "list"` the same files returned
+  a list of individual numbers rather than a list of spectra. Files with
+  a varying number of points per scan were unaffected, and their output
+  is unchanged.
+- `read_cdf` no longer opens the netCDF file twice, and the peak table
+  returned for ‘ANDI chrom’ files is no longer transposed when it holds
+  a single peak.
+- `read_cdf(what = "peak_table")` on an ‘ANDI chrom’ file that holds no
+  peak table now warns and returns the other streams that were asked
+  for, rather than failing with `value for 'peak_table' not found`.
+
+#### mzML export
+
+- `write_mzml` now warns that MS2 spectra are skipped rather than
+  counting them in the `spectrumList` header and writing none of them.
+  Writing MS2 is not supported yet.
+- Fixed `write_chroms(export_format = "mzml")`, which failed for every
+  file unless `what` was given explicitly. The streams to write are now
+  inferred from the data, as they are when `write_mzml` is called
+  directly.
+- `write_mzml` no longer writes a one-dimensional chromatogram as DAD
+  spectra, and points to `write_andi_chrom` instead. mzML stores scans
+  of (m/z or wavelength, intensity), so a single trace has no axis to
+  put in one: it was written as a single-point spectrum per retention
+  time, which for a 66,000-point trace meant 66,000 scans, as many
+  warnings about empty ranges, and a 128 MB file. The trace is skipped
+  with a warning if other streams were requested, and reported as an
+  error if it was the only one, since skipping it would leave an empty
+  file. `TIC` and `BPC` are unaffected, since the format has terms for
+  those MS-derived summaries and they are written to the chromatogram
+  list rather than as spectra.
+- `write_mzml` now throws a more informative error when handed a single
+  chromatogram whose `detector` attribute is missing, `NA`, or names a
+  detector it has no mzML stream for, rather than failing with
+  `EXPR must be a length 1 vector` or quietly writing an unnamed stream.
+- Fixed the `fileChecksum` written into indexed mzML files, which was
+  the SHA-1 of the first line of the file
+  (`<?xml version="1.0" encoding="UTF-8"?>`) rather than of the file
+  itself, because the digest was taken over a multi-element character
+  vector. Files are now checksummed as required by the mzML
+  specification, over the bytes up to and including the opening
+  `<fileChecksum>` tag, and the file no longer has to be read back into
+  memory to do it.
+- Fixed the offsets in the `indexList` of mzML files.
+  `<indexListOffset>` pointed one byte before `<indexList>`, and every
+  offset in the DAD spectrum index pointed at the newline preceding its
+  `<spectrum>` element rather than at the element. Offsets are now
+  counted as the file is written instead of being probed with
+  [`seek()`](https://rdrr.io/r/base/seek.html), which is unreliable on a
+  connection opened in text mode and ignores the write buffer.
+- Fixed the chromatogram index of mzML files. Each `<offset>` pointed
+  four bytes before its `<chromatogram>` element, and its `idRef` named
+  the element’s `index` rather than its `id`, so no entry in the index
+  resolved to the chromatogram it was meant to locate.
+- Fixed the spectrum-type term written into mzML files, which was always
+  `MS:1000580` (“MSn spectrum”) even though `ms level` was `1`.
+- Fixed `write_mzml(compress = FALSE)`, which was ignored for spectra
+  (though not for chromatograms), since the argument was never passed
+  on.
+- Fixed the `count` attribute of `<spectrumList>`, which was always
+  written as `1` for data read as a `data.table`.
+- Fixed malformed mzML files written from data with missing
+  `sample_name`, `source_file` or `source_sha1` attributes: a missing
+  field collapsed the `sprintf` that builds the header, dropping the
+  `<mzML>` element itself. The header read its metadata from `MS1`, or
+  from `DAD` when `MS1` was not requested, without checking the stream
+  was still there — a `DAD` trace skipped earlier leaves nothing to read
+  from. It now reads from a stream that is actually being written, and a
+  missing `sample_name` is an error naming the argument that supplies
+  one.
+- Fixed the `count` attribute of `<spectrumList>` when the TIC starts
+  before the first MS1 scan. Those leading retention times are written
+  as empty spectra, so the file holds one spectrum per TIC point, but
+  the count was taken from the MS1 table and fell short by the number of
+  padded scans.
+- Fixed the `index` attribute of the DAD spectra, which with
+  `indexed = FALSE` restarted at zero and repeated the numbers the MS1
+  spectra already used. The starting value was parsed from the id of the
+  last spectrum-index entry, and those entries carry an id only when the
+  file is indexed; it is now the count of spectra already written.
+- mzML files are now written as binary, so their line endings are `LF`
+  on all platforms.
+
+#### Metadata and printing
+
+- Refactored the attachment of metadata. A registry of per-format field
+  maps replaces a twenty-branch `switch`, and attributes like
+  `source_file`, `source_sha1` and `parser` are no longer repeated in
+  each one. The change is internal, but it resolves several problems
+  listed below.
+- Fixed `metadata_format`, which several readers mishandled.
+  `metadata_format = "raw"` errored for ‘Chromeleon’ files and returned
+  `NULL` instead of a chromatogram for the `rainbow` parser; the `entab`
+  parser and `read_shimadzu` ignored the argument altogether; and
+  `parser = "entab"` with `format_in = "other"` returned `NULL`. The
+  argument is now resolved in one place instead of separately by each
+  reader.
+- Metadata from ‘Agilent ChemStation’ report files is now attached to
+  the peak lists that `read_peaklist` returns, so `extract_metadata` can
+  see it.
+- Fixed `detector_range` for ‘Chromeleon’ 3D files, which reported only
+  the lower end of the scan range. For 2D files, which record no scan
+  range, it was a zero-length value that disappeared from
+  `extract_metadata` instead of reading `NA`.
+- Fixed errors reading ‘Chromeleon’ files that record no injection
+  volume, or more than one field matching “Volume”, and ‘MassHunter’
+  directories with no `sample_info.xml`.
+- The file-level properties that `read_mzml` recovers are now attached
+  as attributes, so `extract_metadata` and `print.chrom_list` can see
+  them, and the `metadata` element carrying them is no longer counted as
+  a chromatogram. The `run_datetime`, `time_range`, `time_unit` and
+  `detector_range` fields previously came back as `NA` for mzML files
+  even though ‘RaMS’ had parsed them, which also meant
+  `read_chroms(sort_by = "acquisition_time")` could not order them. The
+  `metadata` element is still returned in full, since it carries several
+  fields with no attribute equivalent.
+- Some metadata attributes that were previously left unset are now
+  recorded, so `extract_metadata` now reports them as empty instead of
+  dropping them altogether. `scaled` was accepted by every reader that
+  takes a `scale` argument and then dropped by thirteen of the twenty
+  field maps, so it was missing for most formats;
+  `metadata_format = "raw"` recorded `source_file` and `source_sha1` but
+  not `format_out` or `source_file_format`; and ‘Thermo’ RAW files lost
+  any field that the mzML conversion recorded but the converter’s own
+  metadata output did not.
+- The `source_file_format` attribute is now set correctly for every
+  format. It was previously missing for some formats, and named the
+  parser or an intermediate file for others.
+- `extract_metadata` now reports the injection volume for every format
+  that records one, and the acquisition software for ‘Shimadzu’ and
+  ‘Varian’ files. These were previously ignored, because the formats did
+  not agree on what to call them.
+- `extract_metadata` now returns a row for every chromatogram, however
+  deeply nested, and reads sample-level attributes from the list
+  enclosing a sample’s traces as well as from the traces themselves.
+  Previously only the top level of the list was examined, so nested
+  traces, and any metadata held on the list grouping them, were left out
+  of the table. A field that varies from trace to trace, such as
+  `detector` in a multichannel file, stays with the trace; where the
+  traces agree, the value on the enclosing list is used, since it
+  describes the sample as a whole.
+- `extract_metadata` no longer reports a multi-valued field as missing.
+  The check tested the requested names against the columns of the
+  assembled table, where a field holding several values appears as
+  `product_mz1`, `product_mz2`, … and so never under the name that was
+  asked for.
+- `extract_metadata` now matches attribute names exactly. Previously a
+  requested element could be filled in from a different attribute that
+  merely started with the same characters, so a chromatogram with no
+  `detector` attribute could report its `detector_y_unit` as its
+  detector.
+- `extract_metadata` now returns `NA` instead of a metadata frame with
+  only a `name` column when none of the requested metadata elements are
+  found.
+- Fixed the intensity units and scan count written to ANDI MS files,
+  which were always empty previously because the writer was trying to
+  read them from the wrong attributes.
+- `print.chrom_list` now handles lists holding more than one trace per
+  sample, such as a multichannel ‘Shimadzu’ file or an ‘Agilent’ `.dx`
+  read with `what = c("chroms", "dad")`. Traces are grouped under the
+  sample they belong to, however deeply nested, and attributes shared by
+  all of a sample’s traces are shown in that sample’s block header
+  instead of being repeated on every row. Previously only the top-level
+  elements were counted, so the chromatogram count was wrong and only
+  the first trace of each sample was shown.
+- Improved `print.chrom_list` formatting: datetimes print as timestamps
+  rather than raw epoch seconds; the header wraps to the width of the
+  console, breaking between fields; long values, such as a ‘Windows’
+  `method` path, are shortened from the middle; and a field that is
+  empty for every chromatogram is dropped. `print` no longer errors when
+  none of the requested `cols` are present or when `n` is negative, and
+  `n` now defaults to `10`, as documented.
+
+#### `read_chroms`
+
+- Refactored the dispatch in `read_chroms`. A single internal table now
+  records which formats it can read and, for each one, the file
+  extension, and the reader each parser uses. These facts were
+  previously spread across the argument list, an `if`/`else` chain, and
+  several utility functions (`check_parser` and `format_to_extension`).
+  The change is internal, but it resolves several problems listed below.
+- Arguments passed through `...` are now matched against the arguments
+  the selected parser actually accepts. An unrecognized argument
+  previously made every file fail, surfacing from inside
+  [`try()`](https://rdrr.io/r/base/try.html) as a warning with an
+  unreadable message; such arguments are now ignored with a warning
+  naming them.
+- When `format_in` is not supplied and the type of a file cannot be
+  recognized, `read_chroms` now says so and asks for a format, rather
+  than failing with `argument is of length zero`.
+- `read_chroms` now gives an informative error when no parser is
+  available for a format, instead of failing with
+  `missing value where TRUE/FALSE needed`.
+- When a file cannot be interpreted, `read_chroms` now names it instead
+  of reporting its position in the list.
+- A file that cannot be interpreted now produces a single warning naming
+  it, rather than a warning followed by a separate message. The message
+  could not be silenced with `suppressWarnings` and was invisible to
+  callers handling the warning.
+- Some formats can now be named in more than one way. `format_in`
+  accepts an alias as readily as the format’s own name, and the two
+  behave identically: `rslt` and `sirslt` for `agilent_rslt`,
+  `openlab_dx` for `agilent_dx`, `chemstation_fid` for `chemstation_ch`,
+  `andi` for `cdf`, and `allotrope` for `asm`.
+- The `shimadzu_ascii`, `csv`, `asm`, `openlab_131` and `chemstation`
+  formats are now matched to the correct file extension, instead of
+  falling through to a pattern matching any file containing a `.`.
+- The `metadata_format` argument now reaches the `agilent_dx`,
+  `agilent_rslt`, `shimadzu_lcd`, `shimadzu_qgd`, `cdf` and `entab`
+  parsers. Previously, `metadata_format = "raw"` had no effect for these
+  formats.
+- For formats that return more than one chromatogram per sample,
+  `sample_names = "sample_name"` named every sample with the literal
+  string `"NULL"` and then warned about duplicate names. This was
+  because the `sample_name` attribute is attached to the individual
+  chromatograms rather than to the list grouping them, so the lookup
+  came up empty and the resulting `NULL` was coerced to a string.
+  Samples with no recorded sample name now fall back to the file name,
+  with a warning naming them. A name that is recorded but empty counts
+  as no name, since a parser that finds the field but reads nothing out
+  of it leaves an empty string behind. The traces making up a sample are
+  now also checked against each other: if they disagree about the sample
+  name there is no basis for preferring one over another, so the file
+  name is used instead, again with a warning.
+
 ## chromConverter 0.9.1
+
+### New features
+
+- Added a `[.chrom_list` method so that subsetting a `chrom_list`
+  preserves its class instead of dropping it to a plain `list`.
+- Added a `c.chrom_list` method so that combining `chrom_list` objects
+  with [`c()`](https://rdrr.io/r/base/c.html) preserves the class
+  instead of dropping it to a plain `list`.
+
+### Bug fixes and other minor changes
 
 - Fixed encoding bug when parsing XML metadata in `read_shimadzu_lcd`:
   (bytes are now read explicitly as ISO-8859-1 rather than relying on
@@ -12,11 +661,6 @@
 - Fixed vignette example for `varian_sms` so the example file is
   downloaded in binary mode (`mode = "wb"`), preventing file corruption
   on Windows.
-- Added a `[.chrom_list` method so that subsetting a `chrom_list`
-  preserves its class instead of dropping it to a plain `list`.
-- Added a `c.chrom_list` method so that combining `chrom_list` objects
-  with [`c()`](https://rdrr.io/r/base/c.html) preserves the class
-  instead of dropping it to a plain `list`.
 - Added `sample_position` field to `extract_metadata`.
 
 ## chromConverter 0.9.0

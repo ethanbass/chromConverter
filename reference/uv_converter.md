@@ -1,7 +1,8 @@
 # Converter for 'Agilent ChemStation' UV files
 
-Converts a single chromatogram from ChemStation `.uv` format to R
-`data.frame`.
+Defunct. Use
+[read_chemstation_uv](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md)
+instead.
 
 ## Usage
 
@@ -44,12 +45,17 @@ uv_converter(
 
 ## Value
 
-A chromatogram in the format specified by the `format_out` and
-`data_format` arguments.
+There is no return value. Calling this function is an error.
 
 ## Details
 
-Uses the [Aston](https://github.com/bovee/aston) file parser.
+This function wrapped 'Aston”s generic `TraceFile` reader, which imports
+`scipy.io.netcdf.NetCDFFile`. That symbol was removed in scipy v1.14, so
+`TraceFile` cannot be used without pinning `scipy < 1.14` for the whole
+Python session. Since `.uv` files are read by chromConverter's internal
+parser,
+[read_chemstation_uv](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md),
+this wrapper was retired rather than constrain scipy for everyone.
 
 ## See also
 

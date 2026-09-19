@@ -11,11 +11,12 @@ read_peaklist(
   format_in = c("chemstation", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
     "shimadzu_gcd", "chromatotec"),
   pattern = NULL,
-  data_format = c("chromatographr", "original"),
+  peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
   read_metadata = TRUE,
   progress_bar,
-  cl = 1
+  cl = 1,
+  data_format = NULL
 )
 ```
 
@@ -42,9 +43,10 @@ read_peaklist(
   A pattern (e.g. a file extension). Defaults to `NULL`, in which case
   the file extension will be deduced from `format_in`.
 
-- data_format:
+- peaktable_format:
 
-  Either `chromatographr` or `original`.
+  Whether to return peak tables in `chromatographr` or `original`
+  format.
 
 - metadata_format:
 
@@ -66,6 +68,10 @@ read_peaklist(
   specifying the number of clusters to use or a cluster object created
   by [makeCluster](https://rdrr.io/r/parallel/makeCluster.html).
   Defaults to `1`.
+
+- data_format:
+
+  Deprecated. Use `peaktable_format` instead.
 
 ## Value
 

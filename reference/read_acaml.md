@@ -10,7 +10,7 @@ read_acaml(
   path,
   find_files,
   format_out = c("data.frame", "data.table", "tibble"),
-  progress_bar = TRUE,
+  progress_bar = FALSE,
   cl = 1
 )
 ```
@@ -33,8 +33,13 @@ read_acaml(
 
 - progress_bar:
 
-  Logical. Whether to show progress bar. Defaults to `TRUE` if `pbapply`
-  is installed.
+  Logical. Whether to show a progress bar. Defaults to `FALSE`, unlike
+  [read_chroms](https://ethanbass.github.io/chromConverter/reference/read_chroms.md),
+  because an ACAML file usually accompanies a sequence rather than
+  arriving in bulk:
+  [read_agilent_rslt](https://ethanbass.github.io/chromConverter/reference/read_agilent_rslt.md)
+  calls this function on the single `.acaml` file in a `.rslt`
+  directory, where a progress bar over one element is just noise.
 
 - cl:
 

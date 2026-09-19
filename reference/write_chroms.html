@@ -9,7 +9,7 @@ either mzml, cdf, csv, or arw."><meta property="og:image" content="https://ethan
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,8 +75,11 @@ either <code>mzml</code>, <code>cdf</code>, <code>csv</code>, or <code>arw</code
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>What to write. Argument to <code>write_cdf</code> and <code>write_mzml</code>. Either
-<code>"MS1"</code> or <code>"chrom"</code>.</p></dd>
+<dd><p>What to write. Used by the <code>cdf</code> and <code>mzml</code> exporters only.
+For <code>export_format = "cdf"</code>, either <code>"MS1"</code> (written by <code>write_andi_ms</code>) or
+<code>"chrom"</code> (written by <code>write_andi_chrom</code>). For <code>export_format = "mzml"</code>,
+any of <code>"MS1"</code>, <code>"MS2"</code>, <code>"TIC"</code>, <code>"BPC"</code> and/or <code>"DAD"</code>. If it is not
+specified, the streams to write are inferred from the supplied data.</p></dd>
 
 
 <dt id="arg-force">force<a class="anchor" aria-label="anchor" href="#arg-force"></a></dt>
@@ -110,6 +113,7 @@ directory specified by <code>path_out</code>.</p>
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other write functions:
 <code><a href="write_andi_chrom.html">write_andi_chrom()</a></code>,
+<code><a href="write_andi_ms.html">write_andi_ms()</a></code>,
 <code><a href="write_mzml.html">write_mzml()</a></code></p></div>
     </div>
     <div class="section level2">
@@ -117,6 +121,15 @@ directory specified by <code>path_out</code>.</p>
     <p>Ethan Bass</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ladder.txt"</span>, package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"shimadzu_ascii"</span>,</span></span>
+<span class="r-in"><span>                      find_files <span class="op">=</span> <span class="cn">FALSE</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">write_chroms</span><span class="op">(</span><span class="va">chroms</span>, path_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, export_format <span class="op">=</span> <span class="st">"csv"</span>,</span></span>
+<span class="r-in"><span>             show_progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

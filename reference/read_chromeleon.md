@@ -51,3 +51,11 @@ wavelength).
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_chromeleon("path/to/file.txt")
+} # }
+```

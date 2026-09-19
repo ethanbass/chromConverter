@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +49,7 @@
 <span>  <span class="va">path</span>,</span>
 <span>  <span class="va">find_files</span>,</span>
 <span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data.frame"</span>, <span class="st">"data.table"</span>, <span class="st">"tibble"</span><span class="op">)</span>,</span>
-<span>  progress_bar <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  progress_bar <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  cl <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -74,8 +74,11 @@ Otherwise, set to <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-progress-bar">progress_bar<a class="anchor" aria-label="anchor" href="#arg-progress-bar"></a></dt>
-<dd><p>Logical. Whether to show progress bar. Defaults to <code>TRUE</code>
-if <code>pbapply</code> is installed.</p></dd>
+<dd><p>Logical. Whether to show a progress bar. Defaults to
+<code>FALSE</code>, unlike <a href="read_chroms.html">read_chroms</a>, because an ACAML file usually accompanies a
+sequence rather than arriving in bulk: <a href="read_agilent_rslt.html">read_agilent_rslt</a> calls this
+function on the single <code>.acaml</code> file in a <code>.rslt</code> directory, where a
+progress bar over one element is just noise.</p></dd>
 
 
 <dt id="arg-cl">cl<a class="anchor" aria-label="anchor" href="#arg-cl"></a></dt>

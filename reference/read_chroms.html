@@ -19,7 +19,7 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,12 +62,7 @@ internal parser or bindings to an external library, such as
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_chroms</span><span class="op">(</span></span>
 <span>  <span class="va">paths</span>,</span>
-<span>  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"agilent_d"</span>, <span class="st">"agilent_dx"</span>, <span class="st">"asm"</span>, <span class="st">"chemstation"</span>, <span class="st">"chemstation_fid"</span>,</span>
-<span>    <span class="st">"chemstation_ch"</span>, <span class="st">"chemstation_csv"</span>, <span class="st">"chemstation_ms"</span>, <span class="st">"chemstation_uv"</span>,</span>
-<span>    <span class="st">"masshunter_dad"</span>, <span class="st">"chromeleon_uv"</span>, <span class="st">"chromatotec"</span>, <span class="st">"mzml"</span>, <span class="st">"mzxml"</span>, <span class="st">"mdf"</span>,</span>
-<span>    <span class="st">"shimadzu_ascii"</span>, <span class="st">"shimadzu_dad"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_gcd"</span>, <span class="st">"shimadzu_qgd"</span>,</span>
-<span>    <span class="st">"shimadzu_lcd"</span>, <span class="st">"thermoraw"</span>, <span class="st">"varian_sms"</span>, <span class="st">"waters_arw"</span>, <span class="st">"waters_raw"</span>, <span class="st">"msd"</span>, <span class="st">"csd"</span>,</span>
-<span>    <span class="st">"wsd"</span>, <span class="st">"csv"</span>, <span class="st">"other"</span><span class="op">)</span>,</span>
+<span>  format_in <span class="op">=</span> <span class="fu">supported_formats</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">find_files</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  parser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">""</span>, <span class="st">"chromconverter"</span>, <span class="st">"aston"</span>, <span class="st">"entab"</span>, <span class="st">"thermoraw"</span>, <span class="st">"openchrom"</span>, <span class="st">"rainbow"</span><span class="op">)</span>,</span>
@@ -82,6 +77,7 @@ internal parser or bindings to an external library, such as
 <span>  cl <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"verbose"</span><span class="op">)</span>,</span>
 <span>  sample_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"basename"</span>, <span class="st">"sample_name"</span><span class="op">)</span>,</span>
+<span>  sort_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"acquisition_time"</span>, <span class="st">"file_time"</span><span class="op">)</span>,</span>
 <span>  dat <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -96,12 +92,13 @@ internal parser or bindings to an external library, such as
 
 
 <dt id="arg-format-in">format_in<a class="anchor" aria-label="anchor" href="#arg-format-in"></a></dt>
-<dd><p>Format of files to be imported/converted. Current options
-include: <code>agilent_d</code>, <code>agilent_dx</code>, <code>chemstation</code>, <code>chemstation_uv</code>,
-<code>chemstation_ch</code>, <code>chemstation_csv</code>, <code>chemstation_ms</code>, <code>masshunter</code>,
-<code>masshunter_dad</code>, <code>chromeleon_uv</code>, <code>shimadzu_ascii</code>, <code>shimadzu_fid</code>,
-<code>shimadzu_dad</code>, <code>thermoraw</code>, <code>waters_arw</code>, <code>waters_raw</code>, <code>mzml</code>, <code>mzxml</code>,
-<code>cdf</code>, <code>mdf</code>, <code>msd</code>, <code>csd</code>, <code>wsd</code>, or <code>other</code>.</p></dd>
+<dd><p>Format of the files to be imported or converted. One of:
+<code>agilent_d</code>, <code>agilent_dx</code> (or <code>openlab_dx</code>), <code>agilent_rslt</code> (or <code>rslt</code>, <code>sirslt</code>), <code>asm</code> (or <code>allotrope</code>), <code>cdf</code> (or <code>andi</code>), <code>chemstation_ch</code> (or <code>chemstation_fid</code>), <code>chemstation_csv</code>, <code>chemstation_ms</code>, <code>chemstation_uv</code>, <code>chromatotec</code>, <code>chromeleon_uv</code>, <code>csd</code>, <code>csv</code>, <code>masshunter_dad</code>, <code>mdf</code>, <code>msd</code>, <code>mzml</code>, <code>mzxml</code>, <code>other</code>, <code>shimadzu_ascii</code>, <code>shimadzu_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_gcd</code>, <code>shimadzu_lcd</code>, <code>shimadzu_qgd</code>, <code>thermoraw</code>, <code>varian_sms</code>, <code>waters_arw</code>, <code>waters_raw</code>, <code>wsd</code>.
+A name in parentheses is an alias, which behaves exactly like the format
+it follows. Version-specific names for the 'Agilent ChemStation' formats
+(<code>chemstation_130</code>, for instance) are accepted as well, but are normally
+supplied by chromConverter's own file-type detection rather than being
+provided by the user.</p></dd>
 
 
 <dt id="arg-find-files">find_files<a class="anchor" aria-label="anchor" href="#arg-find-files"></a></dt>
@@ -177,13 +174,22 @@ use the filename (default) or <code>sample_name</code> to use the sample
 name encoded in the file metadata.</p></dd>
 
 
+<dt id="arg-sort-by">sort_by<a class="anchor" aria-label="anchor" href="#arg-sort-by"></a></dt>
+<dd><p>How to sort the chromatograms. Either <code>none</code> (default,
+preserves current arbitrary/file-order behavior), <code>acquisition_time</code> (sorts
+by the <code>run_datetime</code> attribute attached to each chromatogram when
+<code>read_metadata = TRUE</code>, oldest first), or <code>file_time</code> (sorts the
+input files by file modification time before reading, oldest first).</p></dd>
+
+
 <dt id="arg-dat">dat<a class="anchor" aria-label="anchor" href="#arg-dat"></a></dt>
-<dd><p>Existing list of chromatograms to append results. Defaults to
-<code>NULL</code>.</p></dd>
+<dd><p>Deprecated. Existing list of chromatograms to append results
+to. Use <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> on the returned <code>chrom_list</code> objects instead. Defaults to <code>NULL</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments to parser.</p></dd>
+<dd><p>Additional arguments to the parser. Arguments that the selected
+parser does not accept are ignored with a warning.</p></dd>
 
 </dl></div>
     <div class="section level2">

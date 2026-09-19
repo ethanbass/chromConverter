@@ -1,10 +1,14 @@
 # Configure python environment
 
-Configures python virtual environment or conda environment for parsers
-that have python dependencies, according to the value of `what`. While
-this should not be necessary in most cases starting with reticulate
-`v1.41.0`, this function can be used to create a dedicated
-chromConverter environment.
+Creates a dedicated python virtual environment (or conda environment)
+with the packages required by the parsers that have python dependencies.
+This should not be necessary in most cases, since (starting with
+reticulate `v1.41.0`) chromConverter declares its python requirements
+with
+[reticulate::py_require](https://rstudio.github.io/reticulate/reference/py_require.html)
+and they are provisioned automatically the first time a python parser is
+called. It can still be useful if you need a persistent environment,
+e.g. to work offline or to avoid re-resolving packages.
 
 ## Usage
 
@@ -12,7 +16,8 @@ chromConverter environment.
 configure_python_environment(
   what = c("venv", "conda"),
   envname = "chromConverter",
-  python = reticulate::virtualenv_starter(),
+  parser = c("all", "aston", "rainbow", "olefile"),
+  python = NULL,
   ...
 )
 ```
@@ -21,12 +26,17 @@ configure_python_environment(
 
 - what:
 
-  What kind of virtual environment to create. A python virtual
-  environment (`"venv"`) or a conda environment (`"conda"`).
+  What kind of environment to create. A python virtual environment
+  (`"venv"`) or a conda environment (`"conda"`).
 
 - envname:
 
   The name of, or path to, a Python virtual environment.
+
+- parser:
+
+  Which parser to install requirements for. Either `"all"` (default),
+  `"aston"`, `"rainbow"` or `"olefile"`.
 
 - python:
 
@@ -44,13 +54,13 @@ configure_python_environment(
 
 ## Value
 
-There is no return value.
+Returns the name of the environment (invisibly).
 
 ## Side effects
 
 Creates and configures either a python virtual environment or conda
-environment (according to the value of `what`) with all the packages
-required for running chromConverter.
+environment (according to the value of `what`) with the packages
+required for running the specified chromConverter parsers.
 
 ## Author
 

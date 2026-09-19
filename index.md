@@ -77,7 +77,9 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - ‘Agilent ChemStation’ & ‘OpenLab’ `.uv` files (versions 131, 31)
 - ‘Agilent ChemStation’ & ‘OpenLab’ `.ch` files (versions 30, 130, 8,
   81, 179, 181)
-- ‘Agilent OpenLab’ `.dx`, `acaml`, and `amx` files.
+- ‘Agilent ChemStation’ `.ms` and `.csv` files
+- ‘Agilent OpenLab’ `.dx`, `.acaml`, `.amx`, and `.D` directories
+- ‘Agilent OpenLab’ `.rslt` sequence directories
 - Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats
   (`.cdf`)
@@ -85,8 +87,9 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - ‘Shimadzu LabSolutions’ ascii (`.txt`)
 - ‘Shimadzu GCsolution’ data files (`.gcd`)
 - ‘Shimadzu GCMSsolution’ data files (`.qgd`)
-- ‘Shimadzu LabSolutions’`.lcd` (PDA, chromatogram, and peak table
-  streams)
+- ‘Shimadzu LabSolutions’`.lcd` (PDA, QTOF, TLM, TIC, chromatogram, and
+  peak table streams)
+- ‘Lumex’ `.mdf` files
 - ‘Thermo Scientific Chromeleon’ ascii (`.txt`)
 - ‘Varian Workstation’ (`.SMS`)
 - ‘Waters Empower’ ascii (`.arw`)
@@ -282,8 +285,7 @@ the cache.
 
 You can cite chromConverter as follows:
 
-Bass, E. (2026). chromConverter: Chromatographic File Converter.
-<http://doi.org/10.5281/zenodo.6792521>.
+`Bass, E. (2026). chromConverter: Chromatographic File Converter. http://doi.org/10.5281/zenodo.6792521`.
 
 If you use external libraries to convert your files, it is suggested to
 also cite these libraries in published work.

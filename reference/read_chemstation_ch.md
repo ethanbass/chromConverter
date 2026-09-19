@@ -80,6 +80,7 @@ Toolbox](https://github.com/chemplexity/chromatography) (© James Dillon
 Other 'Agilent' parsers:
 [`read_agilent_d()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_d.md),
 [`read_agilent_dx()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_dx.md),
+[`read_agilent_rslt()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_rslt.md),
 [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md),
 [`read_chemstation_ms()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.md),
 [`read_chemstation_reports()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_reports.md),

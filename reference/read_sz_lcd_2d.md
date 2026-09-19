@@ -39,7 +39,9 @@ read_sz_lcd_2d(
 
 - scale:
 
-  Whether to scale the data by the value factor.
+  Whether to scale the data by the calibration factor and the value
+  factor, converting the encoded integers into the unit reported by 'Lab
+  Solutions' (e.g. `mV`).
 
 ## Value
 
@@ -92,8 +94,17 @@ Other 'Shimadzu' parsers:
 [`read_shimadzu_gcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_gcd.md),
 [`read_shimadzu_lcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md),
 [`read_shimadzu_qgd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.md),
-[`read_sz_lcd_3d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.md)
+[`read_sz_lcd_3d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.md),
+[`read_sz_tables()`](https://ethanbass.github.io/chromConverter/reference/read_sz_tables.md)
 
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+read_sz_lcd_2d("path/to/file.lcd")
+} # }
+```

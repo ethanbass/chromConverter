@@ -77,7 +77,9 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - ‘Agilent ChemStation’ & ‘OpenLab’ `.uv` files (versions 131, 31)
 - ‘Agilent ChemStation’ & ‘OpenLab’ `.ch` files (versions 30, 130, 8,
   81, 179, 181)
-- ‘Agilent OpenLab’ `.dx`, `acaml`, and `amx` files.
+- ‘Agilent ChemStation’ `.ms` and `.csv` files
+- ‘Agilent OpenLab’ `.dx`, `.acaml`, `.amx`, and `.D` directories
+- ‘Agilent OpenLab’ `.rslt` sequence directories
 - Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats
   (`.cdf`)
@@ -85,8 +87,9 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - ‘Shimadzu LabSolutions’ ascii (`.txt`)
 - ‘Shimadzu GCsolution’ data files (`.gcd`)
 - ‘Shimadzu GCMSsolution’ data files (`.qgd`)
-- ‘Shimadzu LabSolutions’`.lcd` (PDA, chromatogram, and peak table
-  streams)
+- ‘Shimadzu LabSolutions’`.lcd` (PDA, QTOF, TLM, TIC, chromatogram, and
+  peak table streams)
+- ‘Lumex’ `.mdf` files
 - ‘Thermo Scientific Chromeleon’ ascii (`.txt`)
 - ‘Varian Workstation’ (`.SMS`)
 - ‘Waters Empower’ ascii (`.arw`)
@@ -282,8 +285,7 @@ the cache.
 
 You can cite chromConverter as follows:
 
-Bass, E. (2026). chromConverter: Chromatographic File Converter.
-<http://doi.org/10.5281/zenodo.6792521>.
+`Bass, E. (2026). chromConverter: Chromatographic File Converter. http://doi.org/10.5281/zenodo.6792521`.
 
 If you use external libraries to convert your files, it is suggested to
 also cite these libraries in published work.
@@ -309,6 +311,8 @@ also cite these libraries in published work.
   : Read files from 'Agilent ChemStation' .D directories
 - [`read_agilent_dx()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_dx.md)
   : Read 'Agilent' DX files
+- [`read_agilent_rslt()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_rslt.md)
+  : Read files from 'Agilent' .rslt directories
 - [`read_chemstation_ch()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md)
   : Read 'Agilent ChemStation' CH files
 - [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md)
@@ -332,10 +336,6 @@ also cite these libraries in published work.
   : Read 'Shimadzu' LCD
 - [`read_shimadzu_qgd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.md)
   : Read 'Shimadzu' QGD files
-- [`read_sz_lcd_2d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.md)
-  : Read 'Shimadzu' LCD 2D data
-- [`read_sz_lcd_3d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.md)
-  : Read 'Shimadzu' LCD 3D data
 
 ## Waters parsers
 
@@ -385,6 +385,8 @@ also cite these libraries in published work.
 
 - [`write_andi_chrom()`](https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.md)
   : Write ANDI chrom CDF file from chromatogram
+- [`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md)
+  : Write ANDI MS CDF file from chromatogram
 - [`write_mzml()`](https://ethanbass.github.io/chromConverter/reference/write_mzml.md)
   : Write mzML
 
@@ -392,6 +394,8 @@ also cite these libraries in published work.
 
 - [`print(`*`<chrom_list>`*`)`](https://ethanbass.github.io/chromConverter/reference/print.chrom_list.md)
   : Print a chrom_list object
+- [`summary(`*`<chrom_list>`*`)`](https://ethanbass.github.io/chromConverter/reference/summary.chrom_list.md)
+  : Summarize a chrom_list object
 
 # Articles
 

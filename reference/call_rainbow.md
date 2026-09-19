@@ -22,7 +22,8 @@ call_rainbow(
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
   precision = 1,
-  sparse = TRUE
+  sparse = TRUE,
+  bin_width = NULL
 )
 ```
 
@@ -70,13 +71,20 @@ call_rainbow(
 
 - precision:
 
-  Number of decimals to round mz values. Defaults to 1.
+  Number of decimals to round mz values. Defaults to `1`. Ignored if
+  `bin_width` is supplied.
 
 - sparse:
 
   Logical. Whether to return MS data in sparse format (excluding zeros).
   Defaults to `TRUE`. Applies only when data are requested in `long`
   format.
+
+- bin_width:
+
+  Width of the m/z grid, in daltons. An alternative to `precision` for
+  grids that are not a power of ten (e.g. `0.5`). Defaults to `NULL`, in
+  which case the grid is derived from `precision` as `10^-precision`.
 
 ## Value
 
@@ -95,3 +103,11 @@ Other external parsers:
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+call_rainbow("path/to/file.D", format_in = "agilent_d")
+} # }
+```

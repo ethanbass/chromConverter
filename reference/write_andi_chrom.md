@@ -53,9 +53,19 @@ the value of `sample_name`. If no `sample_name` is provided, the
 ## See also
 
 Other write functions:
+[`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md),
 [`write_chroms()`](https://ethanbass.github.io/chromConverter/reference/write_chroms.md),
 [`write_mzml()`](https://ethanbass.github.io/chromConverter/reference/write_mzml.md)
 
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
+chrom <- read_shimadzu(path, what = "chroms")
+# the file is named for the `sample_name` attribute unless one is supplied
+write_andi_chrom(chrom, path_out = tempdir(), force = TRUE)
+```

@@ -9,7 +9,7 @@ chromatograms."><meta property="og:image" content="https://ethanbass.github.io/c
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,13 +47,11 @@ chromatograms.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">extract_metadata</span><span class="op">(</span></span>
 <span>  <span class="va">chrom_list</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"instrument"</span>, <span class="st">"detector"</span>, <span class="st">"detector_id"</span>, <span class="st">"software"</span>, <span class="st">"method"</span>, <span class="st">"batch"</span>,</span>
-<span>    <span class="st">"operator"</span>, <span class="st">"run_datetime"</span>, <span class="st">"sample_position"</span>, <span class="st">"sample_name"</span>, <span class="st">"sample_id"</span>,</span>
-<span>    <span class="st">"injection_volume"</span>, <span class="st">"time_range"</span>, <span class="st">"time_interval"</span>, <span class="st">"time_unit"</span>, <span class="st">"detector_range"</span>,</span>
-<span>    <span class="st">"detector_y_unit"</span>, <span class="st">"detector_x_unit"</span>, <span class="st">"intensity_multiplier"</span>, <span class="st">"scaled"</span>,</span>
-<span>    <span class="st">"source_file"</span>, <span class="st">"source_file_format"</span>, <span class="st">"source_sha1"</span>, <span class="st">"data_format"</span>, <span class="st">"parser"</span>,</span>
-<span>    <span class="st">"format_out"</span><span class="op">)</span>,</span>
-<span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data.frame"</span>, <span class="st">"data.table"</span>, <span class="st">"tibble"</span><span class="op">)</span></span>
+<span>  what <span class="op">=</span> <span class="fu">chrom_metadata_fields</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  detector <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data.frame"</span>, <span class="st">"data.table"</span>, <span class="st">"tibble"</span><span class="op">)</span>,</span>
+<span>  collapse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  expand <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -67,21 +65,66 @@ by <code>read_chroms</code> with <code>read_metadata = TRUE</code>).</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>A character vector specifying the metadata elements to extract.</p></dd>
+<dd><p>A character vector specifying the metadata elements to
+extract. Defaults to every field chromConverter attaches; no format
+records all of them, so the elements a format does not provide are
+simply absent from the result. Superseded names (<code>injection_volume</code>,
+<code>software_name</code>, <code>time_start</code>) are accepted and mapped to the names
+that replaced them.</p></dd>
+
+
+<dt id="arg-detector">detector<a class="anchor" aria-label="anchor" href="#arg-detector"></a></dt>
+<dd><p>A character vector of detectors to include (e.g. <code>"UV"</code> or
+<code>c("UV", "MS")</code>), matched case-insensitively against each chromatogram's
+<code>detector</code> attribute. Defaults to <code>NULL</code>, in which case all chromatograms
+are included. Useful for lists containing more than one detector per
+sample.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
 <dd><p>Format of object. Either <code>data.frame</code>, <code>data.table</code> or
 <code>tibble</code>.</p></dd>
 
+
+<dt id="arg-collapse">collapse<a class="anchor" aria-label="anchor" href="#arg-collapse"></a></dt>
+<dd><p>Logical. Whether to collapse a field holding more than one
+value (<code>time_range</code>, or the <code>product_mz</code> of an MRM event monitoring several
+transitions) into a single comma-separated string. Defaults to <code>FALSE</code>, in
+which case such a field is spread across numbered columns
+(<code>time_range1</code>, <code>time_range2</code>).</p></dd>
+
+
+<dt id="arg-expand">expand<a class="anchor" aria-label="anchor" href="#arg-expand"></a></dt>
+<dd><p>Whether to include the nested metadata fields, whose value is
+itself a list or table rather than a single value per chromatogram: the
+<code>ms_params</code> instrument settings, the <code>acaml_metadata</code> injection record that
+<code>read_agilent_rslt</code> reads from the <code>.acaml</code> file, or the whole vendor list
+that <code>metadata_format = "raw"</code> passes through. Either <code>TRUE</code>, to include
+every nested field the chromatograms carry, a character vector naming the
+ones to include, or <code>FALSE</code> (the default) to include none. Each element
+becomes a column of its own, named for itself (<code>SampleName</code>) unless that
+name is already taken, in which case it carries the field it came from
+(<code>ms_params.polarity</code>, since <code>polarity</code> is a metadata field in its own
+right).</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.frame</code>, <code>tibble</code>, or <code>data.table</code> (according to the value of
 <code>format_out</code>), with samples as rows and the specified metadata elements as
-columns.</p>
+columns, or <code>NA</code> if none of the specified elements could be found.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ladder.txt"</span>, package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"shimadzu_ascii"</span>,</span></span>
+<span class="r-in"><span>                      find_files <span class="op">=</span> <span class="cn">FALSE</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">extract_metadata</span><span class="op">(</span><span class="va">chroms</span>, what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample_name"</span>, <span class="st">"instrument"</span>, <span class="st">"run_datetime"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     name sample_name instrument        run_datetime</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 ladder    FS19_214    GC-2014 2019-07-18 19:45:56</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

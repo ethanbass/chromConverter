@@ -114,3 +114,11 @@ Other external parsers:
 ## Author
 
 Ethan Bass
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+call_openchrom("path/to/file.RAW", format_in = "msd", export_format = "mzml")
+} # }
+```

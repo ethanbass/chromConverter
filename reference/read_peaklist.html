@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,11 +48,12 @@
 <span>  format_in <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chemstation"</span>, <span class="st">"shimadzu_fid"</span>, <span class="st">"shimadzu_dad"</span>, <span class="st">"shimadzu_lcd"</span>,</span>
 <span>    <span class="st">"shimadzu_gcd"</span>, <span class="st">"chromatotec"</span><span class="op">)</span>,</span>
 <span>  pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromatographr"</span>, <span class="st">"original"</span><span class="op">)</span>,</span>
+<span>  peaktable_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromatographr"</span>, <span class="st">"original"</span><span class="op">)</span>,</span>
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">progress_bar</span>,</span>
-<span>  cl <span class="op">=</span> <span class="fl">1</span></span>
+<span>  cl <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  data_format <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -81,8 +82,9 @@ include: <code>chemstation</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad
 which case the file extension will be deduced from <code>format_in</code>.</p></dd>
 
 
-<dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
-<dd><p>Either <code>chromatographr</code> or <code>original</code>.</p></dd>
+<dt id="arg-peaktable-format">peaktable_format<a class="anchor" aria-label="anchor" href="#arg-peaktable-format"></a></dt>
+<dd><p>Whether to return peak tables in <code>chromatographr</code>
+or <code>original</code> format.</p></dd>
 
 
 <dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
@@ -103,6 +105,10 @@ if <code>pbapply</code> is installed.</p></dd>
 <dd><p>Argument to <a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply</a> specifying the number
 of clusters to use or a cluster object created by
 <a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a>. Defaults to <code>1</code>.</p></dd>
+
+
+<dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
+<dd><p>Deprecated. Use <code>peaktable_format</code> instead.</p></dd>
 
 </dl></div>
     <div class="section level2">
