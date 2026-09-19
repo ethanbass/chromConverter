@@ -40,16 +40,20 @@ jobs:
           use-public-rspm: true
 
       - name: Add drat repo
-        # `entab` and `chromConverterExtraTests` are Suggests that live in the
-        # drat repo, and pak does not read `Additional_repositories` from
-        # DESCRIPTION, so it has to be on the search path before resolution
+        # both `entab` and `chromConverterExtraTests` are Suggests that live
+        # in the drat repo rather than on CRAN, and pak does not read
+        # `Additional_repositories` from DESCRIPTION. The fixture package is
+        # then pinned to GitHub below, because drat carries 0.4.9 and the
+        # 'Shimadzu' mass spectrometry tests need fixtures added in 0.4.10.
         run: |
           writeLines('options(repos = c(entab = "https://ethanbass.github.io/drat/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: |
+            any::rcmdcheck
+            github::ethanbass/chromConverterExtraTests
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
