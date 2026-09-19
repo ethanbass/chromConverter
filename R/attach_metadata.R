@@ -298,14 +298,33 @@ read_waters_metadata <- function(file){
 #' sample.
 #' @param format_out Format of object. Either `data.frame`, `data.table` or
 #' `tibble`.
+#' @param collapse Logical. Whether to collapse a field holding more than one
+#' value (`time_range`, or the `product_mz` of an MRM event monitoring several
+#' transitions) into a single comma-separated string. Defaults to `FALSE`, in
+#' which case such a field is spread across numbered columns
+#' (`time_range1`, `time_range2`).
+#' @param expand Whether to include the nested metadata fields, whose value is
+#' itself a list or table rather than a single value per chromatogram: the
+#' `ms_params` instrument settings, the `acaml_metadata` injection record that
+#' `read_agilent_rslt` reads from the `.acaml` file, or the whole vendor list
+#' that `metadata_format = "raw"` passes through. Either `TRUE`, to include
+#' every nested field the chromatograms carry, a character vector naming the
+#' ones to include, or `FALSE` (the default) to include none. Each element
+#' becomes a column of its own, named for itself (`SampleName`) unless that
+#' name is already taken, in which case it carries the field it came from
+#' (`ms_params.polarity`, since `polarity` is a metadata field in its own
+#' right).
 #' @return A `data.frame`, `tibble`, or `data.table` (according to the value of
 #' `format_out`), with samples as rows and the specified metadata elements as
-#' columns.
+#' columns, or `NA` if none of the specified elements could be found.
 #' @export
 extract_metadata <- function(chrom_list,
                              what = chrom_metadata_fields(),
                              detector = NULL,
-                             format_out = c("data.frame", "data.table", "tibble")
+                             format_out = c("data.frame", "data.table",
+                                            "tibble"),
+                             collapse = FALSE,
+                             expand = FALSE
 ){
   defaulted <- identical(what, chrom_metadata_fields())
   what <- resolve_metadata_fields(what)
@@ -318,22 +337,64 @@ extract_metadata <- function(chrom_list,
     chrom_list <- filter_by_detector(chrom_list, detector)
   }
   format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
+  # named explicitly, so a field that is nowhere to be found is worth a warning
+  requested <- if (defaulted) character() else what
+  all_nested <- unique(unlist(lapply(chrom_list, nested_metadata_attrs)))
+  if (isTRUE(expand)){
+    expand <- all_nested
+  } else if (isFALSE(expand) || is.null(expand)){
+    expand <- character()
+  } else if (is.character(expand)){
+    expand <- resolve_metadata_fields(expand)
+    requested <- c(requested, expand)
+  } else {
+    stop("`expand` must be TRUE, FALSE, or a character vector of field names.",
+         call. = FALSE)
+  }
+  what <- union(what, expand)
+  # a nested field reached through `what` is expanded and named just as one
+  # reached through `expand` is, so the two ways of asking for it agree. Which
+  # is why this is derived from `what` rather than from `expand`, whose members
+  # need not be nested at all.
+  nested <- intersect(what, all_nested)
+  taken <- expand_taken_names(chrom_list, nested, all_nested)
   metadata <- purrr::imap_dfr(chrom_list, function(chrom, name){
-    c(name = name, unlist(sapply(what, function(w){
+    c(name = name, unlist(lapply(what, function(w){
       val <- attr(chrom, which = w, exact = TRUE)
-      if (w == "run_datetime" && length(val) > 1) val <- val[1]
-      val
-    }, simplify = FALSE)))
+      if (w == "run_datetime"){
+        if (length(val) > 1) val <- val[1]
+        # `flatten_metadata_field` would format it, but the column is converted
+        # back to `POSIXct` below, which keeps the full precision
+        if (inherits(val, "POSIXt")) val <- as.numeric(val)
+      }
+      if (!w %in% nested) return(flatten_metadata_field(val, w, collapse))
+      out <- flatten_metadata_field(val, "", collapse)
+      # a nested field is nested across the whole list, but an individual
+      # chromatogram need not carry it: a UV trace has no `ms_params`
+      if (length(out) == 0) return(NULL)
+      hit <- names(out) %in% taken[[w]]
+      names(out)[hit] <- paste(w, names(out)[hit], sep = ".")
+      out
+    })))
   })
-  missing <- what[which(!(what %in% colnames(metadata)))]
+  # a field is present if any chromatogram carries it, which is not the same as
+  # its name appearing in `metadata`: a multi-valued field is spread over
+  # `product_mz1`, `product_mz2`, ... and would otherwise be reported missing
+  missing <- what[!vapply(what, function(w){
+    any(vapply(chrom_list, function(chrom)
+      !is.null(attr(chrom, which = w, exact = TRUE)), logical(1)))
+  }, logical(1))]
   if (nrow(metadata) == 0){
     stop("The specified metadata elements were not found")
   }
-  if (!defaulted && length(missing) > 0){
+  missing <- intersect(missing, requested)
+  if (length(missing) > 0){
     warning(sprintf("The following metadata elements were not found: %s.",
                     paste(sQuote(missing),collapse = ", ")),immediate. = TRUE)
   }
-  if (use_names && ncol(metadata) == 1) {
+  # only the `name` column, so nothing was found -- answered the same way
+  # whether the input was a list or a single chromatogram
+  if (ncol(metadata) == 1) {
     return(NA)
   }
   if (any(colnames(metadata) == "run_datetime")){
@@ -349,6 +410,82 @@ extract_metadata <- function(chrom_list,
     data.table::setDT(metadata)
   }
   metadata
+}
+
+#' Reduce a metadata field to one named value per column
+#'
+#' A field may hold a single value (`sample_name`), several (`time_range`, or
+#' the `product_mz` of an MRM event monitoring several transitions), or a
+#' nested list or table (`ms_params`, `acaml_metadata`). Walk it to whatever
+#' depth is needed and name each value for the path taken to reach it, so that
+#' `extract_metadata` can `unlist` the result into a row.
+#'
+#' Several values under one name are left as they are for `unlist` to spread
+#' over numbered columns, unless `collapse` is `TRUE`. Note this happens per
+#' name: collapsing `ms_params` pastes together the values of each of its
+#' elements, not the elements themselves.
+#'
+#' A timestamp is formatted here, since `unlist` would otherwise drop its class
+#' and leave a bare number in the column. `extract_metadata` keeps `run_datetime`
+#' out of this, converting the whole column back to `POSIXct` once it is built.
+#'
+#' @param name What to call the field. An empty string names the values of a
+#' nested field for their own elements alone (`SampleName`), rather than for
+#' the field they came from (`acaml_metadata.SampleName`); `extract_metadata`
+#' decides between the two with its `prefix` argument.
+#' @return A named list of atomic values, empty if the field holds nothing.
+#' @noRd
+flatten_metadata_field <- function(val, name, collapse = FALSE){
+  if (length(val) == 0) return(NULL)
+  if (inherits(val, "POSIXt")){
+    val <- format(val, "%Y-%m-%d %H:%M:%S", tz = "UTC")
+  } else if (inherits(val, "Date")) val <- format(val)
+  if (!is.list(val)){
+    if (collapse && length(val) > 1) val <- paste(val, collapse = ", ")
+    return(stats::setNames(list(val), name))
+  }
+  nms <- names(val)
+  if (is.null(nms)) nms <- rep("", length(val))
+  nms[!nzchar(nms)] <- seq_along(val)[!nzchar(nms)]
+  if (nzchar(name)) nms <- paste(name, nms, sep = ".")
+  unlist(lapply(seq_along(val), function(i){
+    flatten_metadata_field(val[[i]], nms[i], collapse)
+  }), recursive = FALSE)
+}
+
+#' Which elements of an expanded field cannot be named for themselves?
+#'
+#' An expanded field's elements are better read as themselves -- `SampleName`
+#' says as much as `acaml_metadata.SampleName` and is easier to type -- but
+#' only where the shorter name is unambiguous. An element may share a name with
+#' a metadata field of chromConverter's own (`ms_params` has a `polarity`, and
+#' the vendor list that `metadata_format = "raw"` passes through shares most of
+#' its names), with an element of another nested field, or with the `name`
+#' column naming the chromatogram itself. Those elements are prefixed and the
+#' rest are not, so the prefix marks exactly the ambiguous columns.
+#'
+#' The comparison is against the whole vocabulary and every nested field the
+#' chromatograms carry, rather than the fields `what` happens to ask for, so
+#' that the columns of a field are named the same way however it was requested.
+#' `extract_metadata` has scanned for those already and passes them in as
+#' `all_nested`.
+#'
+#' @return A list of character vectors, named by `fields`.
+#' @noRd
+expand_taken_names <- function(chrom_list, fields, all_nested){
+  element_names <- function(field){
+    unique(unlist(lapply(chrom_list, function(chrom){
+      # `collapse` cannot change these names, only how many values sit under
+      # each of them, so it does not matter which way it is set here
+      names(flatten_metadata_field(attr(chrom, field, exact = TRUE), ""))
+    })))
+  }
+  elements <- lapply(stats::setNames(nm = all_nested), element_names)
+  vocabulary <- c("name", chrom_metadata_fields(), .metadata_extra_fields)
+  lapply(stats::setNames(nm = fields), function(field){
+    intersect(elements[[field]], c(vocabulary, unlist(elements[-match(field,
+                                                              all_nested)])))
+  })
 }
 
 #' Enumerate the individual chromatograms in a (possibly nested) list
@@ -384,9 +521,15 @@ chrom_list_leaves <- function(x, path = character()){
   }), recursive = FALSE)
   for (nm in names(list_metadata_attrs(x))){
     val <- attr(x, nm, exact = TRUE)
-    if (is.null(usable_attr(val))) next
+    # a list-valued field belongs to the loop below, which checks whether a
+    # leaf has one of its own before handing down the container's
+    if (is.list(val) || is.null(usable_attr(val))) next
     vals <- unique(Filter(Negate(is.null), lapply(leaves, function(l){
-      usable_attr(attr(l$chrom, nm, exact = TRUE))
+      lv <- attr(l$chrom, nm, exact = TRUE)
+      # `usable_attr` says whether the leaf has a value of its own, but whether
+      # the leaves agree is decided on the whole value: a `time_range` of
+      # `c(0, 10)` and one of `c(0, 20)` are not the same range
+      if (is.null(usable_attr(lv))) NULL else lv
     })))
     if (length(vals) > 1) next
     for (i in seq_along(leaves)){
@@ -395,7 +538,35 @@ chrom_list_leaves <- function(x, path = character()){
       }
     }
   }
+  for (nm in nested_metadata_attrs(x)){
+    # `usable_attr` keeps only single atomic values, so the loop above cannot
+    # see a nested field like the `acaml_metadata` table `read_agilent_rslt`
+    # attaches to the list holding the traces. One row describes the whole
+    # injection, so carry it down unless a trace has a nested field of its own.
+    if (any(vapply(leaves, function(l)
+      !is.null(attr(l$chrom, nm, exact = TRUE)), logical(1)))) next
+    val <- attr(x, nm, exact = TRUE)
+    for (i in seq_along(leaves)){
+      if (is.null(leaves[[i]]$inherited[[nm]])){
+        leaves[[i]]$inherited[[nm]] <- val
+      }
+    }
+  }
   leaves
+}
+
+#' Nested metadata attributes of a chromatogram or a list of them
+#'
+#' A field whose value is itself a list or table, rather than a single value
+#' per chromatogram: the `ms_params` instrument settings, the `acaml_metadata`
+#' injection record, or the whole vendor list that `metadata_format = "raw"`
+#' passes through. [extract_metadata] reaches these through its `expand`
+#' argument, which spreads each of their elements over a column of its own.
+#' @noRd
+nested_metadata_attrs <- function(x){
+  a <- attributes(x)
+  a <- a[!(names(a) %in% c(bookkeeping_attrs(), "comment"))]
+  names(a)[vapply(a, function(v) is.list(v) && length(v) > 0, logical(1))]
 }
 
 #' Attributes of a list of chromatograms that describe the data

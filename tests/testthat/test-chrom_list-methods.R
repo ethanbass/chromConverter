@@ -157,6 +157,162 @@ test_that("extract_metadata falls back on sample-level attributes", {
     extract_metadata(x, what = "detector", detector = "MS"))), 1)
 })
 
+test_that("extract_metadata expands nested metadata fields", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  # `polarity` is a field of chromConverter's own, so `ms_params` cannot be
+  # reported under the names of its elements alone
+  x <- structure(list(
+    a = mk(sample_name = "a", time_range = c(0, 10),
+           ms_params = list(polarity = "+",
+                            segment_start_time = c(1, 2, 3))),
+    b = mk(sample_name = "b",
+           ms_params = list(polarity = "-",
+                            segment_start_time = c(4, 5, 6)))),
+    class = "chrom_list")
+
+  # a nested field is left out unless asked for
+  meta <- extract_metadata(x, what = "sample_name")
+  expect_named(meta, c("name", "sample_name"))
+
+  # `TRUE` finds it without naming it; an atomic field is not a nested one
+  meta <- extract_metadata(x, what = c("sample_name", "time_range"),
+                           expand = TRUE)
+  expect_named(meta, c("name", "sample_name", "time_range1", "time_range2",
+                       "ms_params.polarity",
+                       "segment_start_time1", "segment_start_time2",
+                       "segment_start_time3"))
+  expect_equal(meta$ms_params.polarity, c("+", "-"))
+  expect_equal(meta$segment_start_time1, c("1", "4"))
+
+  # naming it gives the same columns, alongside the default fields
+  named <- extract_metadata(x, what = c("sample_name", "time_range"),
+                            expand = "ms_params")
+  expect_equal(named, meta)
+  # and so does reaching it through `what`, so the two ways of asking agree
+  expect_equal(extract_metadata(x, what = c("sample_name", "time_range",
+                                            "ms_params")), meta)
+
+  # `collapse` applies to each element of a nested field, not to the whole
+  meta <- extract_metadata(x, what = "sample_name", expand = "ms_params",
+                           collapse = TRUE)
+  expect_named(meta, c("name", "sample_name", "ms_params.polarity",
+                       "segment_start_time"))
+  expect_equal(meta$segment_start_time, c("1, 2, 3", "4, 5, 6"))
+
+  expect_warning(extract_metadata(x, what = "sample_name", expand = "nope"),
+                 "not found")
+  expect_error(extract_metadata(x, expand = 1), "must be TRUE")
+})
+
+test_that("a nested field need not be carried by every chromatogram", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  x <- structure(list(uv = mk(sample_name = "uv"),
+                      ms = mk(sample_name = "ms",
+                              ms_params = list(polarity = "+")),
+                      # an empty nested field is as good as none
+                      fid = mk(sample_name = "fid", ms_params = list())),
+                 class = "chrom_list")
+
+  meta <- extract_metadata(x, what = "sample_name", expand = TRUE)
+  expect_named(meta, c("name", "sample_name", "ms_params.polarity"))
+  expect_equal(meta$ms_params.polarity, c(NA, "+", NA))
+})
+
+test_that("a sample-level attribute is not inherited over a differing trace", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  # the traces disagree about the range, which the sample's value would hide:
+  # agreement is judged on the whole value, not on its first element
+  sample <- structure(list(a = mk(time_range = c(0, 10)),
+                           b = mk(time_range = c(0, 20))),
+                      time_range = c(0, 99))
+  meta <- suppressWarnings(extract_metadata(
+    structure(list(s1 = sample), class = "chrom_list"), "time_range"))
+  expect_equal(meta$time_range2, c("10", "20"))
+
+  # nor is a nested field inherited over a trace that has one of its own,
+  # however far into it the traces differ
+  sample <- structure(list(a = mk(ms_params = list(polarity = "+",
+                                                   event = "a")),
+                           b = mk(ms_params = list(polarity = "+",
+                                                   event = "b"))),
+                      ms_params = list(polarity = "+", event = "sample"))
+  meta <- suppressWarnings(extract_metadata(
+    structure(list(s1 = sample), class = "chrom_list"), "ms_params"))
+  expect_equal(meta$event, c("a", "b"))
+
+  # a trace keeps its own nested field even where the traces agree, unlike a
+  # scalar, where the sample's value is taken as the better description
+  sample <- structure(list(a = mk(ms_params = list(event = "leaf")),
+                           b = mk(ms_params = list(event = "leaf"))),
+                      ms_params = list(event = "sample"))
+  meta <- suppressWarnings(extract_metadata(
+    structure(list(s1 = sample), class = "chrom_list"), "ms_params"))
+  expect_equal(meta$event, c("leaf", "leaf"))
+})
+
+test_that("extract_metadata reports nothing found the same way", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  expect_equal(suppressWarnings(
+    extract_metadata(structure(list(a = mk()), class = "chrom_list"),
+                     "sample_name")), NA)
+  # and for a single chromatogram, which used to give an empty data.frame
+  expect_equal(suppressWarnings(extract_metadata(mk(), "sample_name")), NA)
+})
+
+test_that("an expanded element is prefixed only where its name is taken", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  # an acaml record is named unlike anything else, so it needs no prefix
+  acaml <- list(SampleName = "s1", VialNumber = 3, SourceFile = "s1.acaml")
+  x <- structure(list(a = mk(sample_name = "a", acaml_metadata = acaml,
+                             ms_params = list(polarity = "+",
+                                              ion_time = 25))),
+                 class = "chrom_list")
+
+  # `polarity` is a metadata field in its own right, so that element alone
+  # carries its field; `ion_time` beside it does not
+  expect_named(extract_metadata(x, what = "sample_name", expand = TRUE),
+               c("name", "sample_name", "SampleName", "VialNumber",
+                 "SourceFile", "ms_params.polarity", "ion_time"))
+
+  # asking for another field cannot rename these columns: the comparison is
+  # against the whole vocabulary, not against `what`
+  expect_equal(names(suppressWarnings(
+    extract_metadata(x, what = c("sample_name", "polarity"),
+                     expand = "acaml_metadata"))),
+    c("name", "sample_name", "SampleName", "VialNumber", "SourceFile"))
+
+  # nor can expanding one field rename the columns of another: `foo` is taken
+  # by `acaml_metadata` whether or not it was asked for
+  y <- structure(list(a = mk(ms_params = list(foo = 1),
+                             acaml_metadata = list(foo = 2)))
+                 , class = "chrom_list")
+  expect_named(suppressWarnings(
+    extract_metadata(y, what = "detector", expand = TRUE)),
+    c("name", "ms_params.foo", "acaml_metadata.foo"))
+  expect_named(suppressWarnings(
+    extract_metadata(y, what = "detector", expand = "ms_params")),
+    c("name", "ms_params.foo"))
+})
+
+test_that("extract_metadata expands a nested field attached to the sample", {
+  # `read_agilent_rslt` attaches the acaml record to the list holding the
+  # traces, and one row describes every trace in it
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  acaml <- data.frame(SampleName = "s1", VialNumber = 3,
+                      InjectionAcqDateTime = as.POSIXct("2020-01-01 10:00:00",
+                                                        tz = "UTC"))
+  sample <- structure(list(uv = mk(detector = "UV"), ms = mk(detector = "MS")),
+                      sample_name = "s1", acaml_metadata = acaml)
+  x <- structure(list(s1 = sample), class = "chrom_list")
+
+  meta <- extract_metadata(x, what = c("sample_name", "detector"),
+                           expand = TRUE)
+  expect_equal(meta$SampleName, c("s1", "s1"))
+  expect_equal(meta$VialNumber, c("3", "3"))
+  # `unlist` would otherwise leave a bare number in the column
+  expect_equal(meta$InjectionAcqDateTime, rep("2020-01-01 10:00:00", 2))
+})
+
 test_that("a blank sample-level value cannot displace a trace's own", {
   # `usable_attr` counts `NA` and an empty string as no value, so a field the
   # parser located but read nothing out of must not overwrite a real one
