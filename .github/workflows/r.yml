@@ -39,12 +39,17 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Add drat repo
+        # `entab` and `chromConverterExtraTests` are Suggests that live in the
+        # drat repo, and pak does not read `Additional_repositories` from
+        # DESCRIPTION, so it has to be on the search path before resolution
+        run: |
+          writeLines('options(repos = c(entab = "https://ethanbass.github.io/drat/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: |
-            any::rcmdcheck
-            any::ncdf4
-            github::ethanbass/chromConverterExtraTests
+          extra-packages: any::rcmdcheck
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
