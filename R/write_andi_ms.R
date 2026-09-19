@@ -243,7 +243,7 @@ format_metadata_for_andi_ms <- function(x, intensity_format, ms_params){
                raw_data_total_intensity_units = get_metadata_field2(x, "detector_y_unit",
                                                                     null_val = ""),
                sample_id_comments = "",
-               detector_name = get_metadata_field2(x, "detector_id", class = "char",
+               detector_name = get_metadata_field2(x, "detector_model", class = "char",
                                                    null_val = ""),
                # experiment_title = "",
                sample_amount = get_metadata_field2(x, "sample_amount", class = "float",

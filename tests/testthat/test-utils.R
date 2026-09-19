@@ -169,6 +169,9 @@ test_that("the metadata vocabulary is the single source for `what`", {
   expect_false("injection_volume" %in% fields)
   expect_true("software" %in% fields)
   expect_false("software_name" %in% fields)
+  # the field holds a module (`G1315B`, `SPD-M20A`), not an identifier
+  expect_true("detector_model" %in% fields)
+  expect_false("detector_id" %in% fields)
 })
 
 test_that("superseded metadata field names are still accepted", {
@@ -176,6 +179,7 @@ test_that("superseded metadata field names are still accepted", {
                "sample_injection_volume")
   expect_equal(resolve_metadata_fields("software_name"), "software")
   expect_equal(resolve_metadata_fields("run_date"), "run_datetime")
+  expect_equal(resolve_metadata_fields("detector_id"), "detector_model")
   expect_equal(resolve_metadata_fields(c("time_start", "time_end")), "time_range")
   # unknown and current names pass through untouched
   expect_equal(resolve_metadata_fields(c("sample_name", "nonsense")),

@@ -152,7 +152,7 @@ test_that("write_mzml counts scans correctly for every input class", {
 test_that("write_mzml says what is wrong when it cannot identify the data", {
   local_reproducible_output()
   # a bare chromatogram is named for its `detector`, but not every parser
-  # records one: 'Shimadzu' ASCII files give a `detector_id` instead, and
+  # records one: 'Shimadzu' ASCII files give a `detector_model` instead, and
   # 'ChemStation' `.ch` files report `NA`
   x <- matrix(1:2, nrow = 2, dimnames = list(c("1", "2"), "intensity"))
   expect_error(write_mzml(x, path_out = tempdir()),

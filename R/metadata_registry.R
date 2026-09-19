@@ -18,7 +18,7 @@
 #' @noRd
 chrom_metadata_fields <- function(){
   c(# instrument and detector
-    "instrument", "detector", "detector_id", "detector_range",
+    "instrument", "detector", "detector_model", "detector_range",
     "detector_y_unit", "detector_x_unit",
     # acquisition software and method
     "software", "method", "batch", "operator", "run_datetime",
@@ -39,7 +39,8 @@ chrom_metadata_fields <- function(){
 #' by [extract_metadata]'s `what`, so code written against the old spelling
 #' keeps returning a column.
 #' @noRd
-.metadata_field_aliases <- c(injection_volume = "sample_injection_volume",
+.metadata_field_aliases <- c(detector_id = "detector_model",
+                             injection_volume = "sample_injection_volume",
                              run_date = "run_datetime",
                              software_name = "software",
                              no_scans = "n_scans",

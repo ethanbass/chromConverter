@@ -167,7 +167,7 @@ test_that("extract_metadata function works", {
   expect_equal(meta$instrument, attr(x1[[1]],"instrument"))
   expect_equal(meta$parser, attr(x1[[1]], "parser"))
   expect_equal(meta$sample_name, "las_bulk_hexE")
-  expect_equal(meta$detector_id, "G1315A")
+  expect_equal(meta$detector_model, "G1315A")
   expect_equal(meta$detector_y_unit, "mAU")
   expect_equal(meta$detector_x_unit, "nm")
   expect_equal(meta$detector, "DAD")
@@ -269,7 +269,7 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   expect_equal(attr(x1, "data_format"), "wide")
   expect_equal(attr(x1, "operator"), "Ethan")
   expect_equal(attr(x1, "detector"), "UV")
-  expect_equal(attr(x1, "detector_id"), "G1315A")
+  expect_equal(attr(x1, "detector_model"), "G1315A")
   expect_equal(attr(x1, "sample_position"), 24)
 
   x2 <- read_chroms(path_uv, format_in = "chemstation_uv", parser = "entab",
@@ -283,7 +283,7 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
   expect_equal(attr(x2, "data_format"), "long")
   expect_equal(attr(x2, "operator"), "Ethan")
   expect_equal(attr(x1, "detector"), "UV")
-  expect_equal(attr(x1, "detector_id"), "G1315A")
+  expect_equal(attr(x1, "detector_model"), "G1315A")
   expect_equal(attr(x2, "sample_position"), 24)
   expect_equal(attr(x2, "format_out"), "data.frame")
   expect_s3_class(x2, "data.frame")

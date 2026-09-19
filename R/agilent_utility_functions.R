@@ -102,7 +102,7 @@ get_agilent_offsets <- function(version){
       date = 2391, # utf16
       # 0x9BC holds the detector module (e.g. "G1315A"), the same field the
       # 131_LC layout records at this offset. It was previously labelled
-      # `inlet`, which nothing consumed, so `detector_id` came back empty.
+      # `inlet`, which nothing consumed, so `detector_model` came back empty.
       detector_model = 2492, # utf16
       instrument = 2533, # utf16'
       method = 2574, # utf16

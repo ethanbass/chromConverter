@@ -45,7 +45,7 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
     # A bare chromatogram has to say which kind of data it holds, since the
     # mzML spectra are named for it. A list is already keyed by stream, so it
     # skips this. Not every parser records a detector: 'Shimadzu' ASCII files
-    # give a `detector_id` but no `detector`, and 'ChemStation' `.ch` files
+    # give a `detector_model` but no `detector`, and 'ChemStation' `.ch` files
     # report `NA`, so guessing here would silently mislabel the data.
     streams <- c(UV = "DAD", MS = "MS1", DAD = "DAD")
     detector <- attr(data, "detector")

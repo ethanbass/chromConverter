@@ -123,7 +123,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
 
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "NVAC-6B1-S3R1")
-  expect_equal(attr(x, "detector_id"), "G1315B")
+  expect_equal(attr(x, "detector_model"), "G1315B")
   expect_true(is.na(attr(x, "detector")))
   expect_equal(attr(x, "instrument"), "LC")
   expect_equal(attr(x, "detector_y_unit"), "mAU")
@@ -199,7 +199,7 @@ test_that("read_chroms can read 'Agilent ChemStation' 31 files", {
   expect_equal(attr(x, "detector"), "DAD")
     expect_equal(attr(x, "detector"), attr(x1, "detector"))
 
-  expect_equal(attr(x, "detector_id"), "G1315B")
+  expect_equal(attr(x, "detector_model"), "G1315B")
   expect_equal(attr(x, "detector_range"), c(250, 600))
   expect_equal(attr(x, "detector_y_unit"), "mAU")
 
@@ -254,7 +254,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 81 files", {
   expect_equal(dim(x), c(2699, 1))
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "detector_y_unit"), "pA")
-  expect_equal(attr(x, "detector_id"), "HP G1530A")
+  expect_equal(attr(x, "detector_model"), "HP G1530A")
   expect_equal(attr(x, "sample_name"), "5970 mix 10nG")
   expect_equal(attr(x, "time_unit"), "Minutes")
   expect_equal(attr(x, "data_format"), "wide")
@@ -312,7 +312,7 @@ test_that("read_chroms can write 'Agilent ChemStation' version 81 files to CDF",
                     progress_bar = FALSE)[[1]]
   expect_equal(x, xx, ignore_attr = TRUE, tolerance = 1e-7)
   expect_equal(get_times(x), get_times(xx))
-  fields <-c("sample_name", "detector_id", "detector_y_unit",
+  fields <-c("sample_name", "detector_model", "detector_y_unit",
              "method", "operator", "time_interval", "time_unit", "run_datetime")
   expect_equal(attributes(x)[fields], attributes(xx)[fields],
                ignore_attr = TRUE)

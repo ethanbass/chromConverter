@@ -36,11 +36,21 @@
 
 * The metadata field names are now defined in one place, so the names the readers attach and the names `extract_metadata` reports cannot drift apart. Five fields had drifted and are renamed: `software_name` is now `software` ('Shimadzu', 'Varian' SMS and `read_agilent_rslt`); `run_date` is now `run_datetime` and `injection_volume` is now `sample_injection_volume` ('Thermo' RAW); `time_start` and `time_end` (or `end_time`) are now the two ends of `time_range` (ANDI, 'Lumex' MDF and 'Varian' SMS); and the two formats that record a scan count, 'Varian' SMS and ANDI MS, now both report it as `n_scans`, matching the `n_` prefix used for counts throughout the package, rather than `no_scans` in one and `ms_params$n_scans` in the other. `extract_metadata` accepts the old names and maps them to the new ones.
 * The `parser` attribute is now always spelled `chromconverter`. With `metadata_format = "raw"`, some readers reported `chromConverter` instead.
+* `detector_id` is renamed as `detector_model`. Every format that fills the field supplies a module or a model number, and says as much internally: `detector_model` for 'ChemStation', 'OpenLab' and 'Chromatotec' (`G1315B`, `HP G1530A`), `detector_model_number` for ASM, `detector_name` for ANDI (`9065 UV-DAD`) and `Detector Name` for the 'Shimadzu' ascii exports. None supplies a serial number or any other identifier of a particular unit, so the old name was misleading. `extract_metadata` accepts `detector_id` and maps it to the new name.
+
+#### 'Agilent'
+
 * `detector_range` is now reserved for the numeric wavelength range recorded by `.uv` files. For 'ChemStation' versions 30 and 130 the signal descriptor was previously reported in this field, and is now reported as `signal_descriptor`.
 * The `detector` field is now `NA` for 'ChemStation' `.ch` files. These files do not record a detector type; the field previously reported the detector module, duplicating `detector_id`.
 * `sample_amount` is no longer copied from the injection volume ('Shimadzu' ASCII, 'ChemStation' `.ch`, `.uv` and `.ms` files, 'ChemStation' report files, and 'MassHunter'). None of these records a sample amount, so it is now `NA`. 'Lumex' MDF likewise no longer reports an injection volume and amount of `1`, which the file does not record.
 * 'Shimadzu' `.lcd`, `.gcd` and `.qgd` files now report `file_version`, the version of the container format (`5.01` for files written by 'Lab Solutions'; absent in the older files, which report only a `software_version` of `1.x`).
 * `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
+
+#### 'Shimadzu'
+
+
+#### 'Varian' SMS
+
 * A 'Varian' SMS file is acquired in segments, and the bounds of each are now reported as `segment_start_time` and `segment_end_time` within `ms_params`. `time_range` gives the span of the whole run, as it does for every other format.
 
 ### Deprecations

@@ -379,7 +379,7 @@ format_metadata_for_cdf <- function(x){
              sample_name = attr(x, "sample_name"),
              sample_id_comments = "",
              detector = attr(x, "detector"),
-             detector_name = attr(x, "detector_id"),
+             detector_name = attr(x, "detector_model"),
              detector_method_comments = as.character(attr(x, "detector_range")),
              # experiment_title = "",
              sample_amount = as.numeric(attr(x, "sample_amount")),
