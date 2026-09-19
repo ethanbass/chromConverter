@@ -703,8 +703,58 @@ get_sz_wv <- function(meta){
     c(get_metadata_field(meta, "WVB"),
       get_metadata_field(meta, "WVE"))
   } else{
-    get_metadata_field(meta, "ADN")
+    # a detector with no wavelength to report -- a refractive index or
+    # conductivity channel -- leaves the channel description empty, and an
+    # empty string prints as a blank cell rather than as a missing value
+    wv <- get_metadata_field(meta, "ADN")
+    if (is.character(wv) && !nzchar(trimws(wv))) NA_character_ else wv
   }
+}
+
+#' Get 'Shimadzu' instrument name
+#'
+#' `SI.IN`, which `read_sz_file_properties` reads from the `SystemInformation`
+#' stream: the name the system was given in 'LabSolutions', and the string its ascii exports report as `Instrument Name`
+#' (see `read_sz_system_info`). It is the one instrument field that describes
+#' the whole file rather than one of its detectors, so every trace read from a
+#' file reports the same instrument, and it is the only field that names the
+#' model of a triple quadrupole or a Q-TOF.
+#'
+#' `instrument_config` is the fallback, for a mass spectrometry file with no
+#' `SystemInformation` stream. It names the control platform rather than the
+#' instrument, which is why it is not preferred.
+#' @noRd
+sz_instrument <- function(meta){
+  name <- get_metadata_field(meta, "SI.IN", null_val = NA)
+  if (sz_has_instrument(name)){
+    return(name)
+  }
+  config <- get_metadata_field(meta, "instrument_config", null_val = NA)
+  if (sz_has_instrument(config)) config else NA
+}
+
+#' Get 'Shimadzu' detector model
+#'
+#' `DSN`, the unit in the detector slot the trace was read from: `SPD-M20A` for
+#' a PDA, `RID-10A` for a refractive index channel, `SFID1` for a GC detector.
+#' A mass spectrometry stream leaves it empty, so the unit `SystemInformation`
+#' records in the mass spectrometer slot stands in --- a model on newer
+#' software (`LCMS-9030`, `LCMS-8050`), and the platform name `LCMS-3030` on
+#' older versions, which register every triple quadrupole under it.
+#' @noRd
+sz_detector_model <- function(meta){
+  dsn <- get_metadata_field(meta, "DSN", null_val = NA)
+  if (sz_has_instrument(dsn)){
+    return(dsn)
+  }
+  unit <- unname(meta[["SI.units"]]["LCMS-QP"])
+  if (sz_has_instrument(unit)) unit else NA
+}
+
+#' Is this a usable 'Shimadzu' instrument name?
+#' @noRd
+sz_has_instrument <- function(x){
+  length(x) == 1 && !is.na(x) && is.character(x) && nzchar(trimws(x))
 }
 
 #' Extract ASM wavelength from metadata list

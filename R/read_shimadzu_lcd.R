@@ -742,7 +742,10 @@ read_sz_file_properties <- function(path){
   } else{
     meta <- read_sz_file_properties_raw(path_prop)
   }
-  meta
+  # the instrument the file was acquired on describes the whole file rather
+  # than one of its traces, so it is read here, once per read, rather than in
+  # the field map, which runs once per trace
+  c(meta, read_sz_system_info(path))
 }
 
 #' Read Shimadzu File Properties RAW
@@ -799,6 +802,71 @@ read_sz_file_properties_xml <- function(path){
                                       tz = meta$FileProperty.szLocGMTDiffGenDateTime)
 
   meta
+}
+
+
+#' Read 'Shimadzu' system information
+#'
+#' The `SystemInformation` stream names the system a file was acquired on, as a
+#' `GUD` block of type `SI`. `IN` is the name the system was given when it was
+#' configured in 'LabSolutions' --- the same string the ascii exports report as
+#' `Instrument Name` --- and each `SGLI` group holds the unit assigned to one of
+#' its slots (`LC`, `PDA`, `GC`, `LCMS-QP`, ...) in a `U` element.
+#'
+#' Neither field is reliably a model number. `IN` is free text, so it is a model
+#' on one system (`LCMS-8030`) and a nickname on the next (`Instrument2`, `Full
+#' LC-MS`), while the unit is a model only where the software records one
+#' (`LCMS-9030`, `LCMS-8050`): older versions register every triple quadrupole
+#' under the platform name `LCMS-3030`. `IN` is nonetheless the vendor's own
+#' answer to which instrument wrote the file, and the answer its ascii exports
+#' give, which is why it is the one the parser reports.
+#'
+#' The stream is absent from some files (`.qgd`, for one), in which case this
+#' returns an empty list and the fields it would have filled stay `NA`.
+#'
+#' Read by `read_sz_file_properties`, once per file, so that the field map
+#' stays a mapping of names and does no I/O of its own.
+#'
+#' @param path Path to a 'Shimadzu' OLE file (`.lcd` or `.gcd`).
+#' @return A list with the name of the system (`SI.IN`) and the units assigned
+#' to its slots (`SI.units`), or an empty list.
+#' @author Ethan Bass
+#' @noRd
+read_sz_system_info <- function(path){
+  if (length(path) != 1 || is.na(path) || !fs::is_file(path)){
+    return(list())
+  }
+  path_si <- export_stream(path, c("GUMM_Information", "GUMMSubStg",
+                                   "SystemInformation"),
+                           remove_null_bytes = TRUE)
+  if (length(path_si) != 1 || is.na(path_si)){
+    return(list())
+  }
+  on.exit(unlink_stream(path_si), add = TRUE)
+  raw <- readBin(path_si, what = "raw", n = file.info(path_si)$size)
+  txt <- iconv(rawToChar(raw), from = "ISO-8859-1", to = "UTF-8")
+  # the stream is a bare `GUD` block rather than a document, and the units carry
+  # escaped `GUD` blocks of their own, so it is wrapped before it is parsed
+  doc <- try(xml2::read_xml(paste0("<root>", txt, "</root>")), silent = TRUE)
+  if (inherits(doc, "try-error")){
+    return(list())
+  }
+  si <- xml2::xml_find_first(doc, ".//GUD[@Type='SI']")
+  if (inherits(si, "xml_missing")){
+    return(list())
+  }
+  # `IN` is taken as a direct child of the block: the same element name labels
+  # every entry in the catalog of supported units further down the stream
+  name <- xml2::xml_text(xml2::xml_find_first(si, "./IN"))
+  groups <- xml2::xml_find_all(si, "./SGLI")
+  units <- xml2::xml_text(xml2::xml_find_first(groups, "./U"))
+  names(units) <- xml2::xml_attr(groups, "Name")
+  units <- units[!is.na(units) & nzchar(units)]
+
+  list(SI.IN = if (length(name) != 1 || is.na(name) || !nzchar(name)){
+         NULL
+       } else name,
+       SI.units = if (length(units) == 0) NULL else units)
 }
 
 #' Decode 'Shimadzu' file properties

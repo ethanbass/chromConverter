@@ -155,9 +155,11 @@ meta_shimadzu_chrom <- function(meta, ctx){
 #' Field map for 'Shimadzu' OLE containers (`.lcd`, `.gcd`, `.qgd`)
 #' @noRd
 meta_shimadzu_lcd <- function(meta, ctx){
-  list(instrument = get_metadata_field(meta, "DSN"),
+  list(instrument = sz_instrument(meta),
+       # the control platform, for a file that names one (see `sz_instrument`)
+       instrument_config = get_metadata_field(meta, "instrument_config",
+                                              null_val = NULL),
        detector = get_metadata_field(meta, "DETN"),
-       detector_id = get_metadata_field(meta, "DSID"),
        detector_model = sz_detector_model(meta),
        # the channel this trace was read from, which is also what names the
        # peak table that goes with it (`PT-LC.1.1.DET.1.CH#1`)

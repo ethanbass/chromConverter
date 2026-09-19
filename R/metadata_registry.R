@@ -146,6 +146,12 @@ validate_metadata_names <- function(attrs){
 .metadata_extra_fields <- c(
   # file identity
   "file_version", "file_type",
+  # the control platform a 'Shimadzu' triple quadrupole reports for itself,
+  # which names a line of instruments rather than one of them
+  "instrument_config",
+  # the channel a 'Shimadzu' OLE trace was read from, which is also what names
+  # the peak table that goes with it
+  "channel_id",
   # detector specifics
   "wavelength", "bandwidth", "detector_reference", "signal_descriptor",
   "polarity",

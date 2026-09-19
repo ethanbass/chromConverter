@@ -53,6 +53,9 @@
 
 #### 'Shimadzu'
 
+* The `wavelength` attribute of a 'Shimadzu' 2D chromatogram is now `NA` rather than an empty string when the channel records none, as a refractive index or FID trace does. An empty string printed as a blank cell instead of as a missing value.
+* 'Shimadzu' `.lcd` and `.gcd` files now report the instrument the file was acquired on, rather than the detector module of whichever trace you are looking at: one run on one HPLC previously came back as `SPD-20A` on two channels and `RID-10A` on a third. `instrument` is taken from the `SystemInformation` stream (`Instrument2`, `HPLC RID`, `GC-2014`), the same string the ascii exports report as `Instrument Name`, so a run exported both ways now agrees. The module is now reported as `detector_model`. A mass spectrometry trace has no module of its own, so it reports whatever unit `SystemInformation` lists for the mass spectrometer instead. That is a model number on newer software (`LCMS-9030`), but older versions list the generic platform name (e.g., `LCMS-3030` for every triple quadrupole).
+* The channel a 'Shimadzu' `.lcd` or `.gcd` trace was read from (`LC.1.1.DET.1.CH#1`, `PDA.1.1.PDA.1.3D`) is now reported as `channel_id`, (replacing `detector_id`). This field is used to name the peak table belonging to a trace (`PT-LC.1.1.DET.1.CH#1`), so the two can still be matched up.
 
 #### 'Varian' SMS
 
