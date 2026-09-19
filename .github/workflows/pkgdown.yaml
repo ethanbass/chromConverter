@@ -33,11 +33,6 @@ jobs:
           writeLines('options(repos = c(entab = "https://ethanbass.github.io/drat/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
         shell: Rscript {0}
 
-      - name: Set up python ${{ matrix.config.python }}
-        uses: actions/setup-python@v7
-        with:
-          python-version: ${{ matrix.config.python }}
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown, local::.

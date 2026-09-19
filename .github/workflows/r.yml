@@ -39,11 +39,6 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v7
-        with:
-          python-version: 3.9
-
       - name: Install dependencies
         run: |
           install.packages(c("remotes", "rcmdcheck"))
