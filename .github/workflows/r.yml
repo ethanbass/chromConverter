@@ -54,6 +54,7 @@ jobs:
           extra-packages: |
             any::rcmdcheck
             github::ethanbass/chromConverterExtraTests
+            ${{ runner.os == 'Windows' && 'entab=?ignore' || '' }}
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
