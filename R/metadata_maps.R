@@ -372,8 +372,9 @@ meta_varian_sms <- function(meta, ctx){
   meta$max_ionization_time <- sapply(meta$segment_metadata, function(x){
   x$max_ionization_time
   })
-  segment_start <- sapply(meta$segment_metadata, function(x) x$start_time)
-  segment_end <- sapply(meta$segment_metadata, function(x) x$end_time)
+  # a file whose header lists no segments leaves these empty
+  segment_start <- unlist(lapply(meta$segment_metadata, function(x) x$start_time))
+  segment_end <- unlist(lapply(meta$segment_metadata, function(x) x$end_time))
   list(sample_name = sample_name_or_file(meta, "sample_name", ctx$source_file),
        instrument = get_metadata_field(meta, "instrument"),
        detector = "MS",
@@ -386,7 +387,8 @@ meta_varian_sms <- function(meta, ctx){
        run_datetime = get_metadata_field(meta, "acquisition_start"),
        sample_injection_volume = NA,
        sample_amount = NA,
-       time_range = c(min(segment_start), max(segment_end)),
+       time_range = if (length(segment_start) == 0) NA else
+         c(min(segment_start), max(segment_end)),
        n_scans = meta$n_scan,
        ms_params = c(meta[c("ion_time", "emission_current",
                                      "max_ric_scan", "max_ric_val",

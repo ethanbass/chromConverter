@@ -330,3 +330,11 @@ test_that("read_null_terminated rejects non-text bytes", {
   expect_null(read_null_terminated(b, 2))   # empty
   expect_null(read_null_terminated(b, 99))  # past the end
 })
+
+test_that("meta_varian_sms survives a file with no segments", {
+  meta <- meta_varian_sms(list(sample_name = "s", n_scan = 10,
+                               segment_metadata = list()),
+                          list(source_file = "s.sms"))
+  expect_equal(meta$time_range, NA)
+  expect_equal(meta$n_scans, 10)
+})
