@@ -703,13 +703,20 @@ sz_decode_fto <- Vectorize(
 )
 
 #' Decode 'Shimadzu' metadata 'StoX' strings
+#'
+#' The decoded bytes are in the codepage of the machine that wrote the file, so
+#' a file from a Chinese- or Japanese-locale instrument yields a string that is
+#' not valid UTF-8 (`method` and `batch` are paths, and their directory names
+#' are the usual offenders). Such a string errors out of every regular
+#' expression applied to it downstream, so it is repaired before it leaves the
+#' parser.
 #' @noRd
 sz_decode_sto <- Vectorize(
   function(x){
     x <- gsub("@StoX@", "", x)
     tryCatch({raw_bytes <- as.raw(strtoi(substring(x, seq(1, nchar(x), 2),
                                                    seq(2, nchar(x), 2)), 16L))
-    rawToChar(raw_bytes)
+    to_valid_utf8(rawToChar(raw_bytes))
     }, error = function(err) NA)
   }
 )

@@ -256,3 +256,18 @@ test_that("'Shimadzu' ASCII date-times are read in any locale's format", {
   expect_equal(attr(parse_shimadzu_ascii_datetime("29-03-2022 10:12:19"), "tzone"), "UTC")
 })
 
+test_that("to_valid_utf8 repairs only the strings that need it", {
+  ok <- c("plain", "caf\u00e9", NA)
+  expect_identical(to_valid_utf8(ok), ok)
+  # each undecodable byte becomes one replacement; the rest is untouched
+  expect_equal(to_valid_utf8(rawToChar(as.raw(c(0x61, 0xca, 0xfd, 0x62)))),
+               "a??b")
+  expect_equal(to_valid_utf8(rawToChar(as.raw(c(0x61, 0xca, 0xfd))), sub = ""),
+               "a")
+  # a vector is repaired element-wise, and `NA` stays `NA`
+  mixed <- c("a", rawToChar(as.raw(c(0xca, 0xfd))), NA)
+  expect_equal(to_valid_utf8(mixed), c("a", "??", NA))
+  # anything that is not a character vector passes through
+  expect_identical(to_valid_utf8(1:3), 1:3)
+  expect_identical(to_valid_utf8(NULL), NULL)
+})

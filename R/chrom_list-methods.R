@@ -54,6 +54,8 @@ print.chrom_list <- function(x, n = 10,
   }
 
   # Group by the sample -- the outermost name -- so that every trace belonging
+  meta <- to_valid_utf8_df(meta)
+
   # to it is printed together under it. Grouping by the whole path above the
   # leaf instead would split one sample across several blocks whenever its
   # traces sit at different depths, as they do for an 'Agilent' `.dx`, where

@@ -548,6 +548,43 @@ simple_cap <- function(x) {
         sep = "", collapse = " ")
 }
 
+
+#' Force a string to valid UTF-8
+#'
+#' A vendor file written on a machine in another locale can carry native bytes
+#' in its metadata -- a Windows path whose directory names are GBK-encoded,
+#' say -- and a string that is not valid UTF-8 errors out of every regular
+#' expression and `nchar` call that touches it, so it must not be allowed to
+#' reach them. The original codepage cannot be recovered from the bytes alone
+#' (the same sequence is legal GBK and legal Shift-JIS), so the undecodable
+#' bytes are replaced rather than guessed at, which at least keeps the ASCII
+#' parts of the value -- usually most of a path -- intact.
+#'
+#' @param x A character vector. Anything else is returned unchanged, so that
+#' this can be mapped over a heterogeneous list of metadata fields.
+#' @param sub Replacement for each byte that cannot be decoded.
+#' @return `x` with every element valid UTF-8.
+#' @noRd
+to_valid_utf8 <- function(x, sub = "?"){
+  if (!is.character(x)) return(x)
+  bad <- which(!is.na(x) & !validUTF8(x))
+  if (length(bad) > 0){
+    x[bad] <- iconv(x[bad], from = "UTF-8", to = "UTF-8", sub = sub)
+  }
+  x
+}
+
+#' Repair the character columns of a metadata table
+#'
+#' A metadata value carrying native bytes from a file written in another locale
+#' is not valid UTF-8, and would take down the whole table at the first
+#' `nchar` or `trimws` call over one mangled path.
+#' @noRd
+to_valid_utf8_df <- function(x, sub = "?"){
+  x[] <- lapply(x, to_valid_utf8, sub = sub)
+  x
+}
+
 #' Get retention times
 #'
 #' Get retention times from a list of chromatograms or a `peak_table` object.

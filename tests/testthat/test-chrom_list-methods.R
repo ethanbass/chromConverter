@@ -298,3 +298,25 @@ test_that("print.chrom_list leaves a mix of flat and nested samples alone", {
   expect_true(any(grepl("sample_name", out, fixed = TRUE)))
   expect_equal(sum(grepl(" a ", out)), 1)
 })
+
+test_that("print.chrom_list survives a metadata value that is not UTF-8", {
+  local_reproducible_output()
+  # A 'Shimadzu' `.lcd` written on a Chinese-locale instrument stores its
+  # `method` path in the machine's codepage, so the directory names arrive as
+  # GBK bytes. `trimws` and `nchar` both error on such a string, which used to
+  # take down the whole summary. The bytes are spelled out here so that this
+  # file stays ASCII.
+  gbk <- rawToChar(as.raw(c(0x43, 0x3a, 0x5c, 0xca, 0xfd, 0xbe, 0xdd, 0x5c,
+                            0x6d, 0x2e, 0x6c, 0x63, 0x6d)))
+  expect_false(validUTF8(gbk))
+  mk <- function(d) structure(matrix(1:4, nrow = 2), sample_name = "s",
+                              method = gbk, detector = d)
+  x <- structure(list(a = mk("UV"), b = mk("MS")), class = "chrom_list")
+
+  expect_no_error(out <- capture.output(print(x)))
+  expect_equal(out[1], "A chrom_list with 2 chromatograms")
+  # the undecodable bytes are replaced, but the ASCII part of the path -- all
+  # that identifies it -- is still legible
+  expect_true(any(grepl("method: C:\\", out, fixed = TRUE)))
+  expect_true(any(grepl("m.lcm", out, fixed = TRUE)))
+})
