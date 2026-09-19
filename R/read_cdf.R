@@ -106,6 +106,9 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
       })
       names(peak_table) <- peak_table_vars
       peak_table <- as.data.frame(peak_table)
+    } else {
+      warning("No peak table found in this file.", call. = FALSE)
+      what <- setdiff(what, "peak_table")
     }
   }
   data <- mget(what)

@@ -99,6 +99,7 @@
 
 * Fixed the MS1 scans returned by `read_cdf` for 'ANDI MS' files in which every scan holds the same number of points (common when the instrument scans a fixed mass range). The retention times arrived as a matrix and were split into one column per scan, so a 20-scan file returned a table with `rt.1`, `rt.2`, ... `rt.20` columns instead of a single `rt` column. With `ms_format = "list"` the same files returned a list of individual numbers rather than a list of spectra. Files with a varying number of points per scan were unaffected, and their output is unchanged.
 * `read_cdf` no longer opens the netCDF file twice, and the peak table returned for 'ANDI chrom' files is no longer transposed when it holds a single peak.
+* `read_cdf(what = "peak_table")` on an 'ANDI chrom' file that holds no peak table now warns and returns the other streams that were asked for, rather than failing with `value for 'peak_table' not found`.
 
 #### mzML export
 
