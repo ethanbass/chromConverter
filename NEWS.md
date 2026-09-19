@@ -32,6 +32,7 @@
 * Refactored `write_mzml` for increased speed (~1.4x) and lower memory use. The spectra are now sliced out of the long-format table in place instead of being copied into a list of per-scan tables, and the byte offsets for the index are accumulated as the file is written rather than probed with `seek()` once per scan. Writing 3432 scans (935k points) drops from ~1.24 s to ~0.87 s, with peak memory falling from ~384 MB to ~339 MB.
 * Refactored conversion to long format for increased speed (~150x). The reshaping step now assembles the three columns directly instead of pivoting the table and then coercing it, which also avoids the rounding described below. Reshaping a 4689 x 328 PDA matrix drops from ~2.0 s to ~0.012 s, with peak memory falling from ~455 MB to ~227 MB. This affects every parser called with `data_format = "long"` (or `format_out = "data.table"`, which implies long format), as well as the mzML and ANDI MS writers, which reshape to long format internally.
 * The temporary files that are extracted from 'Shimadzu' OLE containers are now deleted once they have been read, instead of accumulating in the session's temporary directory until R exits. This matters most when converting many files at once.
+* The SHA-1 of the source file, recorded as the `source_sha1` metadata attribute, is now computed once per file instead of once per chromatogram. Formats that return several chromatograms from one file hashed it again for each of them, which dominated the read for large files: a 40 MB `.qgd` drops from ~2.2 s to ~1.3 s.
 
 ### Metadata field changes
 

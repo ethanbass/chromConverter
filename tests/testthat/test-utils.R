@@ -144,6 +144,41 @@ test_that("source_sha1 hashes files and returns NA for anything else", {
   expect_equal(source_sha1("no/such/file"), NA)
 })
 
+test_that("source_sha1 hashes a file once and rehashes when it changes", {
+  # a file of its own, so the count does not depend on what another test has
+  # already put in the cache
+  tmp <- tempfile(fileext = ".uv")
+  writeLines("a", tmp)
+  hashed <- 0L
+  # the real function, captured before the binding is mocked
+  digest_file <- digest::digest
+  local_mocked_bindings(digest = function(...){
+    hashed <<- hashed + 1L
+    digest_file(...)
+  }, .package = "digest")
+
+  first <- source_sha1(tmp)
+  expect_match(first, "^[0-9a-f]{40}$")
+  expect_equal(hashed, 1L)
+  # a read that attaches metadata once per acquisition event asks repeatedly,
+  # and every answer after the first comes from the cache
+  expect_equal(source_sha1(tmp), first)
+  expect_equal(source_sha1(tmp), first)
+  expect_equal(hashed, 1L)
+
+  # size and mtime are part of the key, so a file written again at the same
+  # path is hashed again rather than answered with the stale hash
+  Sys.sleep(0.01)
+  writeLines("bb", tmp)
+  expect_false(identical(source_sha1(tmp), first))
+  expect_equal(hashed, 2L)
+
+  # and nothing that is not a file is hashed at all
+  expect_equal(source_sha1("no/such/file"), NA)
+  expect_equal(hashed, 2L)
+  unlink(tmp)
+})
+
 test_that("sample_name_or_file falls back to the file name", {
   f <- "/tmp/sequence/blue_run.uv"
   expect_equal(sample_name_or_file(list(`Sample Name` = "blue"),
@@ -220,3 +255,4 @@ test_that("'Shimadzu' ASCII date-times are read in any locale's format", {
   expect_s3_class(parse_shimadzu_ascii_datetime("29-03-2022 10:12:19"), "POSIXct")
   expect_equal(attr(parse_shimadzu_ascii_datetime("29-03-2022 10:12:19"), "tzone"), "UTC")
 })
+

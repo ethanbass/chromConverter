@@ -134,11 +134,24 @@ sample_name_or_file <- function(meta, field, source_file){
 #' `NA` for anything that is not a file, rather than an error. Some formats are
 #' directories -- a Waters `.raw`, an 'Agilent' `.D` -- and `digest` errors when
 #' handed one, so the check belongs here rather than in each field map.
+#'
+#' Memoized on size and mtime as well as path, because a single read can attach
+#' metadata many times over: a 'Shimadzu' TLM file with 72 acquisition events
+#' hashes the same source once per event, and hashing is ~85 ms for 34 MB.
 #' @noRd
 source_sha1 <- function(path){
   if (length(path) != 1 || is.na(path) || !fs::is_file(path)) return(NA)
-  digest::digest(path, algo = "sha1", file = TRUE)
+  info <- file.info(path)
+  key <- paste(normalizePath(path, winslash = "/"), info$size,
+               format(info$mtime, "%Y-%m-%d %H:%M:%OS6"), sep = "\r")
+  hit <- sha1_cache[[key]]
+  if (!is.null(hit)) return(hit)
+  val <- digest::digest(path, algo = "sha1", file = TRUE)
+  assign(key, val, envir = sha1_cache)
+  val
 }
+
+sha1_cache <- new.env(parent = emptyenv())
 
 #' Get a metadata field
 #'

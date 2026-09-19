@@ -46,7 +46,7 @@ Suggests:
     entab,
     ncdf4,
     pbapply,
-    testthat (>= 3.0.0),
+    testthat (>= 3.1.7),
     mzR,
     chromConverterExtraTests
 Encoding: UTF-8
