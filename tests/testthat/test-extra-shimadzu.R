@@ -38,6 +38,9 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
   expect_equal(dim(x), c(4689, 328))
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "data_format"), "wide")
+  # a PDA 3D export has a field map of its own, unlike the 2D exports
+  expect_equal(attr(x, "detector"), "DAD")
+  expect_equal(attr(x, "detector_range"), c("190", "600"))
 
   x1 <- read_chroms(path_ascii, format_in = "shimadzu_dad",
                     progress_bar = FALSE, data_format = "long",

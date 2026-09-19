@@ -256,7 +256,8 @@ read_shimadzu_chromatogram <- function(path, x, chrom.idx, sep, data_format,
 #' @noRd
 read_shimadzu_dad <- function(path, x, chrom.idx, sep, data_format,
                               read_metadata, format_out, scale = NULL,
-                              metadata_format = "shimadzu_chrom"){
+                              metadata_format = "shimadzu_dad"){
+  if (metadata_format == "shimadzu_chrom") metadata_format <- "shimadzu_dad"
   header <- try(extract_shimadzu_header(x = x, chrom.idx = chrom.idx,
                                         sep = sep))
   met <- header[[1]]

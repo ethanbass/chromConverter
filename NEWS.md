@@ -37,13 +37,13 @@
 
 * The metadata field names are now defined in one place, so the names the readers attach and the names `extract_metadata` reports cannot drift apart. Five fields had drifted and are renamed: `software_name` is now `software` ('Shimadzu', 'Varian' SMS and `read_agilent_rslt`); `run_date` is now `run_datetime` and `injection_volume` is now `sample_injection_volume` ('Thermo' RAW); `time_start` and `time_end` (or `end_time`) are now the two ends of `time_range` (ANDI, 'Lumex' MDF and 'Varian' SMS); and the two formats that record a scan count, 'Varian' SMS and ANDI MS, now both report it as `n_scans`, matching the `n_` prefix used for counts throughout the package, rather than `no_scans` in one and `ms_params$n_scans` in the other. `extract_metadata` accepts the old names and maps them to the new ones.
 * The `parser` attribute is now always spelled `chromconverter`. With `metadata_format = "raw"`, some readers reported `chromConverter` instead.
+* `sample_amount` is no longer copied from the injection volume ('Shimadzu' ASCII, 'ChemStation' `.ch`, `.uv` and `.ms` files, 'ChemStation' report files, and 'MassHunter'). None of these records a sample amount, so it is now `NA`. 'Lumex' MDF likewise no longer reports an injection volume and amount of `1`, which the file does not record.
 * `detector_id` is renamed as `detector_model`. Every format that fills the field supplies a module or a model number, and says as much internally: `detector_model` for 'ChemStation', 'OpenLab' and 'Chromatotec' (`G1315B`, `HP G1530A`), `detector_model_number` for ASM, `detector_name` for ANDI (`9065 UV-DAD`) and `Detector Name` for the 'Shimadzu' ascii exports. None supplies a serial number or any other identifier of a particular unit, so the old name was misleading. `extract_metadata` accepts `detector_id` and maps it to the new name.
 
 #### 'Agilent'
 
 * `detector_range` is now reserved for the numeric wavelength range recorded by `.uv` files. For 'ChemStation' versions 30 and 130 the signal descriptor was previously reported in this field, and is now reported as `signal_descriptor`.
 * The `detector` field is now `NA` for 'ChemStation' `.ch` files. These files do not record a detector type; the field previously reported the detector module, duplicating `detector_id`.
-* `sample_amount` is no longer copied from the injection volume ('Shimadzu' ASCII, 'ChemStation' `.ch`, `.uv` and `.ms` files, 'ChemStation' report files, and 'MassHunter'). None of these records a sample amount, so it is now `NA`. 'Lumex' MDF likewise no longer reports an injection volume and amount of `1`, which the file does not record.
 * 'Shimadzu' `.lcd`, `.gcd` and `.qgd` files now report `file_version`, the version of the container format (`5.01` for files written by 'Lab Solutions'; absent in the older files, which report only a `software_version` of `1.x`).
 * `read_acaml` now also returns the injection volume (`InjectionVolume`, `InjectionVolume_unit`) and the acquisition software name and version (`Software`, `SoftwareVersion`).
 
@@ -84,8 +84,9 @@
 #### 'Shimadzu'
 
 * Fixed the acquisition time reported for 'Shimadzu' ASCII files, which was `NA` for every export not written by a machine using a 12-hour month-first date format. Note that the times in an ASCII export are local to that machine, which does not record its time zone, whereas `.lcd` files record the acquisition instant in UTC.
+* Fixed the metadata of 'Shimadzu' PDA ascii exports, which were read through the field map for the 2D exports. A PDA export reported no `detector` and no `detector_range`; it now reports `DAD` and the wavelength range the detector covered.
 * Fixed `read_shimadzu_lcd` for `.lcd` files that do not contain a `2D Data Item`, which failed with `'names' attribute [4] must be the same length as the vector [2]`. This bug seems to affect older files, which store their chromatograms under `LC Raw Data` rather than `LSS Raw Data`.
-* Fixed `read_shimadzu_lcd` so it can return PDA data in long format. `read_shimadzu_lcd(what = "pda", data_format = "long")` previously failed with an error about a missing `lambda` column, because the reshaping step was called with the wrong target format.
+* Fixed `read_shimadzu_lcd` so it can return PDA data in long format. `read_shimadzu_lcd(what = "PDA", data_format = "long")` previously failed with an error about a missing `lambda` column, because the reshaping step was called with the wrong target format.
 * Fixed export of OLE streams to a path containing `~`, which is not expanded by Python.
 
 #### 'Varian' SMS
