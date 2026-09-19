@@ -38,9 +38,16 @@
 #' which stores calibration points for both polarities; the polarity of the
 #' acquisition selects between them. This matters: the coefficients differ by
 #' ~1.5% between polarities on one instrument, which is ~3% in m/z, so fixed
-#' coefficients are not usable. Measured against 'LabSolutions' conversions of
-#' three files from two instruments, this reproduces the reported m/z to
-#' 0.3-5 ppm (median), against 28-30,000 ppm for fixed coefficients.
+#' coefficients are not usable. The tuning calibration alone is still a few
+#' ppm out, because it is recorded before the run; folding in the mass
+#' correction the file caches for the run closes that gap (see
+#' `read_sz_qtof_mass_correction`).
+#' Measured against 'ProteoWizard' conversions of three files from two
+#' instruments --- which read the file through Shimadzu's own library --- the
+#' m/z then agree to 0.03-0.1 ppm (median). That figure is the resolution of
+#' the comparison rather than of this parser: the vendor reports m/z to four
+#' decimal places, which is 0.5 ppm at the bottom of the mass range and 0.05
+#' ppm at the top.
 #'
 #' **Intensity block** (n x m bytes)
 #' Each peak's intensity is stored as a little-endian unsigned integer of
@@ -67,10 +74,6 @@
 #' intensities reported by 'LabSolutions'. Defaults to `TRUE`, which errors if
 #' the accumulation count is missing from the file, since there is no safe
 #' divisor to guess; `FALSE` returns the raw counts.
-#' @param lock_mass Logical. Whether to correct the mass axis against the
-#' reference compounds the file stores for that purpose. Defaults to
-#' `TRUE`, which reproduces the reported m/z to ~0.2 ppm; `FALSE`
-#' uses the tuning calibration alone, which is biased by a few ppm.
 #' @param levels Which MS levels to return, spelled `MS1` and `MS2`. Both are
 #' decoded either way, since the level of a scan is recorded in the scan.
 #' @return A named list holding whichever of `MS1` and `MS2` the file
@@ -89,7 +92,7 @@ read_sz_qtof <- function(path, format_out = c("matrix", "data.frame",
                          data_format = "long", levels = c("MS1", "MS2"),
                          read_metadata = TRUE,
                          metadata_format = "shimadzu_lcd",
-                         scale = TRUE, lock_mass = TRUE){
+                         scale = TRUE){
   format_out <- check_format_out_table(format_out)
   # spectra have no wide representation, so they are always returned long
   data_format <- "long"
@@ -117,12 +120,22 @@ read_sz_qtof <- function(path, format_out = c("matrix", "data.frame",
   path_centroid <- export_stream(path, existing_streams[[1]])
   on.exit(unlink_stream(path_centroid))
 
+  # a cached correction already carries the vendor's mass correction, so the
+  # reference ions are only wanted where there is none to fold in
+  corrected <- isTRUE(attr(cal, "corrected"))
+  lock_mass <- if (corrected) numeric(0) else
+    read_qtof_lock_mass(path, polarity = polarity)
+  if (!corrected && length(lock_mass) < 2){
+    warning("No mass correction was found in the file, and fewer than two ",
+            "reference ions are available to fit one. The mass axis rests on ",
+            "the tuning calibration alone, which is typically a few ppm out.",
+            call. = FALSE)
+  }
+
   decoded <- decode_qtof_stream(path_centroid, offsets = offsets,
                                 n_expected = length(rts), A = cal[["A"]],
                                 B = cal[["B"]], int_scale = int_scale,
-                                lock_mass = if (isTRUE(lock_mass))
-                                  read_qtof_lock_mass(path, polarity = polarity)
-                                else numeric(0),
+                                lock_mass = lock_mass,
                                 dda = read_qtof_dda(path),
                                 polarity = polarity,
                                 mz_range = mz_range)
@@ -511,6 +524,99 @@ read_qtof_lock_mass <- function(path, polarity = read_qtof_polarity(path)){
   unique(mz)
 }
 
+#' Read the cached mass correction from a 'Shimadzu' QTOF file
+#'
+#' `Mass Data Load Format/Mass Correction Cache` holds the mass correction
+#' 'LabSolutions' applied to the run: the reference ions it found and the
+#' coefficients it fitted to them. Like the other QTOF parameter streams it is
+#' a protocol buffer with a block per polarity (field `10` positive, `20`
+#' negative), the reference compounds under `10` and the result under `30`:
+#'
+#' - `30.<pol>.10.10` --- offset of the correction, in flight-time units
+#' - `30.<pol>.10.20` --- scale factor of the correction, near 1
+#' - `30.<pol>.20.10.10`, `.20` --- id of a reference compound and the m/z at
+#'   which it was measured in this run, scaled by 1e9
+#'
+#' The correction is applied to the flight time, as `t' = scale * t + offset`,
+#' which is the same as shifting the calibration in the square root of the
+#' mass:
+#' \deqn{\sqrt{mz'} = scale \sqrt{mz} + shift}
+#' where `shift` is the mean of `sqrt(theoretical) - scale * sqrt(measured)`
+#' over the reference ions. Reading the vendor's own correction out reproduces
+#' its mass axis exactly, where refitting on the reference ions found in the
+#' data leaves a few tenths of a ppm.
+#'
+#' @param path Path to 'Shimadzu' .lcd file.
+#' @param polarity Ion polarity, either `positive` or `negative`, selecting
+#' which of the two blocks to read. Defaults to the polarity recorded in the
+#' file.
+#' @return A list of `scale`, `offset` and `shift`, or `NULL` if the stream is
+#' missing or holds no usable result.
+#' @md
+#' @keywords internal
+
+read_sz_qtof_mass_correction <- function(path, polarity = read_qtof_polarity(path)){
+  if (length(polarity) != 1 || is.na(polarity)) return(NULL)
+  fields <- tryCatch(read_sz_pb_stream(path, c("Mass Data Load Format",
+                                               "Mass Correction Cache")),
+                     error = function(e) NULL)
+  if (is.null(fields) || length(fields) == 0) return(NULL)
+  pol <- if (identical(polarity, "positive")) "10" else "20"
+  pick <- function(...){
+    p <- paste(..., sep = ".")
+    unlist(lapply(fields[vapply(fields, function(f) identical(f$path, p), TRUE)],
+                  `[[`, "value"))
+  }
+  scale <- pick("30", pol, "10.20")
+  offset <- pick("30", pol, "10.10")
+  measured <- pick("30", pol, "20.10.20")/1e9
+  theoretical <- pick("10", pol, "20.10.20.20")[
+    match(pick("30", pol, "20.10.10"), pick("10", pol, "20.10.10"))]/1e9
+  if (length(scale) != 1L || length(offset) != 1L || length(measured) == 0 ||
+      length(theoretical) != length(measured) || anyNA(theoretical) ||
+      !all(is.finite(c(scale, offset, measured, theoretical))) ||
+      any(measured <= 0) || abs(scale - 1) > 1e-3){
+    return(NULL)
+  }
+  list(scale = scale, offset = offset,
+       shift = mean(sqrt(theoretical) - scale*sqrt(measured)))
+}
+
+#' Apply the cached mass correction to the tuning calibration
+#'
+#' See `read_sz_qtof_calibration` for why the cached correction identifies the
+#' replicate set 'LabSolutions' fitted against, which averaging them cannot.
+#'
+#' @param mz,flight,rep_id Calibration points and the replicate set each
+#'   belongs to, as read from the `TOF Calibration Table` stream.
+#' @param mc Cached correction from `read_sz_qtof_mass_correction`.
+#' @return Named numeric vector of `A` and `B`, with the correction folded in,
+#'   or `NULL` if no replicate set matches the cached offset.
+#' @noRd
+qtof_correct_calibration <- function(mz, flight, rep_id, mc){
+  ok <- !is.na(mz) & !is.na(flight) & flight > 0
+  sets <- split(which(ok), rep_id[ok])
+  sets <- sets[vapply(sets, function(i) length(unique(mz[i])) > 1L, TRUE)]
+  if (length(sets) == 0) return(NULL)
+  fits <- lapply(sets, function(i) fit_tof_calibration(mz[i], flight[i]))
+  err <- vapply(fits, function(co){
+    abs((mc$offset - mc$shift*co[["A"]])/(1 - mc$scale)/co[["B"]] - 1)
+  }, numeric(1))
+  best <- which.min(err)
+  # the set the correction was written against matches to ~1e-7, the others to
+  # 1e-4 at best. Anything in between means the offset does not belong to this
+  # table, so leave the correction to the reference ions in the data instead.
+  if (!is.finite(err[best]) || err[best] > 1e-5 ||
+      (length(err) > 1L && sort(err)[2] < 10*err[best])){
+    return(NULL)
+  }
+  co <- fits[[best]]
+  if (!all(is.finite(co)) || co[["A"]] <= 0) return(NULL)
+  structure(c(A = unname(co[["A"]]/mc$scale),
+              B = unname(co[["B"]] - mc$shift*co[["A"]]/mc$scale)),
+            corrected = TRUE)
+}
+
 #' Read TOF calibration coefficients from a 'Shimadzu' QTOF file
 #'
 #' The `TOF Calibration Table` stream holds the calibration points themselves:
@@ -528,23 +634,38 @@ read_qtof_lock_mass <- function(path, polarity = read_qtof_polarity(path)){
 #' Within each entry are the theoretical m/z scaled by 1e9 (`.10`), the measured
 #' flight time in the same units as the `Centroid Data` stream (`.20`) and a
 #' label (`.30`). Five calibrants are stored per polarity, in three replicate
-#' sets. The second set is a factory default rather than a measurement --- its
+#' sets. The second is a factory default rather than a measurement --- its
 #' flight times are byte-identical across different instruments --- and
-#' including it inflates the error by two orders of magnitude, so it is
-#' dropped.
+#' including it inflates the error by two orders of magnitude.
 #'
-#' Fitting the remaining points reproduces the m/z reported by 'LabSolutions'
-#' to within about 5 ppm, against ~30 ppm (positive) to ~3% (negative) for
-#' fixed coefficients.
+#' 'LabSolutions' fits *one* of the remaining sets rather than their average,
+#' and which one varies between files. The mass correction the file caches for
+#' the run (see `read_sz_qtof_mass_correction`) says which, because its offset is
+#' tied to that set's intercept by
+#' \deqn{offset = B(1 - scale) + shift \times A}
+#' Solving that for `B` reproduces one set's own intercept to ~1e-7 and no
+#' other's to better than 1e-4. That set is fitted and the correction folded
+#' in, as \eqn{A/scale} and \eqn{B - shift \times A/scale}, which reproduces
+#' the m/z 'LabSolutions' reports to the four decimal places it writes them
+#' with, leaving 0.03 to 0.1 ppm (median) over three files from two
+#' instruments.
+#'
+#' Failing that --- no cached correction, or an offset that fits no set --- the
+#' sets named by `drop_rep` are dropped and the rest fitted together, which
+#' lands within about 5 ppm. `read_sz_qtof` then refines that fit against the
+#' reference ions it finds in the data.
 #'
 #' @param path Path to 'Shimadzu' .lcd file.
-#' @param A,B Fallback calibration coefficients, relating flight time `t` to
-#' mass as `mz = ((t - B)/A)^2`. Used only if the table cannot be read, in
-#' which case a warning is thrown. The defaults were fitted to a single
-#' acquisition and are biased by a few ppm in positive mode, badly so in
-#' negative mode.
-#' @param drop_rep Which of the three replicate sets to exclude from the fit.
-#' Defaults to `2`, the factory default set described above.
+#' @param drop_rep Which of the three replicate sets to exclude from the
+#' fit. Defaults to `2`, the factory default set described above.
+#' Ignored when the cached correction is used, since that identifies a single
+#' set on its own.
+#' @param correct Logical. Whether to fold in the mass correction
+#' 'LabSolutions' applied to the run, where the file carries one. Defaults to
+#' `TRUE`; the result then reproduces the vendor's mass axis, and carries a
+#' `corrected` attribute to say so. `FALSE` returns the tuning calibration
+#' alone, which is a few ppm out but is what the correction is expressed
+#' against.
 #' @param polarity Ion polarity, either `positive` or `negative`, selecting
 #' which of the two top-level entries to fit. Defaults to the polarity
 #' recorded in the file.
@@ -552,24 +673,20 @@ read_qtof_lock_mass <- function(path, polarity = read_qtof_polarity(path)){
 #' @md
 #' @keywords internal
 
-read_sz_qtof_calibration <- function(path, A = 4.690116e+13, B = 7.448160e+11,
-                                  drop_rep = 2L,
-                                  polarity = read_qtof_polarity(path)){
-  fallback <- function(reason){
-    warning("Could not read the TOF calibration from the file (", reason,
-            "). Falling back on fixed coefficients, which were fitted to one ",
-            "acquisition; m/z may be inaccurate, badly so in negative mode.",
-            call. = FALSE)
-    c(A = A, B = B)
+read_sz_qtof_calibration <- function(path, drop_rep = 2L, correct = TRUE,
+                                     polarity = read_qtof_polarity(path)){
+  fail <- function(reason){
+    stop("Could not read the TOF calibration from the file (", reason,
+         "), so flight times cannot be converted to m/z.", call. = FALSE)
   }
   if (length(polarity) != 1 || is.na(polarity)){
-    return(fallback("ion polarity not found"))
+    fail("ion polarity not found")
   }
   fields <- tryCatch(read_sz_pb_stream(path,
                                        c("LCMSQTOF Tuning", "TOF Calibration Table")),
                      error = function(e) NULL)
   if (is.null(fields) || length(fields) == 0){
-    return(fallback("no 'TOF Calibration Table' stream"))
+    fail("no 'TOF Calibration Table' stream")
   }
   prefix <- if (identical(polarity, "positive")) "10." else "20."
   mz <- flight <- numeric(0)
@@ -592,15 +709,33 @@ read_sz_qtof_calibration <- function(path, A = 4.690116e+13, B = 7.448160e+11,
       mz <- c(mz, cur_mz)
       flight <- c(flight, cur_t)
       rep_id <- c(rep_id, rep)
+      # an entry missing its m/z or flight time must not inherit the last one
+      cur_mz <- cur_t <- NA_real_
     }
+  }
+  # the vendor's own correction, where the file has one, picks out the
+  # replicate set it was fitted against, which averaging the sets cannot
+  mc <- if (isTRUE(correct)) read_sz_qtof_mass_correction(path, polarity) else NULL
+  if (!is.null(mc)){
+    coefs <- qtof_correct_calibration(mz, flight, rep_id, mc)
+    if (!is.null(coefs)) return(coefs)
+    # the file carries a correction but none of the replicate sets matches the
+    # offset it was written against, so it cannot be folded in. The reference
+    # ions in the data still correct the axis, to a few tenths of a ppm rather
+    # than exactly, but reaching this means the match failed on a file that
+    # should have worked.
+    warning("The mass correction stored in the file could not be matched to a ",
+            "calibration replicate set, so it has been ignored. The mass axis ",
+            "is instead corrected against the reference ions in the data.",
+            call. = FALSE)
   }
   keep <- !is.na(mz) & !is.na(flight) & flight > 0 & !(rep_id %in% drop_rep)
   if (sum(keep) < 3){
-    return(fallback("too few calibration points"))
+    fail("too few calibration points")
   }
   coefs <- fit_tof_calibration(mz[keep], flight[keep])
   if (!all(is.finite(coefs)) || coefs[["A"]] <= 0){
-    return(fallback("calibration fit failed"))
+    fail("calibration fit failed")
   }
   coefs
 }
@@ -725,6 +860,12 @@ decode_qtof_stream <- function(path_ms, offsets, A, B, int_scale,
 
   n_peaks <- data_size %/% (8L + int_width)
   keep <- !is.na(n_peaks) & n_peaks > 0L
+  # out-of-range indexing of a raw vector yields 00 rather than an error, so a
+  # truncated stream would decode as zero-intensity peaks at zero flight time
+  if (any(off[keep] + hdr_len + data_size[keep] > n_bytes)){
+    stop("The 'Centroid Data' stream is truncated: a spectrum runs past the ",
+         "end of the stream.", call. = FALSE)
+  }
 
   precursor <- rep(NA_real_, n_scans)
   if (!is.null(dda) && nrow(dda) > 0){
@@ -860,7 +1001,8 @@ decode_qtof_stream <- function(path_ms, offsets, A, B, int_scale,
 #' accumulations, so the divisor is `accumulations / 100`. There is no safe
 #' value to fall back on --- the count varies by method, and guessing one
 #' scales every intensity in the file by the wrong factor --- so a missing or
-#' unreadable count is an error. Callers who want the raw counts can ask for
+#' unreadable count is an error, as is a file whose events disagree, since one
+#' divisor cannot then be right for all of them. Callers who want the raw counts can ask for
 #' them with `scale = FALSE`.
 #'
 #' @noRd
@@ -870,9 +1012,18 @@ read_qtof_int_scale <- function(path){
     f <- file(path_status, "rb")
     on.exit(close(f))
     on.exit(unlink_stream(path_status), add = TRUE)
+    n_rec <- (file.size(path_status) - 64) %/% 48
     seek(f, 64, origin = "start")
-    readBin(f, what = "integer", size = 4L, n = 1L, endian = "little")
+    rec <- readBin(f, what = "integer", size = 4L, n = 12L * n_rec,
+                   endian = "little")
+    unique(rec[seq_len(n_rec)*12L - 11L])
   }, error = function(e) NA_integer_)
+  if (length(n_acc) > 1L){
+    stop("The 'Status' stream reports more than one accumulation count (",
+         paste(n_acc, collapse = ", "), "), so a single divisor cannot be ",
+         "right for every acquisition event. Use `scale = FALSE` to return ",
+         "raw detector counts.", call. = FALSE)
+  }
   if (length(n_acc) != 1L || is.na(n_acc) || n_acc <= 0){
     stop("Could not read the number of TOF accumulations from the file, so ",
          "intensities cannot be scaled to match 'LabSolutions'. Use ",

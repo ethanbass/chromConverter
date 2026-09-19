@@ -1025,14 +1025,33 @@ test_that("'Shimadzu' QTOF calibration is read from the file", {
 
   # `TOF Calibration Table` stores 5 calibrants per polarity in 3 replicate
   # sets; the second set is a factory default rather than a measurement
-  cal <- read_sz_qtof_calibration(path)
-  expect_named(cal, c("A", "B"))
-  expect_equal(cal[["A"]], 4.6906089e+13, tolerance = 1e-6)
-  expect_equal(cal[["B"]], 6.7674066e+11, tolerance = 1e-6)
+  tune <- read_sz_qtof_calibration(path, correct = FALSE)
+  expect_named(tune, c("A", "B"))
+  expect_equal(tune[["A"]], 4.6906089e+13, tolerance = 1e-6)
+  expect_equal(tune[["B"]], 6.7674066e+11, tolerance = 1e-6)
 
   # including the factory set moves `B` by a factor of ~1.7
-  bad <- read_sz_qtof_calibration(path, drop_rep = integer(0))
+  bad <- read_sz_qtof_calibration(path, correct = FALSE,
+                                  drop_rep = integer(0))
   expect_gt(bad[["B"]], 1e12)
+
+  # There are no fixed coefficients to fall back on: they land ~30 ppm out in
+  # positive mode and ~3% out in negative, so an unreadable table is an error.
+  expect_error(read_sz_qtof_calibration(path, polarity = NA_character_),
+               "ion polarity not found")
+  expect_error(read_sz_qtof_calibration(
+    system.file("Anthocyanin.lcd", package = "chromConverterExtraTests"),
+    polarity = "positive"), "no 'TOF Calibration Table' stream")
+
+  # the cached correction picks out the replicate set 'LabSolutions' fitted
+  # against --- here the third --- and folds its own correction in
+  mc <- read_sz_qtof_mass_correction(path)
+  expect_equal(mc$scale, 0.9999975985296534)
+  expect_equal(mc$offset, 36422980.20876448)
+  cal <- read_sz_qtof_calibration(path)
+  expect_true(attr(cal, "corrected"))
+  expect_equal(cal[["A"]], 4.6906203e+13, tolerance = 1e-8)
+  expect_equal(cal[["B"]], 6.7688014e+11, tolerance = 1e-8)
 
   # one 24-byte index record per spectrum, including the empty ones
   offsets <- read_qtof_spectrum_index(path)
@@ -1101,6 +1120,20 @@ test_that("'Shimadzu' QTOF intensities are scaled by the accumulation count", {
   # which records 376 accumulations per scan for this acquisition.
   expect_equal(read_qtof_int_scale(path), 3.76)
 
+  # Out-of-range indexing of a raw vector yields 00 rather than an error, so
+  # without the length check a truncated stream decodes as zero-intensity
+  # peaks at zero flight time instead of failing.
+  path_ms <- export_stream(path, c("QTFL RawData", "Centroid Data"))
+  on.exit(unlink_stream(path_ms))
+  path_cut <- tempfile(fileext = ".bin")
+  on.exit(unlink(path_cut), add = TRUE)
+  writeBin(head(readBin(path_ms, "raw", n = file.size(path_ms)), -10), path_cut)
+  cal <- read_sz_qtof_calibration(path)
+  expect_error(decode_qtof_stream(path_cut, read_qtof_spectrum_index(path),
+                                  A = cal[["A"]], B = cal[["B"]],
+                                  int_scale = 3.76),
+               "truncated")
+
   x <- sz_read_ms(path)
   raw <- sz_read_ms(path, scale = FALSE)
 
@@ -1119,10 +1152,11 @@ test_that("'Shimadzu' QTOF intensities are scaled by the accumulation count", {
     max(abs(sort(o$mz) - sort(g$mz))/sort(g$mz))
   }, numeric(1))
   expect_false(anyNA(err))
-  # the file's own calibration and mass correction reproduce the reported m/z
-  # to a fraction of a ppm across every spectrum in the slice
-  expect_lt(stats::median(err), 1e-6)
-  expect_lt(max(err), 5e-6)
+  # the file's own calibration and cached mass correction reproduce the
+  # reported m/z exactly: what is left is the 4 decimal places the values were
+  # compared against, which is 0.5 ppm at the bottom of the mass range
+  expect_lt(stats::median(err), 3e-7)
+  expect_lt(max(err), 6e-7)
   # intensities are exact, unlike the profile formats
   for (s in head(unique(gt$scan), 60)){
     g <- gt[gt$scan == s, ]
@@ -1130,14 +1164,14 @@ test_that("'Shimadzu' QTOF intensities are scaled by the accumulation count", {
     expect_equal(o$intensity[order(o$mz)], g$intensity[order(g$mz)])
   }
 
-  # without the mass correction the tune-time calibration alone is ~5 ppm low
-  uncorrected <- sz_read_ms(path, lock_mass = FALSE)
-  expect_false(isTRUE(all.equal(uncorrected$mz, x$mz)))
-  expect_gt(median(abs(head(uncorrected$mz, 8) - vendor_mz)/vendor_mz), 4e-6)
+  # the correction is what buys that: the tuning calibration it is applied to
+  # is ~5 ppm low on the same flight times
+  cal <- read_sz_qtof_calibration(path)
+  tune <- read_sz_qtof_calibration(path, correct = FALSE)
+  ft <- cal[["A"]]*sqrt(head(x$mz, 8)) + cal[["B"]]
+  uncorrected <- ((ft - tune[["B"]])/tune[["A"]])^2
+  expect_gt(median(abs(uncorrected - vendor_mz)/vendor_mz), 4e-6)
   expect_lt(median(abs(head(x$mz, 8) - vendor_mz)/vendor_mz), 1e-6)
-  # the correction moves only the mass axis
-  expect_equal(uncorrected$intensity, x$intensity)
-  expect_equal(uncorrected$rt, x$rt)
   expect_equal(head(x$intensity, 8),
                c(768, 269, 615, 234, 1050, 356, 228, 1769))
   expect_equal(head(raw$intensity, 8),
@@ -1493,8 +1527,9 @@ test_that("read_shimadzu_lcd can read negative-mode 'Shimadzu' QTOF data", {
     o <- x[x$scan == s, ]
     expect_equal(nrow(o), nrow(g))
     om <- sort(o$mz); gm <- sort(g$mz)
-    # the file's own calibration reproduces the reported m/z to well under 1 ppm
-    expect_lt(max(abs(om - gm)/gm), 1e-6)
+    # the file's own calibration reproduces the reported m/z to the four
+    # decimal places the vendor writes them with (see `sz_ground_truth`)
+    expect_lt(max(abs(om - gm)/gm), 6e-7)
     expect_equal(o$intensity[order(o$mz)], g$intensity[order(g$mz)])
   }
 })

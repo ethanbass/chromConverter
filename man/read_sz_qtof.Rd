@@ -11,8 +11,7 @@ read_sz_qtof(
   levels = c("MS1", "MS2"),
   read_metadata = TRUE,
   metadata_format = "shimadzu_lcd",
-  scale = TRUE,
-  lock_mass = TRUE
+  scale = TRUE
 )
 }
 \arguments{
@@ -35,11 +34,6 @@ decoded either way, since the level of a scan is recorded in the scan.}
 intensities reported by 'LabSolutions'. Defaults to \code{TRUE}, which errors if
 the accumulation count is missing from the file, since there is no safe
 divisor to guess; \code{FALSE} returns the raw counts.}
-
-\item{lock_mass}{Logical. Whether to correct the mass axis against the
-reference compounds the file stores for that purpose. Defaults to
-\code{TRUE}, which reproduces the reported m/z to ~0.2 ppm; \code{FALSE}
-uses the tuning calibration alone, which is biased by a few ppm.}
 }
 \value{
 A named list holding whichever of \code{MS1} and \code{MS2} the file
@@ -91,9 +85,16 @@ m/z), and \code{0x80000000} comes back as \code{NA}. Conversion is
 which stores calibration points for both polarities; the polarity of the
 acquisition selects between them. This matters: the coefficients differ by
 ~1.5\% between polarities on one instrument, which is ~3\% in m/z, so fixed
-coefficients are not usable. Measured against 'LabSolutions' conversions of
-three files from two instruments, this reproduces the reported m/z to
-0.3-5 ppm (median), against 28-30,000 ppm for fixed coefficients.
+coefficients are not usable. The tuning calibration alone is still a few
+ppm out, because it is recorded before the run; folding in the mass
+correction the file caches for the run closes that gap (see
+\code{read_sz_qtof_mass_correction}).
+Measured against 'ProteoWizard' conversions of three files from two
+instruments --- which read the file through Shimadzu's own library --- the
+m/z then agree to 0.03-0.1 ppm (median). That figure is the resolution of
+the comparison rather than of this parser: the vendor reports m/z to four
+decimal places, which is 0.5 ppm at the bottom of the mass range and 0.05
+ppm at the top.
 
 \strong{Intensity block} (n x m bytes)
 Each peak's intensity is stored as a little-endian unsigned integer of

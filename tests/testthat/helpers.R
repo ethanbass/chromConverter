@@ -55,6 +55,11 @@ skip_if_missing_openchrom <- function() {
 #' These slices cover only the first handful of spectra -- enough to pin m/z,
 #' MS level and polarity without shipping a 50 MB mzML.
 #'
+#' m/z carry four decimal places. That is the precision Shimadzu's library
+#' hands them over at, not a rounding introduced by the export -- the csv is
+#' written with seven. It sets the floor of any m/z comparison against these
+#' values: 0.5 ppm at the bottom of a typical mass range, 0.05 ppm at the top.
+#'
 #' Profile intensities in these slices are the vendor's ringing-suppressed
 #' values, not the raw stored ones: they run ~7% high on total ion current and
 #' ~20% low at the peak apex. Check profile intensities against the file's own

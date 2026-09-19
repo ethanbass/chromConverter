@@ -58,9 +58,6 @@
 #' (excluding zeros), as [call_rainbow()] does. Defaults to `TRUE`. Applies
 #' only to triple quadrupole profile spectra, whose m/z grid is largely
 #' empty; ignored for every other stream.
-#' @param lock_mass Logical. For QTOF mass spectra, whether to correct the
-#' mass axis against the reference compounds the file lists for that purpose.
-#' Defaults to `TRUE`. Ignored for every other stream.
 #' @author Ethan Bass
 #' @return A chromatogram or list of chromatograms in the format specified by
 #' `data_format` and `format_out`. If `data_format` is `wide`, the
@@ -134,8 +131,8 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
-                                scale = TRUE, lock_mass = TRUE,
-                                sparse = TRUE, collapse = TRUE){
+                                scale = TRUE, sparse = TRUE,
+                                collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
@@ -215,7 +212,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                    data_format = data_format, levels = levels,
                    read_metadata = read_metadata,
                    metadata_format = metadata_format,
-                   scale = scale, lock_mass = lock_mass)
+                   scale = scale)
     } else {
       stop("A mass spectrometry stream could not be detected.")
     }

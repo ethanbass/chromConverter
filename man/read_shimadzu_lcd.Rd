@@ -12,7 +12,6 @@ read_shimadzu_lcd(
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   scale = TRUE,
-  lock_mass = TRUE,
   sparse = TRUE,
   collapse = TRUE
 )
@@ -46,10 +45,6 @@ or \code{raw}.}
 
 \item{scale}{Whether to scale the data by the scaling factor present in the
 file. Defaults to \code{TRUE}.}
-
-\item{lock_mass}{Logical. For QTOF mass spectra, whether to correct the
-mass axis against the reference compounds the file lists for that purpose.
-Defaults to \code{TRUE}. Ignored for every other stream.}
 
 \item{sparse}{Logical. Whether to return mass spectra in sparse format
 (excluding zeros), as \code{\link[=call_rainbow]{call_rainbow()}} does. Defaults to \code{TRUE}. Applies

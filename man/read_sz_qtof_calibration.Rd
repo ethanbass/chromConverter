@@ -6,23 +6,25 @@
 \usage{
 read_sz_qtof_calibration(
   path,
-  A = 4.690116e+13,
-  B = 7.44816e+11,
   drop_rep = 2L,
+  correct = TRUE,
   polarity = read_qtof_polarity(path)
 )
 }
 \arguments{
 \item{path}{Path to 'Shimadzu' .lcd file.}
 
-\item{A, B}{Fallback calibration coefficients, relating flight time \code{t} to
-mass as \code{mz = ((t - B)/A)^2}. Used only if the table cannot be read, in
-which case a warning is thrown. The defaults were fitted to a single
-acquisition and are biased by a few ppm in positive mode, badly so in
-negative mode.}
+\item{drop_rep}{Which of the three replicate sets to exclude from the
+fit. Defaults to \code{2}, the factory default set described above.
+Ignored when the cached correction is used, since that identifies a single
+set on its own.}
 
-\item{drop_rep}{Which of the three replicate sets to exclude from the fit.
-Defaults to \code{2}, the factory default set described above.}
+\item{correct}{Logical. Whether to fold in the mass correction
+'LabSolutions' applied to the run, where the file carries one. Defaults to
+\code{TRUE}; the result then reproduces the vendor's mass axis, and carries a
+\code{corrected} attribute to say so. \code{FALSE} returns the tuning calibration
+alone, which is a few ppm out but is what the correction is expressed
+against.}
 
 \item{polarity}{Ion polarity, either \code{positive} or \code{negative}, selecting
 which of the two top-level entries to fit. Defaults to the polarity
@@ -50,13 +52,25 @@ positive and a negative run on the same instrument.
 Within each entry are the theoretical m/z scaled by 1e9 (\code{.10}), the measured
 flight time in the same units as the \verb{Centroid Data} stream (\code{.20}) and a
 label (\code{.30}). Five calibrants are stored per polarity, in three replicate
-sets. The second set is a factory default rather than a measurement --- its
+sets. The second is a factory default rather than a measurement --- its
 flight times are byte-identical across different instruments --- and
-including it inflates the error by two orders of magnitude, so it is
-dropped.
+including it inflates the error by two orders of magnitude.
 
-Fitting the remaining points reproduces the m/z reported by 'LabSolutions'
-to within about 5 ppm, against ~30 ppm (positive) to ~3\% (negative) for
-fixed coefficients.
+'LabSolutions' fits \emph{one} of the remaining sets rather than their average,
+and which one varies between files. The mass correction the file caches for
+the run (see \code{read_sz_qtof_mass_correction}) says which, because its offset is
+tied to that set's intercept by
+\deqn{offset = B(1 - scale) + shift \times A}
+Solving that for \code{B} reproduces one set's own intercept to ~1e-7 and no
+other's to better than 1e-4. That set is fitted and the correction folded
+in, as \eqn{A/scale} and \eqn{B - shift \times A/scale}, which reproduces
+the m/z 'LabSolutions' reports to the four decimal places it writes them
+with, leaving 0.03 to 0.1 ppm (median) over three files from two
+instruments.
+
+Failing that --- no cached correction, or an offset that fits no set --- the
+sets named by \code{drop_rep} are dropped and the rest fitted together, which
+lands within about 5 ppm. \code{read_sz_qtof} then refines that fit against the
+reference ions it finds in the data.
 }
 \keyword{internal}
