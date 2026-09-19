@@ -103,10 +103,22 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
     warning("Skipping the DAD data. ", why, call. = FALSE, immediate. = TRUE)
     what <- setdiff(what, "DAD")
   }
+  # The header has to describe a stream that is actually written, so it takes
+  # its metadata from `what` (a stream dropped above is no longer in there),
+  # preferring `MS1` since it usually carries the fullest metadata.
+  avail <- intersect(what, names(data))
+  if (length(avail) == 0){
+    stop("None of the requested data is present in `data`.", call. = FALSE)
+  }
+  meta <- attributes(data[[if ("MS1" %in% avail) "MS1" else avail[1]]])
   if (is.null(sample_name)){
-    sample_name <- ifelse(inherits(data, "list"),
-                          attr(data[[1]], "sample_name"),
-                          attr(data, "sample_name"))
+    sample_name <- meta$sample_name
+    # a zero-length `sample_name` would collapse the `sprintf` calls in the
+    # header to `character(0)`, dropping whole elements from the file
+    if (length(sample_name) != 1 || is.na(sample_name)){
+      stop("Could not find a `sample_name` in the data. Please supply one ",
+           "with the `sample_name` argument.", call. = FALSE)
+    }
   }
   file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
                            force = force, ext = "mzML")
@@ -114,17 +126,12 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   w <- new_mzml_writer(file_out)
   on.exit(close(w$con))
 
-  if (any(what %in% c("MS1", "MS2", "DAD"))){
-    n_scan <- sum(sapply(what[what %in% c("MS1", "MS2", "DAD")], function(i){
-      tryCatch(count_scans(data[[i]]), error = function(cond) NA)
-    }), na.rm = TRUE)
-  } else n_scan <- 0
-  if ("MS1" %in% what){
-    meta <- attributes(data$MS1)
-    } else meta <- attributes(data$DAD)
+  n_scan <- sum(vapply(intersect(what, c("MS1", "MS2", "DAD")), function(i){
+    tryCatch(n_spectra(data, i), error = function(cond) NA_real_)
+  }, numeric(1)), na.rm = TRUE)
   write_mzml_header(w, meta = meta, n_scan = n_scan,
                     indexed = indexed, instrument_info = instrument_info,
-                    sample_name = meta$sample_name)
+                    sample_name = sample_name)
   spectrum_indices <- c()
   if (any(what == "MS1")){
     if ("MS1" %in% names(data)){
@@ -138,8 +145,10 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   }
   if (any(what == "DAD")){
     if ("DAD" %in% names(data)){
-      idx <- try(spectrum_indices[[length(spectrum_indices)]]$id)
-      start <- ifelse(is.null(idx), 0, as.numeric(gsub("scan=", "", idx)))
+      # the DAD spectra carry on from the MS1 spectra. `spectrum_indices` has
+      # one element per spectrum written, whether or not it holds an offset,
+      # so the count is right even when `indexed` is `FALSE`.
+      start <- length(spectrum_indices)
       DAD <- write_spectra(w, data, what = "DAD", indexed = indexed,
                              idx_start = start, compress = compress,
                              show_progress = show_progress, verbose = verbose)
@@ -241,6 +250,21 @@ count_scans <- function(x){
 }
 
 
+#' Count the spectra that will be written for a stream
+#'
+#' `write_spectra` pads the MS1 spectra out to the TIC when the TIC leads (see
+#' the acquisition delay there), so the header count has to be taken from the
+#' TIC as well or it will not match the spectra that follow it.
+#' @noRd
+n_spectra <- function(data, what){
+  if (what == "MS1" && !is.null(data$TIC)){
+    count_scans(data$TIC)
+  } else {
+    count_scans(data[[what]])
+  }
+}
+
+
 #' Write mzML header
 #' @param w mzML writer (see `new_mzml_writer`).
 #' @param n_scan Number of scans to be included in mzML file.
@@ -300,12 +324,16 @@ create_mzml_sample_list <- function(meta){
     <sample id="%s" name="%s">
     </sample>
   </sampleList>
-          ', paste0("s", meta$sample_id), meta$sample_name)
+          ', paste0("s", meta$sample_id %||% ""), meta$sample_name %||% "")
 }
 
 #' Create mzml file description
 #' @noRd
 create_mzml_file_description <- function(meta){
+  # a missing field would make `sprintf` return `character(0)`, which `paste0`
+  # in `mz_write` then drops, taking the whole element out of the file
+  source_file <- meta$source_file %||% NA
+  source_sha1 <- meta$source_sha1 %||% NA
   sprintf(
   '  <fileDescription>
         <fileContent>
@@ -319,9 +347,9 @@ create_mzml_file_description <- function(meta){
           </sourceFile>
         </sourceFileList>
     </fileDescription>',
-          ifelse(is.na(meta$source_file), "", basename(meta$source_file)),
-          ifelse(is.na(meta$source_file), "", meta$source_file),
-          ifelse(is.na(meta$source_sha1), "", meta$source_sha1))
+          ifelse(is.na(source_file), "", basename(source_file)),
+          ifelse(is.na(source_file), "", source_file),
+          ifelse(is.na(source_sha1), "", source_sha1))
 }
 
 #' Create mzml software list
@@ -432,10 +460,11 @@ write_spectra <- function(w, data, what = c("MS1", "MS2", "TIC", "DAD"),
 #' @noRd
 group_scans <- function(x){
   rt <- get_column(x, "rt")
-  starts <- which(!duplicated(rt))
-  if (length(starts) == length(unique(rt))){
-    ends <- c(starts[-1] - 1L, length(rt))
-    list(rts = rt[starts],
+  runs <- rle(rt)
+  if (length(runs$values) == length(unique(rt))){
+    ends <- cumsum(runs$lengths)
+    starts <- ends - runs$lengths + 1L
+    list(rts = runs$values,
          get_scan = function(i) x[starts[i]:ends[i]])
   } else {
     scan_list <- split(x, rt)

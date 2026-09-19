@@ -209,6 +209,57 @@ test_that("write_mzml skips a one-dimensional chromatogram", {
                                  force = TRUE, show_progress = FALSE),
                  "Skipping the DAD data")
   expect_true(file.exists(f))
-  expect_match(paste(readLines(f, warn = FALSE), collapse = ""),
-               "chromatogramList")
+  txt <- paste(readLines(f, warn = FALSE), collapse = "")
+  expect_match(txt, "chromatogramList")
+  # the header takes its metadata from a stream that survived into `what`. A
+  # bare matrix has no `sample_name`, and reading it from the dropped DAD data
+  # used to collapse the `sprintf` calls to `character(0)`, taking the `<mzML>`
+  # element itself out of the file.
+  expect_match(txt, "<mzML ")
+  expect_no_error(xml2::read_xml(f))
+})
+
+test_that("write_mzml counts and indexes spectra correctly", {
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  long <- function(df){
+    attr(df, "data_format") <- "long"
+    df
+  }
+  ms1 <- long(data.frame(rt = rep(c(3, 4, 5), each = 2),
+                         mz = rep(c(10, 20), 3), intensity = 1:6))
+
+  # the TIC leads the MS1 by two points, so `write_spectra` pads the spectra
+  # out to it and the header count has to be padded the same way
+  f <- write_mzml(list(MS1 = ms1, TIC = long(data.frame(rt = 1:5,
+                                                        intensity = c(0, 0, 7, 8, 9)))),
+                  path_out = tmp, sample_name = "pad", force = TRUE,
+                  show_progress = FALSE)
+  txt <- paste(readLines(f, warn = FALSE), collapse = "")
+  expect_equal(sub(".*<spectrumList count=.([0-9]+).*", "\\1", txt), "5")
+  expect_length(gregexpr("<spectrum ", txt, fixed = TRUE)[[1]], 5)
+
+  # `index` is the position in the spectrumList, so the DAD spectra carry on
+  # from the MS1 spectra whether or not the file is indexed
+  dad <- long(data.frame(rt = c(3, 3, 4, 4), lambda = c(200, 210, 200, 210),
+                         intensity = 1:4))
+  f <- write_mzml(list(MS1 = ms1[1:4, ], DAD = dad), path_out = tmp,
+                  sample_name = "ix", force = TRUE, show_progress = FALSE,
+                  indexed = FALSE)
+  txt <- paste(readLines(f, warn = FALSE), collapse = "")
+  expect_equal(regmatches(txt, gregexpr('index="[0-9]+"', txt))[[1]],
+               sprintf('index="%d"', 0:3))
+})
+
+test_that("group_scans gathers retention times that are not contiguous", {
+  dt <- data.table::as.data.table(data.frame(rt = c(1, 2, 1, 2),
+                                             mz = c(10, 20, 11, 21),
+                                             intensity = 1:4))
+  attr(dt, "data_format") <- "long"
+  scans <- group_scans(dt)
+  expect_equal(scans$rts, c(1, 2))
+  expect_equal(scans$get_scan(1)$mz, c(10, 11))
+  expect_equal(scans$get_scan(2)$mz, c(20, 21))
 })

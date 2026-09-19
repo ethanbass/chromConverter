@@ -127,6 +127,9 @@
 * Fixed the spectrum-type term written into mzML files, which was always `MS:1000580` ("MSn spectrum") even though `ms level` was `1`.
 * Fixed `write_mzml(compress = FALSE)`, which was ignored for spectra (though not for chromatograms), since the argument was never passed on.
 * Fixed the `count` attribute of `<spectrumList>`, which was always written as `1` for data read as a `data.table`.
+* Fixed malformed mzML files written from data with missing `sample_name`, `source_file` or `source_sha1` attributes: a missing field collapsed the `sprintf` that builds the header, dropping the `<mzML>` element itself. The header read its metadata from `MS1`, or from `DAD` when `MS1` was not requested, without checking the stream was still there --- a `DAD` trace skipped earlier leaves nothing to read from. It now reads from a stream that is actually being written, and a missing `sample_name` is an error naming the argument that supplies one.
+* Fixed the `count` attribute of `<spectrumList>` when the TIC starts before the first MS1 scan. Those leading retention times are written as empty spectra, so the file holds one spectrum per TIC point, but the count was taken from the MS1 table and fell short by the number of padded scans.
+* Fixed the `index` attribute of the DAD spectra, which with `indexed = FALSE` restarted at zero and repeated the numbers the MS1 spectra already used. The starting value was parsed from the id of the last spectrum-index entry, and those entries carry an id only when the file is indexed; it is now the count of spectra already written.
 * mzML files are now written as binary, so their line endings are `LF` on all platforms.
 
 #### Metadata and printing
