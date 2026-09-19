@@ -39,13 +39,13 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install dependencies
-        run: |
-          install.packages(c("remotes", "rcmdcheck"))
-          remotes::install_deps(dependencies = TRUE)
-          install.packages(c("ncdf4"))
-          remotes::install_github("ethanbass/chromConverterExtraTests")
-        shell: Rscript {0}
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            any::rcmdcheck
+            any::ncdf4
+            github::ethanbass/chromConverterExtraTests
+          needs: check
 
       - uses: r-lib/actions/check-r-package@v2
         with:
