@@ -22,6 +22,19 @@ skip_if_missing_dependencies <- function(reqs = c("numpy", "olefile")) {
                "not available for testing"))
 }
 
+# The 'aston' module is not installed alongside the other Python dependencies;
+# `call_aston` declares it with `py_require` and lets reticulate provision it on
+# first use. That works in an ordinary session but not inside the sandbox
+# `devtools::check()` runs tests in, where the parser then fails and the reader
+# returns nothing. Ask for it here so the test skips rather than erroring.
+skip_if_missing_aston <- function() {
+  ok <- tryCatch({
+    reticulate::py_require(get_parser_reqs("aston"))
+    reticulate::py_module_available("aston.tracefile")
+  }, error = function(e) FALSE)
+  if (!isTRUE(ok)) skip("the 'aston' Python module could not be provisioned.")
+}
+
 skip_if_missing_thermorawfileparser <- function() {
   if (.Platform$OS.type != "windows"){
     path <- readLines(system.file("shell/thermofileparser.sh", package = "chromConverter"))[2]

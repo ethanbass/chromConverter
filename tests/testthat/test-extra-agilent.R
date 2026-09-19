@@ -558,32 +558,48 @@ test_that("read_chroms can read 'Agilent MassHunter' dad files", {
 
   x <- read_chroms(path, format_in = "masshunter_dad", parser = "entab",
                    progress_bar = FALSE)[[1]]
-  # the 'aston' parsers are deprecated; the warning fires once per session
-  x1 <- suppressWarnings(
-    read_chroms(path, format_in = "masshunter_dad", parser = "aston",
-                progress_bar = FALSE)[[1]])
   expect_equal(dim(x), c(240, 276))
   expect_equal(class(x)[1], "matrix")
-  expect_equal(x, x1, ignore_attr = TRUE)
   expect_equal(attr(x, "parser"), "entab")
-  expect_equal(attr(x1, "parser"), "aston")
   expect_equal(attr(x, "data_format"), "wide")
-  expect_equal(attr(x1, "data_format"), "wide")
 
   x <- read_chroms(path, format_in = "masshunter_dad", parser = "entab",
                    data_format = "long", format_out = "data.frame",
                    progress_bar = FALSE)[[1]]
-  x1 <- read_chroms(path, format_in = "masshunter_dad", parser = "aston",
-                    data_format = "long", format_out = "data.frame",
-                    progress_bar = FALSE)[[1]]
   expect_equal(dim(x), c(66240, 3))
   expect_equal(colnames(x), c("rt", "lambda", "intensity"))
   expect_s3_class(x, "data.frame")
   expect_equal(attr(x, "parser"), "entab")
+  expect_equal(attr(x, "data_format"), "long")
+})
 
+# split from the test above so that the 'entab' parser, which is the supported
+# one, still runs where 'aston' cannot be provisioned
+test_that("the 'aston' parser reads 'Agilent MassHunter' dad files the same way", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_not_installed("entab")
+  skip_if_missing_aston()
+
+  path <- system.file("masshunter.d/AcqData/DAD1.sp",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chroms(path, format_in = "masshunter_dad", parser = "entab",
+                   progress_bar = FALSE)[[1]]
+  # the 'aston' parsers are deprecated; the warning fires once per session
+  x1 <- suppressWarnings(
+    read_chroms(path, format_in = "masshunter_dad", parser = "aston",
+                progress_bar = FALSE)[[1]])
+  expect_equal(x, x1, ignore_attr = TRUE)
+  expect_equal(attr(x1, "parser"), "aston")
+  expect_equal(attr(x1, "data_format"), "wide")
+
+  x1 <- read_chroms(path, format_in = "masshunter_dad", parser = "aston",
+                    data_format = "long", format_out = "data.frame",
+                    progress_bar = FALSE)[[1]]
   expect_equal(attr(x1, "parser"), "aston")
   expect_equal(colnames(x1), c("rt", "lambda", "intensity"))
-  expect_equal(attr(x, "data_format"), "long")
   expect_equal(attr(x1, "data_format"), "long")
 })
 
