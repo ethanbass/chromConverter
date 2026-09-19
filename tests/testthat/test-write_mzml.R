@@ -59,8 +59,11 @@ expect_index_offsets_exact <- function(path, n_spectra, n_chromatograms = 0L){
       return(invisible(NULL))
     }
     expect_length(block, 1)
+    # `\\K` rather than a lookbehind: the prefix is variable-length, which PCRE
+    # only accepts behind `(?<=)` from 10.43 on, so a lookbehind fails on older
+    # systems than the one this was written on
     offsets <- as.numeric(regmatches(block, gregexpr(
-      '(?<=<offset idRef="[^"]{1,80}">)[0-9]+', block, perl = TRUE))[[1]])
+      '<offset idRef="[^"]{1,80}">\\K[0-9]+', block, perl = TRUE))[[1]])
     idrefs <- regmatches(block, gregexpr(
       '(?<=<offset idRef=")[^"]{1,80}', block, perl = TRUE))[[1]]
 
