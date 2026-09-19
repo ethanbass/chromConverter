@@ -7,6 +7,18 @@ check_format_out <- function(format_out){
   match.arg(format_out, c("matrix", "data.frame", "data.table"))
 }
 
+#' Check `format_out` Argument for Mass Spectra
+#'
+#' Long mass spectral data has no useful matrix representation: `as.matrix`
+#' promotes every column to double and gives up `$`. The package-wide default
+#' of `matrix` therefore resolves to `data.table` for spectra, while
+#' `data.frame` and `data.table` are returned as requested.
+#' @noRd
+check_format_out_ms <- function(format_out){
+  format_out <- check_format_out(format_out)
+  if (format_out == "matrix") "data.table" else format_out
+}
+
 #' Check Data Format Argument
 #'
 #' Make sure that `data_format` argument is "long" when `format_out` is
@@ -101,12 +113,17 @@ convert_chrom_format <- function(x, format_out, data_format = NULL){
   if (is.null(data_format)){
     data_format <- attr(x, "data_format")
   }
-  if (inherits(x, format_out)){
+  if (format_out == "data.frame"){
+    # `inherits` is not enough here: data.tables inherit from data.frame, so a
+    # data.frame request must still strip the subclass
+    if (identical(class(x), "data.frame")){
+      return(x)
+    }
+    return(as.data.frame(x))
+  } else if (inherits(x, format_out)){
     return(x)
   } else if (format_out == "matrix"){
     return(as.matrix(x))
-  } else if (format_out == "data.frame"){
-    return(as.data.frame(x))
   } else if (format_out == "data.table"){
     return(data.table::as.data.table(x, keep.rownames = ifelse(data_format == "wide",
                                                                yes = "rt",

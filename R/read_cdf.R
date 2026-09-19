@@ -183,7 +183,7 @@ read_andi_ms <- function(path,
     if (ms_format == "data.frame"){
       rts <- rep(rt_scan, n_scans)
       MS1 <- data.frame(rt = rts, mz = mz, intensity = int)
-      if (format_out == "data.table"){
+      if (check_format_out_ms(format_out) == "data.table"){
         data.table::setDT(MS1)
       }
     } else if (ms_format == "list"){
@@ -201,7 +201,9 @@ read_andi_ms <- function(path,
     meta$detector <- "MS"
     data <- purrr::imap(data, function(x, h){
       attach_metadata(x, meta = meta, format_in = metadata_format,
-                      format_out = format_out,
+                      format_out = ifelse(h == "MS1",
+                                          check_format_out_ms(format_out),
+                                          format_out),
                       data_format = ifelse(h == "MS1", "long", data_format),
                       parser = "chromconverter", source_file = path,
                       source_file_format = "andi_ms")

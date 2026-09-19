@@ -130,7 +130,9 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
 
     dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = "varian_sms",
-                      format_out = format_out,
+                      format_out = ifelse(h == "MS1",
+                                          check_format_out_ms(format_out),
+                                          format_out),
                       data_format = ifelse(h == "MS1", "long", data_format),
                       source_file = path, source_file_format = "varian_sms")
     })
@@ -252,7 +254,7 @@ read_varian_chromatograms <- function(f, n_time, format_out = "data.frame",
 #' @author Ethan Bass
 #' @noRd
 read_varian_ms_stream <- function(f, n_scans, flen, format_out = "data.frame"){
-  format_out <- ifelse(format_out == "matrix", "data.frame", format_out)
+  format_out <- check_format_out_ms(format_out)
   b <- as.integer(readBin(f, "raw", n = flen - seek(f)))
   cap <- length(b) %/% 2L # upper bound: each pair spans at least two bytes
   sc <- integer(cap); mzv <- numeric(cap); iv <- numeric(cap)
