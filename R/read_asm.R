@@ -1,6 +1,6 @@
 #' Read 'Allotrope Simple Model' (ASM) 2D chromatograms
 #'
-#' Reads ['Allotrope Simple Model'](https://www.allotrope.org/asm) files into R.
+#' Reads ['Allotrope Simple Model'](https://allotropefoundation.org/our-technology/) files into R.
 #'
 #' @inheritParams shared_params
 #' @param path Path to ASM `.json` file.

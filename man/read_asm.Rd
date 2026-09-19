@@ -40,7 +40,7 @@ or \code{data.table}. Metadata can be attached to the chromatogram as \link{attr
 if \code{read_metadata} is \code{TRUE}.
 }
 \description{
-Reads \href{https://www.allotrope.org/asm}{'Allotrope Simple Model'} files into R.
+Reads \href{https://allotropefoundation.org/our-technology/}{'Allotrope Simple Model'} files into R.
 }
 \examples{
 \dontrun{
