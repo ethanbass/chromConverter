@@ -4,12 +4,7 @@
 \alias{print.chrom_list}
 \title{Print a chrom_list object}
 \usage{
-\method{print}{chrom_list}(
-  x,
-  n = 10,
-  cols = c("sample_name", "run_datetime", "method", "detector"),
-  ...
-)
+\method{print}{chrom_list}(x, n = 10, cols = chrom_summary_cols(), ...)
 }
 \arguments{
 \item{x}{A \code{chrom_list} object.}
@@ -17,8 +12,8 @@
 \item{n}{Integer. Maximum number of chromatograms to show in the table.
 Defaults to \code{10}.}
 
-\item{cols}{Character vector of attribute names to extract and display.
-Defaults to \code{c("sample_name", "run_datetime", "method", "detector")}.}
+\item{cols}{Character vector of attribute names to report. Defaults to:
+\code{sample_name}, \code{run_datetime}, \code{method}, \code{detector}, \code{wavelength}, \code{detector_range}, \code{scan_type}, \code{polarity}, \code{precursor_mz}, \code{product_mz}, \code{mz_range}.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

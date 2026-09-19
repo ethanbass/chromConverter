@@ -476,3 +476,87 @@ test_that("print.chrom_list survives a metadata value that is not UTF-8", {
   expect_true(any(grepl("method: C:\\", out, fixed = TRUE)))
   expect_true(any(grepl("m.lcm", out, fixed = TRUE)))
 })
+
+test_that("summary.chrom_list tabulates doubly nested chromatograms", {
+  x <- read_meoh()
+  s <- summary(x)
+
+  # one row per chromatogram, however deeply nested, with the sample and the
+  # path below it in separate columns
+  expect_equal(nrow(s), 20)
+  expect_equal(s$sample, rep("MeOH1", 20))
+  expect_equal(s$trace[1:2], c("dad", "chroms.DAD1E,Sig=344,4  Ref=off"))
+  expect_equal(s$n_rows[1], 4050)
+  expect_equal(s$n_cols[1], 156)
+  # nothing is collapsed into a header, so a field that is constant across the
+  # list is still a column
+  expect_true(all(c("sample_name", "detector") %in% names(s)))
+  expect_true(all(s$sample_name == "MeOH1"))
+  # and nothing is truncated to the first `n` rows, as `print` does
+  expect_equal(s$trace[20], "instrument.AFC1C,Delay Sensor")
+
+  expect_s3_class(summary(x, format_out = "data.table"), "data.table")
+  expect_s3_class(summary(x, format_out = "tibble"), "tbl_df")
+  expect_equal(names(summary(x, cols = "detector")),
+               c("sample", "trace", "n_rows", "n_cols", "detector"))
+})
+
+test_that("summary.chrom_list handles lists with nothing to report", {
+  mk <- function() matrix(1:4, nrow = 2)
+
+  # a flat list has nothing to put in `trace`, and no metadata to report
+  s <- summary(structure(list(a = mk(), b = mk()), class = "chrom_list"))
+  expect_equal(names(s), c("sample", "n_rows", "n_cols"))
+  expect_equal(s$sample, c("a", "b"))
+  expect_equal(s$n_rows, c(2L, 2L))
+
+  s <- summary(structure(list(), class = "chrom_list"))
+  expect_equal(dim(s), c(0L, 3L))
+  expect_s3_class(s, "data.frame")
+})
+
+test_that("summary.chrom_list and print.chrom_list report the same fields", {
+  # the two default to the same columns, so a field added for one cannot go
+  # missing from the other
+  expect_equal(formals(print.chrom_list)$cols, quote(chrom_summary_cols()))
+  expect_equal(formals(summary.chrom_list)$cols, quote(chrom_summary_cols()))
+  expect_true(all(c("sample_name", "detector", "scan_type", "precursor_mz",
+                    "product_mz", "mz_range") %in% chrom_summary_cols()))
+  # an optical trace is described too, not just a mass spectrum
+  expect_true(all(c("wavelength", "detector_range") %in% chrom_summary_cols()))
+})
+
+test_that("summary.chrom_list omits the fields a detector does not record", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("shimadzu_tlm_dda.lcd",
+          package = "chromConverterExtraTests")
+  path_ms <- system.file("shimadzu_tlm_mrm_multi.lcd",
+             package = "chromConverterExtraTests")
+  path_pda <- system.file("Anthocyanin.lcd",
+              package = "chromConverterExtraTests")
+  skip_if_not(all(file.exists(path, path_ms, path_pda)))
+
+  # this file holds both a PDA stream and a triple-quad MS stream, so the
+  # optical and the mass spectrometry fields are both in play
+  x <- read_chroms(path, format_in = "shimadzu_lcd",
+                   what = c("pda", "tic"), progress_bar = FALSE)
+  s <- summary(x)
+  # the streams are named as the other readers name them, whatever case they
+  # were asked for in
+  expect_equal(s$trace, c("PDA", paste("TIC.Event", 1:4)))
+  expect_equal(s$detector, c("PDA", rep("MS", 4)))
+  expect_equal(s$wavelength, c("190, 800", rep(NA_character_, 4)))
+  expect_equal(s$mz_range[1], NA_character_)
+  expect_equal(s$mz_range[2], "209, 1001")
+
+  # with only one kind of detector in the list, the other's fields are gone
+  ms <- read_chroms(path_ms, format_in = "shimadzu_lcd", what = "tic",
+                    progress_bar = FALSE)
+  expect_false(any(c("wavelength", "detector_range") %in% names(summary(ms))))
+  pda <- read_chroms(path_pda, format_in = "shimadzu_lcd",
+                     what = "pda", progress_bar = FALSE)
+  expect_false(any(c("scan_type", "precursor_mz", "product_mz", "mz_range")
+                   %in% names(summary(pda))))
+})

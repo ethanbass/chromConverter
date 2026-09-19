@@ -11,8 +11,7 @@
 #' @param x A `chrom_list` object.
 #' @param n Integer. Maximum number of chromatograms to show in the table.
 #' Defaults to `10`.
-#' @param cols Character vector of attribute names to extract and display.
-#'   Defaults to `c("sample_name", "run_datetime", "method", "detector")`.
+#' @eval cols_doc()
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return Invisibly returns `x`.
@@ -20,9 +19,7 @@
 #' @seealso [extract_metadata]
 #'
 #' @export
-print.chrom_list <- function(x, n = 10,
-                             cols = c("sample_name", "run_datetime",
-                                      "method", "detector"), ...) {
+print.chrom_list <- function(x, n = 10, cols = chrom_summary_cols(), ...) {
   n <- max(0L, as.integer(n))
   # A element may itself be a list of chromatograms (e.g. one per detector),
   # so the number of chromatograms is not `length(x)`. Both this method and
@@ -42,7 +39,7 @@ print.chrom_list <- function(x, n = 10,
 
   if (n_traces == 0) return(invisible(x))
 
-  meta <- suppressWarnings(extract_metadata(x, cols))
+  meta <- suppressWarnings(extract_metadata(x, cols, collapse = TRUE))
   if (!inherits(meta, "data.frame")) {
     # `extract_metadata` returns `NA` when none of `cols` could be found. Say
     # so, but still list the chromatograms: their names are the only thing left
@@ -53,9 +50,9 @@ print.chrom_list <- function(x, n = 10,
       paste(l$path, collapse = "."), character(1)))
   }
 
-  # Group by the sample -- the outermost name -- so that every trace belonging
   meta <- to_valid_utf8_df(meta)
 
+  # Group by the sample --- the outermost name --- so that every trace belonging
   # to it is printed together under it. Grouping by the whole path above the
   # leaf instead would split one sample across several blocks whenever its
   # traces sit at different depths, as they do for an 'Agilent' `.dx`, where
@@ -68,8 +65,8 @@ print.chrom_list <- function(x, n = 10,
   # In grouped mode the leaf names are the point of the table, so `name` is
   # always shown, even when a group holds a single trace.
   if (grouped) is_constant[names(meta) == "name"] <- FALSE
-  # A field that is constant only because it is empty everywhere -- an
-  # unnamed injection, say -- says nothing, and printing `sample_name: ` with
+  # A field that is constant only because it is empty everywhere --- an
+  # unnamed injection, say --- says nothing, and printing `sample_name: ` with
   # nothing after it reads as a bug. Drop it from the header rather than
   # moving it to the table, where it would be just as empty.
   is_blank <- is_constant & vapply(meta, function(col) is_blank_value(col[[1]]),
@@ -91,7 +88,7 @@ print.chrom_list <- function(x, n = 10,
         character(1))
       # A field that is the same for every trace in a sample describes the
       # sample rather than the trace, so it belongs in the block header instead
-      # of being repeated down every row of the block -- `sample_name` in a
+      # of being repeated down every row of the block --- `sample_name` in a
       # list read with `sample_names = "sample_name"` merely restates the label
       # above it. Constancy is judged over the whole sample rather than over
       # the rows `n` leaves room for, so that truncating the table cannot
@@ -124,6 +121,103 @@ print.chrom_list <- function(x, n = 10,
   }
 
   invisible(x)
+}
+
+#' Default metadata fields for summarizing a `chrom_list`
+#'
+#' The fields [print.chrom_list] and [summary.chrom_list] report by default.
+#' After the fields every format records come the ones that
+#' say what the detector measured --- `wavelength` or `detector_range` for an
+#' optical detector, the rest for a mass spectrometer.
+#'
+#' @return A character vector of metadata field names.
+#' @noRd
+chrom_summary_cols <- function(){
+  c("sample_name", "run_datetime", "method", "detector", "wavelength",
+    "detector_range", "scan_type", "polarity", "precursor_mz", "product_mz",
+    "mz_range")
+}
+
+#' Document the `cols` argument of the `chrom_list` methods
+#'
+#' `chrom_summary_cols` is the only place the default fields are written down,
+#' so the documentation is generated from it rather than kept in step by hand.
+#' Inserted by the `@eval` tag on `print.chrom_list` and `summary.chrom_list`,
+#' which is why this returns roxygen lines rather than a formatted string.
+#'
+#' @param extra Further lines to append, for a method that has more to say
+#' about the argument than the other does.
+#' @noRd
+cols_doc <- function(extra = character()){
+  c("@param cols Character vector of attribute names to report. Defaults to:",
+    paste0(paste0("`", chrom_summary_cols(), "`", collapse = ", "), "."),
+    extra)
+}
+
+#' Summarize a chrom_list object
+#'
+#' Returns what [print.chrom_list] displays as a table, with one row per
+#' chromatogram: the sample it belongs to, its size, and the metadata fields
+#' in `cols`. Unlike `print`, nothing is collapsed into a header, abbreviated
+#' or truncated to the first few rows, so the result can be filtered and
+#' joined against.
+#'
+#' @param object A `chrom_list` object.
+#' @eval cols_doc("A field that no chromatogram carries is omitted rather
+#'   than filled with `NA`.")
+#' @param format_out Format of object. Either `data.frame`, `data.table` or
+#' `tibble`.
+#' @param ... Additional arguments (currently ignored).
+#'
+#' @return A `data.frame`, `data.table` or `tibble` (according to the value of
+#' `format_out`) with one row per chromatogram. The first columns describe
+#' where the chromatogram sits and how large it is --- `sample`, `trace` (only
+#' when a sample holds more than one), `n_rows` and `n_cols` --- followed by one
+#' column per metadata field found. A field no chromatogram records, or that
+#' every one of them leaves empty, is dropped rather than filled with `NA`. A
+#' field holding more than one value, such as the `product_mz` of an MRM event
+#' monitoring several transitions, is collapsed to a comma-separated string so
+#' that it occupies one column.
+#'
+#' @seealso [extract_metadata], [print.chrom_list]
+#'
+#' @export
+summary.chrom_list <- function(object, cols = chrom_summary_cols(),
+                               format_out = c("data.frame", "data.table",
+                                              "tibble"), ...){
+  format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
+  # `extract_metadata` flattens with `chrom_list_leaves` too, so its rows line
+  # up with `leaves` one for one, as `print.chrom_list` also relies on
+  leaves <- chrom_list_leaves(object)
+  out <- data.frame(
+    sample = vapply(leaves, function(l) l$path[1], character(1)),
+    trace = vapply(leaves, function(l) if (length(l$path) > 1)
+      paste(l$path[-1], collapse = ".") else NA_character_, character(1)),
+    n_rows = vapply(leaves, function(l) as.integer(NROW(l$chrom)), integer(1)),
+    n_cols = vapply(leaves, function(l) as.integer(NCOL(l$chrom)), integer(1)),
+    row.names = NULL, stringsAsFactors = FALSE)
+  # a flat list has nothing to put in `trace`, and a column of `NA` describes
+  # the shape of the list rather than the data
+  if (all(is.na(out$trace))) out$trace <- NULL
+
+  if (length(leaves) > 0){
+    meta <- suppressWarnings(extract_metadata(object, cols, collapse = TRUE))
+    if (inherits(meta, "data.frame")){
+      meta <- meta[, setdiff(names(meta), "name"), drop = FALSE]
+      # a field that is empty for every chromatogram says only that the format
+      # does not record it, which is what `print.chrom_list` judges too
+      keep <- !vapply(meta, function(col)
+        all(vapply(col, is_blank_value, logical(1))), logical(1))
+      out <- cbind(out, meta[, keep, drop = FALSE])
+    }
+  }
+  out <- to_valid_utf8_df(out)
+  if (format_out == "data.table"){
+    data.table::setDT(out)
+  } else if (format_out == "tibble"){
+    out <- tibble::as_tibble(out)
+  }
+  out
 }
 
 #' Lay out the constant metadata fields as a header block
@@ -179,8 +273,8 @@ truncate_meta <- function(meta, max_field = 40L){
 
 #' Shorten a string from the middle
 #'
-#' Both ends of these values carry information -- a path names its directory
-#' and its file -- so an elision in the middle keeps more than a trailing one.
+#' Both ends of these values carry information --- a path names its directory
+#' and its file --- so an elision in the middle keeps more than a trailing one.
 #' @noRd
 truncate_middle <- function(x, n){
   long <- which(!is.na(x) & nchar(x) > n)

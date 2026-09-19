@@ -47,3 +47,4 @@ reference:
 - title: "Methods"
   contents:
   - print.chrom_list
+  - summary.chrom_list
