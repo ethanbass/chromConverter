@@ -545,8 +545,8 @@ test_that("summary.chrom_list omits the fields a detector does not record", {
   s <- summary(x)
   # the streams are named as the other readers name them, whatever case they
   # were asked for in
-  expect_equal(s$trace, c("PDA", paste("TIC.Event", 1:4)))
-  expect_equal(s$detector, c("PDA", rep("MS", 4)))
+  expect_equal(s$trace, c("DAD", paste("TIC.Event", 1:4)))
+  expect_equal(s$detector, c("DAD", rep("MS", 4)))
   expect_equal(s$wavelength, c("190, 800", rep(NA_character_, 4)))
   expect_equal(s$mz_range[1], NA_character_)
   expect_equal(s$mz_range[2], "209, 1001")

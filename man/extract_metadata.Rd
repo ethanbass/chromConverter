@@ -8,7 +8,9 @@ extract_metadata(
   chrom_list,
   what = chrom_metadata_fields(),
   detector = NULL,
-  format_out = c("data.frame", "data.table", "tibble")
+  format_out = c("data.frame", "data.table", "tibble"),
+  collapse = FALSE,
+  expand = FALSE
 )
 }
 \arguments{
@@ -30,11 +32,29 @@ sample.}
 
 \item{format_out}{Format of object. Either \code{data.frame}, \code{data.table} or
 \code{tibble}.}
+
+\item{collapse}{Logical. Whether to collapse a field holding more than one
+value (\code{time_range}, or the \code{product_mz} of an MRM event monitoring several
+transitions) into a single comma-separated string. Defaults to \code{FALSE}, in
+which case such a field is spread across numbered columns
+(\code{time_range1}, \code{time_range2}).}
+
+\item{expand}{Whether to include the nested metadata fields, whose value is
+itself a list or table rather than a single value per chromatogram: the
+\code{ms_params} instrument settings, the \code{acaml_metadata} injection record that
+\code{read_agilent_rslt} reads from the \code{.acaml} file, or the whole vendor list
+that \code{metadata_format = "raw"} passes through. Either \code{TRUE}, to include
+every nested field the chromatograms carry, a character vector naming the
+ones to include, or \code{FALSE} (the default) to include none. Each element
+becomes a column of its own, named for itself (\code{SampleName}) unless that
+name is already taken, in which case it carries the field it came from
+(\code{ms_params.polarity}, since \code{polarity} is a metadata field in its own
+right).}
 }
 \value{
 A \code{data.frame}, \code{tibble}, or \code{data.table} (according to the value of
 \code{format_out}), with samples as rows and the specified metadata elements as
-columns.
+columns, or \code{NA} if none of the specified elements could be found.
 }
 \description{
 Extract metadata as a \code{data.frame}, \code{data.table} or \code{tibble} from a list of

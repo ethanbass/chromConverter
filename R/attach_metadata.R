@@ -733,6 +733,26 @@ sz_instrument <- function(meta){
   if (sz_has_instrument(config)) config else NA
 }
 
+#' Get 'Shimadzu' detector type
+#'
+#' `DETN`, the detector a trace was read from. 'Shimadzu' calls a photodiode
+#' array `PDA` where the rest of the package calls the same device `DAD`, as
+#' 'Agilent' does and as the `shimadzu_dad` ascii map already did, so the one
+#' acquisition read from a `.lcd` and from its ascii export no longer reports
+#' two different detectors. `read_shimadzu_lcd` names the stream `DAD` as well,
+#' and accepts `PDA` as a synonym for it.
+#'
+#' Everything else is passed through as the file gives it. Note that `DETN` is
+#' not always a device type: a multichannel LC reports slot labels
+#' (`Detector A`, `DET#1`) rather than `UV` or `RID`, and those are left alone
+#' for want of anything reliable to map them to --- `detector_model` names the
+#' module in those cases.
+#' @noRd
+sz_detector <- function(meta){
+  detector <- get_metadata_field(meta, "DETN")
+  if (identical(detector, "PDA")) "DAD" else detector
+}
+
 #' Get 'Shimadzu' detector model
 #'
 #' `DSN`, the unit in the detector slot the trace was read from: `SPD-M20A` for

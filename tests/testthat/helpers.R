@@ -48,3 +48,63 @@ skip_if_missing_openchrom <- function() {
     skip("OpenChrom could not be found.")
   }
 }
+
+#' Ground truth for a 'Shimadzu' fixture, taken from a 'ProteoWizard'
+#' conversion of the same file
+#'
+#' These slices cover only the first handful of spectra -- enough to pin m/z,
+#' MS level and polarity without shipping a 50 MB mzML.
+#'
+#' Profile intensities in these slices are the vendor's ringing-suppressed
+#' values, not the raw stored ones: they run ~7% high on total ion current and
+#' ~20% low at the peak apex. Check profile intensities against the file's own
+#' `TIC Data` stream instead. m/z, MS level and polarity are reliable.
+sz_ground_truth <- function(name){
+  path <- system.file(paste0(name, "_gt.csv.gz"),
+                      package = "chromConverterExtraTests")
+  if (!file.exists(path)){
+    skip(paste0(name, "_gt.csv.gz could not be found."))
+  }
+  gt <- utils::read.csv(path)
+  # a scan 'ProteoWizard' exported with no peaks is one row with `mz` and
+  # `intensity` empty; the parsers drop empty scans, so there is nothing for
+  # those rows to be compared against
+  gt[!is.na(gt$mz), ]
+}
+
+#' Read every mass spectrum in a 'Shimadzu' `.lcd` file as one table
+#'
+#' `read_shimadzu_lcd` returns a table per MS level. A test that checks a whole
+#' run -- against a vendor conversion, or against the file's own TIC -- wants
+#' the levels stitched back together in scan order, with the per-scan summaries
+#' of both as its `scan_info`. Only the columns the levels share are kept, so
+#' nothing is padded with `NA` that the file does not record.
+sz_read_ms <- function(path, ...){
+  sz_stitch_ms(read_shimadzu_lcd(path, what = "MS", format_out = "data.frame",
+                                 ...))
+}
+
+#' Stitch levels that have already been read
+#'
+#' The same as `sz_read_ms`, for a test that needs the levels separately as
+#' well and should not pay for a second decode to get them.
+sz_stitch_ms <- function(ms){
+  if (is.data.frame(ms)){
+    return(ms)
+  }
+  cols <- Reduce(intersect, lapply(ms, names))
+  out <- do.call(rbind, lapply(ms, function(x) x[, cols]))
+  info <- do.call(rbind, lapply(ms, attr, "scan_info"))
+  out <- out[order(out$scan), ]
+  info <- info[order(info$scan), ]
+  row.names(out) <- row.names(info) <- NULL
+  drop <- c("names", "row.names", "class", "ms_level")
+  # polarity describes a level, so it only describes the run if they agree
+  if (length(unique(lapply(ms, attr, "polarity"))) > 1){
+    drop <- c(drop, "polarity")
+  }
+  keep <- setdiff(names(attributes(ms[[1]])), drop)
+  for (a in keep) attr(out, a) <- attr(ms[[1]], a)
+  attr(out, "scan_info") <- info
+  out
+}

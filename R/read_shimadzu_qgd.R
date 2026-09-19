@@ -61,7 +61,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
                         data_format = data_format)
   }
   if ("MS1" %in% what){
-    MS1 <- read_qgd_ms_stream(path, format_out = check_format_out_ms(format_out))
+    MS1 <- read_qgd_ms_stream(path, format_out = check_format_out_table(format_out))
   }
   dat <- mget(what)
   if (read_metadata){
@@ -72,7 +72,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
                       source_file = path, source_file_format = "shimadzu_qgd",
                       data_format = ifelse(h == "MS1", "long", data_format),
                       format_out = ifelse(h == "MS1",
-                                          check_format_out_ms(format_out),
+                                          check_format_out_table(format_out),
                                           format_out))
     })
   }

@@ -271,3 +271,42 @@ test_that("to_valid_utf8 repairs only the strings that need it", {
   expect_identical(to_valid_utf8(1:3), 1:3)
   expect_identical(to_valid_utf8(NULL), NULL)
 })
+
+test_that("protobuf records are split on their own boundaries", {
+  # one repeated length-delimited field 1 at the top level, holding: a record
+  # with field 1 = 5, an empty record, and a record with field 2 = 300
+  bytes <- as.integer(c(0x0A, 0x02, 0x08, 0x05,
+                        0x0A, 0x00,
+                        0x0A, 0x03, 0x10, 0xAC, 0x02))
+  out <- sz_pb_records(bytes)
+  expect_length(out, 3)
+  # the paths are relative to the record, so both records report a bare field
+  # number rather than one prefixed by the repeated field they sit in
+  expect_equal(out[[1]][[1]]$path, "1")
+  expect_equal(out[[1]][[1]]$value, 5)
+  expect_equal(out[[2]], list())
+  expect_equal(out[[3]][[1]]$path, "2")
+  expect_equal(out[[3]][[1]]$value, 300)
+
+  # a record whose declared length runs past the end of the stream ends the
+  # walk rather than indexing off it. The overrun here is one byte, which is
+  # exactly what a bound measured from the length varint instead of from the
+  # payload would let through.
+  expect_equal(sz_pb_records(as.integer(c(0x0A, 0x02, 0x08))), list())
+
+  # and anything that is not a length-delimited field at the top level stops it
+  expect_equal(sz_pb_records(as.integer(c(0x08, 0x05))), list())
+  expect_equal(sz_pb_records(integer(0)), list())
+})
+
+test_that("'Shimadzu' stream names are matched in any spelling", {
+  # `DAD` is the name every other reader uses for the same detector, so it is
+  # the canonical one here; 'Shimadzu' spells it `PDA`, which is accepted too
+  expect_equal(sz_match_streams("PDA"), "DAD")
+  expect_equal(sz_match_streams("pda"), "DAD")
+  expect_equal(sz_match_streams(c("pda", "chroms")), c("DAD", "chroms"))
+  # case is ignored throughout, and a repeated request collapses
+  expect_equal(sz_match_streams(c("pda", "PDA", "DAD")), "DAD")
+  expect_equal(sz_match_streams(c("ms2", "tic")), c("MS2", "TIC"))
+  expect_error(sz_match_streams("nonsense"), "`what` should be one of")
+})

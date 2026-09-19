@@ -12,16 +12,27 @@ read_shimadzu_lcd(
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   scale = TRUE,
+  lock_mass = TRUE,
+  sparse = TRUE,
   collapse = TRUE
 )
 }
 \arguments{
 \item{path}{Path to 'Shimadzu' \code{.lcd} file.}
 
-\item{what}{What stream to get: current options are \code{pda}, chromatograms
-(\code{chroms}), \code{tic}, and/or peak lists (\code{peak_table}). If a stream
-is not specified, the function will default to \code{pda} if the PDA stream
-is present.}
+\item{what}{What stream to get: current options are \code{DAD} (for which \code{PDA}
+is accepted as a synonym, since that is what 'Shimadzu' calls the same
+detector), chromatograms (\code{chroms}), \code{TIC}, mass spectra (\code{MS1}, \code{MS2}, or
+\code{MS} for both), and/or peak lists (\code{peak_table}). Note that an MRM or SIM acquisition is a single
+stage of mass selection either way: MRM scans are \code{MS2}, and SIM scans,
+whose Q1 and Q3 are the same, are \code{MS1}.
+
+If a stream is not specified, the richest one the file contains is returned:
+\code{PDA} if there is a PDA stream, otherwise \code{chroms}, and otherwise \code{MS} for a
+file whose only detector is the mass spectrometer. The mass spectrometry
+streams are read from whichever container the file uses: \verb{QTFL RawData}
+(centroided quadrupole time-of-flight data) or \verb{TLM Raw Data} (triple
+quadrupole full scan, product-ion scan, MRM and SIM data).}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -35,6 +46,15 @@ or \code{raw}.}
 
 \item{scale}{Whether to scale the data by the scaling factor present in the
 file. Defaults to \code{TRUE}.}
+
+\item{lock_mass}{Logical. For QTOF mass spectra, whether to correct the
+mass axis against the reference compounds the file lists for that purpose.
+Defaults to \code{TRUE}. Ignored for every other stream.}
+
+\item{sparse}{Logical. Whether to return mass spectra in sparse format
+(excluding zeros), as \code{\link[=call_rainbow]{call_rainbow()}} does. Defaults to \code{TRUE}. Applies
+only to triple quadrupole profile spectra, whose m/z grid is largely
+empty; ignored for every other stream.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
@@ -50,39 +70,46 @@ in \code{matrix}, \code{data.frame}, or \code{data.table} format. Metadata will 
 attached to the chromatogram as \link{attributes} when \code{read_metadata} is \code{TRUE}.
 }
 \description{
-Read 3D PDA or 2D chromatogram streams from 'Shimadzu' \code{.lcd} files.
+Read PDA, chromatogram, mass spectrometry and peak table streams from
+'Shimadzu' \code{.lcd} files.
 }
 \details{
 A parser to read data from 'Shimadzu' \code{.lcd} files. LCD files are
 encoded as 'Microsoft' OLE documents. The parser relies on the
 \href{https://pypi.org/project/olefile/}{olefile} package in Python to unpack the
-files. The PDA data is encoded in a stream called \verb{PDA 3D Raw Data:3D Raw Data}.
-The PDA data stream contains a segment for each retention time, beginning
-with a 24-byte header.
-
-The 24 byte header consists of the following fields:
+files. Each detector writes its own storage, and this function dispatches
+over them:
 \itemize{
-\item 4 bytes: segment label (\code{17234}).
-\item 4 bytes: Little-endian integer specifying the sampling rate along the time
-axis for 2D streams or along the spectral axis (?) for PDA streams.
-\item 4 bytes: Little-endian integer specifying the number of values in the file
-(for 2D data) or the number of wavelength values in each segment (for 3D data).
-\item 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
-\item 8 bytes of \code{00}.
+\item \strong{PDA} (\verb{PDA 3D Raw Data:3D Raw Data}), requested as \code{DAD}: one
+delta-encoded segment per retention time, each holding a full spectrum. Read by \code{\link[=read_sz_lcd_3d]{read_sz_lcd_3d()}},
+which documents the segment header and the delta encoding.
+\item \strong{Chromatograms} (\verb{LSS Raw Data:Chromatogram Ch<#>}): one stream per
+channel, delta-encoded in the same way. Read by \code{\link[=read_sz_lcd_2d]{read_sz_lcd_2d()}}.
+\item \strong{Quadrupole time-of-flight mass spectra} (\verb{QTFL RawData}): centroided
+scans stored as a scan header, a block of flight times and a block of
+intensities, with the mass axis reconstructed from the calibration table in
+the file. Read by \code{\link[=read_sz_qtof]{read_sz_qtof()}}, which documents the scan header, the
+flight-time conversion and the intensity scaling. The total ion current is
+held separately, in \verb{Centroid SumTIC} (\code{\link[=read_sz_qtof_tic]{read_sz_qtof_tic()}}).
+\item \strong{Triple quadrupole mass spectra} (\verb{TLM Raw Data}): zlib-compressed scan
+records located through a spectrum index, covering full scan, product-ion
+scan, MRM and SIM acquisitions. Read by \code{\link[=read_sz_tlm]{read_sz_tlm()}}, which documents the
+index, the scan header and the layout of each scan type. The total ion
+current is again held separately, in \verb{TIC Data}.
+\item \strong{Peak tables} (\verb{Peak Table}): integration results as reported by
+'Lab Solutions', one stream per channel. Read by \code{\link[=read_sz_tables]{read_sz_tables()}}, which
+documents the two record layouts.
 }
 
-For 3D data, Each time point is divided into two sub-segments, which begin and
-end with an integer specifying the length of the sub-segment in bytes. 2D data
-are structured similarly but with more segments. All known values
-in this the LCD data streams are little-endian and the data are delta-encoded.
-The first hexadecimal digit of each value is a sign digit specifying the
-number of bytes in the delta and whether the value is positive
-or negative. The sign digit represents the number of hexadecimal digits used
-to encode each value. Even numbered sign digits correspond to positive deltas,
-whereas odd numbers indicate negative deltas. Positive values are encoded as
-little-endian integers, while negative values are encoded as two's
-complements. The value at each position is derived by subtracting the delta
-at each position from the previous value.
+The two mass spectrometry containers are mutually exclusive: a file holds
+one or the other, according to the instrument that wrote it.
+
+A mass spectrometry run is divided into \strong{acquisition events}: the scan
+functions defined by the method, each with its own polarity, MS level and
+mass range, which the instrument cycles through as the run proceeds. The
+mass spectrometry streams are reported per event --- \code{TIC} returns one
+chromatogram for each, and the \code{scan_info} attribute of a table of spectra
+names the event every scan came from.
 }
 \note{
 Times are stored as a 'Windows' \code{FILETIME}, which is always UTC, so
@@ -96,19 +123,48 @@ Rendering \code{run_datetime} in the zone where the data were acquired, e.g.
 \code{format(attr(x, "run_datetime"), tz = "Europe/Paris")}, recovers them
 exactly.
 
-As of \code{v0.10.0}, 2D chromatograms are scaled by the calibration factor and the
-value factor recorded for each channel, so their intensities match those
-reported by 'Lab Solutions'. PDA data is instead returned as it is encoded in
-the file, matching the \verb{[PDA 3D]} section of a 'Lab Solutions' ASCII export,
-which declares no intensity unit or multiplier. The \verb{3D Data Item} describes
-the absorbance axis in \code{mAU} with a value factor of \code{1000}, which would imply
-scaling the values by \code{0.001}, but the \verb{[PDA Multi Chromatogram]} traces in
-the ASCII export, which are extracted from the same data, report values on
-the same scale as the raw data with a multiplier of \code{1}. Until this can be
-resolved, PDA data is left unscaled and the \code{scale} argument is ignored. Note
-that the \verb{Max Plot} chromatogram is derived from the PDA data but is read as
-a 2D chromatogram, so the value factor is applied to it and it currently
-differs from the PDA data by a factor of \code{1000}.
+As of \code{v0.10.0}, 2D chromatograms are scaled by the calibration factor and
+the value factor recorded for each channel, so their intensities match those
+reported by 'Lab Solutions'. An absorbance axis can be reported in \code{uAU},
+\code{mAU} or \code{AU}, and the file records the size of each as a \strong{value factor}:
+\code{1}, \code{1000} and \code{1e6}, since one \code{mAU} is a thousand \code{uAU} and one \code{AU} a
+million. The smallest of them is the \strong{base unit}, while 'Lab Solutions'
+displays the data in whichever unit the method selected, usually \code{mAU}.
+Other detectors work the same way: a refractive index axis measures in \code{nRI}
+and displays \code{uRI}.
+
+Two factors separate the stored integers from the displayed value. The
+calibration factor converts an integer into base units, and the value factor
+converts base units into the displayed unit; an intensity as 'Lab Solutions'
+reports it is the integer times the one divided by the other. The
+calibration factor is \code{1} on some channels and not on others (~42 for an
+SPD-20A, ~310 for an RID-10A), which suggests the integers are detector
+counts whose size varies by module, though the file does not say so.
+
+For a 2D chromatogram, \code{scale = TRUE} applies both factors. \code{scale = FALSE}
+returns the stored integers, and reports them as \code{uAU} only where the
+calibration factor is \code{1}; where it is not, the integers are in no unit we
+can name, so the displayed unit is left in place rather than claiming one
+they are not in. Either way the values and the \code{detector_y_unit} attribute
+agree.
+
+PDA data is instead returned as it is encoded in the file, matching the
+\verb{[PDA 3D]} section of a 'Lab Solutions' ASCII export, which declares no
+intensity unit or multiplier. The \verb{3D Data Item} describes the absorbance
+axis in \code{mAU} with a value factor of \code{1000}, which would imply scaling the
+values by \code{0.001}, but the \verb{[PDA Multi Chromatogram]} traces in the ASCII
+export, which are extracted from the same data, report values on the same
+scale as the raw data with a multiplier of \code{1}. Until this can be resolved,
+PDA data is left unscaled and the \code{scale} argument is ignored.
+
+\verb{Max Plot} is the maximum absorbance over the wavelength range at each point
+in time, so the value at one time can come from a different wavelength than
+the value at the next, and no single wavelength describes the trace. It is
+derived from the PDA data but is read as a 2D chromatogram, so it is scaled
+and currently differs from the PDA data by a factor of \code{1000}. The
+wavelength range it was taken over is not recorded in the \verb{2D Data Item},
+whose nanometre axis spans \code{0} to \code{0}, so its \code{wavelength} attribute is \code{NA}
+rather than the acquisition range of the PDA stream.
 }
 \examples{
 \dontrun{
@@ -121,7 +177,8 @@ Other 'Shimadzu' parsers:
 \code{\link[=read_shimadzu_gcd]{read_shimadzu_gcd()}},
 \code{\link[=read_shimadzu_qgd]{read_shimadzu_qgd()}},
 \code{\link[=read_sz_lcd_2d]{read_sz_lcd_2d()}},
-\code{\link[=read_sz_lcd_3d]{read_sz_lcd_3d()}}
+\code{\link[=read_sz_lcd_3d]{read_sz_lcd_3d()}},
+\code{\link[=read_sz_tables]{read_sz_tables()}}
 }
 \author{
 Ethan Bass

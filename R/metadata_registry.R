@@ -163,7 +163,8 @@ validate_metadata_names <- function(attrs){
   "time_interval_unit", "time_multiplier", "mz_multiplier",
   "intensity_offset",
   # mass spectrometry
-  "n_scans", "ms_params",
+  "n_scans", "ms_params", "ms_level", "scan_type", "precursor_mz",
+  "product_mz", "mz_range",
   # `metadata_format = "raw"` passes the vendor list through untouched
   "metadata")
 

@@ -91,11 +91,11 @@ unlink_stream <- function(path){
 #' @noRd
 
 check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks",
-                                         "qtof", "tlm", ""),
+                                         "qtof", ""),
                           stream = NULL,
                           boolean = FALSE,
                           min_size = 1200){
-  what <- match.arg(what, c("pda", "chroms", "tic", "peaks", "qtof", "tlm", ""))
+  what <- match.arg(what, c("pda", "chroms", "tic", "peaks", "qtof", ""))
   olefile <- py_import("olefile")
   ole <- olefile$OleFileIO(path)
   on.exit(ole$close(), add = TRUE)
@@ -110,7 +110,8 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks",
     streams <- ole$listdir()
     what <- switch(what, "chroms" = "Chromatogram Ch|Max Plot",
                    "tic" = "Centroid SumTIC",
-                   "peaks" = "Peak Table|PT")
+                   "peaks" = "Peak Table|PT",
+                   "qtof" = "Centroid Data")
     selected_streams <- streams[grep(what, streams)]
     sizes <- sapply(selected_streams, function(x){
       ole_stream_size(ole, x)})
@@ -131,6 +132,42 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks",
 ole_stream_size <- function(ole, stream){
   tryCatch(ole$get_size(paste0(stream, collapse = "/")),
            error = function(e) 0)
+}
+
+#' Read an OLE stream as unsigned 32-bit little-endian integers
+#'
+#' Several 'Shimadzu' streams are nothing but a run of `uint32`: retention
+#' times, spectrum indices, total ion currents. Reading one is an export, a
+#' `readBin` over the whole file and the unsigned correction, which is the same
+#' three lines every time.
+#' @noRd
+read_ole_uint32 <- function(path, stream){
+  path_stream <- export_stream(path, stream)
+  if (length(path_stream) != 1 || is.na(path_stream)) return(NULL)
+  on.exit(unlink_stream(path_stream), add = TRUE)
+  as_uint32(readBin(path_stream, what = "integer", size = 4L,
+                    endian = "little", n = file.size(path_stream) %/% 4L))
+}
+
+#' Identify the mass spectrometry container in a 'Shimadzu' LCD file
+#'
+#' `.lcd` files hold mass spectrometry data in one of two mutually
+#' exclusive storages: `QTFL RawData` on quadrupole time-of-flight
+#' instruments, or `TLM Raw Data` on the triple quadrupoles. Returns
+#' `NA` if neither is present.
+#'
+#' @noRd
+get_sz_ms_format <- function(path, min_size = 1200){
+  # one handle for both checks: `check_stream` re-opens and re-parses the
+  # container's FAT for each name it is asked about
+  olefile <- py_import("olefile")
+  ole <- olefile$OleFileIO(path)
+  on.exit(ole$close(), add = TRUE)
+  if (ole_stream_size(ole, c("QTFL RawData", "Centroid Data")) > min_size){
+    "qtof"
+  } else if (ole_stream_size(ole, c("TLM Raw Data", "MS Raw Data")) > min_size){
+    "tlm"
+  } else NA_character_
 }
 
 #' Check OLE stream by name

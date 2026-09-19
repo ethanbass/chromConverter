@@ -76,7 +76,7 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - 'Shimadzu LabSolutions' ascii (`.txt`)
 - 'Shimadzu GCsolution' data files (`.gcd`)
 - 'Shimadzu GCMSsolution' data files (`.qgd`) 
-- 'Shimadzu LabSolutions'`.lcd` (PDA, chromatogram, and peak table streams)
+- 'Shimadzu LabSolutions'`.lcd` (PDA, QTOF, TLM, TIC, chromatogram, and peak table streams)
 - 'Lumex' `.mdf` files
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Varian Workstation' (`.SMS`)

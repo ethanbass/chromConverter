@@ -107,7 +107,7 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
   dat <- purrr::imap(dat, function(x, h){
     convert_chrom_format(x, data_format = data_format,
                          format_out = ifelse(h != "TIC",
-                                             check_format_out_ms(format_out),
+                                             check_format_out_table(format_out),
                                              format_out))
   })
 
@@ -118,7 +118,7 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
       attach_metadata(x, meta, format_in = metadata_format,
                       data_format = ifelse(h != "TIC", "long", data_format),
                       format_out = ifelse(h != "TIC",
-                                          check_format_out_ms(format_out),
+                                          check_format_out_table(format_out),
                                           format_out),
                       parser = "chromconverter",
                       source_file = path,

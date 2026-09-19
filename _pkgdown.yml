@@ -16,7 +16,6 @@ reference:
 - title: "Shimadzu parsers"
   contents:
   - starts_with("read_shimadzu")
-  - starts_with("read_sz")
 - title: "Waters parsers"
   contents:
   - starts_with("read_waters")

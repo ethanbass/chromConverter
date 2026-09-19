@@ -7,14 +7,14 @@ check_format_out <- function(format_out){
   match.arg(format_out, c("matrix", "data.frame", "data.table"))
 }
 
-#' Check `format_out` Argument for Mass Spectra
+#' Check `format_out` Argument for Tabular Data
 #'
-#' Long mass spectral data has no useful matrix representation: `as.matrix`
+#' Long or heterogeneous data has no useful matrix representation: `as.matrix`
 #' promotes every column to double and gives up `$`. The package-wide default
-#' of `matrix` therefore resolves to `data.table` for spectra, while
-#' `data.frame` and `data.table` are returned as requested.
+#' of `matrix` therefore resolves to `data.table` for mass spectra and peak
+#' tables, while `data.frame` and `data.table` are returned as requested.
 #' @noRd
-check_format_out_ms <- function(format_out){
+check_format_out_table <- function(format_out){
   format_out <- check_format_out(format_out)
   if (format_out == "matrix") "data.table" else format_out
 }
@@ -548,6 +548,20 @@ simple_cap <- function(x) {
         sep = "", collapse = " ")
 }
 
+#' Correct a vector read as signed 32-bit integers to unsigned
+#'
+#' R has no unsigned 32-bit type, and it reserves `0x80000000` for
+#' `NA_integer_`, so `readBin(what = "integer", size = 4)` over unsigned data
+#' returns half of its values negative and the one value at the boundary
+#' missing. Both are corrected here. The result is a double, because 2^32 - 1
+#' does not fit in an R integer.
+#' @noRd
+as_uint32 <- function(x){
+  x <- as.numeric(x)
+  x[is.na(x)] <- 2^31
+  x[x < 0] <- x[x < 0] + 2^32
+  x
+}
 
 #' Force a string to valid UTF-8
 #'

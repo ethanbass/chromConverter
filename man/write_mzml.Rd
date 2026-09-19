@@ -25,8 +25,9 @@ write_mzml(
 \item{sample_name}{The name of the file. If a name is not provided, the name
 will be derived from the \code{sample_name} attribute.}
 
-\item{what}{Which streams to write to mzML: \code{"MS1"}, \code{"MS2"}, \code{"TIC"},
-\code{"BPC"}, and/or \code{"DAD"}.}
+\item{what}{Which streams to write to mzML: \code{"MS1"}, \code{"TIC"}, \code{"BPC"},
+and/or \code{"DAD"}. \code{"MS2"} is accepted but skipped with a warning, as MS2
+spectra are not written yet.}
 
 \item{instrument_info}{Instrument info to write to mzML file.}
 

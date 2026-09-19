@@ -159,7 +159,7 @@ meta_shimadzu_lcd <- function(meta, ctx){
        # the control platform, for a file that names one (see `sz_instrument`)
        instrument_config = get_metadata_field(meta, "instrument_config",
                                               null_val = NULL),
-       detector = get_metadata_field(meta, "DETN"),
+       detector = sz_detector(meta),
        detector_model = sz_detector_model(meta),
        # the channel this trace was read from, which is also what names the
        # peak table that goes with it (`PT-LC.1.1.DET.1.CH#1`)
@@ -186,6 +186,15 @@ meta_shimadzu_lcd <- function(meta, ctx){
        wavelength = get_sz_wv(meta),
        detector_y_unit = get_metadata_field(meta, "detector.unit"),
        intensity_multiplier = get_metadata_field(meta, "detector.vf"),
+       # Only mass spectrometry data fills these in, and a `NULL` is dropped by
+       # `finalize_metadata`, so a PDA or 2D chromatogram does not pick up a
+       # row of empty mass spectrometry attributes.
+       ms_level = get_metadata_field(meta, "ms_level", null_val = NULL),
+       scan_type = get_metadata_field(meta, "scan_type", null_val = NULL),
+       polarity = get_metadata_field(meta, "polarity", null_val = NULL),
+       precursor_mz = get_metadata_field(meta, "precursor_mz", null_val = NULL),
+       product_mz = get_metadata_field(meta, "product_mz", null_val = NULL),
+       mz_range = get_metadata_field(meta, "mz_range", null_val = NULL),
        parser = "chromconverter")
 }
 

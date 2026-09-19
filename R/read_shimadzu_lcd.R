@@ -1,42 +1,66 @@
 #' Read 'Shimadzu' LCD
 #'
-#' Read 3D PDA or 2D chromatogram streams from 'Shimadzu' `.lcd` files.
+#' Read PDA, chromatogram, mass spectrometry and peak table streams from
+#' 'Shimadzu' `.lcd` files.
 #'
 #' A parser to read data from 'Shimadzu' `.lcd` files. LCD files are
 #' encoded as 'Microsoft' OLE documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
-#' files. The PDA data is encoded in a stream called `PDA 3D Raw Data:3D Raw Data`.
-#' The PDA data stream contains a segment for each retention time, beginning
-#' with a 24-byte header.
+#' files. Each detector writes its own storage, and this function dispatches
+#' over them:
 #'
-#' The 24 byte header consists of the following fields:
-#' * 4 bytes: segment label (`17234`).
-#' * 4 bytes: Little-endian integer specifying the sampling rate along the time
-#' axis for 2D streams or along the spectral axis (?) for PDA streams.
-#' * 4 bytes: Little-endian integer specifying the number of values in the file
-#' (for 2D data) or the number of wavelength values in each segment (for 3D data).
-#' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
-#' * 8 bytes of `00`.
+#' * **PDA** (`PDA 3D Raw Data:3D Raw Data`), requested as `DAD`: one
+#' delta-encoded segment per retention time, each holding a full spectrum. Read by [read_sz_lcd_3d()],
+#' which documents the segment header and the delta encoding.
+#' * **Chromatograms** (`LSS Raw Data:Chromatogram Ch<#>`): one stream per
+#' channel, delta-encoded in the same way. Read by [read_sz_lcd_2d()].
+#' * **Quadrupole time-of-flight mass spectra** (`QTFL RawData`): centroided
+#' scans stored as a scan header, a block of flight times and a block of
+#' intensities, with the mass axis reconstructed from the calibration table in
+#' the file. Read by [read_sz_qtof()], which documents the scan header, the
+#' flight-time conversion and the intensity scaling. The total ion current is
+#' held separately, in `Centroid SumTIC` ([read_sz_qtof_tic()]).
+#' * **Triple quadrupole mass spectra** (`TLM Raw Data`): zlib-compressed scan
+#' records located through a spectrum index, covering full scan, product-ion
+#' scan, MRM and SIM acquisitions. Read by [read_sz_tlm()], which documents the
+#' index, the scan header and the layout of each scan type. The total ion
+#' current is again held separately, in `TIC Data`.
+#' * **Peak tables** (`Peak Table`): integration results as reported by
+#' 'Lab Solutions', one stream per channel. Read by [read_sz_tables()], which
+#' documents the two record layouts.
 #'
-#' For 3D data, Each time point is divided into two sub-segments, which begin and
-#' end with an integer specifying the length of the sub-segment in bytes. 2D data
-#' are structured similarly but with more segments. All known values
-#' in this the LCD data streams are little-endian and the data are delta-encoded.
-#' The first hexadecimal digit of each value is a sign digit specifying the
-#' number of bytes in the delta and whether the value is positive
-#' or negative. The sign digit represents the number of hexadecimal digits used
-#' to encode each value. Even numbered sign digits correspond to positive deltas,
-#' whereas odd numbers indicate negative deltas. Positive values are encoded as
-#' little-endian integers, while negative values are encoded as two's
-#' complements. The value at each position is derived by subtracting the delta
-#' at each position from the previous value.
+#' The two mass spectrometry containers are mutually exclusive: a file holds
+#' one or the other, according to the instrument that wrote it.
+#'
+#' A mass spectrometry run is divided into **acquisition events**: the scan
+#' functions defined by the method, each with its own polarity, MS level and
+#' mass range, which the instrument cycles through as the run proceeds. The
+#' mass spectrometry streams are reported per event --- `TIC` returns one
+#' chromatogram for each, and the `scan_info` attribute of a table of spectra
+#' names the event every scan came from.
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Shimadzu' `.lcd` file.
-#' @param what What stream to get: current options are `pda`, chromatograms
-#' (`chroms`), `tic`, and/or peak lists (`peak_table`). If a stream
-#' is not specified, the function will default to `pda` if the PDA stream
-#' is present.
+#' @param what What stream to get: current options are `DAD` (for which `PDA`
+#' is accepted as a synonym, since that is what 'Shimadzu' calls the same
+#' detector), chromatograms (`chroms`), `TIC`, mass spectra (`MS1`, `MS2`, or
+#' `MS` for both), and/or peak lists (`peak_table`). Note that an MRM or SIM acquisition is a single
+#' stage of mass selection either way: MRM scans are `MS2`, and SIM scans,
+#' whose Q1 and Q3 are the same, are `MS1`.
+#'
+#' If a stream is not specified, the richest one the file contains is returned:
+#' `PDA` if there is a PDA stream, otherwise `chroms`, and otherwise `MS` for a
+#' file whose only detector is the mass spectrometer. The mass spectrometry
+#' streams are read from whichever container the file uses: `QTFL RawData`
+#' (centroided quadrupole time-of-flight data) or `TLM Raw Data` (triple
+#' quadrupole full scan, product-ion scan, MRM and SIM data).
+#' @param sparse Logical. Whether to return mass spectra in sparse format
+#' (excluding zeros), as [call_rainbow()] does. Defaults to `TRUE`. Applies
+#' only to triple quadrupole profile spectra, whose m/z grid is largely
+#' empty; ignored for every other stream.
+#' @param lock_mass Logical. For QTOF mass spectra, whether to correct the
+#' mass axis against the reference compounds the file lists for that purpose.
+#' Defaults to `TRUE`. Ignored for every other stream.
 #' @author Ethan Bass
 #' @return A chromatogram or list of chromatograms in the format specified by
 #' `data_format` and `format_out`. If `data_format` is `wide`, the
@@ -57,19 +81,48 @@
 #' `format(attr(x, "run_datetime"), tz = "Europe/Paris")`, recovers them
 #' exactly.
 #'
-#' As of `v0.10.0`, 2D chromatograms are scaled by the calibration factor and the
-#' value factor recorded for each channel, so their intensities match those
-#' reported by 'Lab Solutions'. PDA data is instead returned as it is encoded in
-#' the file, matching the `[PDA 3D]` section of a 'Lab Solutions' ASCII export,
-#' which declares no intensity unit or multiplier. The `3D Data Item` describes
-#' the absorbance axis in `mAU` with a value factor of `1000`, which would imply
-#' scaling the values by `0.001`, but the `[PDA Multi Chromatogram]` traces in
-#' the ASCII export, which are extracted from the same data, report values on
-#' the same scale as the raw data with a multiplier of `1`. Until this can be
-#' resolved, PDA data is left unscaled and the `scale` argument is ignored. Note
-#' that the `Max Plot` chromatogram is derived from the PDA data but is read as
-#' a 2D chromatogram, so the value factor is applied to it and it currently
-#' differs from the PDA data by a factor of `1000`.
+#' As of `v0.10.0`, 2D chromatograms are scaled by the calibration factor and
+#' the value factor recorded for each channel, so their intensities match those
+#' reported by 'Lab Solutions'. An absorbance axis can be reported in `uAU`,
+#' `mAU` or `AU`, and the file records the size of each as a **value factor**:
+#' `1`, `1000` and `1e6`, since one `mAU` is a thousand `uAU` and one `AU` a
+#' million. The smallest of them is the **base unit**, while 'Lab Solutions'
+#' displays the data in whichever unit the method selected, usually `mAU`.
+#' Other detectors work the same way: a refractive index axis measures in `nRI`
+#' and displays `uRI`.
+#'
+#' Two factors separate the stored integers from the displayed value. The
+#' calibration factor converts an integer into base units, and the value factor
+#' converts base units into the displayed unit; an intensity as 'Lab Solutions'
+#' reports it is the integer times the one divided by the other. The
+#' calibration factor is `1` on some channels and not on others (~42 for an
+#' SPD-20A, ~310 for an RID-10A), which suggests the integers are detector
+#' counts whose size varies by module, though the file does not say so.
+#'
+#' For a 2D chromatogram, `scale = TRUE` applies both factors. `scale = FALSE`
+#' returns the stored integers, and reports them as `uAU` only where the
+#' calibration factor is `1`; where it is not, the integers are in no unit we
+#' can name, so the displayed unit is left in place rather than claiming one
+#' they are not in. Either way the values and the `detector_y_unit` attribute
+#' agree.
+#'
+#' PDA data is instead returned as it is encoded in the file, matching the
+#' `[PDA 3D]` section of a 'Lab Solutions' ASCII export, which declares no
+#' intensity unit or multiplier. The `3D Data Item` describes the absorbance
+#' axis in `mAU` with a value factor of `1000`, which would imply scaling the
+#' values by `0.001`, but the `[PDA Multi Chromatogram]` traces in the ASCII
+#' export, which are extracted from the same data, report values on the same
+#' scale as the raw data with a multiplier of `1`. Until this can be resolved,
+#' PDA data is left unscaled and the `scale` argument is ignored.
+#'
+#' `Max Plot` is the maximum absorbance over the wavelength range at each point
+#' in time, so the value at one time can come from a different wavelength than
+#' the value at the next, and no single wavelength describes the trace. It is
+#' derived from the PDA data but is read as a 2D chromatogram, so it is scaled
+#' and currently differs from the PDA data by a factor of `1000`. The
+#' wavelength range it was taken over is not recorded in the `2D Data Item`,
+#' whose nanometre axis spans `0` to `0`, so its `wavelength` attribute is `NA`
+#' rather than the acquisition range of the PDA stream.
 #' @examples \dontrun{
 #' read_shimadzu_lcd(path)
 #' }
@@ -81,21 +134,39 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                                 data_format = c("wide", "long"),
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
-                                scale = TRUE, collapse = TRUE){
+                                scale = TRUE, lock_mass = TRUE,
+                                sparse = TRUE, collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
 
+  ms_format <- NULL
   if (missing(what)){
-    what <- ifelse(check_streams(path, "pda", boolean = TRUE),
-                   "pda", "chroms")
+    # Fall back through the streams a file may hold, preferring the richest one
+    # it has: a file with both a PDA and 2D chromatograms returns the PDA data,
+    # so a file whose only detector is the mass spectrometer returns its
+    # spectra. Without this a mass-spectrometry-only file --- an MRM run, or a
+    # QTOF acquisition with no PDA --- resolves to `chroms` and fails.
+    # `check_streams(what = "tic")` looks for the LC TIC rather than the one in
+    # the mass spectrometry container, so that is detected separately.
+    what <- if (check_streams(path, "pda", boolean = TRUE)){
+      "DAD"
+    } else if (check_streams(path, "chroms", boolean = TRUE)){
+      "chroms"
+    } else {
+      ms_format <- get_sz_ms_format(path)
+      if (is.na(ms_format)) "chroms" else "MS"
+    }
   }
-  if (any(what == "chromatogram")){
+  if (any(tolower(what) == "chromatogram")){
     warning("The `chromatogram` argument to `what` is deprecated. Please use `chroms` instead.")
-    what[which(what == "chromatogram")] <- "chroms"
+    what[which(tolower(what) == "chromatogram")] <- "chroms"
   }
-  what <- match.arg(tolower(what), c("pda", "chroms", "tic", "peak_table"),
-                    several.ok = TRUE)
+  what <- sz_match_streams(what)
+  # `MS` is both levels; either can also be asked for on its own
+  levels <- if (any(what == "MS")){
+    c("MS1", "MS2")
+  } else intersect(c("MS1", "MS2"), what)
 
   check_py_module("olefile")
   if (any(what == "chroms")){
@@ -105,25 +176,68 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                              metadata_format = metadata_format,
                              scale = scale)
   }
-  if (any(what == "pda")){
+  if (any(what == "DAD")){
     pda <- read_sz_lcd_3d(path, format_out = format_out,
                              data_format = data_format,
                              read_metadata = read_metadata,
                              metadata_format = metadata_format,
                              scale = scale)
   }
-  if (any(what == "tic")){
-    tic <- read_sz_tic(path, format_out = format_out,
-                          data_format = data_format,
-                          read_metadata = read_metadata,
-                          metadata_format = metadata_format)
+  if ((any(what == "TIC") || length(levels) > 0) && is.null(ms_format)){
+    ms_format <- get_sz_ms_format(path)
+  }
+  if (any(what == "TIC")){
+    # both containers are named explicitly, so a file with neither fails here
+    # the same way it does when the spectra are asked for
+    tic <- if (identical(ms_format, "tlm")){
+      read_sz_tlm_tic(path, format_out = format_out,
+                      data_format = data_format,
+                      read_metadata = read_metadata,
+                      metadata_format = metadata_format)
+    } else if (identical(ms_format, "qtof")){
+      read_sz_qtof_tic(path, format_out = format_out,
+                       data_format = data_format,
+                       read_metadata = read_metadata,
+                       metadata_format = metadata_format)
+    } else {
+      stop("A mass spectrometry stream could not be detected.")
+    }
+  }
+  if (length(levels) > 0){
+    ms <- if (identical(ms_format, "tlm")){
+      read_sz_tlm(path, format_out = format_out,
+                  data_format = data_format, levels = levels,
+                  sparse = sparse,
+                  read_metadata = read_metadata,
+                  metadata_format = metadata_format)
+    } else if (identical(ms_format, "qtof")){
+      read_sz_qtof(path, format_out = format_out,
+                   data_format = data_format, levels = levels,
+                   read_metadata = read_metadata,
+                   metadata_format = metadata_format,
+                   scale = scale, lock_mass = lock_mass)
+    } else {
+      stop("A mass spectrometry stream could not be detected.")
+    }
+    # a level the caller named but the file does not hold, as distinct from
+    # `MS`, which is a request for whichever levels are there
+    absent <- setdiff(intersect(what, c("MS1", "MS2")), names(ms))
+    if (length(absent) > 0){
+      warning(sprintf("%s data not found.",
+                      paste(absent, collapse = " and ")), call. = FALSE)
+    }
   }
   if (any(what == "peak_table")){
     peak_table <- read_sz_tables(path, format_out = format_out)
   }
-  dat <- mget(what, ifnotfound = NA)
-  null <- sapply(dat, is.null)
-  if (any(null)) dat <- dat[-which(sapply(dat, is.null))]
+  dat <- list()
+  if (any(what == "DAD")) dat$DAD <- pda
+  if (any(what == "chroms")) dat$chroms <- chroms
+  if (length(levels) > 0) dat <- c(dat, ms)
+  if (any(what == "TIC")) dat$TIC <- tic
+  if (any(what == "peak_table")) dat$peak_table <- peak_table
+  null <- vapply(dat, is.null, logical(1))
+  if (any(null)) dat <- dat[!null]
   if (collapse) dat <- collapse_list(dat)
   dat
 }
@@ -141,7 +255,9 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #'
 #' The 24 byte header consists of the following fields:
 #' * 4 bytes: segment label (`17234`).
-#' * 4 bytes: Little-endian integer specifying the wavelength bandwidth (?).
+#' * 4 bytes: Little-endian integer specifying the sampling rate along the
+#' spectral axis (?), where the equivalent field of a 2D stream gives the
+#' sampling rate along the time axis.
 #' * 4 bytes: Little-endian integer specifying the number of wavelength values
 #' in the segment.
 #' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
@@ -177,7 +293,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #' The chromatograms will be returned in `wide` or `long` format according to
 #' the value of `data_format`.
 #' @family 'Shimadzu' parsers
-#' @export
+#' @keywords internal
 
 read_sz_lcd_3d <- function(path, format_out = "matrix",
                             data_format = "wide",
@@ -276,7 +392,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' as a list of matrices or data.frames. The chromatograms will be returned in
 #' `wide or `long format according to the value of `data_format`.
 #' @family 'Shimadzu' parsers
-#' @export
+#' @keywords internal
 
 read_sz_lcd_2d <- function(path, format_out = "data.frame",
                             data_format = "wide",
@@ -369,17 +485,22 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
   dat
 }
 
-#' A parser to read total ion chromatogram data streams from 'Shimadzu'
-#' `.lcd` files. LCD files are encoded as 'Microsoft' OLE documents. The
-#' parser relies on the [olefile](https://pypi.org/project/olefile/) package in
-#' Python to unpack the files. The TIC data is encoded in a stream called
-#' `Centroid SumTIC`.
+#' Read 'Shimadzu' QTOF TIC stream
+#'
+#' A parser to read total ion chromatogram data streams from the quadrupole
+#' time-of-flight (`QTFL RawData`) container of 'Shimadzu' `.lcd` files. Triple
+#' quadrupole files store their TIC differently and are read by
+#' `read_sz_tlm_tic` instead. LCD files are encoded as 'Microsoft' OLE
+#' documents. The parser relies on the
+#' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
+#' files. The TIC data is encoded in a stream called `Centroid SumTIC`.
 #' The TIC data stream contains a segment for each retention time, beginning
 #' with a 8-byte header. After the header, the file consists of a series of
 #' 4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
 #' a 4-byte spacer (`00000000`) The first integer is the retention time
-#' (scaled by 1000), the second integer is the scan number, and the third integer
-#' is the intensity.
+#' in milliseconds, the second integer is the scan number, and the third integer
+#' is the intensity. Retention times are converted to minutes, as elsewhere in
+#' the package.
 #'
 #' @param path Path to 'Shimadzu' `.lcd` file.
 #' @param format_out Matrix or data.frame.
@@ -390,32 +511,45 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
 #' `data.frame` format, according to the value of `format_out`.
 #' The chromatograms will be returned in `wide` or `long` format
 #' according to the value of `data_format`.
-#' @note This parser is experimental and may still need some work. It is not
-#' yet able to interpret much metadata from the files.
-#' @noRd
+#' @keywords internal
 
-read_sz_tic <- function(path, format_out = "data.frame",
-                        data_format = c("wide", "long"), read_metadata = TRUE,
-                        metadata_format = "shimadzu_lcd"){
-  path_tic <- check_streams(path, what = "tic")
-  if (length(path_tic) == 0){
+read_sz_qtof_tic <- function(path, format_out = "data.frame",
+                             data_format = c("wide", "long"),
+                             read_metadata = TRUE,
+                             metadata_format = "shimadzu_lcd"){
+  data_format <- match.arg(data_format, c("wide", "long"))
+  tic_streams <- check_streams(path, what = "tic")
+  if (length(tic_streams) == 0){
     return(NULL)
   }
+  path_tic <- export_stream(path, tic_streams[[1]])
+  on.exit(unlink_stream(path_tic), add = TRUE)
   f <- file(path_tic, "rb")
   on.exit(close(f), add = TRUE)
-  dat <- decode_sz_tic(f)
-  if (data_format == "wide"){
-    row.names(dat) <- dat[, "rt"]
-    dat <- dat[, "intensity", drop = FALSE]
+  tic <- decode_qtof_tic(f)
+  dat <- format_2d_chromatogram(rt = tic[, "rt"], int = tic[, "intensity"],
+                                data_format = data_format,
+                                format_out = format_out)
+  if (read_metadata){
+    # polarity and the scan window come out of the same protobuf message
+    mass_params <- read_qtof_mass_params(path)
+    meta <- read_qtof_metadata(path,
+                               polarity = read_qtof_polarity(path,
+                                                             mass_params),
+                               mz_range = read_qtof_mz_range(path,
+                                                             mass_params),
+                               time_range = range(tic[, "rt"]))
+    dat <- attach_metadata(dat, meta, format_in = metadata_format,
+                           source_file = path, data_format = data_format,
+                           format_out = format_out,
+                           source_file_format = "shimadzu_lcd")
   }
-  dat <- convert_chrom_format(dat, format_out = format_out,
-                              data_format = data_format)
   dat
 }
 
-#' Decode 'Shimadzu' total ion chromatogram
+#' Decode 'Shimadzu' QTOF total ion chromatogram
 #' @noRd
-decode_sz_tic <- function(f){
+decode_qtof_tic <- function(f){
   seek(f, where = 0, origin = "end")
   bytes <- seek(f, where = 0, origin = "end")
 
@@ -426,7 +560,9 @@ decode_sz_tic <- function(f){
   readBin(f, what = "integer", size = 4, n = 2) # skip 2
   mat <- matrix(readBin(f, what = "integer", size = 4, n = nval * 4),
                 ncol = 4, byrow = TRUE)[, 1:3, drop = FALSE]
-  mat[,1] <- mat[,1]/1000
+  # retention times are stored in milliseconds; the rest of the package
+  # reports minutes
+  mat[,1] <- mat[,1]/60000
   colnames(mat) <- c("rt", "index", "intensity")
   mat
 }
@@ -804,6 +940,106 @@ read_sz_file_properties_xml <- function(path){
   meta
 }
 
+#' Streams `read_shimadzu_lcd` can return
+#'
+#' Acronyms are capitalized and ordinary words are not, as they are in the
+#' `what` of every other reader that mixes the two (`read_mzml`,
+#' `read_varian_sms`). `MS` is both mass spectrometry levels: the container has
+#' to be decoded in full to find out which level each scan is, so asking for
+#' one level is no cheaper than asking for both.
+#' @noRd
+sz_lcd_streams <- function(){
+  c("DAD", "chroms", "MS", "MS1", "MS2", "TIC", "peak_table")
+}
+
+#' Match `what` against the streams, whatever case it is written in
+#'
+#' `match.arg` cannot do this for a vocabulary that is not all one case, and
+#' the spelling a user reaches for (`pda`, `tic`, `ms2`) should not have to
+#' match the canonical one.
+#' @noRd
+sz_match_streams <- function(what, choices = sz_lcd_streams()){
+  # `DAD` is what the `detector` attribute, `write_mzml` and the 'Agilent'
+  # readers all call this detector, so it is the canonical name here too.
+  # 'Shimadzu' calls the same thing `PDA`, which is accepted as a synonym.
+  what[tolower(what) == "pda"] <- "DAD"
+  idx <- match(tolower(what), tolower(choices))
+  if (anyNA(idx)){
+    stop(sprintf("`what` should be one of %s, not %s.",
+                 paste(sQuote(choices), collapse = ", "),
+                 paste(sQuote(what[is.na(idx)]), collapse = ", ")),
+         call. = FALSE)
+  }
+  unique(choices[idx])
+}
+
+#' Split decoded spectra by MS level
+#'
+#' MS1 and MS2 are returned as tables of their own, as they are by every other
+#' mass spectrometry reader in the package, rather than as one table with a
+#' level column. An acquisition event is never mixed-level, so the cut falls
+#' between events rather than through one, and the columns genuinely differ:
+#' only a product-ion, MRM or SIM scan has a precursor to report.
+#'
+#' @param dat Long `data.table` of spectra, with a `scan` column.
+#' @param scan_info One row per spectrum, with `scan`, `ms_level` and
+#' `polarity`.
+#' @param levels Which levels to return, spelled `MS1` and `MS2`.
+#' @param meta Metadata list to attach to each table, or `NULL`.
+#' @param level MS level of every row of `dat`. Both readers already know this
+#' from the peak counts they built `dat` with, so passing it in avoids a hash
+#' probe per peak; it is joined from `scan_info` when it is not supplied.
+#' @return A named list holding whichever of the requested levels the file has.
+#' @author Ethan Bass
+#' @noRd
+sz_split_ms_levels <- function(dat, scan_info, levels = c("MS1", "MS2"),
+                               meta = NULL, path, format_out,
+                               metadata_format = "shimadzu_lcd",
+                               level = NULL){
+  scan_info <- as.data.frame(scan_info)
+  if (is.null(level)){
+    level <- scan_info$ms_level[match(dat$scan, scan_info$scan)]
+  }
+  if (anyNA(level)){
+    warning(sprintf(paste("The MS level of %d spectra could not be read.",
+                          "Their peaks are reported in neither table."),
+                    length(unique(dat$scan[is.na(level)]))), call. = FALSE)
+  }
+  out <- list()
+  for (label in levels){
+    lvl <- as.integer(sub("MS", "", label))
+    info <- scan_info[!is.na(scan_info$ms_level) & scan_info$ms_level == lvl, ,
+                      drop = FALSE]
+    if (nrow(info) == 0){
+      next
+    }
+    row.names(info) <- NULL
+    x <- dat[which(!is.na(level) & level == lvl), ]
+    # a precursor column with nothing in it for any scan of this level is
+    # describing the other level's scans
+    if ("precursor_mz" %in% colnames(x) && all(is.na(x$precursor_mz))){
+      data.table::set(x, j = "precursor_mz", value = NULL)
+    }
+    x <- convert_chrom_format(x, format_out = format_out,
+                              data_format = "long")
+    if (!is.null(meta)){
+      meta$ms_level <- lvl
+      # the levels of a run can differ in polarity -- a DDA method alternates
+      # it -- so the field is only set where this level used one
+      polarity <- unique(info$polarity)
+      if (length(polarity) == 1){
+        meta$polarity <- polarity
+      }
+      x <- attach_metadata(x, meta, format_in = metadata_format,
+                           source_file = path, data_format = "long",
+                           format_out = format_out,
+                           source_file_format = "shimadzu_lcd")
+    }
+    attr(x, "scan_info") <- info
+    out[[label]] <- x
+  }
+  out
+}
 
 #' Read 'Shimadzu' system information
 #'
@@ -922,6 +1158,13 @@ read_sz_3DDI <- function(path){
 #'
 #' The gain factor (`GF`) is `1` in all of the files I have seen, so it is not
 #' applied anywhere.
+#'
+#' The file gives only the tags. `CF`, `VF` and `GF` are expanded here as
+#' calibration, value and gain factor, and the unit whose `VF` is `1` is called
+#' the base unit, but these names are this package's reading of the format
+#' rather than the vendor's own. What is established is the arithmetic: the
+#' formula above reproduces the intensities 'Lab Solutions' reports, across
+#' detectors whose calibration factors range from `1` to ~310.
 #'
 #' The factors are stored alongside the raw data in a `Chromatogram Status`
 #' stream (or `Max Plot Status`, for the PDA max plot), which consists of a

@@ -49,7 +49,9 @@ with a 24-byte header.
 The 24 byte header consists of the following fields:
 \itemize{
 \item 4 bytes: segment label (\code{17234}).
-\item 4 bytes: Little-endian integer specifying the wavelength bandwidth (?).
+\item 4 bytes: Little-endian integer specifying the sampling rate along the
+spectral axis (?), where the equivalent field of a 2D stream gives the
+sampling rate along the time axis.
 \item 4 bytes: Little-endian integer specifying the number of wavelength values
 in the segment.
 \item 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
@@ -79,9 +81,11 @@ Other 'Shimadzu' parsers:
 \code{\link[=read_shimadzu_gcd]{read_shimadzu_gcd()}},
 \code{\link[=read_shimadzu_lcd]{read_shimadzu_lcd()}},
 \code{\link[=read_shimadzu_qgd]{read_shimadzu_qgd()}},
-\code{\link[=read_sz_lcd_2d]{read_sz_lcd_2d()}}
+\code{\link[=read_sz_lcd_2d]{read_sz_lcd_2d()}},
+\code{\link[=read_sz_tables]{read_sz_tables()}}
 }
 \author{
 Ethan Bass
 }
 \concept{'Shimadzu' parsers}
+\keyword{internal}

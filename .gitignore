@@ -7,3 +7,5 @@ chromConverter.Rcheck
 CRAN-SUBMISSION
 .positai
 dev/figures/
+dev/snapshots/
+dev/__pycache__/

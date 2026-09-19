@@ -19,8 +19,9 @@
 #' @param path_out The path to write the file.
 #' @param sample_name The name of the file. If a name is not provided, the name
 #' will be derived from the `sample_name` attribute.
-#' @param what Which streams to write to mzML: `"MS1"`, `"MS2"`, `"TIC"`,
-#' `"BPC"`, and/or `"DAD"`.
+#' @param what Which streams to write to mzML: `"MS1"`, `"TIC"`, `"BPC"`,
+#' and/or `"DAD"`. `"MS2"` is accepted but skipped with a warning, as MS2
+#' spectra are not written yet.
 #' @param instrument_info Instrument info to write to mzML file.
 #' @param compress Logical. Whether to use zlib compression. Defaults to `TRUE`.
 #' @param indexed Logical. Whether to write indexed mzML. Defaults to `TRUE`.
@@ -74,6 +75,16 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   }
   what <- match.arg(toupper(what), c("MS1", "MS2", "TIC", "BPC", "DAD"),
                     several.ok = TRUE)
+  if (any(what == "MS2")){
+    # `write_spectra` has no MS2 branch, so the spectra would be counted in the
+    # header and then not written
+    warning("MS2 data cannot be written to mzML yet. It will be skipped.",
+            call. = FALSE)
+    what <- setdiff(what, "MS2")
+    if (length(what) == 0){
+      stop("There is nothing left to write.", call. = FALSE)
+    }
+  }
   # mzML stores scans of (m/z or wavelength, intensity), so a single trace has
   # no axis to put in one: written as spectra it becomes one single-point scan
   # per retention time. `TIC` and `BPC` are the exception, since the CV has

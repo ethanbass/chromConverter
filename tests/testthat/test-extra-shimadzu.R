@@ -645,3 +645,856 @@ test_that("Shimadzu times are converted correctly", {
   expect_equal(attr(xx, "tzone"), "Asia/Kolkata")
   expect_equal(as.numeric(xx), 1699599676)
 })
+
+test_that("read_shimadzu_lcd can read 'Shimadzu' TLM (triple quadrupole) data", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_tlm_dda.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  expect_equal(get_sz_ms_format(path), "tlm")
+
+  ms <- read_shimadzu_lcd(path, what = "MS", format_out = "data.frame")
+
+  # one table per MS level, as from `read_mzml` and `read_cdf`
+  expect_named(ms, c("MS1", "MS2"))
+  x <- ms$MS1
+  expect_s3_class(x, "data.frame")
+  expect_equal(dim(x), c(22806403, 4))
+  expect_equal(names(x), c("scan", "rt", "mz", "intensity"))
+  expect_type(x$intensity, "integer")
+  # only the product-ion scans have a precursor to report
+  expect_equal(dim(ms$MS2), c(8791, 5))
+  expect_equal(names(ms$MS2), c("scan", "rt", "precursor_mz", "mz",
+                                "intensity"))
+  expect_equal(attr(ms$MS1, "ms_level"), 1)
+  expect_equal(attr(ms$MS2, "ms_level"), 2)
+
+  # (asking for one level, and the `format_out` resolution, are checked on the
+  # MRM file, which decodes in a tenth of a second rather than five)
+
+  # per-scan summary, describing the level it is attached to
+  scan_info <- attr(x, "scan_info")
+  expect_s3_class(scan_info, "data.frame")
+  expect_equal(dim(scan_info), c(4793, 7))
+  expect_equal(names(scan_info), c("scan", "rt", "event", "ms_level",
+                                   "polarity", "precursor_mz", "n_points"))
+  expect_equal(unique(scan_info$ms_level), 1)
+  expect_equal(nrow(attr(ms$MS2, "scan_info")), 273)
+  expect_equal(unique(attr(ms$MS2, "scan_info")$ms_level), 2)
+  expect_equal(sort(unique(c(scan_info$event,
+                             attr(ms$MS2, "scan_info")$event))), 1:4)
+  expect_equal(as.vector(table(scan_info$polarity)), c(2396, 2397))
+  # the MS1 grid holds 7920 points and the product-ion grid 9520
+  expect_equal(unique(scan_info$n_points), 7920)
+  expect_equal(unique(attr(ms$MS2, "scan_info")$n_points), 9520)
+
+  # precursors are recorded for product ion scans only
+  expect_true(all(is.na(scan_info$precursor_mz)))
+  expect_false(anyNA(attr(ms$MS2, "scan_info")$precursor_mz))
+  # and the table reports the same precursor as the scan it came from
+  info2 <- attr(ms$MS2, "scan_info")
+  expect_equal(ms$MS2$precursor_mz,
+               info2$precursor_mz[match(ms$MS2$scan, info2$scan)])
+
+  # the final scan carries a truncated scan type, but the MS level is taken
+  # from the low half of the field and still resolves
+  expect_false(anyNA(scan_info$ms_level))
+
+  # metadata: the instrument comes from `SystemInformation`, since the `Status`
+  # record names the control platform the whole line shares
+  expect_equal(attr(x, "instrument"), "LCMS-8030")
+  expect_equal(attr(x, "instrument_config"), "TQ8030-60_M1.66")
+  expect_equal(attr(x, "detector"), "MS")
+  expect_equal(attr(x, "sample_name"), "flav_3D_=L39")
+  expect_equal(attr(x, "time_range"), c(1, 27.99368), tolerance = 1e-6)
+  expect_equal(attr(x, "source_file_format"), "shimadzu_lcd")
+  expect_equal(attr(x, "data_format"), "long")
+
+  # --- the spectra sum to the total ion current stream ----------------------
+  # Decoding this file takes about five seconds, so the checks that need every
+  # scan of it share the read above rather than repeating it.
+  # the levels stay separate here too: this run is 22.8 million rows, and the
+  # sums below need only the scan and intensity columns of each
+  scan_info <- do.call(rbind, lapply(ms, attr, "scan_info"))
+  tic <- read_shimadzu_lcd(path, what = "TIC")
+
+  # The instrument stores its own TIC per spectrum. It agrees with the decoded
+  # spectra only if the m/z grid is trimmed correctly at both ends and the
+  # saturation flag is masked off, so this is the load-bearing check on the
+  # profile decoding.
+  totals <- rowsum(as.numeric(c(ms$MS1$intensity, ms$MS2$intensity)),
+                   c(ms$MS1$scan, ms$MS2$scan))
+  for (event in sort(unique(scan_info$event))){
+    scans <- scan_info$scan[scan_info$event == event]
+    expected <- as.numeric(totals[match(as.character(scans), rownames(totals))])
+    expected[is.na(expected)] <- 0
+    observed <- as.numeric(tic[[paste("Event", event)]][, "intensity"])
+    expect_equal(expected, observed)
+  }
+
+  # the stored grid overhangs the acquired range by 10 bins at the bottom and
+  # 9 at the top; untrimmed, MS1 scans would run from 209.0 to 1000.9
+  expect_equal(min(x$mz), 210)
+  expect_equal(max(x$mz), 1000)
+  expect_true(all(abs(ms$MS1$mz*10 - round(ms$MS1$mz*10)) < 1e-6))
+  expect_true(all(abs(ms$MS2$mz*10 - round(ms$MS2$mz*10)) < 1e-6))
+})
+
+test_that("read_shimadzu_lcd can read 'Shimadzu' TLM total ion currents", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_tlm_dda.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  tic <- read_shimadzu_lcd(path, what = "tic")
+
+  # one chromatogram per acquisition event
+  expect_type(tic, "list")
+  expect_equal(names(tic), paste("Event", 1:4))
+  expect_equal(sapply(tic, nrow), c(2397, 165, 2396, 108),
+               ignore_attr = TRUE)
+  expect_true(all(sapply(tic, function(x) inherits(x, "matrix"))))
+  expect_equal(colnames(tic[[1]]), "intensity")
+  expect_equal(attr(tic[[1]], "instrument"), "LCMS-8030")
+
+  tic_long <- read_shimadzu_lcd(path, what = "tic", data_format = "long",
+                                format_out = "data.frame")
+  expect_equal(names(tic_long[[1]]), c("rt", "intensity"))
+  expect_equal(nrow(tic_long[[1]]), 2397)
+  expect_equal(tic_long[[1]]$intensity, as.numeric(tic[[1]][, "intensity"]))
+
+  # the per-cycle curve computed by the instrument
+  sumtic <- read_sz_tlm_tic(path, what = "sumtic",
+                                             read_metadata = FALSE)
+  expect_equal(dim(sumtic), c(2397, 1))
+})
+
+test_that("'Shimadzu' TLM acquisition events are summarized", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_tlm_dda.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  events <- read_tlm_events(path)
+  expect_s3_class(events, "data.frame")
+  expect_equal(dim(events), c(4, 8))
+  expect_equal(events$event, 1:4)
+  expect_equal(events$n_scans, c(2397, 165, 2396, 108))
+  expect_equal(events$ms_level, c(1, 2, 1, 2))
+  expect_equal(events$polarity, c("positive", "positive",
+                                  "negative", "negative"))
+  expect_equal(events$scan_type, c("scan", "product ion scan",
+                                   "scan", "product ion scan"),
+               ignore_attr = TRUE)
+  # stored ranges are the untrimmed grid bounds
+  expect_equal(events$mz_min, c(209, 49, 209, 49))
+  expect_equal(events$mz_max, c(1001, 1001, 1001, 1001))
+
+  meta <- read_tlm_metadata(path)
+  expect_equal(meta$instrument_config, "TQ8030-60_M1.66")
+  expect_equal(read_sz_system_info(path)$SI.IN, "LCMS-8030")
+  expect_equal(meta$firmware_version, "5.98SP1")
+  expect_equal(meta$n_scans, 5066)
+  expect_equal(meta$n_events, 4)
+})
+
+test_that("'Shimadzu' OLE files name the instrument from `SystemInformation`", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_pda <- system.file("Anthocyanin.lcd",
+                          package = "chromConverterExtraTests")
+  path_gcd <- system.file("FS19_214.gcd",
+                          package = "chromConverterExtraTests")
+  path_qtof <- system.file("shimadzu_qtof.lcd",
+                           package = "chromConverterExtraTests")
+  path_tlm <- system.file("shimadzu_tlm_scan.lcd",
+                          package = "chromConverterExtraTests")
+  path_qgd <- system.file("B4NF.7_C23.qgd",
+                          package = "chromConverterExtraTests")
+  skip_if_not(all(file.exists(path_pda, path_gcd, path_qtof, path_tlm,
+                              path_qgd)))
+
+  si <- read_sz_system_info(path_pda)
+  expect_equal(si$SI.IN, "Instrument2")
+  expect_equal(si$SI.units, c(LC = "CBM-20A", PDA = "SPD-M20A"))
+
+  # the instrument describes the file, and the detector the trace
+  pda <- read_shimadzu_lcd(path_pda, what = "pda")
+  expect_equal(attr(pda, "instrument"), "Instrument2")
+  expect_equal(attr(pda, "detector_model"), "SPD-M20A")
+  expect_equal(attr(pda, "channel_id"), "PDA.1.1.PDA.1.3D")
+
+  # which is the name the ascii export of the same acquisition reports
+  path_ascii <- system.file("shimadzuDAD_Anthocyanin.txt",
+                            package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_ascii))
+  ascii <- read_chroms(path_ascii, format_in = "shimadzu_dad",
+                       progress_bar = FALSE)[[1]]
+  expect_equal(attr(ascii, "instrument"), attr(pda, "instrument"))
+
+  gcd <- read_shimadzu_gcd(path_gcd)
+  expect_equal(attr(gcd, "instrument"), "GC-2014")
+  expect_equal(attr(gcd, "detector_model"), "SFID1")
+
+  # a mass spectrometry stream names no unit, so the mass spectrometer slot
+  # from `SystemInformation` stands in as the detector
+  expect_equal(read_sz_system_info(path_qtof)$SI.units[["LCMS-QP"]],
+               "LCMS-9030")
+  qtof <- read_shimadzu_lcd(path_qtof, what = "tic")
+  expect_equal(attr(qtof, "instrument"), "LCMS-9030")
+  expect_equal(attr(qtof, "detector_model"), "LCMS-9030")
+  expect_null(attr(qtof, "channel_id"))
+
+  tlm <- read_shimadzu_lcd(path_tlm, what = "tic")[[1]]
+  expect_equal(attr(tlm, "instrument"), "LCMS8040")
+  expect_equal(attr(tlm, "instrument_config"), "TQ8030-50_M1.13")
+  # older software registers every triple quadrupole under the platform name
+  expect_equal(attr(tlm, "detector_model"), "LCMS-3030")
+
+  # the stream is absent from a `.qgd` file, which leaves the field empty
+  expect_equal(read_sz_system_info(path_qgd), list())
+  expect_true(is.na(attr(read_shimadzu_qgd(path_qgd, what = "tic"),
+                         "instrument")))
+})
+
+test_that("`SystemInformation` is unpacked once per read, not once per trace", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("multichannel_chrom.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  unpacked <- 0L
+  read_si <- read_sz_system_info
+  local_mocked_bindings(read_sz_system_info = function(...){
+    unpacked <<- unpacked + 1L
+    read_si(...)
+  })
+
+  # three channels, each attaching metadata of its own, off one stream read:
+  # the stream describes the file, so it is read beside the file properties
+  # rather than from the field map, which runs once per trace
+  x <- read_shimadzu_lcd(path, what = "chroms")
+  expect_length(x, 3)
+  expect_equal(unpacked, 1L)
+})
+
+test_that("every trace from one 'Shimadzu' file reports the same instrument", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_tlm_dda.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  # a file holding both PDA and MS data used to name the PDA module on one
+  # trace and the system on the other
+  x <- read_shimadzu_lcd(path, what = c("pda", "tic"))
+  meta <- extract_metadata(x, what = c("instrument", "detector",
+                                       "detector_model"))
+  expect_equal(unique(meta$instrument), "LCMS-8030")
+  expect_equal(meta$detector, c("DAD", rep("MS", 4)))
+  expect_equal(meta$detector_model, c("SPD-M20A", rep("LCMS-3030", 4)))
+
+  # the multi-channel case is the same story without a mass spectrometer
+  path_lc <- system.file("multichannel_chrom.lcd",
+                         package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_lc))
+  ch <- read_shimadzu_lcd(path_lc, what = "chroms")
+  meta_lc <- extract_metadata(ch, what = c("instrument", "detector_model",
+                                           "channel_id"))
+  expect_equal(unique(meta_lc$instrument), "HPLC RID")
+  expect_equal(meta_lc$detector_model, c("SPD-20A", "SPD-20A", "RID-10A"))
+
+  # the channel is what ties a trace to its peak table
+  pt <- read_shimadzu_lcd(path_lc, what = "peak_table")
+  expect_equal(names(pt), paste0("PT-", meta_lc$channel_id))
+})
+
+test_that("read_shimadzu_lcd can read 'Shimadzu' QTOF data", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_qtof.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  expect_equal(get_sz_ms_format(path), "qtof")
+
+  # the TOF calibration warning is covered by its own test below
+
+  ms <- read_shimadzu_lcd(path, what = "MS", format_out = "data.frame")
+  expect_named(ms, c("MS1", "MS2"))
+
+  # `precursor_mz` belongs to the product-ion spectra, so only `MS2` has it
+  expect_equal(dim(ms$MS1), c(182972, 4))
+  expect_equal(names(ms$MS1), c("scan", "rt", "mz", "intensity"))
+  expect_equal(dim(ms$MS2), c(11325, 5))
+  expect_equal(names(ms$MS2), c("scan", "rt", "precursor_mz", "mz",
+                                "intensity"))
+  expect_false(anyNA(ms$MS2$precursor_mz))
+
+  # 13,929 of the 16,018 scans contain peaks; the rest are empty
+  x <- sz_stitch_ms(ms)
+  expect_equal(length(unique(x$scan)), 13929)
+  expect_equal(range(x$scan), c(0, 16017))
+  expect_equal(range(x$rt), c(0, 13.99997), tolerance = 1e-6)
+
+  expect_equal(attr(ms$MS1, "sample_name"), "20190607_NM16")
+  expect_equal(attr(ms$MS1, "detector"), "MS")
+  expect_equal(attr(ms$MS1, "data_format"), "long")
+  expect_equal(attr(ms$MS1, "source_file_format"), "shimadzu_lcd")
+
+  # the TIC shares the file's time axis, in minutes like every other reader
+  tic <- read_shimadzu_lcd(path, what = "tic")
+  expect_true(is.matrix(tic))
+  expect_equal(dim(tic), c(9091, 1))
+  expect_equal(range(as.numeric(rownames(tic))), c(0, 13.99897),
+               tolerance = 1e-6)
+  expect_equal(attr(tic, "time_unit"), "Minutes")
+  expect_equal(attr(tic, "detector"), "MS")
+  expect_equal(attr(tic, "sample_name"), "20190607_NM16")
+
+  # --- MS level, event and precursor ----------------------------------------
+  # sharing the decode above rather than reading the file again
+  si <- attr(x, "scan_info")
+
+  # one row per spectrum, including those that hold no peaks
+  expect_s3_class(si, "data.frame")
+  expect_equal(nrow(si), 16018)
+  expect_equal(names(si), c("scan", "rt", "event", "ms_level", "cycle",
+                            "polarity", "precursor_mz", "n_peaks"))
+  expect_equal(si$scan, 0:16017)
+  expect_equal(sum(si$n_peaks), nrow(x))
+
+  # MS level is the high word of the flags field; these counts are what
+  # 'ProteoWizard' reports for this file
+  expect_equal(as.vector(table(si$ms_level)), c(9091L, 6927L))
+  expect_equal(sort(unique(si$event)), c(1, 2, 3, 4))
+  # event 1 collects the survey scans, 2-4 the product-ion scans
+  expect_equal(unique(si$ms_level[si$event == 1]), 1)
+  expect_equal(unique(si$ms_level[si$event > 1]), 2)
+  expect_true(all(si$polarity == "positive"))
+
+  # every product-ion scan has a selected precursor, no survey scan does
+  expect_true(all(!is.na(si$precursor_mz[si$ms_level == 2])))
+  expect_true(all(is.na(si$precursor_mz[si$ms_level == 1])))
+  dda <- read_qtof_dda(path)
+  expect_equal(nrow(dda), sum(si$ms_level == 2))
+  expect_equal(sort(dda$scan), sort(si$scan[si$ms_level == 2] + 1))
+
+  # the precursor should be a real peak in the survey scan of its own cycle
+  expect_true("precursor_mz" %in% names(ms$MS2))
+  ms2 <- si[si$ms_level == 2 & si$n_peaks > 0, ]
+  found <- vapply(head(seq_len(nrow(ms2)), 40), function(i){
+    parent <- si$scan[si$ms_level == 1 & si$cycle == ms2$cycle[i]][1]
+    peaks <- ms$MS1$mz[ms$MS1$scan == parent]
+    length(peaks) > 0 &&
+      min(abs(peaks - ms2$precursor_mz[i]))/ms2$precursor_mz[i] < 2e-5
+  }, logical(1))
+  expect_true(all(found))
+})
+
+test_that("'Shimadzu' QTOF calibration is read from the file", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_qtof.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  # `Mass Parameters` records a voltage whose sign follows the ion polarity
+  expect_equal(read_qtof_polarity(path), "positive")
+
+  # `TOF Calibration Table` stores 5 calibrants per polarity in 3 replicate
+  # sets; the second set is a factory default rather than a measurement
+  cal <- read_sz_qtof_calibration(path)
+  expect_named(cal, c("A", "B"))
+  expect_equal(cal[["A"]], 4.6906089e+13, tolerance = 1e-6)
+  expect_equal(cal[["B"]], 6.7674066e+11, tolerance = 1e-6)
+
+  # including the factory set moves `B` by a factor of ~1.7
+  bad <- read_sz_qtof_calibration(path, drop_rep = integer(0))
+  expect_gt(bad[["B"]], 1e12)
+
+  # one 24-byte index record per spectrum, including the empty ones
+  offsets <- read_qtof_spectrum_index(path)
+  expect_length(offsets, 16018)
+  expect_true(all(diff(offsets) > 0))
+
+  # the reference compounds infused to correct the mass axis
+  expect_equal(read_qtof_lock_mass(path),
+               c(121.050873, 922.009798))
+})
+
+test_that("'Shimadzu' QTOF m/z are checked against the acquisition range", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_qtof.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  # the m/z range the instrument was told to scan, from `Mass Parameters`
+  window <- read_qtof_mz_range(path)
+  expect_equal(window, c(100, 2000))
+
+  x <- sz_read_ms(path)
+  expect_gte(min(x$mz), window[1])
+  expect_lte(max(x$mz), window[2])
+  # a correctly calibrated file raises nothing
+  expect_no_warning(check_qtof_mz_range(x$mz, window))
+
+  # using the calibration block for the wrong polarity is a ~3% error, which
+  # on a 100-1700 window puts the top of the range near 1750
+  expect_warning(
+    check_qtof_mz_range(c(103.008, 1750.464), c(100, 1700)),
+    "outside the acquisition range")
+  # and a few ppm of slack does not
+  expect_no_warning(
+    check_qtof_mz_range(c(100.04, 1699.998), c(100, 1700)))
+  # a missing window skips the check rather than erroring
+  expect_no_warning(check_qtof_mz_range(x$mz, NULL))
+
+  # --- the polarity and scan window are reported ----------------------------
+  expect_equal(attr(x, "polarity"), "positive")
+  expect_equal(attr(x, "mz_range"), c(100, 2000))
+  expect_gte(min(x$mz), 100)
+  expect_lte(max(x$mz), 2000)
+
+  # the TIC describes the same acquisition
+  tic <- read_shimadzu_lcd(path, what = "tic")
+  expect_equal(attr(tic, "polarity"), "positive")
+  expect_equal(attr(tic, "mz_range"), c(100, 2000))
+})
+
+test_that("'Shimadzu' QTOF intensities are scaled by the accumulation count", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_qtof.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+
+  # Raw detector counts are accumulated over all TOF transients in a scan and
+  # normalized to a nominal 100. The divisor is read from the `Status` stream,
+  # which records 376 accumulations per scan for this acquisition.
+  expect_equal(read_qtof_int_scale(path), 3.76)
+
+  x <- sz_read_ms(path)
+  raw <- sz_read_ms(path, scale = FALSE)
+
+  # Checked against a 'ProteoWizard' conversion of this file rather than
+  # against this parser, so the assertion is independent of it. The first scan
+  # is spelled out for readability; the slice covers 200 spectra.
+  vendor_mz <- c(129.054300, 130.967500, 141.958800, 147.064400,
+                 158.961600, 182.984800, 184.985000, 201.112700)
+  expect_equal(head(x$mz, 8), vendor_mz, tolerance = 2e-6)
+
+  gt <- sz_ground_truth("shimadzu_qtof")
+  err <- vapply(unique(gt$scan), function(s){
+    g <- gt[gt$scan == s, ]
+    o <- x[x$scan == s, ]
+    if (nrow(o) != nrow(g)) return(NA_real_)
+    max(abs(sort(o$mz) - sort(g$mz))/sort(g$mz))
+  }, numeric(1))
+  expect_false(anyNA(err))
+  # the file's own calibration and mass correction reproduce the reported m/z
+  # to a fraction of a ppm across every spectrum in the slice
+  expect_lt(stats::median(err), 1e-6)
+  expect_lt(max(err), 5e-6)
+  # intensities are exact, unlike the profile formats
+  for (s in head(unique(gt$scan), 60)){
+    g <- gt[gt$scan == s, ]
+    o <- x[x$scan == s, ]
+    expect_equal(o$intensity[order(o$mz)], g$intensity[order(g$mz)])
+  }
+
+  # without the mass correction the tune-time calibration alone is ~5 ppm low
+  uncorrected <- sz_read_ms(path, lock_mass = FALSE)
+  expect_false(isTRUE(all.equal(uncorrected$mz, x$mz)))
+  expect_gt(median(abs(head(uncorrected$mz, 8) - vendor_mz)/vendor_mz), 4e-6)
+  expect_lt(median(abs(head(x$mz, 8) - vendor_mz)/vendor_mz), 1e-6)
+  # the correction moves only the mass axis
+  expect_equal(uncorrected$intensity, x$intensity)
+  expect_equal(uncorrected$rt, x$rt)
+  expect_equal(head(x$intensity, 8),
+               c(768, 269, 615, 234, 1050, 356, 228, 1769))
+  expect_equal(head(raw$intensity, 8),
+               c(2886, 1013, 2314, 880, 3947, 1340, 856, 6650))
+
+  # scaling is round-half-up of raw / 3.76 across every peak in the file
+  expect_equal(x$intensity, floor(raw$intensity/3.76 + 0.5))
+  expect_true(all(x$intensity == as.integer(x$intensity)))
+
+  # `scale = FALSE` leaves the stored counts untouched
+  expect_equal(x$mz, raw$mz)
+  expect_false(isTRUE(all.equal(x$intensity, raw$intensity)))
+})
+
+test_that("read_shimadzu_lcd can read 'Shimadzu' MRM data", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("shimadzu_tlm_mrm.lcd",
+          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- sz_read_ms(path)
+  si <- attr(x, "scan_info")
+
+  # 1165 scans, each monitoring two transitions of one precursor
+  expect_equal(dim(x), c(2330, 5))
+  expect_equal(names(x), c("scan", "rt", "precursor_mz", "mz", "intensity"))
+  expect_equal(nrow(si), 1165)
+  expect_equal(unique(si$event), 1)
+  expect_equal(unique(si$ms_level), 2)
+  expect_equal(unique(si$polarity), "positive")
+  expect_equal(unique(x$precursor_mz), 544.2)
+  expect_equal(sort(unique(x$mz)), c(320.95, 397.3))
+  expect_false(anyNA(x$precursor_mz))
+
+  expect_equal(read_tlm_events(path)$scan_type, "MRM")
+
+  # This file decodes in a fraction of a second, so the checks that need a
+  # decode of their own are done here rather than on one of the large files.
+  # Asking for a level returns that table on its own, whatever case it is
+  # written in, and spectra are long, so a `matrix` request resolves to a
+  # `data.table`.
+  expect_equal(read_shimadzu_lcd(path, what = "ms2",
+                                 format_out = "data.frame"),
+               x, ignore_attr = c("scan_info", "source_sha1"))
+  expect_s3_class(read_shimadzu_lcd(path, what = "MS2"), "data.table")
+  expect_s3_class(read_shimadzu_lcd(path, what = "MS2",
+                                    format_out = "data.table"), "data.table")
+  expect_warning(read_shimadzu_lcd(path, what = "MS1"), "MS1 data not found")
+
+  # against a 'ProteoWizard' conversion of the same file
+  gt <- sz_ground_truth("shimadzu_tlm_mrm")
+  for (s in head(unique(gt$scan), 50)){
+    g <- gt[gt$scan == s, ]
+    o <- x[x$scan == s, ]
+    expect_equal(nrow(o), nrow(g))
+    expect_equal(sort(o$mz), sort(g$mz))
+    expect_equal(o$intensity[order(o$mz)], g$intensity[order(g$mz)])
+  }
+})
+
+test_that("read_shimadzu_lcd can read MRM data with many events and both polarities", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("shimadzu_tlm_mrm_multi.lcd",
+          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- sz_read_ms(path)
+  si <- attr(x, "scan_info")
+
+  expect_equal(dim(x), c(119023, 5))
+  expect_equal(nrow(si), 104232)
+  # 179 retention-time scheduled events, each covering about two minutes
+  expect_length(unique(si$event), 179)
+  spans <- vapply(split(si$rt, si$event), function(z) diff(range(z)), numeric(1))
+  expect_lt(max(spans), 4.01)
+  # 158 events are negative and 21 positive; where their windows overlap the
+  # instrument alternates polarity from one scan to the next
+  expect_equal(sort(unique(si$polarity)), c("negative", "positive"))
+  pol <- si$polarity[order(si$scan)]
+  expect_gt(length(rle(pol)$lengths), 1000)
+  expect_equal(unique(si$ms_level), 2)
+  expect_equal(unique(read_tlm_events(path)$scan_type), "MRM")
+  # most scans hold one transition, some up to four
+  expect_equal(sort(unique(as.vector(table(x$scan)))), c(1, 2, 3, 4))
+
+  gt <- sz_ground_truth("shimadzu_tlm_mrm_multi")
+  for (s in head(unique(gt$scan), 100)){
+    g <- gt[gt$scan == s, ]
+    o <- x[x$scan == s, ]
+    expect_equal(sort(o$mz), sort(g$mz))
+    expect_equal(o$intensity[order(o$mz)], g$intensity[order(g$mz)])
+    expect_equal(si$ms_level[si$scan == s], unique(g$ms_level))
+  }
+})
+
+test_that("read_shimadzu_lcd describes each MRM event in its TIC metadata", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path_mrm <- system.file("shimadzu_tlm_mrm.lcd",
+              package = "chromConverterExtraTests")
+  path_multi <- system.file("shimadzu_tlm_mrm_multi.lcd",
+                package = "chromConverterExtraTests")
+  skip_if_not(all(file.exists(path_mrm, path_multi)))
+
+  # a single-event acquisition collapses to one chromatogram, which still
+  # carries the transitions it monitors
+  x <- read_shimadzu_lcd(path_mrm, what = "tic")
+  expect_equal(nrow(x), 1165)
+  expect_equal(attr(x, "scan_type"), "MRM")
+  expect_equal(attr(x, "ms_level"), 2)
+  expect_equal(attr(x, "polarity"), "positive")
+  expect_equal(attr(x, "precursor_mz"), 544.2)
+  expect_equal(attr(x, "product_mz"), c(320.95, 397.3))
+  # `time_range` describes the event, not the run
+  expect_equal(attr(x, "time_range"), c(2.978, 6.9744))
+
+  y <- read_shimadzu_lcd(path_multi, what = "tic")
+  expect_length(y, 179)
+  expect_equal(names(y)[c(1, 179)], c("Event 1", "Event 179"))
+  expect_equal(unique(vapply(y, attr, character(1), "scan_type")), "MRM")
+  # a scheduled acquisition gives every event its own retention-time window
+  expect_equal(length(unique(vapply(y, function(z)
+    paste(attr(z, "time_range"), collapse = "/"), character(1)))), 179)
+  expect_equal(sort(table(vapply(y, attr, character(1), "polarity"))),
+               structure(c(positive = 21L, negative = 158L), dim = 2L,
+                         dimnames = list(c("positive", "negative")),
+                         class = "table"), ignore_attr = TRUE)
+
+  expect_equal(attr(y[["Event 1"]], "precursor_mz"), 626.4)
+  expect_equal(attr(y[["Event 1"]], "product_mz"), 308.2)
+  expect_equal(attr(y[["Event 1"]], "time_range"), c(11.14325, 13.13675))
+  expect_equal(attr(y[["Event 179"]], "polarity"), "negative")
+
+  # an event monitoring several transitions reports all of them, and the two
+  # precursors of event 175 are not collapsed to one
+  expect_equal(attr(y[["Event 16"]], "product_mz"), c(104.2, 184.1))
+  expect_equal(attr(y[["Event 175"]], "precursor_mz"), c(279.35, 281.35))
+  expect_equal(attr(y[["Event 175"]], "product_mz"), c(59.1, 279.35, 281.35))
+
+  # the event table pairs each precursor with its product, which the two
+  # attributes above cannot do
+  ev <- read_tlm_events(path_multi)
+  expect_equal(nrow(ev), 179)
+  expect_equal(ev$transitions[[16]],
+               data.frame(precursor_mz = c(482.3, 482.3),
+                          product_mz = c(104.2, 184.1)))
+  expect_equal(ev$transitions[[175]],
+               data.frame(precursor_mz = c(281.35, 279.35, 279.35, 281.35),
+                          product_mz = c(59.1, 59.1, 279.35, 281.35)))
+  # the summary column is NA where an event has more than one precursor
+  expect_true(is.na(ev$precursor_mz[175]))
+  expect_equal(sum(is.na(ev$precursor_mz)), 1)
+})
+
+test_that("read_shimadzu_lcd reports a scanned m/z range rather than a product", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path_scan <- system.file("shimadzu_tlm_scan.lcd",
+               package = "chromConverterExtraTests")
+  path_sim <- system.file("shimadzu_tlm_sim.lcd",
+              package = "chromConverterExtraTests")
+  path_mrm <- system.file("shimadzu_tlm_mrm.lcd",
+              package = "chromConverterExtraTests")
+  skip_if_not(all(file.exists(path_scan, path_sim, path_mrm)))
+
+  # a full scan and a product-ion scan sweep a range of masses, so neither
+  # names a product
+  x <- read_shimadzu_lcd(path_scan, what = "tic")
+  expect_length(x, 2)
+  expect_equal(vapply(x, attr, character(1), "scan_type"),
+               c("Event 1" = "scan", "Event 2" = "product ion scan"))
+  expect_equal(attr(x[["Event 1"]], "mz_range"), c(49, 2001))
+  expect_equal(attr(x[["Event 2"]], "mz_range"), c(99, 2001))
+  expect_null(attr(x[["Event 1"]], "product_mz"))
+  expect_null(attr(x[["Event 2"]], "product_mz"))
+  # neither event reports one precursor: the survey scan has none, and the
+  # product-ion event is data-dependent, retuning Q1 every cycle (43 distinct
+  # precursors across its 621 scans, the most common covering a quarter of
+  # them), so no single value describes it
+  expect_true(is.na(attr(x[["Event 1"]], "precursor_mz")))
+  expect_true(is.na(attr(x[["Event 2"]], "precursor_mz")))
+  # the per-scan precursors are still there, in `scan_info`
+  si <- attr(read_sz_tlm(path_scan)$MS2, "scan_info")
+  expect_gt(length(unique(si$precursor_mz)), 1)
+  expect_false(anyNA(si$precursor_mz))
+
+  # SIM passes its ions through undissociated, so they are precursors and the
+  # Q3 masses that repeat them are not reported
+  y <- read_shimadzu_lcd(path_sim, what = "tic")
+  expect_equal(attr(y[["Event 1"]], "scan_type"), "SIM")
+  expect_equal(attr(y[["Event 1"]], "precursor_mz"),
+               c(1041.3, 1044.2, 1058.2, 1200.4, 1448))
+  expect_null(attr(y[["Event 1"]], "product_mz"))
+  expect_null(attr(y[["Event 1"]], "mz_range"))
+  expect_equal(attr(y[["Event 2"]], "mz_range"), c(39, 1101))
+
+  # an MRM event is the other way round: fixed transitions, no scanned range
+  z <- read_shimadzu_lcd(path_mrm, what = "tic")
+  expect_equal(attr(z, "product_mz"), c(320.95, 397.3))
+  expect_null(attr(z, "mz_range"))
+})
+
+test_that("extract_metadata can collapse a multi-valued field", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("shimadzu_tlm_mrm.lcd",
+          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+  x <- read_shimadzu_lcd(path, what = "tic")
+
+  # by default a field holding two values is spread over two columns
+  m <- extract_metadata(x, c("scan_type", "product_mz"))
+  expect_equal(as.numeric(m$product_mz1), 320.95)
+  expect_equal(as.numeric(m$product_mz2), 397.3)
+  # and is not reported missing on account of the renaming
+  expect_no_warning(extract_metadata(x, c("scan_type", "product_mz")))
+
+  m <- extract_metadata(x, c("scan_type", "product_mz"), collapse = TRUE)
+  expect_equal(m$product_mz, "320.95, 397.3")
+  expect_warning(extract_metadata(x, c("scan_type", "not_a_field")),
+                 "not found")
+})
+
+test_that("read_shimadzu_lcd can read 'Shimadzu' SIM data", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("shimadzu_tlm_sim.lcd",
+          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- sz_read_ms(path)
+  si <- attr(x, "scan_info")
+
+  # one SIM event monitoring 5 ions, plus five product-ion scan events
+  expect_equal(dim(x), c(56589, 5))
+  expect_equal(nrow(si), 8765)
+  expect_length(unique(si$event), 6)
+  expect_equal(as.vector(table(si$ms_level)), c(1461L, 7304L))
+  expect_equal(sort(table(read_tlm_events(path)$scan_type)),
+               structure(c(SIM = 1L, `product ion scan` = 5L),
+                         dim = 2L, dimnames = list(c("SIM", "product ion scan")),
+                         class = "table"), ignore_attr = TRUE)
+  # SIM is reported as MS1: its Q1 and Q3 are equal, so nothing is selected
+  # after the collision cell
+  expect_equal(unique(si$ms_level[si$event == 1]), 1)
+  # every scan reports the precursor it came from: the SIM events their Q1,
+  # the product-ion events the precursor they were told to isolate
+  expect_false(anyNA(x$precursor_mz))
+  expect_equal(sum(x$precursor_mz %in% unique(x$precursor_mz[x$scan %in%
+                     si$scan[si$ms_level == 1]])), 1461 * 5)
+
+  gt <- sz_ground_truth("shimadzu_tlm_sim")
+  sim <- gt[gt$ms_level == 1, ]
+  for (s in unique(sim$scan)){
+    g <- sim[sim$scan == s, ]
+    o <- x[x$scan == s, ]
+    expect_equal(nrow(o), 5)
+    expect_equal(sort(o$mz), sort(g$mz))
+    expect_equal(o$intensity[order(o$mz)], g$intensity[order(g$mz)])
+  }
+})
+
+test_that("read_shimadzu_lcd can read a 'Shimadzu' full scan and product-ion run", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("shimadzu_tlm_scan.lcd",
+          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  ms <- read_shimadzu_lcd(path, what = "MS", format_out = "data.frame",
+                          sparse = FALSE, read_metadata = FALSE)
+  # Kept as two tables rather than stitched: with the zeros kept this run is
+  # ~24 million rows, and copying and sorting that to put the levels back
+  # together costs more than the decode itself.
+  si <- do.call(rbind, lapply(ms, attr, "scan_info"))
+  si <- si[order(si$scan), ]
+  row.names(si) <- NULL
+
+  expect_equal(nrow(si), 2391)
+  expect_equal(as.vector(table(si$ms_level)), c(1770L, 621L))
+  expect_equal(sort(read_tlm_events(path)$scan_type),
+               c("product ion scan", "scan"))
+  expect_equal(unique(si$polarity), "negative")
+  # a full scan has no precursor to report; the product-ion scans do
+  expect_false("precursor_mz" %in% names(ms$MS1))
+  expect_true("precursor_mz" %in% names(ms$MS2))
+
+  # The m/z grid matches 'ProteoWizard' exactly, but the intensities do not:
+  # the vendor returns a ringing-suppressed profile, ~7% high on total ion
+  # current and ~20% low at the apex. The raw values are validated against the
+  # file's own `TIC Data` instead.
+  gt <- sz_ground_truth("shimadzu_tlm_scan")
+  # the slice covers a handful of scans, so the rows for those are taken out
+  # once instead of the whole table being searched inside the loop
+  slice <- do.call(rbind, lapply(ms, function(x){
+    x[x$scan %in% unique(gt$scan), c("scan", "mz")]
+  }))
+  for (s in unique(gt$scan)){
+    g <- gt[gt$scan == s, ]
+    o <- slice[slice$scan == s, ]
+    expect_equal(nrow(o), nrow(g))
+    expect_equal(o$mz[order(o$mz)], g$mz[order(g$mz)])
+  }
+  tic <- matrix(read_ole_uint32(path, c("TLM Raw Data", "TIC Data")),
+                ncol = 2L, byrow = TRUE)[, 1]
+  totals <- rowsum(as.numeric(c(ms$MS1$intensity, ms$MS2$intensity)),
+                   c(ms$MS1$scan, ms$MS2$scan))
+  expect_equal(as.numeric(totals), as.numeric(tic))
+})
+
+test_that("read_shimadzu_lcd can read negative-mode 'Shimadzu' QTOF data", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("shimadzu_qtof_neg.lcd",
+          package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  # the calibration table holds a block per polarity; this file needs the
+  # negative one, whose coefficients differ from the positive block by ~1.5%
+  expect_equal(read_qtof_polarity(path), "negative")
+  cal <- read_sz_qtof_calibration(path)
+  expect_equal(cal[["A"]], 4.7595880e+13, tolerance = 1e-6)
+  expect_equal(read_qtof_lock_mass(path),
+               c(112.985587, 601.978977, 1033.988109, 1633.949786))
+  expect_equal(read_qtof_mz_range(path), c(100, 1700))
+
+  ms <- read_shimadzu_lcd(path, what = "MS", format_out = "data.frame")
+  x <- sz_stitch_ms(ms)
+  si <- attr(x, "scan_info")
+  # the shared columns of the two levels; `precursor_mz` is on `MS2` alone
+  expect_equal(dim(x), c(1627195, 4))
+  expect_true("precursor_mz" %in% names(ms$MS2))
+  expect_equal(nrow(si), 8383)
+  expect_equal(unique(si$polarity), "negative")
+  expect_equal(as.vector(table(si$ms_level)), c(3172L, 5211L))
+  # this file also exercises the high byte on the intensity-width field
+  expect_gte(min(x$mz), 100 * (1 - 1e-5))
+  expect_lte(max(x$mz), 1700 * (1 + 1e-5))
+
+  gt <- sz_ground_truth("shimadzu_qtof_neg")
+  for (s in head(unique(gt$scan), 15)){
+    g <- gt[gt$scan == s, ]
+    o <- x[x$scan == s, ]
+    expect_equal(nrow(o), nrow(g))
+    om <- sort(o$mz); gm <- sort(g$mz)
+    # the file's own calibration reproduces the reported m/z to well under 1 ppm
+    expect_lt(max(abs(om - gm)/gm), 1e-6)
+    expect_equal(o$intensity[order(o$mz)], g$intensity[order(g$mz)])
+  }
+})
