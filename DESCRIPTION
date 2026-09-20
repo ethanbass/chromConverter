@@ -21,6 +21,10 @@ Description: Reads chromatograms from binary formats into R objects. Currently s
     external libraries, such as 'Aston' <https://github.com/bovee/aston>, 
     'Entab' <https://github.com/bovee/entab>, 'rainbow' <https://rainbow-api.readthedocs.io/>,
     and 'ThermoRawFileParser' <https://github.com/compomics/ThermoRawFileParser>.
+    The suggested packages 'entab' and 'chromConverterExtraTests' are not on
+    CRAN: both are available from the repository given in
+    'Additional_repositories', and the latest test fixtures can also be
+    installed from <https://github.com/ethanbass/chromConverterExtraTests>.
 License: GPL (>= 3)
 URL: https://ethanbass.github.io/chromConverter/, https://github.com/ethanbass/chromConverter/
 BugReports: https://github.com/ethanbass/chromConverter/issues/
@@ -52,7 +56,7 @@ Suggests:
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-Additional_repositories: https://ethanbass.github.io/drat/, https://ethanbass.r-universe.dev/
+Additional_repositories: https://ethanbass.github.io/drat/
 Config/testthat/edition: 3
 Config/Needs/website: rmarkdown, ggplot2, dplyr
 Config/roxygen2/version: 8.1.0
