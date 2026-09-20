@@ -14,7 +14,8 @@ Shared params 2D chromatogram
 
 - metadata_format:
 
-  Format to output metadata. Either `chromconverter` or `raw`.
+  Format to output metadata. Either `chromconverter` (standardized field
+  names) or `raw` (vendor field names, unmapped).
 
 - progress_bar:
 
@@ -25,9 +26,9 @@ Shared params 2D chromatogram
 
   Argument to
   [pbapply](https://peter.solymos.org/pbapply/reference/pbapply.html)
-  specifying the number of clusters to use or a cluster object created
-  by [makeCluster](https://rdrr.io/r/parallel/makeCluster.html).
-  Defaults to `1`.
+  specifying the number of parallel workers to use or a cluster object
+  created by [makeCluster](https://rdrr.io/r/parallel/makeCluster.html)
+  (a set of parallel R worker processes). Defaults to `1`.
 
 - read_metadata:
 

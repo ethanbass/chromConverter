@@ -45,9 +45,9 @@ read_acaml(
 
   Argument to
   [pbapply](https://peter.solymos.org/pbapply/reference/pbapply.html)
-  specifying the number of clusters to use or a cluster object created
-  by [makeCluster](https://rdrr.io/r/parallel/makeCluster.html).
-  Defaults to `1`.
+  specifying the number of parallel workers to use or a cluster object
+  created by [makeCluster](https://rdrr.io/r/parallel/makeCluster.html)
+  (a set of parallel R worker processes). Defaults to `1`.
 
 ## Value
 

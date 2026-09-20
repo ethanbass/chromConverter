@@ -72,7 +72,7 @@ is accepted as a synonym, since that is what 'Shimadzu' calls the same
 detector), chromatograms (<code>chroms</code>), <code>TIC</code>, mass spectra (<code>MS1</code>, <code>MS2</code>, or
 <code>MS</code> for both), and/or peak lists (<code>peak_table</code>). Note that an MRM or SIM acquisition is a single
 stage of mass selection either way: MRM scans are <code>MS2</code>, and SIM scans,
-whose Q1 and Q3 are the same, are <code>MS1</code>.</p>
+whose Q1 (first quadrupole) and Q3 (third quadrupole) are the same, are <code>MS1</code>.</p>
 <p>If a stream is not specified, the richest one the file contains is returned:
 <code>PDA</code> if there is a PDA stream, otherwise <code>chroms</code>, and otherwise <code>MS</code> for a
 file whose only detector is the mass spectrometer. The mass spectrometry
@@ -96,7 +96,7 @@ quadrupole full scan, product-ion scan, MRM and SIM data).</p></dd>
 
 <dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
 <dd><p>Format to output metadata. Either <code>chromconverter</code>
-or <code>raw</code>.</p></dd>
+(standardized field names) or <code>raw</code> (vendor field names, unmapped).</p></dd>
 
 
 <dt id="arg-scale">scale<a class="anchor" aria-label="anchor" href="#arg-scale"></a></dt>

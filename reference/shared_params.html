@@ -56,7 +56,7 @@
 
 <dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
 <dd><p>Format to output metadata. Either <code>chromconverter</code>
-or <code>raw</code>.</p></dd>
+(standardized field names) or <code>raw</code> (vendor field names, unmapped).</p></dd>
 
 
 <dt id="arg-progress-bar">progress_bar<a class="anchor" aria-label="anchor" href="#arg-progress-bar"></a></dt>
@@ -65,9 +65,10 @@ if <code>pbapply</code> is installed.</p></dd>
 
 
 <dt id="arg-cl">cl<a class="anchor" aria-label="anchor" href="#arg-cl"></a></dt>
-<dd><p>Argument to <a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply</a> specifying the number
-of clusters to use or a cluster object created by
-<a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a>. Defaults to <code>1</code>.</p></dd>
+<dd><p>Argument to <a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply</a> specifying the number of
+parallel workers to use or a cluster object created by
+<a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a> (a set of parallel R worker processes).
+Defaults to <code>1</code>.</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>

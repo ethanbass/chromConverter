@@ -14,8 +14,8 @@ library(data.table)
 #>     %notin%
 ```
 
-MS chromatograms are returned by default in `long` format with three
-columns: retention time, m/z, and intensity.
+MS chromatograms are returned by default in `long` format (one row per
+scan–m/z pair) with three columns: retention time, m/z, and intensity.
 
 As an example, we can load the ‘Varian’ SMS chromatogram included in the
 `chromConverterExtraTests` package.

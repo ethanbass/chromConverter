@@ -130,7 +130,7 @@
 <li>‘Shimadzu LabSolutions’ ascii (<code>.txt</code>)</li>
 <li>‘Shimadzu GCsolution’ data files (<code>.gcd</code>)</li>
 <li>‘Shimadzu GCMSsolution’ data files (<code>.qgd</code>)</li>
-<li>‘Shimadzu LabSolutions’<code>.lcd</code> (PDA, QTOF, TLM, TIC, chromatogram, and peak table streams)</li>
+<li>‘Shimadzu LabSolutions’<code>.lcd</code> (PDA, QTOF, TLM (triple quadrupole MS), TIC, chromatogram, and peak table streams)</li>
 <li>‘Lumex’ <code>.mdf</code> files</li>
 <li>‘Thermo Scientific Chromeleon’ ascii (<code>.txt</code>)</li>
 <li>‘Varian Workstation’ (<code>.SMS</code>)</li>
@@ -173,7 +173,7 @@
 <div class="section level5">
 <h5 id="importing-chromatograms">Importing chromatograms<a class="anchor" aria-label="anchor" href="#importing-chromatograms"></a>
 </h5>
-<p>The central function of chromConverter is <code>read_chroms</code>, which functions as a wrapper around all of the supported parsers. To convert a set of files, call <code>read_chroms</code>, specifying the <code>paths</code> to a vector of directories or files and the appropriate file format (<code>format_in</code>). Supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code>, <code>csd</code>, and <code>wsd</code>.</p>
+<p>The central function of chromConverter is <code>read_chroms</code>, which functions as a wrapper around all of the supported parsers. To convert a set of files, call <code>read_chroms</code>, specifying the <code>paths</code> to a vector of directories or files and the appropriate file format (<code>format_in</code>). Supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code> (mass selective detectors), <code>csd</code> (current selective detectors, e.g. FID), and <code>wsd</code> (wavelength selective detectors, e.g. DAD/UV).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ethanbass.github.io/chromConverter/">chromConverter</a></span><span class="op">)</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></span></code></pre></div>

@@ -39,7 +39,8 @@ read_chemstation_uv(
 
 - metadata_format:
 
-  Format to output metadata. Either `chromconverter` or `raw`.
+  Format to output metadata. Either `chromconverter` (standardized field
+  names) or `raw` (vendor field names, unmapped).
 
 - scale:
 

@@ -32,8 +32,8 @@ read_shimadzu_lcd(
   detector), chromatograms (`chroms`), `TIC`, mass spectra (`MS1`,
   `MS2`, or `MS` for both), and/or peak lists (`peak_table`). Note that
   an MRM or SIM acquisition is a single stage of mass selection either
-  way: MRM scans are `MS2`, and SIM scans, whose Q1 and Q3 are the same,
-  are `MS1`.
+  way: MRM scans are `MS2`, and SIM scans, whose Q1 (first quadrupole)
+  and Q3 (third quadrupole) are the same, are `MS1`.
 
   If a stream is not specified, the richest one the file contains is
   returned: `PDA` if there is a PDA stream, otherwise `chroms`, and
@@ -57,7 +57,8 @@ read_shimadzu_lcd(
 
 - metadata_format:
 
-  Format to output metadata. Either `chromconverter` or `raw`.
+  Format to output metadata. Either `chromconverter` (standardized field
+  names) or `raw` (vendor field names, unmapped).
 
 - scale:
 
