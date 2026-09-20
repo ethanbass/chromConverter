@@ -24,7 +24,7 @@ read_chromeleon(
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+(standardized field names) or \code{raw} (vendor field names, unmapped).}
 
 \item{decimal_mark}{Which character is used as the decimal separator in the
 file. By default, decimal mark will be detected automatically, but it can

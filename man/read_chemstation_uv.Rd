@@ -25,7 +25,7 @@ read_chemstation_uv(
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+(standardized field names) or \code{raw} (vendor field names, unmapped).}
 
 \item{scale}{Whether to scale the data by the scaling factor present in the
 file. Defaults to \code{TRUE}.}

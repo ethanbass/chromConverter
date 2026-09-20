@@ -28,9 +28,10 @@ sequence rather than arriving in bulk: \link{read_agilent_rslt} calls this
 function on the single \code{.acaml} file in a \code{.rslt} directory, where a
 progress bar over one element is just noise.}
 
-\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
-of clusters to use or a cluster object created by
-\link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
+\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number of
+parallel workers to use or a cluster object created by
+\link[parallel:makeCluster]{makeCluster} (a set of parallel R worker processes).
+Defaults to \code{1}.}
 }
 \value{
 A \code{data.frame}, \code{data.table} or \code{tibble} (according to the value of

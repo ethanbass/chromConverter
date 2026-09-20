@@ -76,7 +76,7 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - 'Shimadzu LabSolutions' ascii (`.txt`)
 - 'Shimadzu GCsolution' data files (`.gcd`)
 - 'Shimadzu GCMSsolution' data files (`.qgd`) 
-- 'Shimadzu LabSolutions'`.lcd` (PDA, QTOF, TLM, TIC, chromatogram, and peak table streams)
+- 'Shimadzu LabSolutions'`.lcd` (PDA, QTOF, TLM (triple quadrupole MS), TIC, chromatogram, and peak table streams)
 - 'Lumex' `.mdf` files
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Varian Workstation' (`.SMS`)
@@ -101,7 +101,7 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 
 ##### Importing chromatograms
 
-The central function of chromConverter is `read_chroms`, which functions as a wrapper around all of the supported parsers. To convert a set of files, call `read_chroms`, specifying the `paths` to a vector of directories or files and the appropriate file format (`format_in`). Supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd`, `csd`, and `wsd`.
+The central function of chromConverter is `read_chroms`, which functions as a wrapper around all of the supported parsers. To convert a set of files, call `read_chroms`, specifying the `paths` to a vector of directories or files and the appropriate file format (`format_in`). Supported formats include `chemstation_uv`, `chemstation_csv`, `masshunter_dad`, `shimadzu_fid`, `shimadzu_dad`, `chromeleon_uv`, `thermoraw`, `mzml`, `waters_arw`, `msd` (mass selective detectors), `csd` (current selective detectors, e.g. FID), and `wsd` (wavelength selective detectors, e.g. DAD/UV).
 
 ```r
 library(chromConverter)

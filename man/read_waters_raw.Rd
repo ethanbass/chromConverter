@@ -23,7 +23,7 @@ read_waters_raw(
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+(standardized field names) or \code{raw} (vendor field names, unmapped).}
 }
 \value{
 A chromatogram in the format specified by the \code{format_out} and

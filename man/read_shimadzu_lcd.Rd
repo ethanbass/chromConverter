@@ -24,7 +24,7 @@ is accepted as a synonym, since that is what 'Shimadzu' calls the same
 detector), chromatograms (\code{chroms}), \code{TIC}, mass spectra (\code{MS1}, \code{MS2}, or
 \code{MS} for both), and/or peak lists (\code{peak_table}). Note that an MRM or SIM acquisition is a single
 stage of mass selection either way: MRM scans are \code{MS2}, and SIM scans,
-whose Q1 and Q3 are the same, are \code{MS1}.
+whose Q1 (first quadrupole) and Q3 (third quadrupole) are the same, are \code{MS1}.
 
 If a stream is not specified, the richest one the file contains is returned:
 \code{PDA} if there is a PDA stream, otherwise \code{chroms}, and otherwise \code{MS} for a
@@ -41,7 +41,7 @@ quadrupole full scan, product-ion scan, MRM and SIM data).}
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+(standardized field names) or \code{raw} (vendor field names, unmapped).}
 
 \item{scale}{Whether to scale the data by the scaling factor present in the
 file. Defaults to \code{TRUE}.}

@@ -25,7 +25,7 @@ specified, a temp directory will be used.}
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+(standardized field names) or \code{raw} (vendor field names, unmapped).}
 
 \item{verbose}{Logical. Whether to print output from ThermoRawFileParser to
 the console.}

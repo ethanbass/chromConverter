@@ -10,14 +10,15 @@
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+(standardized field names) or \code{raw} (vendor field names, unmapped).}
 
 \item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
 if \code{pbapply} is installed.}
 
-\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
-of clusters to use or a cluster object created by
-\link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
+\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number of
+parallel workers to use or a cluster object created by
+\link[parallel:makeCluster]{makeCluster} (a set of parallel R worker processes).
+Defaults to \code{1}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 

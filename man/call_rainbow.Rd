@@ -41,7 +41,7 @@ This argument only applies if \code{by == "detector"}.}
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+(standardized field names) or \code{raw} (vendor field names, unmapped).}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}

@@ -4,12 +4,13 @@
 #' `data.table`.
 #' @param data_format Whether to return data in `wide` (default) or `long` format.
 #' @param metadata_format Format to output metadata. Either `chromconverter`
-#' or `raw`.
+#' (standardized field names) or `raw` (vendor field names, unmapped).
 #' @param progress_bar Logical. Whether to show progress bar. Defaults to `TRUE`
 #' if `pbapply` is installed.
-#' @param cl Argument to [pbapply][pbapply::pbapply] specifying the number
-#' of clusters to use or a cluster object created by
-#' [makeCluster][parallel::makeCluster]. Defaults to `1`.
+#' @param cl Argument to [pbapply][pbapply::pbapply] specifying the number of
+#' parallel workers to use or a cluster object created by
+#' [makeCluster][parallel::makeCluster] (a set of parallel R worker processes).
+#' Defaults to `1`.
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to `TRUE`.
 #' @param collapse Logical. Whether to collapse lists that only contain a single
 #' element. Defaults to `TRUE`.

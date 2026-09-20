@@ -36,16 +36,17 @@ which case the file extension will be deduced from \code{format_in}.}
 or \code{original} format.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
-or \code{raw}.}
+(standardized field names) or \code{raw} (vendor field names, unmapped).}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
 \item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
 if \code{pbapply} is installed.}
 
-\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
-of clusters to use or a cluster object created by
-\link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
+\item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number of
+parallel workers to use or a cluster object created by
+\link[parallel:makeCluster]{makeCluster} (a set of parallel R worker processes).
+Defaults to \code{1}.}
 
 \item{data_format}{Deprecated. Use \code{peaktable_format} instead.}
 }
