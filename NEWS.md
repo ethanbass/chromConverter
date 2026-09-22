@@ -3,6 +3,14 @@
 ### New features
 
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
+
+### Bug fixes and other minor changes
+
+
+#### 'rainbow'
+
+* A chromatogram read with the `rainbow` parser no longer loses its retention times when the parser returns fewer of them than the trace has rows (as the compressed 181 `.ch` container does). The time axis is rebuilt from the first and last time, with a warning.
+
 ## chromConverter 0.10.0
 
 ### Breaking changes

@@ -1244,3 +1244,26 @@ test_that("`precision` and `bin_width` control the m/z grid from 'rainbow'", {
   expect_equal(dim(x), dim(half))
   expect_equal(colnames(x), colnames(half))
 })
+
+test_that("a short 'rainbow' time axis is rebuilt rather than dropped", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_dependencies("rainbow")
+
+  path <- system.file("chemstation_181.D",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  # 'rainbow' returns 5913 times for the 5914 points it decodes from this
+  # container, since it takes the count from the file size
+  w <- capture_warnings(x <- call_rainbow(path, format_in = "agilent_d"))
+  expect_match(w, "5913 retention times for 5914 rows", all = TRUE)
+  x <- x$FID$FID1A.ch
+  y <- read_chemstation_ch(file.path(path, "FID1A.ch"))
+  expect_equal(nrow(x), nrow(y))
+  expect_equal(get_times(x), get_times(y))
+
+  expect_equal(rb_times(1:5, 5), 1:5)
+  expect_null(rb_times(numeric(), 5))
+  expect_warning(expect_equal(rb_times(c(0, 4), 5), seq(0, 4, length.out = 5)))
+})

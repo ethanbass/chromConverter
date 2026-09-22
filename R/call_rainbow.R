@@ -1,5 +1,6 @@
 #' Call 'rainbow' parsers
-#' Parse 'Agilent' or 'Waters' files with rainbow parsers
+#'
+#' Parse 'Agilent' or 'Waters' files with rainbow parsers.
 #'
 #' Uses [rainbow](https://rainbow-api.readthedocs.io) parsers to read in Agilent
 #' (`.D`) and Waters (`.raw`) files. If `format_in` is `"agilent_d"` or
@@ -11,7 +12,8 @@
 #' @inheritParams shared_params
 #' @param path Path to file.
 #' @param format_in Format of the supplied files. Either `agilent_d`,
-#' `waters_raw`, or `chemstation`.
+#' `waters_raw`, `masshunter`, `chemstation`, `chemstation_uv`,
+#' `chemstation_fid`, or `chemstation_ms`.
 #' @param what What types of data to return (e.g. `MS`, `UV`, `CAD`, `ELSD`).
 #' This argument only applies if `by == "detector"`.
 #' @param by How to order the list that is returned. Either `detector` (default)
@@ -123,7 +125,7 @@ extract_rb_data <- function(xx, format_out = "matrix",
                             sparse = TRUE){
   data_format <- check_data_format(data_format, format_out)
   data <- xx$data
-  try(rownames(data) <- xx$xlabels)
+  rownames(data) <- rb_times(xx$xlabels, nrow(data), xx$name)
   colnames(data) <- xx$ylabels
   if (data_format == "long"){
     names_to <- switch(xx$detector, "MS" = "mz",
@@ -143,6 +145,34 @@ extract_rb_data <- function(xx, format_out = "matrix",
                             source_file_format = source_file_format)
   }
   data
+}
+
+#' Retention times for a 'rainbow' trace
+#'
+#' 'rainbow' can return fewer retention times than the trace has rows, and
+#' silently dropping the ones it does return leaves a chromatogram with no time
+#' axis at all. The count is what goes wrong, not the ends of the run: for a
+#' double-delta compressed 181 `.ch` file, `parse_ch_fid` takes the number of
+#' points to be `(file_size - data_start) // 8`, the eight bytes per point of
+#' the uncompressed container, and spaces the header's first and last time over
+#' that many points. Compressed data holds more points than that, so the grid is
+#' short by one and drifts by a step across the run (0.2 s over 19.7 min for
+#' `chemstation_181.D`).
+#'
+#' The axis is therefore rebuilt from the first and last time, which the header
+#' records and which both parsers agree on, spread over the rows the data
+#' actually has.
+#' @noRd
+rb_times <- function(times, n, name = NULL){
+  if (length(times) == n) return(times)
+  if (length(times) < 2) return(NULL)
+  warning(sprintf(paste("'rainbow' returned %d retention times for %d rows of",
+                        "data%s. The time axis has been rebuilt from the first",
+                        "and last of them."),
+                  length(times), n,
+                  if (is.null(name)) "" else paste0(" in ", sQuote(name))),
+          call. = FALSE)
+  seq(times[1], times[length(times)], length.out = n)
 }
 
 #' Extract 'rainbow' element names.
