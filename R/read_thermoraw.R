@@ -12,7 +12,7 @@
 #' specified, a temp directory will be used.
 #' @param verbose Logical. Whether to print output from ThermoRawFileParser to
 #' the console.
-#' @inherit shared_params return
+#' @return A chromatogram in the format specified by `format_out`.
 #' @section Side effects: Exports chromatograms in `mzML` format to the folder
 #' specified by `path_out`.
 #' @author Ethan Bass
@@ -29,11 +29,12 @@
 #' @export read_thermoraw
 
 read_thermoraw <- function(path, path_out = NULL,
-                           format_out = c("matrix", "data.frame"),
+                           format_out = c("matrix", "data.frame",
+                                          "data.table"),
                            read_metadata = TRUE,
                            metadata_format = c("chromconverter", "raw"),
                            verbose = getOption("verbose")){
-  format_out <- match.arg(format_out, c("matrix", "data.frame"))
+  format_out <- check_format_out(format_out)
   metadata_format <- check_metadata_format(metadata_format, "thermoraw")
   if(!file.exists(path)){
     stop("File not found. Check path.")

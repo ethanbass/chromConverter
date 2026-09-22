@@ -1,3 +1,8 @@
+## chromConverter 0.10.1
+
+### New features
+
+* `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
 ## chromConverter 0.10.0
 
 ### Breaking changes

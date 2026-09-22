@@ -7,7 +7,7 @@
 read_thermoraw(
   path,
   path_out = NULL,
-  format_out = c("matrix", "data.frame"),
+  format_out = c("matrix", "data.frame", "data.table"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   verbose = getOption("verbose")
@@ -31,8 +31,7 @@ specified, a temp directory will be used.}
 the console.}
 }
 \value{
-A chromatogram in the format specified by the \code{format_out} and
-\code{data_format} arguments.
+A chromatogram in the format specified by \code{format_out}.
 }
 \description{
 Converts ThermoRawFiles to \code{mzML} by calling the \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser} from the command-line.
