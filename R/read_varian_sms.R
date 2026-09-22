@@ -2,41 +2,42 @@
 #'
 #' Reads 'Varian Workstation' SMS files.
 #'
-#' Varian SMS files begin with a "DIRECTORY" with offsets for each section. The
-#' first section (in all the files I've been able to inspect) is "MSData"
-#' generally beginning at byte `3238`. This MSdata section is in turn divided into
-#' two sections. The first section (after a short header) contains chromatogram
-#'  data. Some of the information found in this section includes scan numbers,
-#' retention times, (as 64-bit floats), the total ion chromatogram (TIC), the
-#' base peak chromatogram (BPC), ion time (µsec), as well as some other
-#' unidentified information. The scan numbers and intensities for the TIC and
-#' BPC are stored at 4-byte little-endian integers. Following this section,
-#' there is a series of null bytes, followed by a series of segments containing
-#' the mass spectra.
+#' Varian SMS files begin with a `DIRECTORY` holding the offsets of each
+#' section. The first section is `MSData`, which begins at byte `3238` in every
+#' file seen so far, and is itself divided in two. The first part, after a short
+#' header, holds chromatogram data: scan numbers, retention times (as 64-bit
+#' floats), the total ion chromatogram (TIC), the base peak chromatogram (BPC),
+#' ion time (µsec), and further unidentified fields. The scan numbers and the
+#' TIC and BPC intensities are stored as 4-byte little-endian integers. A run of
+#' null bytes then separates this part from the segments holding the mass
+#' spectra.
 #'
-#' The encoding scheme for the mass spectra is somewhat more complicated. Each
-#' scan is represented by a series of values of variable length separated from
-#' the next scan by two null bytes. Within these segments, values are paired.
-#' The first value in each pair represents the delta-encoded mass-to-charge ratio,
-#' while the second value represents the intensity of the signal. Values in this
-#' section are variable-length, big-endian integers that are encoded using a
-#' selective bit masking based on the leading digit (`d`) of each value.
-#' The length of each integer seems to be determined as 1 + (d %/% 4). Integers
-#' beginning with digits 0-3 are simple 2-byte integers. If d >= 4, values are
-#' determined by masking to preserve the lowest `n` bits according to the
-#' following scheme:
+#' The mass spectra are encoded differently. Each scan is a series of
+#' variable-length values, separated from the next scan by two null bytes.
+#' Within a scan the values are paired: the first of each pair is the
+#' delta-encoded mass-to-charge ratio and the second is the intensity. Each
+#' value is a big-endian integer whose length and width are set by its leading
+#' hexadecimal digit (`d`), as `1 + (d %/% 4)` bytes. Values beginning with
+#' `0-3` are single bytes. For `d >= 4`, the lowest `n` bits are preserved
+#' according to the following scheme:
 #'
 #' * d = 4-5 -> preserve lowest 13 bits
 #' * d = 6-7 -> preserve lowest 14 bits
 #' * d = 8-9 -> preserve lowest 21 bits
 #' * d = 10-11 (A-B) -> preserve lowest 22 bits
 #' * d = 12-13 (C-D) -> preserve lowest 27 bits
-#' * d = 14-15 (E-F) -> preserve lowest 28 bits (?)
+#' * d = 14-15 (E-F) -> preserve lowest 28 bits
+#'
+#' No file seen so far carries a leading digit above `C`, so the 27- and 28-bit
+#' rules are extrapolated from the others rather than observed.
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Varian' `.SMS` files.
-#' @param what Whether to extract chromatograms (`chroms`) and/or `MS1` data.
-#' Accepts multiple arguments.
+#' @param what Which streams to get: mass spectra (`MS1`), the total ion
+#' chromatogram (`TIC`) and/or the base peak chromatogram (`BPC`). Accepts
+#' multiple arguments. Defaults to all three.
+#' @param data_format Whether to return data in `long` (default) or `wide`
+#' format. Mass spectra are always returned in `long` format.
 #' @return A chromatogram or list of chromatograms from the specified file,
 #' according to the value of `what`. Chromatograms are returned in the format
 #' specified by `format_out`.
@@ -54,7 +55,7 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
                             data_format = "long",
                             read_metadata = TRUE, collapse = TRUE){
 
-  what <- match.arg(what, c("MS1", "TIC", "BPC", "chroms"), several.ok = TRUE)
+  what <- match.arg(what, c("MS1", "TIC", "BPC"), several.ok = TRUE)
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
 

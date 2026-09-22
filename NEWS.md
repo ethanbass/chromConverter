@@ -1,5 +1,9 @@
 ## chromConverter 0.10.1
 
+### Breaking changes
+
+* Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
+
 ### New features
 
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
