@@ -19,7 +19,7 @@ it was read from. A table that cannot be parsed is returned as \code{NA} with a
 message, so one bad channel does not lose the others.
 }
 \description{
-Read the integration results 'Lab Solutions' stored alongside the raw data
+Read the integration results 'LabSolutions' stored alongside the raw data
 in a 'Shimadzu' OLE container (\code{.lcd} or \code{.gcd}), one table per channel.
 }
 \details{
@@ -103,10 +103,16 @@ part this parser reads, and any remainder is skipped.\tabular{lll}{
 }
 
 
-Note that \code{AH} is a scaled integer in V0 but a \code{double} in V1, and that the
-V1 values sit mostly on a 64-byte stride, which suggests each derived
-quantity occupies a slot of its own rather than being packed. The field
-names are this package's reading of the format rather than the vendor's own.
+Two things the tables above do not show. \code{AH} is a scaled integer in V0 but
+a \code{double} in V1, so the same field has to be decoded differently in each.
+The V1 values are also spaced rather than packed: seven doubles lie exactly
+64 bytes apart --- \code{Plate.no} (248), \code{Plate.ht} (376) and the tailing factor
+(504), with unidentified values at 312, 440, 568 and 632 --- while \code{k}
+(240), the resolution (512) and the separation factor (640) each sit 8 bytes
+to one side of that grid, paired with the value on it. Each derived quantity
+therefore seems to occupy a 64-byte slot and use only the first eight bytes
+of it. The field names are this package's reading of the format rather than
+the vendor's own.
 
 A V0 record length is not recorded anywhere in the stream, so unlike V1 it
 cannot be checked against the file. A V0 variant with a different record

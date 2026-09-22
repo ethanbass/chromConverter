@@ -27,7 +27,7 @@ data.tables regardless of what is selected here.}
 
 \item{what}{What types of data to return (argument to \link[RaMS:grabMSdata]{RaMS::grabMSdata}).
 Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD}, \code{chroms}, \code{metadata}, or
-\code{everything}).}
+\code{everything}.}
 
 \item{verbose}{Argument to \code{grabMSdata} controlling verbosity.}
 

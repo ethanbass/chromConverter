@@ -21,8 +21,8 @@ uv_converter(
 
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{correction}{Logical. Whether to apply empirical correction. Defaults is
-TRUE.}
+\item{correction}{Logical. Whether to apply empirical correction. Defaults
+to \code{TRUE}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -41,7 +41,7 @@ This function wrapped 'Aston''s generic \code{TraceFile} reader, which imports
 \code{TraceFile} cannot be used without pinning \code{scipy < 1.14} for the whole
 Python session. Since \code{.uv} files are read by chromConverter's internal
 parser, \link{read_chemstation_uv}, this wrapper was retired rather than
-constrain scipy for everyone.
+constraining scipy for everyone.
 }
 \seealso{
 Other external parsers:

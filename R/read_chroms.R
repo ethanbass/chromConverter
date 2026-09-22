@@ -8,16 +8,12 @@
 #' [OpenChrom](https://lablicate.com/platform/openchrom),
 #' [rainbow](https://rainbow-api.readthedocs.io/).
 #'
-#' Provides a unified interface to all chromConverter parsers. Currently recognizes
-#' 'Agilent ChemStation' (`.uv`, `.ch`, `.dx`), 'Agilent MassHunter' (`.dad`),
-#' 'Thermo RAW' (`.raw`), 'Waters ARW' (`.arw`), 'Waters RAW' (`.raw`),
-#' 'Chromeleon ASCII' (`.txt`), 'Shimadzu ASCII' (`.txt`),
-#' 'Shimadzu GCD' (`.gcd`), 'Shimadzu LCD' (`.lcd`, DAD and chromatogram streams)
-#' and 'Shimadzu QGD' (`.qgd`) files. Also, wraps 'OpenChrom' parsers, which
-#' include many additional formats. To use 'Entab', 'ThermoRawFileParser', or
-#' 'OpenChrom' parsers, they must be separately installed. Please see the
-#' instructions in the [README](https://ethanbass.github.io/chromConverter/)
-#' for further details.
+#' Provides a unified interface to all chromConverter parsers. The formats it
+#' recognizes are listed under the `format_in` argument. It also wraps the
+#' 'OpenChrom' parsers, which cover many additional formats. The 'Entab',
+#' 'ThermoRawFileParser' and 'OpenChrom' parsers must be installed separately;
+#' see the instructions in the
+#' [README](https://ethanbass.github.io/chromConverter/).
 #'
 #' If paths to individual files are provided, `read_chroms` will try to
 #' infer the file format and select an appropriate parser. However, when
@@ -27,11 +23,13 @@
 #' @name read_chroms
 #' @param paths Paths to data files or directories containing the files.
 #' @eval format_in_doc()
-#' @param parser What parser to use (optional). Current option are
-#' `chromconverter`, `aston`,, `entab`, `thermoraw`, `openchrom`, `rainbow`.
-#' @param find_files Logical. Set to `TRUE` (default) if you are providing
-#' the function with a folder or vector of folders containing the files.
-#' Otherwise, set to `FALSE`.
+#' @param parser What parser to use (optional). Current options are
+#' `chromconverter`, `aston`, `entab`, `thermoraw`, `openchrom`, `rainbow`.
+#' @param find_files Logical. Whether to treat `paths` as directories to
+#' search for data files. Inferred from `paths` if not supplied: anything that
+#' is not a file is searched as a directory, except for the formats that are
+#' themselves directories (e.g. 'Agilent' `.d`), which are recognized by their
+#' extension.
 #' @param pattern pattern (e.g. a file extension). Defaults to `NULL`, in which
 #' case file extension will be deduced from `format_in`.
 #' @param format_out Class of output. Either `matrix`, `data.frame`, or
@@ -40,7 +38,7 @@
 #' `wide` (default) or `long`.
 #' @param path_out Path for exporting files. If path is not specified, the user
 #' will be prompted to create a temp directory.
-#' @param export_format Export format. Currently the options include `.csv`,
+#' @param export_format Export format. Currently the options include `csv`,
 #' `chemstation_csv` (utf-16 encoding), `cdf`, `mzml`, `animl` and `arw`.
 #' @param force Logical. Whether to overwrite files when exporting. Defaults to
 #' `FALSE`.
@@ -70,11 +68,10 @@
 #' @return A list of chromatograms in `matrix`, `data.frame`, or `data.table`
 #' format, according to the value of `format_out`. Chromatograms may be returned
 #' in either `wide` or `long` format according to the value of `data_format`.
-#' @section Side effects: If `export_format` is provided, chromatograms will be
-#' exported in the specified format specified into the folder specified by
-#' `path_out`. Files can currently be converted to `csv`, `mzml`, `cdf`, `arw`.
-#' If an `openchrom` parser is selected, ANIML format is available as an
-#' additional option.
+#' @section Side effects: If `export_format` is provided, chromatograms are
+#' written to the folder given by `path_out` in that format. The options are
+#' `csv`, `chemstation_csv`, `cdf`, `mzml` and `arw`, as well as `animl`
+#' (AnIML) when an `openchrom` parser is selected.
 #' @import reticulate
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial

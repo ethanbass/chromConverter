@@ -22,9 +22,12 @@ read_shimadzu_lcd(
 \item{what}{What stream to get: current options are \code{DAD} (for which \code{PDA}
 is accepted as a synonym, since that is what 'Shimadzu' calls the same
 detector), chromatograms (\code{chroms}), \code{TIC}, mass spectra (\code{MS1}, \code{MS2}, or
-\code{MS} for both), and/or peak lists (\code{peak_table}). Note that an MRM or SIM acquisition is a single
-stage of mass selection either way: MRM scans are \code{MS2}, and SIM scans,
-whose Q1 (first quadrupole) and Q3 (third quadrupole) are the same, are \code{MS1}.
+\code{MS} for both), and/or peak lists (\code{peak_table}). \code{MS1} and \code{MS2} count
+stages of mass selection rather than name a scan type, so a triple
+quadrupole acquisition can land on either: an MRM scan selects a precursor
+in Q1 (the first quadrupole) and a product in Q3 (the third), so it is
+\code{MS2}, while a SIM scan sets Q1 and Q3 to the same mass, selecting nothing
+after the collision cell, and so is \code{MS1}.
 
 If a stream is not specified, the richest one the file contains is returned:
 \code{PDA} if there is a PDA stream, otherwise \code{chroms}, and otherwise \code{MS} for a
@@ -92,7 +95,7 @@ scan, MRM and SIM acquisitions. Read by \code{\link[=read_sz_tlm]{read_sz_tlm()}
 index, the scan header and the layout of each scan type. The total ion
 current is again held separately, in \verb{TIC Data}.
 \item \strong{Peak tables} (\verb{Peak Table}): integration results as reported by
-'Lab Solutions', one stream per channel. Read by \code{\link[=read_sz_tables]{read_sz_tables()}}, which
+'LabSolutions', one stream per channel. Read by \code{\link[=read_sz_tables]{read_sz_tables()}}, which
 documents the two record layouts.
 }
 
@@ -112,7 +115,7 @@ Times are stored as a 'Windows' \code{FILETIME}, which is always UTC, so
 local time zone (e.g. \verb{+01'00'}), but this is the standard offset of the
 zone rather than the offset that was in force, and it seems that no daylight
 saving information is stored anywhere in the file. The local times displayed by
-'Lab Solutions' therefore cannot be reconstructed from the recorded offset
+'LabSolutions' therefore cannot be reconstructed from the recorded offset
 alone: where daylight saving time applied, they are an hour ahead of it.
 Rendering \code{run_datetime} in the zone where the data were acquired, e.g.
 \code{format(attr(x, "run_datetime"), tz = "Europe/Paris")}, recovers them
@@ -120,17 +123,17 @@ exactly.
 
 As of \code{v0.10.0}, 2D chromatograms are scaled by the calibration factor and
 the value factor recorded for each channel, so their intensities match those
-reported by 'Lab Solutions'. An absorbance axis can be reported in \code{uAU},
+reported by 'LabSolutions'. An absorbance axis can be reported in \code{uAU},
 \code{mAU} or \code{AU}, and the file records the size of each as a \strong{value factor}:
 \code{1}, \code{1000} and \code{1e6}, since one \code{mAU} is a thousand \code{uAU} and one \code{AU} a
-million. The smallest of them is the \strong{base unit}, while 'Lab Solutions'
+million. The smallest of them is the \strong{base unit}, while 'LabSolutions'
 displays the data in whichever unit the method selected, usually \code{mAU}.
 Other detectors work the same way: a refractive index axis measures in \code{nRI}
 and displays \code{uRI}.
 
 Two factors separate the stored integers from the displayed value. The
 calibration factor converts an integer into base units, and the value factor
-converts base units into the displayed unit; an intensity as 'Lab Solutions'
+converts base units into the displayed unit; an intensity as 'LabSolutions'
 reports it is the integer times the one divided by the other. The
 calibration factor is \code{1} on some channels and not on others (~42 for an
 SPD-20A, ~310 for an RID-10A), which suggests the integers are detector
@@ -144,7 +147,7 @@ they are not in. Either way the values and the \code{detector_y_unit} attribute
 agree.
 
 PDA data is instead returned as it is encoded in the file, matching the
-\verb{[PDA 3D]} section of a 'Lab Solutions' ASCII export, which declares no
+\verb{[PDA 3D]} section of a 'LabSolutions' ASCII export, which declares no
 intensity unit or multiplier. The \verb{3D Data Item} describes the absorbance
 axis in \code{mAU} with a value factor of \code{1000}, which would imply scaling the
 values by \code{0.001}, but the \verb{[PDA Multi Chromatogram]} traces in the ASCII
@@ -158,7 +161,7 @@ the value at the next, and no single wavelength describes the trace. It is
 derived from the PDA data but is read as a 2D chromatogram, so it is scaled
 and currently differs from the PDA data by a factor of \code{1000}. The
 wavelength range it was taken over is not recorded in the \verb{2D Data Item},
-whose nanometre axis spans \code{0} to \code{0}, so its \code{wavelength} attribute is \code{NA}
+whose nanometer axis spans \code{0} to \code{0}, so its \code{wavelength} attribute is \code{NA}
 rather than the acquisition range of the PDA stream.
 }
 \examples{

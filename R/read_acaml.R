@@ -1,4 +1,4 @@
-#' Read 'Agilent' ACAML files from directory.
+#' Read 'Agilent' ACAML files from directory
 #'
 #' Extracts injection metadata from 'Agilent Common Analytical Markup Language'
 #' (ACAML) files into an R object.
@@ -11,9 +11,9 @@
 #'
 #' @inheritParams shared_params
 #' @param path Path(s) to ACAML files or to folders that contain the files.
-#' @param find_files Logical. Set to `TRUE` (default) if you are providing
-#' the function with a folder or vector of folders containing the files.
-#' Otherwise, set to `FALSE`.
+#' @param find_files Logical. Whether to treat the supplied paths as
+#' directories to search for files. Inferred if not supplied, by testing
+#' whether every path is a file.
 #' @param progress_bar Logical. Whether to show a progress bar. Defaults to
 #' `FALSE`, unlike [read_chroms], because an ACAML file usually accompanies a
 #' sequence rather than arriving in bulk: [read_agilent_rslt] calls this

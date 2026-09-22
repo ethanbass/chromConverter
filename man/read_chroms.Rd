@@ -37,15 +37,17 @@ it follows. Version-specific names for the 'Agilent ChemStation' formats
 supplied by chromConverter's own file-type detection rather than being
 provided by the user.}
 
-\item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
-the function with a folder or vector of folders containing the files.
-Otherwise, set to \code{FALSE}.}
+\item{find_files}{Logical. Whether to treat \code{paths} as directories to
+search for data files. Inferred from \code{paths} if not supplied: anything that
+is not a file is searched as a directory, except for the formats that are
+themselves directories (e.g. 'Agilent' \code{.d}), which are recognized by their
+extension.}
 
 \item{pattern}{pattern (e.g. a file extension). Defaults to \code{NULL}, in which
 case file extension will be deduced from \code{format_in}.}
 
-\item{parser}{What parser to use (optional). Current option are
-\code{chromconverter}, \code{aston},, \code{entab}, \code{thermoraw}, \code{openchrom}, \code{rainbow}.}
+\item{parser}{What parser to use (optional). Current options are
+\code{chromconverter}, \code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, \code{rainbow}.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -56,7 +58,7 @@ case file extension will be deduced from \code{format_in}.}
 \item{path_out}{Path for exporting files. If path is not specified, the user
 will be prompted to create a temp directory.}
 
-\item{export_format}{Export format. Currently the options include \code{.csv},
+\item{export_format}{Export format. Currently the options include \code{csv},
 \code{chemstation_csv} (utf-16 encoding), \code{cdf}, \code{mzml}, \code{animl} and \code{arw}.}
 
 \item{force}{Logical. Whether to overwrite files when exporting. Defaults to
@@ -109,16 +111,12 @@ internal parser or bindings to an external library, such as
 \href{https://rainbow-api.readthedocs.io/}{rainbow}.
 }
 \details{
-Provides a unified interface to all chromConverter parsers. Currently recognizes
-'Agilent ChemStation' (\code{.uv}, \code{.ch}, \code{.dx}), 'Agilent MassHunter' (\code{.dad}),
-'Thermo RAW' (\code{.raw}), 'Waters ARW' (\code{.arw}), 'Waters RAW' (\code{.raw}),
-'Chromeleon ASCII' (\code{.txt}), 'Shimadzu ASCII' (\code{.txt}),
-'Shimadzu GCD' (\code{.gcd}), 'Shimadzu LCD' (\code{.lcd}, DAD and chromatogram streams)
-and 'Shimadzu QGD' (\code{.qgd}) files. Also, wraps 'OpenChrom' parsers, which
-include many additional formats. To use 'Entab', 'ThermoRawFileParser', or
-'OpenChrom' parsers, they must be separately installed. Please see the
-instructions in the \href{https://ethanbass.github.io/chromConverter/}{README}
-for further details.
+Provides a unified interface to all chromConverter parsers. The formats it
+recognizes are listed under the \code{format_in} argument. It also wraps the
+'OpenChrom' parsers, which cover many additional formats. The 'Entab',
+'ThermoRawFileParser' and 'OpenChrom' parsers must be installed separately;
+see the instructions in the
+\href{https://ethanbass.github.io/chromConverter/}{README}.
 
 If paths to individual files are provided, \code{read_chroms} will try to
 infer the file format and select an appropriate parser. However, when
@@ -126,11 +124,10 @@ providing paths to directories, the file format must be specified using the
 \code{format_in} argument.
 }
 \section{Side effects}{
- If \code{export_format} is provided, chromatograms will be
-exported in the specified format specified into the folder specified by
-\code{path_out}. Files can currently be converted to \code{csv}, \code{mzml}, \code{cdf}, \code{arw}.
-If an \code{openchrom} parser is selected, ANIML format is available as an
-additional option.
+ If \code{export_format} is provided, chromatograms are
+written to the folder given by \code{path_out} in that format. The options are
+\code{csv}, \code{chemstation_csv}, \code{cdf}, \code{mzml} and \code{arw}, as well as \code{animl}
+(AnIML) when an \code{openchrom} parser is selected.
 }
 
 \examples{

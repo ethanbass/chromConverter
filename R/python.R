@@ -5,7 +5,7 @@
 #' `check_aston_configuration`), so that 'Aston' and 'pandas' are only
 #' provisioned for the users who call `sp_converter`.
 #'
-#' Note that scipy is deliberately absent. 'Aston' imports
+#' scipy is likewise absent, but for a different reason. 'Aston' imports
 #' `scipy.io.netcdf.NetCDFFile`, which was removed in scipy v1.14, but only
 #' from its generic `TraceFile` dispatcher. `sp_converter` uses
 #' `aston.tracefile.agilent_uv.AgilentDAD` directly and never touches that

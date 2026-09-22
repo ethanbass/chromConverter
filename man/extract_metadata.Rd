@@ -20,7 +20,7 @@ by \code{read_chroms} with \code{read_metadata = TRUE}).}
 \item{what}{A character vector specifying the metadata elements to
 extract. Defaults to every field chromConverter attaches; no format
 records all of them, so the elements a format does not provide are
-simply absent from the result. Superseded names (\code{injection_volume},
+absent from the result. Superseded names (\code{injection_volume},
 \code{software_name}, \code{time_start}) are accepted and mapped to the names
 that replaced them.}
 

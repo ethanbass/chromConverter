@@ -27,8 +27,8 @@ read_shimadzu(
 
 \item{format_in}{This argument is deprecated and is no longer required.}
 
-\item{include}{Which chromatograms to include. Options are \code{fid}, \code{dad},
-\code{uv}, \code{tic}, and \code{status}.}
+\item{include}{Which chromatograms to include. Options are \code{fid}, \code{lc},
+\code{dad}, \code{uv}, \code{tic}, and \code{status}.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -59,7 +59,7 @@ value of \code{what}. Chromatograms are returned in the format specified by
 \code{format_out}.
 }
 \description{
-Reads 'Shimadzu' ASCII \code{.txt}) files. These files can be exported from
+Reads 'Shimadzu' ASCII (\code{.txt}) files. These files can be exported from
 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
 selecting \verb{File Conversion:Convert to ASCII}.
 }

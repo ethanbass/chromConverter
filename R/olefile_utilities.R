@@ -212,16 +212,17 @@ ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
 
 
 #' Convert 'Shimadzu' time to Unix time
+#'
 #' 'Shimadzu' files store times in the 'Windows' `FILETIME` structure, where the
 #' "low" and "high" words must be combined into a 64-bit integer representing
 #' the number of 100-nanosecond intervals since 1601-01-01. `FILETIME` is
 #' always UTC, so the instant returned here does not depend on `tz`, which only
 #' selects how it is displayed.
 #'
-#' Note that the offset recorded by these files is the standard offset of the
-#' zone (the 'Windows' standard bias) rather than the offset that was in force,
-#' so it does not account for daylight saving time. Times rendered with it are
-#' an hour behind the local times reported by 'Lab Solutions' wherever daylight
+#' These files do record the offset of the local zonetime, but it is the standard
+#' offset of the zone (the 'Windows' standard bias) rather than the offset that
+#' was in force, so it does not account for daylight saving time. Times rendered with it are
+#' an hour behind the local times reported by 'LabSolutions' wherever daylight
 #' saving applied.
 #' @importFrom bit64 as.integer64
 #' @noRd

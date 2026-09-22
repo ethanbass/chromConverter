@@ -1,4 +1,4 @@
-#' Read 'Agilent ChemStation' report files.
+#' Read 'Agilent ChemStation' report files
 #'
 #' Reads 'Agilent ChemStation' reports into R.
 #'
@@ -52,7 +52,7 @@ read_chemstation_reports <- function(paths,
             class = "peak_list")
 }
 
-#' Read Agilent Chemstation Report
+#' Read 'Agilent ChemStation' report
 #' @param path Path to file
 #' @param peaktable_format Whether to return peak tables in `chromatographr`
 #' or `original` format.
@@ -119,7 +119,7 @@ read_chemstation_report <- function(path,
   peak_lists
 }
 
-#' Convert 'Chemstation' REPORT peak list to data.frame.
+#' Convert 'ChemStation' REPORT peak list to data.frame
 #' @param table The table to convert.
 #' @param peaktable_format Whether to return the peak table in
 #' `chromatographr` or `original` format.

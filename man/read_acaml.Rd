@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_acaml.R
 \name{read_acaml}
 \alias{read_acaml}
-\title{Read 'Agilent' ACAML files from directory.}
+\title{Read 'Agilent' ACAML files from directory}
 \usage{
 read_acaml(
   path,
@@ -15,9 +15,9 @@ read_acaml(
 \arguments{
 \item{path}{Path(s) to ACAML files or to folders that contain the files.}
 
-\item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
-the function with a folder or vector of folders containing the files.
-Otherwise, set to \code{FALSE}.}
+\item{find_files}{Logical. Whether to treat the supplied paths as
+directories to search for files. Inferred if not supplied, by testing
+whether every path is a file.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}

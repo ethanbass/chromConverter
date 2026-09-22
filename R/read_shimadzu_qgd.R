@@ -2,12 +2,12 @@
 #'
 #' Reads 'Shimadzu GCMSsolution' `.qgd` GC-MS data files.
 #'
-#' The MS data is stored in the "GCMS Raw Data" storage, which contains a
+#' The MS data is stored in the `GCMS Raw Data` storage, which contains an
 #' `MS Raw Data` stream with MS scans, a `TIC Data` stream containing the total
 #' ion chromatogram, and a `Retention Time` stream containing the retention
-#' times. All known values are little-endian. The retention time stream is a
-#' simple array of 4-byte integers. The TIC stream is a simple array of 8-byte
-#' integers corresponding to retention times stored in the retention time stream.
+#' times. All known values are little-endian. The retention time stream is an
+#' array of 4-byte integers, and the TIC stream an array of 8-byte integers,
+#' one per retention time.
 #' The MS Raw Data stream is blocked by retention time. Each block begins with a
 #' header consisting of the following elements:
 #' * scan number (4-byte integer)
@@ -26,8 +26,6 @@
 #' @param what What stream to get: current options are `MS1` and/or `TIC`. If a
 #' stream is not specified, the function will return both streams.
 #' @inherit generic_return_2D return
-#' @note This parser is experimental and may still need some work. It is not
-#' yet able to interpret much metadata from the files.
 #' @return A chromatogram or list of chromatograms in the format specified by
 #' `data_format` and `format_out`. If `data_format` is `wide`, the
 #' chromatogram(s) will be returned with retention times as rows and a single

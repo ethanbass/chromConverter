@@ -526,6 +526,9 @@ read_qtof_lock_mass <- function(path, polarity = read_qtof_polarity(path)){
 
 #' Read the cached mass correction from a 'Shimadzu' QTOF file
 #'
+#' Reads the mass correction 'LabSolutions' fitted for the run, where the file
+#' carries one.
+#'
 #' `Mass Data Load Format/Mass Correction Cache` holds the mass correction
 #' 'LabSolutions' applied to the run: the reference ions it found and the
 #' coefficients it fitted to them. Like the other QTOF parameter streams it is
@@ -618,6 +621,9 @@ qtof_correct_calibration <- function(mz, flight, rep_id, mc){
 }
 
 #' Read TOF calibration coefficients from a 'Shimadzu' QTOF file
+#'
+#' Fits the flight-time-to-m/z coefficients `A` and `B` from the calibration
+#' points stored in the file.
 #'
 #' The `TOF Calibration Table` stream holds the calibration points themselves:
 #' pairs of a known m/z and the flight time at which the instrument actually
@@ -1059,7 +1065,7 @@ read_qtof_retention_times <- function(path){
 #' points to pass in is the caller's job --- `read_sz_qtof_calibration` drops
 #' the factory replicate set before calling this.
 #'
-#' @param theoretical_mz  Numeric vector. Theoretical m/z of calibrant ions.
+#' @param theoretical_mz Numeric vector. Theoretical m/z of calibrant ions.
 #' @param flight_times    Numeric vector. Measured flight times, in the units
 #'   used by the `Centroid Data` stream.
 #' @return Named numeric vector with elements `A` and `B`.

@@ -18,13 +18,15 @@ A list of \code{scale}, \code{offset} and \code{shift}, or \code{NULL} if the st
 missing or holds no usable result.
 }
 \description{
+Reads the mass correction 'LabSolutions' fitted for the run, where the file
+carries one.
+}
+\details{
 \verb{Mass Data Load Format/Mass Correction Cache} holds the mass correction
 'LabSolutions' applied to the run: the reference ions it found and the
 coefficients it fitted to them. Like the other QTOF parameter streams it is
 a protocol buffer with a block per polarity (field \code{10} positive, \code{20}
 negative), the reference compounds under \code{10} and the result under \code{30}:
-}
-\details{
 \itemize{
 \item \verb{30.<pol>.10.10} --- offset of the correction, in flight-time units
 \item \verb{30.<pol>.10.20} --- scale factor of the correction, near 1

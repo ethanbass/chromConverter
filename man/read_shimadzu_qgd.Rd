@@ -47,12 +47,12 @@ attached to the chromatogram as \link{attributes} if \code{read_metadata} is \co
 Reads 'Shimadzu GCMSsolution' \code{.qgd} GC-MS data files.
 }
 \details{
-The MS data is stored in the "GCMS Raw Data" storage, which contains a
+The MS data is stored in the \verb{GCMS Raw Data} storage, which contains an
 \verb{MS Raw Data} stream with MS scans, a \verb{TIC Data} stream containing the total
 ion chromatogram, and a \verb{Retention Time} stream containing the retention
-times. All known values are little-endian. The retention time stream is a
-simple array of 4-byte integers. The TIC stream is a simple array of 8-byte
-integers corresponding to retention times stored in the retention time stream.
+times. All known values are little-endian. The retention time stream is an
+array of 4-byte integers, and the TIC stream an array of 8-byte integers,
+one per retention time.
 The MS Raw Data stream is blocked by retention time. Each block begins with a
 header consisting of the following elements:
 \itemize{
@@ -67,10 +67,6 @@ After the header, the rest of the block consists of an array of mz values and
 intensities. The mz values are encoded as 2-byte integers where each mz value
 is scaled by a factor of 20. Intensities are encoded as (unsigned) integers
 with variable byte-length defined by the value in the header.
-}
-\note{
-This parser is experimental and may still need some work. It is not
-yet able to interpret much metadata from the files.
 }
 \examples{
 \dontrun{

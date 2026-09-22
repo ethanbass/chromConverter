@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_varian_peaklist.R
 \name{read_varian_peaklist}
 \alias{read_varian_peaklist}
-\title{Read 'Varian' peak list.}
+\title{Read 'Varian' peak list}
 \usage{
 read_varian_peaklist(path)
 }

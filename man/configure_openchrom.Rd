@@ -20,7 +20,7 @@ the path to OpenChrom command-line application.
 }
 \description{
 Configures \href{https://lablicate.com/platform/openchrom}{OpenChrom} to use
-command-line interface. Requires OpenChrom version prior to 0.5.0.
+command-line interface. Requires OpenChrom version prior to 1.5.0.
 }
 \examples{
 \dontrun{

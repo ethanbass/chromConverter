@@ -1,8 +1,8 @@
 #' Read 'Agilent ChemStation' CSV files
 #'
-#' Reads 'Agilent Chemstation' `.csv` files.
+#' Reads 'Agilent ChemStation' `.csv` files.
 #'
-#' 'Agilent Chemstation' CSV files are encoded in UTF-16.
+#' 'Agilent ChemStation' CSV files are encoded in UTF-16.
 #'
 #' @name read_chemstation_csv
 #' @importFrom utils tail read.csv

@@ -2,8 +2,7 @@
 % Please edit documentation in R/call_rainbow.R
 \name{call_rainbow}
 \alias{call_rainbow}
-\title{Call 'rainbow' parsers
-Parse 'Agilent' or 'Waters' files with rainbow parsers}
+\title{Call 'rainbow' parsers}
 \usage{
 call_rainbow(
   path,
@@ -25,7 +24,8 @@ call_rainbow(
 \item{path}{Path to file.}
 
 \item{format_in}{Format of the supplied files. Either \code{agilent_d},
-\code{waters_raw}, or \code{chemstation}.}
+\code{waters_raw}, \code{masshunter}, \code{chemstation}, \code{chemstation_uv},
+\code{chemstation_fid}, or \code{chemstation_ms}.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -63,6 +63,9 @@ Returns a (nested) list of matrices or \code{data.frame}s according to
 the value of \code{format_out}. Data is ordered according to the value of \code{by}.
 }
 \description{
+Parse 'Agilent' or 'Waters' files with rainbow parsers.
+}
+\details{
 Uses \href{https://rainbow-api.readthedocs.io}{rainbow} parsers to read in Agilent
 (\code{.D}) and Waters (\code{.raw}) files. If \code{format_in} is \code{"agilent_d"} or
 \code{"waters_raw"}, a directory of the appropriate format (\code{.D} or \code{.raw}) should

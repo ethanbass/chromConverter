@@ -26,7 +26,7 @@
 #' | 8–11  | `uint32` | Event number |
 #' | 12–15 | `uint32` | Scan counter within the event |
 #' | 16–19 | `uint32` | Scan index (0-based) |
-#' | 20–21 | `uint16` | Scan type: 10 = MS1 profile, 14 = MS2 profile, 15 = MRM/SIM |
+#' | 20–21 | `uint16` | Scan type: 10 = MS1 profile, 11 = SIM, 14 = MS2 profile, 15 = MRM |
 #' | 22–23 | `uint16` | MS level + 1 (0 in a truncated final scan) |
 #' | 24–27 | `uint32` | Constant (`0x00010000`) |
 #' | 28–31 | `uint32` | Last precursor m/z x 100 (stale outside MS2 scans) |

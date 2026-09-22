@@ -1,6 +1,6 @@
 #' Read 'Shimadzu' peak tables
 #'
-#' Read the integration results 'Lab Solutions' stored alongside the raw data
+#' Read the integration results 'LabSolutions' stored alongside the raw data
 #' in a 'Shimadzu' OLE container (`.lcd` or `.gcd`), one table per channel.
 #'
 #' Each table lives in its own stream, a short header followed by one

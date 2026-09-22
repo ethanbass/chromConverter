@@ -15,7 +15,7 @@
 #' @param parser What parser to use. Either `RaMS` or `mzR`.
 #' @param what What types of data to return (argument to [RaMS::grabMSdata]).
 #' Options include `MS1`, `MS2`, `BPC`, `TIC`, `DAD`, `chroms`, `metadata`, or
-#' `everything`).
+#' `everything`.
 #' @param verbose Argument to `grabMSdata` controlling verbosity.
 #' @param ... Additional arguments to `grabMSdata`.
 #' @return If `RaMS` is selected, the function will return a list of "tidy"

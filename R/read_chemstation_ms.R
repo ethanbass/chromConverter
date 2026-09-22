@@ -1,4 +1,4 @@
-#' Read 'Agilent ChemStation' MS file.
+#' Read 'Agilent ChemStation' MS files
 #'
 #' Reads 'Agilent ChemStation MSD Spectral Files' beginning with
 #' `x01/x32/x00/x00`.
@@ -7,6 +7,8 @@
 #' @param path Path to 'Agilent' `.ms` file.
 #' @param what What stream to get: current options are `MS1`, `BPC` and/or
 #' `TIC`. If a stream is not specified, the function will return all streams.
+#' @param data_format Whether to return data in `long` (default) or `wide`
+#' format. Mass spectra are always returned in `long` format.
 #' @author Ethan Bass
 #' @return A list of chromatograms in the format specified by `data_format` and
 #' `format_out`. If `data_format` is `wide`, 2D chromatograms will
@@ -132,7 +134,7 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
   dat
 }
 
-#' Chemstation MS bit shift
+#' 'ChemStation' MS bit shift
 #' @noRd
 ms_bit_shift <- function(int){
   int_heads <- bitwShiftR(int, 14)

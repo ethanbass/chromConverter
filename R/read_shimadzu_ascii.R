@@ -1,6 +1,6 @@
 #' Read 'Shimadzu' ASCII
 #'
-#' Reads 'Shimadzu' ASCII `.txt`) files. These files can be exported from
+#' Reads 'Shimadzu' ASCII (`.txt`) files. These files can be exported from
 #' 'Shimadzu LabSolutions' by right clicking on samples in the sample list and
 #' selecting `File Conversion:Convert to ASCII`.
 #'
@@ -11,8 +11,8 @@
 #' @param path Path to Shimadzu `.txt` ASCII file.
 #' @param what Whether to extract chromatograms (`chroms`),
 #' `peak_table`, and/or `ms_spectra`. Accepts multiple arguments.
-#' @param include Which chromatograms to include. Options are `fid`, `dad`,
-#' `uv`, `tic`, and `status`.
+#' @param include Which chromatograms to include. Options are `fid`, `lc`,
+#' `dad`, `uv`, `tic`, and `status`.
 #' @param format_in This argument is deprecated and is no longer required.
 #' @param peaktable_format Whether to return peak tables in `chromatographr`
 #' or `original` format.

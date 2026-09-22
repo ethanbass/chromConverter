@@ -15,13 +15,12 @@
 #' are organized into broad categories by detector-type and output format. The
 #' detector-types are `msd` (mass selective detectors), `csd` (current selective
 #' detectors, e.g., FID, ECD, NPD), and `wsd` (wavelength selective detectors,
-#' e.g.,  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers, one of
+#' e.g., DAD, and UV/VIS). Thus, when calling the OpenChrom parsers, one of
 #' these three options must be specified using the `format_in` argument.
 #'
-#' @note Activating the OpenChrom command-line will deactivate the graphical
-#' user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
-#' it is recommended to create a separate command-line version of OpenChrom to
-#' call from R.
+#' @note Activating the OpenChrom command-line deactivates the graphical user
+#' interface (GUI). To keep using the GUI, install a second copy of OpenChrom
+#' and call that one from R.
 #'
 #' @import xml2
 #' @inheritParams shared_params
@@ -176,7 +175,7 @@ write_openchrom_batchfile <- function(files, path_out,
 #' Configure 'OpenChrom' parser
 #'
 #' Configures [OpenChrom](https://lablicate.com/platform/openchrom) to use
-#' command-line interface. Requires OpenChrom version prior to 0.5.0.
+#' command-line interface. Requires OpenChrom version prior to 1.5.0.
 #'
 #' @name configure_openchrom
 #' @param cli Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.

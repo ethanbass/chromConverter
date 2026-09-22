@@ -4,12 +4,12 @@
 #'
 #' @inheritParams shared_params
 #' @param paths Paths to files or folders containing peak list files.
-#' @param find_files Logical. Set to `TRUE` (default) if you are providing
-#' the function with a folder or vector of folders containing the files.
-#' Otherwise, set to `FALSE`.
+#' @param find_files Logical. Whether to treat the supplied paths as
+#' directories to search for files. Inferred if not supplied, by testing
+#' whether every path is a file.
 #' @param format_in Format of files to be imported/converted. Current options
-#' include: `chemstation`, `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`, and
-#' `shimadzu_gcd`.
+#' include: `chemstation`, `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`,
+#' `shimadzu_gcd`, and `chromatotec`.
 #' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
 #' which case the file extension will be deduced from `format_in`.
 #' @param peaktable_format Whether to return peak tables in `chromatographr`

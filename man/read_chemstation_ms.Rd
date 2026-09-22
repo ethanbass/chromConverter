@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_ms.R
 \name{read_chemstation_ms}
 \alias{read_chemstation_ms}
-\title{Read 'Agilent ChemStation' MS file.}
+\title{Read 'Agilent ChemStation' MS files}
 \usage{
 read_chemstation_ms(
   path,
@@ -23,7 +23,8 @@ read_chemstation_ms(
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
+\item{data_format}{Whether to return data in \code{long} (default) or \code{wide}
+format. Mass spectra are always returned in \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 

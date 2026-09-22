@@ -27,15 +27,17 @@ read_sz_lcd_2d(
 
 \item{scale}{Whether to scale the data by the calibration factor and the
 value factor, converting the encoded integers into the unit reported by
-'Lab Solutions' (e.g. \code{mV}).}
+'LabSolutions' (e.g. \code{mV}).}
 }
 \value{
 One or more 2D chromatograms from the chromatogram streams in
-\code{matrix} or \code{data.frame} format, according to the value of
-\verb{format_out. If multiple chromatograms are found, they will be returned as a list of matrices or data.frames. The chromatograms will be returned in }wide or \verb{long format according to the value of }data_format`.
+\code{matrix} or \code{data.frame} format, according to the value of \code{format_out}. If
+multiple chromatograms are found, they will be returned as a list of
+matrices or data.frames. The chromatograms will be returned in \code{wide} or
+\code{long} format according to the value of \code{data_format}.
 }
 \description{
-Reads 2D PDA data stream from 'Shimadzu' \code{.lcd} files.
+Reads the chromatogram data streams from 'Shimadzu' \code{.lcd} files.
 }
 \details{
 A parser to read chromatogram data streams from 'Shimadzu' \code{.lcd} files.

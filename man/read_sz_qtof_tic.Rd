@@ -20,6 +20,8 @@ read_sz_qtof_tic(
 \item{data_format}{Either \code{wide} (default) or \code{long}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata.}
+
+\item{metadata_format}{Format to output metadata.}
 }
 \value{
 A 2D chromatogram from the SumTIC stream in \code{matrix} or
@@ -34,14 +36,12 @@ quadrupole files store their TIC differently and are read by
 \code{read_sz_tlm_tic} instead. LCD files are encoded as 'Microsoft' OLE
 documents. The parser relies on the
 \href{https://pypi.org/project/olefile/}{olefile} package in Python to unpack the
-files. The TIC data is encoded in a stream called \verb{Centroid SumTIC}.
-The TIC data stream contains a segment for each retention time, beginning
-with a 8-byte header. After the header, the file consists of a series of
-4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
-a 4-byte spacer (\code{00000000}) The first integer is the retention time
-in milliseconds, the second integer is the scan number, and the third integer
-is the intensity. Retention times are converted to minutes, as elsewhere in
-the package.
+files. The TIC data is encoded in a stream called \verb{Centroid SumTIC}, which
+opens with an 8-byte header and holds one 16-byte record per scan: three
+4-byte little-endian integers --- the retention time in milliseconds, the
+scan number and the intensity --- followed by a 4-byte spacer
+(\code{00000000}). Retention times are converted to minutes, as elsewhere in the
+package.
 }
 \author{
 Ethan Bass

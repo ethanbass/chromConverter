@@ -2,7 +2,7 @@
 
 ### Breaking changes
 
-* 2D chromatograms from 'Shimadzu' `.lcd` files are now scaled by the calibration factor as well as the value factor, so the intensities match those reported by 'Lab Solutions'. The calibration factor converts the encoded integers into the base unit of the detector, and is stored alongside the raw data in the `Chromatogram Status` stream. The parser was instead taking it from the copy of the `2D Data Item` under `LSS Data Processing`, where it is always `1`. Channels where it is not `1` were off by a constant factor, such as ~42x for an SPD-20A UV detector and ~310x for an RID-10A refractive index detector, so any factor applied by hand to match 'Lab Solutions' should now be removed. Older files, written by 'LCsolution' rather than 'Lab Solutions', have no `2D Data Item` at all, so neither factor reached them; both are now read from the status record, changing the scale of those chromatograms by up to ~5000x. `scale = FALSE` still returns the unscaled integers.
+* 2D chromatograms from 'Shimadzu' `.lcd` files are now scaled by the calibration factor as well as the value factor, so the intensities match those reported by 'LabSolutions'. The calibration factor converts the encoded integers into the base unit of the detector, and is stored alongside the raw data in the `Chromatogram Status` stream. The parser was instead taking it from the copy of the `2D Data Item` under `LSS Data Processing`, where it is always `1`. Channels where it is not `1` were off by a constant factor, such as ~42x for an SPD-20A UV detector and ~310x for an RID-10A refractive index detector, so any factor applied by hand to match 'LabSolutions' should now be removed. Older files, written by 'LCsolution' rather than 'LabSolutions', have no `2D Data Item` at all, so neither factor reached them; both are now read from the status record, changing the scale of those chromatograms by up to ~5000x. `scale = FALSE` still returns the unscaled integers.
 * Fixed a loss of precision in long-format data. The conversion from wide to long format finished by coercing the assembled table with `apply(x, 2, as.numeric)`. Because retention times entered that table as character (from the rownames), the coercion routed every column through a character matrix, formatting each intensity with `getOption("digits")` and so rounding it to 7 significant figures. Long-format intensities now match the wide-format values exactly. Exported files were affected too, since `write_mzml` and `write_andi_ms` reshape to long format before encoding.
 * Mass spectra are no longer coerced to a matrix. With `format_out = "matrix"`, which is the default, `read_shimadzu_qgd`, `read_chemstation_ms` and `read_cdf` returned MS1 as a matrix, and `read_varian_sms` returned a data.frame but recorded `format_out` as `matrix`. Long spectral data has no useful matrix representation: the coercion promoted `scan` and `rt` to double alongside the intensities and gave up `$`. All four now return a `data.table` for this value of `format_out`, and record it. `data.frame` and `data.table` are returned as requested, and the two-dimensional streams (`TIC`, `BPC`) still honor `matrix`.
 * The names of several metadata fields have changed, and some functions and arguments have been deprecated or removed. See the "Metadata field changes" and "Deprecations and removals" sections below.
@@ -55,9 +55,9 @@
 #### 'Shimadzu'
 
 * The `wavelength` attribute of a 'Shimadzu' 2D chromatogram is now `NA` rather than an empty string when the channel records none, as a refractive index or FID trace does. An empty string printed as a blank cell instead of as a missing value.
-* 'Shimadzu' `.lcd`, `.gcd` and `.qgd` files now report `file_version`, the version of the container format (`5.01` for files written by 'Lab Solutions'; absent in the older files, which report only a `software_version` of `1.x`).
 * 'Shimadzu' `.lcd` and `.gcd` files now report the instrument the file was acquired on, rather than the detector module of whichever trace you are looking at: one run on one HPLC previously came back as `SPD-20A` on two channels and `RID-10A` on a third. `instrument` is taken from the `SystemInformation` stream (`Instrument2`, `HPLC RID`, `GC-2014`), the same string the ascii exports report as `Instrument Name`, so a run exported both ways now agrees. The module is now reported as `detector_model`. A mass spectrometry trace has no module of its own, so it reports whatever unit `SystemInformation` lists for the mass spectrometer instead. That is a model number on newer software (`LCMS-9030`), but older versions list the generic platform name (e.g., `LCMS-3030` for every triple quadrupole).
 * The channel a 'Shimadzu' `.lcd` or `.gcd` trace was read from (`LC.1.1.DET.1.CH#1`, `PDA.1.1.PDA.1.3D`) is now reported as `channel_id`, (replacing `detector_id`). This field is used to name the peak table belonging to a trace (`PT-LC.1.1.DET.1.CH#1`), so the two can still be matched up.
+* 'Shimadzu' `.lcd`, `.gcd` and `.qgd` files now report `file_version`, the version of the container format (`5.01` for files written by 'LabSolutions'; absent in the older files, which report only a `software_version` of `1.x`).
 
 #### 'Varian' SMS
 
@@ -301,7 +301,7 @@
 
 ### Major features
 
-* Added preliminary support for 'Varian Worktation' (`.sms`) format through `read_varian_sms` function.
+* Added preliminary support for 'Varian Workstation' (`.sms`) format through `read_varian_sms` function.
 * Added preliminary support for 'Shimadzu QGD' GC-MS files through the `read_shimadzu_qgd` function.
 * Added preliminary support for 'Allotrope Simple Model' (ASM) 2D chromatography date files.
 * Added support for reading multiple files from 'Agilent' `.D` directories through `read_agilent_d` function.
@@ -338,7 +338,7 @@
 * Fixed error when providing single chromatogram to \code{extract_metadata}.
 * Added metadata field for source checksum (SHA1) and source file format.
 * Other minor changes to metadata fields.
-* Return all times in Coordinated Univeral Time (UTC) for consistency across systems.
+* Return all times in Coordinated Universal Time (UTC) for consistency across systems.
 
 ## chromConverter 0.6.4
 

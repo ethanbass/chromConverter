@@ -60,14 +60,13 @@ consist of \code{InputEntries} (specifying the files you want to convert) and
 are organized into broad categories by detector-type and output format. The
 detector-types are \code{msd} (mass selective detectors), \code{csd} (current selective
 detectors, e.g., FID, ECD, NPD), and \code{wsd} (wavelength selective detectors,
-e.g.,  DAD, and UV/VIS). Thus, when calling the OpenChrom parsers, one of
+e.g., DAD, and UV/VIS). Thus, when calling the OpenChrom parsers, one of
 these three options must be specified using the \code{format_in} argument.
 }
 \note{
-Activating the OpenChrom command-line will deactivate the graphical
-user interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
-it is recommended to create a separate command-line version of OpenChrom to
-call from R.
+Activating the OpenChrom command-line deactivates the graphical user
+interface (GUI). To keep using the GUI, install a second copy of OpenChrom
+and call that one from R.
 }
 \section{Side effects}{
  Chromatograms will be exported in the format specified

@@ -251,7 +251,7 @@ decode_delta <- function(file, offset){
   signal[seq_len(index - 1L)]
 }
 
-#' Read Chemstation IT file
+#' Read 'ChemStation' IT file
 #' @noRd
 read_chemstation_it <- function(path, format_out = c("matrix", "data.frame",
                                                      "data.table"),

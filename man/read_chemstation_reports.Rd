@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_chemstation_report.R
 \name{read_chemstation_reports}
 \alias{read_chemstation_reports}
-\title{Read 'Agilent ChemStation' report files.}
+\title{Read 'Agilent ChemStation' report files}
 \usage{
 read_chemstation_reports(
   paths,

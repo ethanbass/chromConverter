@@ -29,10 +29,10 @@ A chromatogram in the format specified by \code{format_out} and
 \code{data_format}.
 }
 \description{
-Reads 'Agilent Chemstation' \code{.csv} files.
+Reads 'Agilent ChemStation' \code{.csv} files.
 }
 \details{
-'Agilent Chemstation' CSV files are encoded in UTF-16.
+'Agilent ChemStation' CSV files are encoded in UTF-16.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}

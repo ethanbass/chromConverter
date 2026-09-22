@@ -70,7 +70,7 @@ with a 44-byte header shared by every scan type:\tabular{lll}{
    8–11 \tab \code{uint32} \tab Event number \cr
    12–15 \tab \code{uint32} \tab Scan counter within the event \cr
    16–19 \tab \code{uint32} \tab Scan index (0-based) \cr
-   20–21 \tab \code{uint16} \tab Scan type: 10 = MS1 profile, 14 = MS2 profile, 15 = MRM/SIM \cr
+   20–21 \tab \code{uint16} \tab Scan type: 10 = MS1 profile, 11 = SIM, 14 = MS2 profile, 15 = MRM \cr
    22–23 \tab \code{uint16} \tab MS level + 1 (0 in a truncated final scan) \cr
    24–27 \tab \code{uint32} \tab Constant (\code{0x00010000}) \cr
    28–31 \tab \code{uint32} \tab Last precursor m/z x 100 (stale outside MS2 scans) \cr

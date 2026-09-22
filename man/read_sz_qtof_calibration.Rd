@@ -34,13 +34,15 @@ recorded in the file.}
 Named numeric vector with elements \code{A} and \code{B}.
 }
 \description{
+Fits the flight-time-to-m/z coefficients \code{A} and \code{B} from the calibration
+points stored in the file.
+}
+\details{
 The \verb{TOF Calibration Table} stream holds the calibration points themselves:
 pairs of a known m/z and the flight time at which the instrument actually
 observed it. It is encoded as a protocol buffer, a binary format in which
 every value is tagged with a number rather than a name, so the fields are
 referred to below by those numbers. The top-level ones are:
-}
-\details{
 \itemize{
 \item \code{10} -- positive mode (\verb{Na(NaI)n} calibrants)
 \item \code{20} -- negative mode (\verb{I(NaI)n} calibrants)

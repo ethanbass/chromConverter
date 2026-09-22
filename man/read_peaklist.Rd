@@ -21,13 +21,13 @@ read_peaklist(
 \arguments{
 \item{paths}{Paths to files or folders containing peak list files.}
 
-\item{find_files}{Logical. Set to \code{TRUE} (default) if you are providing
-the function with a folder or vector of folders containing the files.
-Otherwise, set to \code{FALSE}.}
+\item{find_files}{Logical. Whether to treat the supplied paths as
+directories to search for files. Inferred if not supplied, by testing
+whether every path is a file.}
 
 \item{format_in}{Format of files to be imported/converted. Current options
-include: \code{chemstation}, \code{shimadzu_fid}, \code{shimadzu_dad}, \code{shimadzu_lcd}, and
-\code{shimadzu_gcd}.}
+include: \code{chemstation}, \code{shimadzu_fid}, \code{shimadzu_dad}, \code{shimadzu_lcd},
+\code{shimadzu_gcd}, and \code{chromatotec}.}
 
 \item{pattern}{A pattern (e.g. a file extension). Defaults to \code{NULL}, in
 which case the file extension will be deduced from \code{format_in}.}

@@ -29,7 +29,8 @@ For \code{export_format = "cdf"}, either \code{"MS1"} (written by \code{write_an
 any of \code{"MS1"}, \code{"MS2"}, \code{"TIC"}, \code{"BPC"} and/or \code{"DAD"}. If it is not
 specified, the streams to write are inferred from the supplied data.}
 
-\item{force}{Logical. Whether to overwrite existing files. Defaults to \code{TRUE}.}
+\item{force}{Logical. Whether to overwrite existing files. Defaults to
+\code{FALSE}.}
 
 \item{show_progress}{Logical. Whether to show progress bar. Defaults to \code{TRUE}.}
 

@@ -55,13 +55,13 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
 #' `TraceFile` cannot be used without pinning `scipy < 1.14` for the whole
 #' Python session. Since `.uv` files are read by chromConverter's internal
 #' parser, [read_chemstation_uv], this wrapper was retired rather than
-#' constrain scipy for everyone.
+#' constraining scipy for everyone.
 #'
 #' @name uv_converter
 #' @inheritParams shared_params
 #' @param path Path to file
-#' @param correction Logical. Whether to apply empirical correction. Defaults is
-#' TRUE.
+#' @param correction Logical. Whether to apply empirical correction. Defaults
+#' to `TRUE`.
 #' @return There is no return value. Calling this function is an error.
 #' @family external parsers
 #' @keywords internal
