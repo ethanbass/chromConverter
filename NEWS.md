@@ -30,6 +30,7 @@
 
 #### 'rainbow'
 
+* `call_rainbow` now works when `format_in` is not supplied, which failed on R 4.2 and later.
 * A chromatogram read with the `rainbow` parser no longer loses its retention times when the parser returns fewer of them than the trace has rows (as the compressed 181 `.ch` container does). The time axis is rebuilt from the first and last time, with a warning.
 
 #### mzML export

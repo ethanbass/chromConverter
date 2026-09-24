@@ -1267,3 +1267,16 @@ test_that("a short 'rainbow' time axis is rebuilt rather than dropped", {
   expect_null(rb_times(numeric(), 5))
   expect_warning(expect_equal(rb_times(c(0, 4), 5), seq(0, 4, length.out = 5)))
 })
+
+test_that("call_rainbow works without `format_in`", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_dependencies("rainbow")
+
+  path <- system.file("chemstation_181.D",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- suppressWarnings(call_rainbow(path))
+  expect_true("FID" %in% names(x))
+})

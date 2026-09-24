@@ -47,6 +47,7 @@ call_rainbow <- function(path,
                          metadata_format = c("chromconverter", "raw"),
                          collapse = TRUE, precision = 1, sparse = TRUE,
                          bin_width = NULL){
+  format_in <- match.arg(format_in)
   rb <- check_rb_configuration(format_in)
   by <- match.arg(by, c("detector", "name"))
   format_out <- check_format_out(format_out)
