@@ -23,7 +23,7 @@ test_that("read_chroms can export 'Agilent' MS files as ANDI MS cdf", {
   on.exit(unlink(path_cdf))
 
   xx <- read_cdf(path_cdf, format_out = "data.table")
-  expect_equal(x2$rt, xx$MS1$rt/60, ignore_attr = TRUE)
+  expect_equal(x2$rt, xx$MS1$rt, ignore_attr = TRUE)
   expect_equal(x2$intensity, xx$MS1$intensity, ignore_attr = TRUE)
   expect_equal(x2$mz, xx$MS1$mz, ignore_attr = TRUE, tolerance = .000001)
 })

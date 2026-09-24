@@ -178,6 +178,34 @@ test_that("a one-point chromatogram round-trips through ANDI chrom", {
   expect_equal(as.numeric(y), 10)
 })
 
+test_that("write_andi_ms writes a mass range for a scan with no peaks", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  # the scans of the acquisition delay are in the TIC but hold no peaks, so
+  # they have no mass range of their own and take the one that follows them
+  ms <- data.frame(rt = rep(c(0.3, 0.4), each = 2),
+                   mz = c(100, 101, 150, 151),
+                   intensity = rep(1000, 4))
+  attr(ms, "data_format") <- "long"
+  attr(ms, "time_unit") <- "Minutes"
+  tic <- data.frame(rt = c(0.1, 0.2, 0.3, 0.4), intensity = c(0, 0, 2, 2))
+  attr(tic, "data_format") <- "long"
+
+  p <- write_andi_ms(list(MS1 = ms, TIC = tic), path_out = tmp,
+                     sample_name = "gap", force = TRUE)
+  nc <- ncdf4::nc_open(p)
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
+  get_var <- function(v) as.numeric(ncdf4::ncvar_get(nc, v))
+  expect_equal(get_var("point_count"), c(0, 0, 2, 2))
+  expect_equal(get_var("mass_range_min"), c(100, 100, 100, 150))
+  expect_equal(get_var("mass_range_max"), c(101, 101, 101, 151))
+})
+
 test_that("read_andi_chrom converts the times to minutes", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")

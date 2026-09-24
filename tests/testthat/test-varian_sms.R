@@ -92,15 +92,14 @@ test_that("read_chroms can write Varian SMS to CDF", {
 
   x3 <- read_cdf(path_cdf, data_format = "long", format_out = "data.frame")
 
-  x3$MS1$rt <- x3$MS1$rt/60
-  x3$TIC$rt <- x3$TIC$rt/60
-
+  # the file records seconds, as ANDI MS does, but `read_cdf` reports minutes,
+  # so the times come back on the scale they went in on
   expect_equal(as.data.frame(x$MS1), x3$MS1, ignore_attr = TRUE,
                tolerance = .0000001)
   expect_equal(as.data.frame(x$TIC), x3$TIC, ignore_attr = TRUE,
                tolerance = .0000001)
   expect_equal(attr(x3$MS1, "run_datetime"), attr(x$MS1, "run_datetime")[1])
-  expect_equal(attr(x3$MS1, "time_unit"), "Seconds")
+  expect_equal(attr(x3$MS1, "time_unit"), "Minutes")
   expect_equal(attr(x3$MS1, "detector"), "MS")
   expect_equal(attr(x3$MS1, "sample_name"), "STRD15")
 })

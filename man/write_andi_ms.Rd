@@ -9,8 +9,7 @@ write_andi_ms(
   path_out,
   sample_name = NULL,
   force = FALSE,
-  ms_params = list(ionization_mode = "Electron Impact", ionization_polarity =
-    "Positive Polarity", detector_type = "Electron Multiplier")
+  ms_params = list()
 )
 }
 \arguments{
@@ -26,18 +25,30 @@ will be derived from the \code{sample_name} attribute.}
 \item{force}{Whether to overwrite existing files at the specified path.
 Defaults to \code{FALSE}.}
 
-\item{ms_params}{A list of instrument settings recorded in the file, since
-they cannot be derived from the data: \code{ionization_mode},
-\code{ionization_polarity} and \code{detector_type}.}
+\item{ms_params}{A list of settings recorded in the file:
+\code{ionization_mode}, \code{ionization_polarity}, \code{detector_type}, \code{scan_function}
+and \code{experiment_type}. A setting that is not given is taken from the
+chromatogram's metadata where it records one: the polarity from its
+\code{polarity} attribute, the scan function from \code{scan_type}, and the
+ionization mode and detector type from its \code{ms_params} attribute. Failing
+that, the defaults are \code{"Electron Impact"}, \code{"Positive Polarity"} and
+\code{"Electron Multiplier"}, and a scan function is left out of the file.
+\code{experiment_type} is not read from metadata and defaults to
+\code{"Centroided Mass Spectrum"}.}
 }
 \value{
 Invisibly returns the path to the written CDF file.
 }
 \description{
 Exports mass spectrometry data in ANDI (Analytical Data Interchange) MS
-format (ASTM E1947-98). Retention times are converted to seconds, as the
-specification requires. A total ion chromatogram is derived from the MS1
+format (ASTM E1947-98). A total ion chromatogram is derived from the MS1
 scans if the supplied object does not already carry one.
+}
+\details{
+Retention times are written in seconds, the only time unit the
+specification suggests, and declared in \code{raw_data_time_units}. A
+chromatogram is converted unless its \code{time_unit} already reports seconds, so
+one whose unit is missing or unrecognized is taken to be in minutes.
 }
 \section{Side effects}{
 

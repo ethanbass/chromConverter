@@ -346,10 +346,6 @@ nc_add_global_attributes <- function(nc, meta, sample_name){
                                     "test_emission_current" = "float",
                                     "raw_data_nscans" = "int",
                                     "raw_data_starting_scan_no" = "int",
-                                    "raw_data_mass_factor" = "float",
-                                    "raw_data_time_factor" = "float",
-                                    "raw_data_intensity_factor" = "float",
-                                    "raw_data_intensity_offset" = "float",
                                     "text"))
   })
   if (!is.null(sample_name)){

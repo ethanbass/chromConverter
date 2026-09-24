@@ -9,6 +9,11 @@
 #' declares no unit is read as seconds, unless chromConverter wrote it, in
 #' which case it is read as minutes.
 #'
+#' An ANDI MS file has no mandatory unit attribute, since the specification
+#' never formally defined its axes units, so `scan_acquisition_time` is read as
+#' seconds, the only unit the specification suggests, unless a
+#' `raw_data_time_units` attribute says otherwise.
+#'
 #' Either kind of file warns about a unit it does not recognize and reads it
 #' as seconds.
 #'
@@ -47,7 +52,7 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
   if ("ordinate_values" %in% names(nc$var)){
     format <- "chrom"
   } else if (all(c("intensity_values", "mass_values",
-                   "scan_index", "scan_acquisition_time") %in% names(nc$var))){
+                   "scan_index") %in% names(nc$var))){
     format <- "ms"
   } else {
     format <- "unknown"
@@ -194,6 +199,26 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
   data
 }
 
+#' Attribute of an ANDI MS variable, or `NULL` where the file has none
+#' @noRd
+nc_var_att <- function(nc, var, att){
+  if (!(var %in% names(nc$var))) return(NULL)
+  x <- ncdf4::ncatt_get(nc, varid = var, attname = att)
+  if (isTRUE(x$hasatt)) x$value else NULL
+}
+
+#' Scan acquisition times of an ANDI MS file, with the `-9999` null replaced by
+#' `NA`
+#' @noRd
+andi_ms_scan_times <- function(nc, n){
+  if (!("scan_acquisition_time" %in% names(nc$var))){
+    return(rep(NA_real_, n))
+  }
+  rt <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
+  rt[rt == -9999] <- NA_real_
+  rt
+}
+
 #' Read ANDI MS file
 #' @param path Path to file.
 #' @param format_out Class of output. Either `matrix`, `data.frame`,
@@ -233,38 +258,57 @@ read_andi_ms <- function(path,
     nc <- ncdf4::nc_open(path)
     on.exit(ncdf4::nc_close(nc))
   }
+  rt_unit <- ncdf4::ncatt_get(nc, varid = 0, attname = "raw_data_time_units")
+  rt_unit <- if (isTRUE(rt_unit$hasatt)) rt_unit$value else NA_character_
+  n_points <- ncdf4::ncvar_get(nc, "point_count")
+  rt_scan <- andi_ms_scan_times(nc, n = length(n_points)) /
+    andi_retention_divisor(rt_unit, attname = "raw_data_time_units")
   if (any(what == "TIC")){
-    x <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
-    y <- ncdf4::ncvar_get(nc, "total_intensity")
-
-    TIC <- format_2d_chromatogram(rt = x, int = y, data_format = data_format,
-                           format_out = format_out)
+    if (all(is.na(rt_scan))){
+      msg <- paste("This file does not record scan acquisition times, so no",
+                   "total ion chromatogram can be returned.")
+      if (identical(what, "TIC")) stop(msg, call. = FALSE)
+      warning(msg, call. = FALSE)
+      what <- setdiff(what, "TIC")
+    } else{
+      y <- ncdf4::ncvar_get(nc, "total_intensity")
+      TIC <- format_2d_chromatogram(rt = rt_scan, int = y,
+                                    data_format = data_format,
+                                    format_out = format_out)
+    }
   }
   if (any(what == "MS1")){
     int <- ncdf4::ncvar_get(nc, "intensity_values")
     mz <- ncdf4::ncvar_get(nc, "mass_values")
     scan_idx <- ncdf4::ncvar_get(nc, "scan_index")
-    n_scans <- ncdf4::ncvar_get(nc, "point_count")
-    rt_scan <- ncdf4::ncvar_get(nc, "scan_acquisition_time")
+    # flagged peaks are written onto the end of the scan they belong to, so the
+    # points are taken by offset and count rather than up to the next scan
+    idx <- rep(scan_idx, n_points) + sequence(n_points)
+    mz <- mz[idx]
+    int <- int[idx]
     if (ms_format == "data.frame"){
-      rts <- rep(rt_scan, n_scans)
-      MS1 <- data.frame(rt = rts, mz = mz, intensity = int)
+      MS1 <- data.frame(rt = rep(rt_scan, n_points), mz = mz, intensity = int)
       if (check_format_out_table(format_out) == "data.table"){
         data.table::setDT(MS1)
       }
     } else if (ms_format == "list"){
-      zeros <- as.list(rep(NA, length(which(scan_idx == 0)) - 1))
-      scans <- Map(function(x, y){
-        cbind(mz = x, int = y)
-      }, split_at(mz, scan_idx + 1), split_at(int, scan_idx + 1))
-      MS1 <- c(zeros, scans)
-      names(MS1) <- rt_scan
+      scan <- factor(rep(seq_along(n_points), n_points),
+                     levels = seq_along(n_points))
+      MS1 <- Map(function(mz, int){
+        cbind(mz = mz, int = int)
+      }, split(mz, scan), split(int, scan))
+      if (!all(is.na(rt_scan))) names(MS1) <- rt_scan
     }
   }
   data <- mget(what)
   if (read_metadata){
     meta <- ncdf4::ncatt_get(nc, varid = 0)
     meta$detector <- "MS"
+    meta$raw_data_time_units <- "Minutes"
+    meta$raw_data_mass_units <- meta$raw_data_mass_units %||%
+      nc_var_att(nc, "mass_values", "units") %||% meta$mass_axis_units
+    meta$detector_y_unit <- meta$detector_y_unit %||%
+      nc_var_att(nc, "intensity_values", "units") %||% meta$intensity_axis_units
     data <- purrr::imap(data, function(x, h){
       attach_metadata(x, meta = meta, format_in = metadata_format,
                       format_out = ifelse(h == "MS1",

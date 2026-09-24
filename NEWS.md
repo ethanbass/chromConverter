@@ -2,7 +2,7 @@
 
 ### Breaking changes
 
-* `read_cdf` now returns 'ANDI chrom' retention times, including those in the peak table, in minutes. Times from a file recorded in seconds are 60 times smaller; see `?read_cdf`.
+* Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
 
 ### New features
@@ -13,10 +13,17 @@
 
 #### ANDI (netCDF)
 
-* `read_cdf` no longer treats the run length of an 'ANDI chrom' file as the time of its last point, which stretched retention times slightly.
-* `write_andi_chrom` now fills in `retention_unit`, `actual_run_time_length` and the detector range correctly, for software that reads them.
-* `read_cdf` now reads the stored retention times of unevenly sampled 'ANDI chrom' files instead of inferring them, and `write_andi_chrom` now marks uneven data so they can be read back correctly.
-* `read_cdf` now includes the text columns of an 'ANDI chrom' peak table, such as `peak_name`, which were previously dropped.
+* Retention times from evenly sampled 'ANDI chrom' files are now reconstructed accurately. Previously, the run length was treated as the time of the last point, which resulted in slight stretching of the time axis.
+* Unevenly sampled 'ANDI chrom' data now keep their original retention times on import and on export with `write_andi_chrom`, instead of being spaced evenly.
+* 'ANDI chrom' peak tables now include text columns such as `peak_name`, which were previously dropped.
+* Files written by `write_andi_chrom` now record the correct time unit, run length and detector range.
+* 'ANDI MS' files with flagged peaks no longer fail to read or return the flags as extra data points.
+* 'ANDI MS' files without scan times, such as spectral libraries, can now be read. Retention times are `NA` and no TIC is returned.
+* 'ANDI MS' files now report their intensity unit in `detector_y_unit`, which was always empty, and files from other software also report their mass unit in `detector_x_unit`.
+* Exporting data that include MS2 scans to 'ANDI MS' no longer fails. The MS1 scans are written, and the MS2 scans are left out with a warning, since the format cannot hold them; `write_mzml` keeps both.
+* Files written by `write_andi_ms` now record the chromatogram's polarity, instrument, software and acquisition mode (full scan or selected ion monitoring), instead of fixed defaults or empty fields. See `?write_andi_ms`.
+* Setting one entry of `ms_params` in `write_andi_ms` no longer drops the defaults of the others.
+* Files written by `write_andi_ms` now follow the ANDI MS specification more closely, including each scan's actual mass and time range and the chromatogram's intensity unit.
 
 #### 'rainbow'
 
