@@ -2,6 +2,7 @@
 
 ### Breaking changes
 
+* `read_cdf` now returns 'ANDI chrom' retention times, including those in the peak table, in minutes. Times from a file recorded in seconds are 60 times smaller; see `?read_cdf`.
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
 
 ### New features
@@ -10,6 +11,12 @@
 
 ### Bug fixes and other minor changes
 
+#### ANDI (netCDF)
+
+* `read_cdf` no longer treats the run length of an 'ANDI chrom' file as the time of its last point, which stretched retention times slightly.
+* `write_andi_chrom` now fills in `retention_unit`, `actual_run_time_length` and the detector range correctly, for software that reads them.
+* `read_cdf` now reads the stored retention times of unevenly sampled 'ANDI chrom' files instead of inferring them, and `write_andi_chrom` now marks uneven data so they can be read back correctly.
+* `read_cdf` now includes the text columns of an 'ANDI chrom' peak table, such as `peak_name`, which were previously dropped.
 
 #### 'rainbow'
 

@@ -98,3 +98,123 @@ test_that("write_chroms writes mzML with its default `what`", {
                              show_progress = FALSE))
   expect_equal(list.files(tmp2), "sample_a.mzML")
 })
+
+make_chrom <- function(n = 20, time_unit = "Minutes"){
+  x <- matrix(seq_len(n) * 10, ncol = 1,
+              dimnames = list(seq_len(n) * 0.5, "intensity"))
+  attr(x, "data_format") <- "wide"
+  attr(x, "sample_name") <- "chrom_a"
+  if (!is.null(time_unit)) attr(x, "time_unit") <- time_unit
+  x
+}
+
+test_that("write_andi_chrom always declares a `retention_unit`", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  unit <- function(x){
+    p <- write_andi_chrom(x, path_out = tmp, force = TRUE)
+    nc <- ncdf4::nc_open(p)
+    on.exit(ncdf4::nc_close(nc))
+    ncdf4::ncatt_get(nc, 0)$retention_unit
+  }
+  expect_equal(unit(make_chrom(time_unit = "Seconds")), "Seconds")
+  expect_equal(unit(make_chrom(time_unit = "min")), "Minutes")
+  # the unit is mandatory, so an absent or unrecognized `time_unit` has to fall
+  # back to one rather than writing an empty string
+  expect_equal(unit(make_chrom(time_unit = NULL)), "Minutes")
+  expect_equal(unit(make_chrom(time_unit = "ms")), "Minutes")
+})
+
+test_that("write_andi_chrom records the range of the data it wrote", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  x <- make_chrom()
+  x[1] <- -5
+  p <- write_andi_chrom(x, path_out = tmp, force = TRUE)
+  nc <- ncdf4::nc_open(p)
+  on.exit(ncdf4::nc_close(nc), add = TRUE)
+  expect_equal(ncdf4::ncvar_get(nc, "detector_maximum_value"), max(x[, 1]))
+  expect_equal(ncdf4::ncvar_get(nc, "detector_minimum_value"), -5)
+})
+
+test_that("a chromatogram round-trips through ANDI chrom in minutes", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  x <- make_chrom()
+  p <- write_andi_chrom(x, path_out = tmp, force = TRUE)
+  y <- read_cdf(p, format_out = "matrix", what = "chroms")
+  expect_equal(as.numeric(rownames(y)), as.numeric(rownames(x)))
+  expect_equal(attr(y, "time_unit"), "Minutes")
+})
+
+test_that("a one-point chromatogram round-trips through ANDI chrom", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  # one point has no interval to average and no range to take
+  x <- make_chrom(n = 1)
+  p <- write_andi_chrom(x, path_out = tmp, force = TRUE)
+  y <- read_cdf(p, format_out = "matrix", what = "chroms")
+  expect_equal(as.numeric(rownames(y)), 0.5)
+  expect_equal(as.numeric(y), 10)
+})
+
+test_that("read_andi_chrom converts the times to minutes", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  # a file that declares seconds, as the ANDI chrom template does and as all
+  # but one of its conformance files do
+  x <- make_chrom(time_unit = "Seconds")
+  p <- write_andi_chrom(x, path_out = tmp, force = TRUE)
+  y <- read_cdf(p, format_out = "matrix", what = "chroms")
+  expect_equal(as.numeric(rownames(y)), as.numeric(rownames(x)) / 60)
+  expect_equal(attr(y, "time_unit"), "Minutes")
+
+  # `ncatt_get` reports a missing attribute as `0`, which must not be read as
+  # a unit called "0". Two of the ANDI chrom conformance files declare no
+  # `retention_unit`, and `write_andi_chrom` always writes one, so the file has
+  # to be built here.
+  p2 <- fs::path(tmp, "no_unit", ext = "cdf")
+  pt <- ncdf4::ncdim_def("point_number", "", vals = seq_len(nrow(x)),
+                         create_dimvar = FALSE)
+  vars <- c(list(ncdf4::ncvar_def("ordinate_values", "", dim = pt)),
+            lapply(c("actual_delay_time", "actual_run_time_length",
+                     "actual_sampling_interval"),
+                   function(v) ncdf4::ncvar_def(v, "", list())))
+  nc <- ncdf4::nc_create(p2, vars)
+  ncdf4::ncvar_put(nc, "ordinate_values", x[, 1])
+  ncdf4::ncvar_put(nc, "actual_delay_time", as.numeric(rownames(x))[1])
+  ncdf4::ncvar_put(nc, "actual_run_time_length", max(as.numeric(rownames(x))))
+  ncdf4::ncvar_put(nc, "actual_sampling_interval", 0.5)
+  ncdf4::nc_close(nc)
+
+  expect_no_warning(
+    z <- read_cdf(p2, format_out = "matrix", what = "chroms",
+                  read_metadata = FALSE)
+  )
+  expect_equal(as.numeric(rownames(z)), as.numeric(rownames(x)) / 60)
+})

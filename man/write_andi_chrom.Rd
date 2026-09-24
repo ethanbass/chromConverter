@@ -14,9 +14,9 @@ write_andi_chrom(x, path_out, sample_name = NULL, lambda = NULL, force = FALSE)
 \item{sample_name}{The name of the file. If a name is not provided, the name
 will be derived from the \code{sample_name} attribute.}
 
-\item{lambda}{The wavelength to export (for 2-dimensional chromatograms).
-Must be a string matching one the columns in \code{x} or the index of the
-column to export.}
+\item{lambda}{The wavelength to export, for a 3D chromatogram. Either a
+string matching one of the columns of \code{x} or the index of the column to
+export.}
 
 \item{force}{Whether to overwrite existing files at the specified path.
 Defaults to \code{FALSE}.}
@@ -26,10 +26,21 @@ Invisibly returns the path to the written CDF file.
 }
 \description{
 Exports a chromatogram in ANDI (Analytical Data Interchange) chromatography
-format (ASTM E1947-98). This format can only accommodate unidimensional data.
-For two-dimensional chromatograms, the column to export can be specified
-using the \code{lambda} argument. Otherwise, a warning will be generated and
-the first column of the chromatogram will be exported.
+format (ASTM E1947-98). The format holds a single trace, so a 3D
+chromatogram must be reduced to one: name the column to export with the
+\code{lambda} argument, or the first column is exported with a warning.
+}
+\details{
+Retention times are written in the unit the chromatogram reports, declared
+in the file's mandatory \code{retention_unit} attribute as \code{Minutes} or
+\code{Seconds}. A chromatogram whose \code{time_unit} is missing or unrecognized is
+taken to be in minutes, since the attribute cannot be left unset. The run
+length, delay time and sampling interval are derived from the retention
+times, and \code{detector_maximum_value} and \code{detector_minimum_value} report the
+range of the exported trace. \code{actual_sampling_interval} is the mean of the
+intervals, and \code{uniform_sampling_flag} reports whether every interval
+matches that mean. The per-point times are written to \code{raw_data_retention}
+either way, which is what a reader needs where the flag is \code{N}.
 }
 \section{Side effects}{
 

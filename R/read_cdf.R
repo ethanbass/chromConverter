@@ -2,6 +2,16 @@
 #'
 #' Reads 'Analytical Data Interchange' (ANDI) netCDF (`.cdf`) files.
 #'
+#' Retention times are returned in minutes, converted from the unit the file
+#' declares. An ANDI chrom file declares it in its `retention_unit` attribute,
+#' which also governs the peak table. Seconds is both what the template uses
+#' and what all but one of its conformance files declare, so a file that
+#' declares no unit is read as seconds, unless chromConverter wrote it, in
+#' which case it is read as minutes.
+#'
+#' Either kind of file warns about a unit it does not recognize and reads it
+#' as seconds.
+#'
 #' @inheritParams shared_params
 #' @param path Path to ANDI netCDF file.
 #' @param data_format Whether to return data in `wide` or `long` format.
@@ -51,6 +61,51 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
      metadata_format = metadata_format, collapse = collapse, ...)
 }
 
+#' Minutes per unit of an ANDI time unit attribute
+#' @param unit The attribute's value, or `NA` where the file has none.
+#' @param attname Name of the attribute the value came from.
+#' @return `1` for a unit naming minutes, `60` otherwise.
+#' @noRd
+andi_retention_divisor <- function(unit, attname = "retention_unit"){
+  if (length(unit) != 1 || is.na(unit) || !nzchar(unit)) return(60)
+  if (grepl("min", unit, ignore.case = TRUE)) return(1)
+  if (!grepl("sec", unit, ignore.case = TRUE)){
+    warning("Unrecognized `", attname, "` (", unit, "). Reading the ",
+            "retention times as seconds.", call. = FALSE)
+  }
+  60
+}
+
+#' Retention times of an ANDI chrom raw data table
+#' @noRd
+andi_chrom_retention_times <- function(nc, n){
+  flag <- ncdf4::ncatt_get(nc, varid = "ordinate_values",
+                           attname = "uniform_sampling_flag")
+  if (isTRUE(flag$hasatt) && toupper(trimws(flag$value)) == "N"){
+    if ("raw_data_retention" %in% names(nc$var)){
+      return(ncdf4::ncvar_get(nc, "raw_data_retention"))
+    }
+    warning("`uniform_sampling_flag` is \"N\", but the file does not contain ",
+            "a `raw_data_retention` variable. Assuming uniform sampling.",
+            call. = FALSE)
+  }
+  n_start <- ncdf4::ncvar_get(nc, "actual_delay_time")
+  n_interval <- if ("actual_sampling_interval" %in% names(nc$var)){
+    ncdf4::ncvar_get(nc, "actual_sampling_interval")
+  } else NA_real_
+  if (!isTRUE(n_interval > 0)){
+    n_interval <- ncdf4::ncvar_get(nc, "actual_run_time_length") / n
+  }
+  n_start + (seq_len(n) - 1) * n_interval
+}
+
+#' ANDI chrom peak table variables expressed in `retention_unit`
+#' @noRd
+andi_chrom_peak_time_vars <- c("peak_retention_time", "peak_start_time",
+                               "peak_end_time", "peak_width",
+                               "baseline_start_time", "baseline_stop_time",
+                               "migration_time")
+
 #' Read ANDI chrom file
 #' @param path Path to file.
 #' @param format_out Class of output. Either `matrix`, `data.frame`, or
@@ -84,20 +139,25 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
     nc <- ncdf4::nc_open(path)
     on.exit(ncdf4::nc_close(nc))
   }
+  rt_unit <- ncdf4::ncatt_get(nc, varid = 0, attname = "retention_unit")
+  rt_unit <- if (isTRUE(rt_unit$hasatt)) rt_unit$value else NA_character_
+  converter <- ncdf4::ncatt_get(nc, varid = 0, attname = "converter_name")
+  if (is.na(rt_unit) && isTRUE(converter$hasatt) &&
+      identical(tolower(converter$value), "chromconverter")){
+    rt_unit <- "Minutes"
+  }
+  rt_divisor <- andi_retention_divisor(rt_unit)
   if (any(what == "chroms")){
     y <- ncdf4::ncvar_get(nc, "ordinate_values")
-    nvals <- ncdf4::ncvar_get(nc, "actual_run_time_length")
-    n_interval <- ncdf4::ncvar_get(nc, "actual_sampling_interval")
-    n_start <- ncdf4::ncvar_get(nc, "actual_delay_time")
-    x <- seq(from = n_start, to = nvals, length.out = length(y))
+    x <- andi_chrom_retention_times(nc, n = length(y)) / rt_divisor
     chroms <- format_2d_chromatogram(rt = x, int = y,
                                            data_format = data_format,
                                            format_out = format_out)
   }
   if (any(what == "peak_table")){
     peak_table_vars <- names(which(sapply(nc$var, function(x){
-      x$dim[[1]]$name
-      }) == "peak_number"))
+      any(sapply(x$dim, function(d) d$name) == "peak_number")
+      })))
     if (length(peak_table_vars) > 0){
       # `lapply` + `as.data.frame`, not `sapply`: with a single peak `sapply`
       # returns a vector and the table comes out transposed
@@ -106,6 +166,8 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
       })
       names(peak_table) <- peak_table_vars
       peak_table <- as.data.frame(peak_table)
+      time_cols <- intersect(names(peak_table), andi_chrom_peak_time_vars)
+      peak_table[time_cols] <- peak_table[time_cols] / rt_divisor
     } else {
       warning("No peak table found in this file.", call. = FALSE)
       what <- setdiff(what, "peak_table")
@@ -115,6 +177,7 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
   if (collapse) data <- collapse_list(data)
   if (read_metadata){
     meta <- ncdf4::ncatt_get(nc, varid = 0)
+    meta$retention_unit <- "Minutes"
     if (inherits(data, "list")){
       data <- lapply(data, function(xx){
         attach_metadata(xx, meta = meta, format_in = metadata_format,

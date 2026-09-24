@@ -81,19 +81,29 @@ get_exporter <- function(export_format, force = FALSE, show_progress = TRUE,
 #' Write ANDI chrom CDF file from chromatogram
 #'
 #' Exports a chromatogram in ANDI (Analytical Data Interchange) chromatography
-#' format (ASTM E1947-98). This format can only accommodate unidimensional data.
-#' For two-dimensional chromatograms, the column to export can be specified
-#' using the `lambda` argument. Otherwise, a warning will be generated and
-#' the first column of the chromatogram will be exported.
+#' format (ASTM E1947-98). The format holds a single trace, so a 3D
+#' chromatogram must be reduced to one: name the column to export with the
+#' `lambda` argument, or the first column is exported with a warning.
+#'
+#' Retention times are written in the unit the chromatogram reports, declared
+#' in the file's mandatory `retention_unit` attribute as `Minutes` or
+#' `Seconds`. A chromatogram whose `time_unit` is missing or unrecognized is
+#' taken to be in minutes, since the attribute cannot be left unset. The run
+#' length, delay time and sampling interval are derived from the retention
+#' times, and `detector_maximum_value` and `detector_minimum_value` report the
+#' range of the exported trace. `actual_sampling_interval` is the mean of the
+#' intervals, and `uniform_sampling_flag` reports whether every interval
+#' matches that mean. The per-point times are written to `raw_data_retention`
+#' either way, which is what a reader needs where the flag is `N`.
 #'
 #' @author Ethan Bass
 #' @param x A chromatogram in (wide) format.
 #' @param path_out The path to write the file.
 #' @param sample_name The name of the file. If a name is not provided, the name
 #' will be derived from the `sample_name` attribute.
-#' @param lambda The wavelength to export (for 2-dimensional chromatograms).
-#' Must be a string matching one the columns in `x` or the index of the
-#' column to export.
+#' @param lambda The wavelength to export, for a 3D chromatogram. Either a
+#' string matching one of the columns of `x` or the index of the column to
+#' export.
 #' @param force Whether to overwrite existing files at the specified path.
 #' Defaults to `FALSE`.
 #' @return Invisibly returns the path to the written CDF file.
@@ -156,17 +166,27 @@ write_andi_chrom <- function(x, path_out, sample_name = NULL,
   nc <- ncdf4::nc_create(file_out, c(list(nc_time, nc_intensity), other_vars))
 
   # write data to file
-  ncdf4::ncvar_put(nc = nc, varid = "raw_data_retention", vals = x[,1])
+  rt <- x[, 1]
+  interval <- if (length(rt) > 1) mean(diff(rt)) else 0
+  uniform <- length(rt) < 3 ||
+    isTRUE(all.equal(diff(rt), rep(interval, length(rt) - 1)))
+
+  ncdf4::ncvar_put(nc = nc, varid = "raw_data_retention", vals = rt)
   ncdf4::ncvar_put(nc = nc, varid = "ordinate_values", vals = x[,2])
   ncdf4::ncatt_put(nc, varid = "ordinate_values",
-                   attname = "uniform_sampling_flag", attval = "Y")
+                   attname = "uniform_sampling_flag",
+                   attval = ifelse(uniform, "Y", "N"))
   ncdf4::ncvar_put(nc = nc, varid = "actual_run_time_length",
-                   vals = tail(x[,1], 1))
-  ncdf4::ncvar_put(nc = nc, varid = "actual_delay_time", vals = head(x[,1], 1))
+                   vals = interval * length(rt))
+  ncdf4::ncvar_put(nc = nc, varid = "actual_delay_time", vals = rt[1])
   ncdf4::ncvar_put(nc = nc, varid = "actual_sampling_interval",
-                   vals = mean(diff(x[,1])))
-  ncdf4::ncvar_put(nc = nc, varid = "detector_maximum_value", vals = 1000)
-  ncdf4::ncvar_put(nc = nc, varid = "detector_minimum_value", vals = -1000)
+                   vals = interval)
+  int <- x[, 2][is.finite(x[, 2])]
+  if (length(int) == 0) int <- 0
+  ncdf4::ncvar_put(nc = nc, varid = "detector_maximum_value",
+                   vals = max(int))
+  ncdf4::ncvar_put(nc = nc, varid = "detector_minimum_value",
+                   vals = min(int))
 
   # write metadata as global attributes
   meta <- format_metadata_for_cdf(x)
@@ -354,7 +374,7 @@ format_metadata_for_cdf <- function(x){
   rt_units <- switch(tolower(rt_units),
                      "sec" = "Seconds", "seconds" = "Seconds",
                      "min" = "Minutes", "minutes" = "Minutes",
-                     "default" = "Minutes")
+                     "Minutes")
   # get_nc_version <- switch(.Platform$OS.type, "windows" = )
   meta <- list(dataset_completeness = "C1",
              aia_template_revision = "1.0",
