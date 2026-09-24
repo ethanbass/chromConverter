@@ -338,3 +338,11 @@ test_that("meta_varian_sms survives a file with no segments", {
   expect_equal(meta$time_range, NA)
   expect_equal(meta$n_scans, 10)
 })
+
+test_that("`what` does not accept `chroms`", {
+  # `chroms` was a valid choice but had no branch of its own, so `mget(what)`
+  # returned the internal 5-column parse (`scan`, `rt`, `tic`, `bpc`,
+  # `ion_time`) instead of a chromatogram. `TIC` and `BPC` cover it.
+  expect_error(read_varian_sms("nonexistent.sms", what = "chroms"),
+               "should be one of")
+})
