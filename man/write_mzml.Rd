@@ -10,6 +10,7 @@ write_mzml(
   sample_name = NULL,
   what = NULL,
   instrument_info = NULL,
+  centroided = TRUE,
   compress = TRUE,
   indexed = TRUE,
   force = FALSE,
@@ -18,18 +19,31 @@ write_mzml(
 )
 }
 \arguments{
-\item{data}{List of \code{data.frame}s or \code{data.table}s containing spectral data.}
+\item{data}{A named list of \code{data.frame}s or \code{data.table}s, keyed by stream
+(\code{MS1}, \code{MS2}, \code{TIC}, \code{BPC}, \code{DAD}), or a single chromatogram carrying a
+\code{detector} attribute that says which stream it is.}
 
 \item{path_out}{The path to write the file.}
 
 \item{sample_name}{The name of the file. If a name is not provided, the name
-will be derived from the \code{sample_name} attribute.}
+will be derived from the \code{sample_name} attribute, and it is an error if
+there is no such attribute.}
 
-\item{what}{Which streams to write to mzML: \code{"MS1"}, \code{"TIC"}, \code{"BPC"},
-and/or \code{"DAD"}. \code{"MS2"} is accepted but skipped with a warning, as MS2
-spectra are not written yet.}
+\item{what}{Which streams to write to mzML: \code{"MS1"}, \code{"MS2"}, \code{"TIC"},
+\code{"BPC"}, and/or \code{"DAD"}. Defaults to every element of \code{data} that holds any
+rows.}
 
-\item{instrument_info}{Instrument info to write to mzML file.}
+\item{instrument_info}{Controlled-vocabulary terms describing the
+instrument, as a list of lists with elements \code{cvRef}, \code{accession}, \code{name}
+and \code{value}, each written as one \code{cvParam} of the
+\code{instrumentConfiguration}. Defaults to \code{NULL}, in which case \code{MS:1000031}
+("instrument model") is written with the chromatogram's \code{detector_model} or
+\code{instrument} as its value, or bare where it records neither.}
+
+\item{centroided}{Logical. Whether the spectra are centroided, written as
+\code{MS:1000127} or, when \code{FALSE}, \code{MS:1000128} ("profile spectrum"). Defaults
+to \code{TRUE}. Set it to \code{FALSE} for the profile scan types of a triple
+quadrupole (a full scan or a product-ion scan, as opposed to SIM or MRM).}
 
 \item{compress}{Logical. Whether to use zlib compression. Defaults to \code{TRUE}.}
 
@@ -46,20 +60,52 @@ Defaults to \code{FALSE}.}
 Invisibly returns the path to the written mzML file.
 }
 \description{
-This function constructs mzML files by writing XML strings directly to a file
-connection. While this approach is fast, it may be less flexible than
-methods based on an explicit Document Object Model (DOM).
+Writes spectra and chromatograms to an mzML file.
 }
 \details{
-The function supports writing various types of spectral data including MS1,
-TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
-(Diode Array Detector) data. DAD spectra are written as electromagnetic
-radiation spectra (\code{MS:1000804}) using Thermo's naming convention with
-\code{controllerType=4} in the spectrum ID for compatibility with existing
-tools. Support for MS2 may be added in a future release.
+Mass spectra and DAD spectra are written to the \code{spectrumList}, while the
+total ion current (\code{TIC}) and the base peak chromatogram (\code{BPC}) go to the
+\code{chromatogramList}, since the controlled vocabulary has terms for those two
+summaries. DAD spectra are written as electromagnetic radiation spectra
+(\code{MS:1000804}) using Thermo's naming convention, with \code{controllerType=4} in
+the spectrum ID for compatibility with existing tools.
+
+Asking for both \code{MS1} and \code{MS2} writes them into one \code{spectrumList},
+interleaved in acquisition order: on the \code{scan} column they share, or on
+retention time where neither has one. Each spectrum is then named for its
+scan (\code{scan=417}) rather than for its position in the list, which keeps the
+names unique across the levels. An MS2 spectrum carries the
+precursor it came from as \code{MS:1000744} ("selected ion m/z"), and a
+\code{spectrumRef} to the MS1 spectrum that precedes it. Collision energy,
+isolation window and precursor charge are not written, as no parser in the
+package reads them.
+
+Retention times are written in minutes (\code{UO:0000031}), as chromConverter
+reports them, rather than converted to seconds as \link{write_andi_ms} does.
+
+The streams to write come from the names of \code{data}, so a bare chromatogram
+has to say what it holds through its \code{detector} attribute: \code{UV} and \code{DAD}
+are written as a DAD stream, and \code{MS} as \code{MS1}, or as \code{MS2} where the table
+also carries an \code{ms_level} attribute above 1. Any other \code{detector},
+including a missing or \code{NA} one (which is how several parsers report an
+unknown detector), is an error: the function stops rather than guess, and
+asks for a named list instead.
+
+A one-dimensional DAD stream (a single wavelength) is refused: mzML has no
+axis to write it along, so it would become one single-point spectrum per
+retention time. Use
+\link{write_andi_chrom} for a single trace. If it is the only stream requested
+this is an error; otherwise it is dropped with a warning and the rest is
+written.
+
+The file's metadata are taken from the \code{MS1} stream if it is written, and
+otherwise from the first stream requested. That stream's \code{sample_name}
+attribute names the file unless \code{sample_name} is supplied.
 
 If \code{indexed = TRUE}, the function will generate an indexed mzML file, which
-allows faster random access to spectra.
+allows faster random access to spectra. The file is assembled by writing XML
+strings straight to a connection rather than by building a document in
+memory.
 }
 \examples{
 \dontrun{

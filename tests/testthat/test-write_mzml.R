@@ -262,7 +262,357 @@ test_that("group_scans gathers retention times that are not contiguous", {
                                              intensity = 1:4))
   attr(dt, "data_format") <- "long"
   scans <- group_scans(dt)
-  expect_equal(scans$rts, c(1, 2))
+  expect_equal(scans$keys, c(1, 2))
   expect_equal(scans$get_scan(1)$mz, c(10, 11))
   expect_equal(scans$get_scan(2)$mz, c(20, 21))
+
+  # grouping on `scan` keeps two levels apart where they share a time
+  dt$scan <- c(1L, 2L, 1L, 2L)
+  expect_equal(group_scans(dt, by = "scan")$get_scan(2)$mz, c(20, 21))
+})
+
+# An interleaved DDA run: scans 1 and 4 are MS1, 2, 3 and 5 are the product-ion
+# spectra taken from them. The two levels arrive as separate tables, as
+# `read_shimadzu_lcd` returns them, each with its own `scan_info`.
+dda_fixture <- function(){
+  long <- function(df, info){
+    attr(df, "data_format") <- "long"
+    attr(df, "scan_info") <- info
+    df
+  }
+  list(MS1 = long(data.frame(scan = rep(c(1L, 4L), each = 2),
+                             rt = rep(c(0.1, 0.4), each = 2),
+                             mz = c(100, 200, 110, 210),
+                             intensity = c(1, 2, 3, 4)),
+                  data.frame(scan = c(1L, 4L), rt = c(0.1, 0.4), ms_level = 1L,
+                             polarity = "positive", precursor_mz = NA_real_)),
+       MS2 = long(data.frame(scan = c(2L, 2L, 3L, 5L),
+                             rt = c(0.2, 0.2, 0.3, 0.5),
+                             precursor_mz = c(200, 200, 100, NA),
+                             mz = c(50, 60, 40, 55), intensity = c(5, 6, 7, 8)),
+                  data.frame(scan = c(2L, 3L, 5L), rt = c(0.2, 0.3, 0.5),
+                             ms_level = 2L, polarity = "negative",
+                             precursor_mz = c(200, 100, NA))))
+}
+
+write_dda <- function(dir, ...){
+  write_mzml(dda_fixture(), path_out = dir, sample_name = "dda", force = TRUE,
+             show_progress = FALSE, ...)
+}
+
+test_that("write_mzml interleaves MS1 and MS2 in scan order", {
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  f <- write_dda(tmp)
+  txt <- paste(readLines(f, warn = FALSE), collapse = "\n")
+
+  expect_equal(sub(".*<spectrumList count=.([0-9]+).*", "\\1",
+                   gsub("\n", " ", txt)), "5")
+  # a spectrum is named for its scan, not for its place in the list, so the
+  # names stay unique across the two levels
+  expect_equal(regmatches(txt, gregexpr('(?<=<spectrum id=")[^"]+', txt,
+                                        perl = TRUE))[[1]],
+               sprintf("scan=%d", 1:5))
+  expect_equal(regmatches(txt, gregexpr('index="[0-9]+"', txt))[[1]],
+               sprintf('index="%d"', 0:4))
+  expect_equal(regmatches(txt, gregexpr('(?<=name="ms level" value=")[0-9]+',
+                                        txt, perl = TRUE))[[1]],
+               c("1", "2", "2", "1", "2"))
+  # scan start times run forwards through the whole list
+  rts <- as.numeric(regmatches(txt, gregexpr(
+    '(?<=name="scan start time" value=")[0-9.]+', txt, perl = TRUE))[[1]])
+  expect_false(is.unsorted(rts))
+  expect_no_error(xml2::read_xml(f))
+})
+
+test_that("write_mzml writes the precursor of each MS2 spectrum", {
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  txt <- paste(readLines(write_dda(tmp), warn = FALSE), collapse = "\n")
+
+  # scan 5 has no precursor recorded, so it gets no `precursorList` rather
+  # than one naming `NA`
+  expect_length(gregexpr("<precursorList ", txt, fixed = TRUE)[[1]], 2)
+  expect_equal(regmatches(txt, gregexpr(
+    '(?<=name="selected ion m/z" value=")[0-9.]+', txt, perl = TRUE))[[1]],
+    c("200", "100"))
+  # every `spectrumRef` names the MS1 spectrum that precedes the scan, and is
+  # a spectrum that exists in the file
+  refs <- regmatches(txt, gregexpr('(?<=<precursor spectrumRef=")[^"]+', txt,
+                                   perl = TRUE))[[1]]
+  expect_equal(refs, c("scan=1", "scan=1"))
+  expect_true(all(refs %in% regmatches(txt, gregexpr('(?<=<spectrum id=")[^"]+',
+                                                     txt, perl = TRUE))[[1]]))
+  # the schema requires an `activation` whether or not anything is known
+  expect_length(gregexpr("<activation>", txt, fixed = TRUE)[[1]], 2)
+  # and `fileContent` says the file holds both levels
+  expect_match(txt, 'accession="MS:1000580" name="MSn spectrum"')
+})
+
+test_that("write_mzml writes polarity and the spectrum representation", {
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  txt <- paste(readLines(write_dda(tmp), warn = FALSE), collapse = "\n")
+  expect_length(gregexpr('name="positive scan"', txt)[[1]], 2)
+  expect_length(gregexpr('name="negative scan"', txt)[[1]], 3)
+  expect_length(gregexpr('name="centroid spectrum"', txt)[[1]], 5)
+
+  txt <- paste(readLines(write_dda(tmp, centroided = FALSE), warn = FALSE),
+               collapse = "\n")
+  expect_length(gregexpr('name="profile spectrum"', txt)[[1]], 5)
+  expect_false(grepl('name="centroid spectrum"', txt))
+})
+
+test_that("write_mzml indexes interleaved spectra correctly", {
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  # the precursor block changes the length of an MS2 spectrum, so the offsets
+  # are the check that the byte counter still tracks what was written
+  expect_index_offsets_exact(write_dda(tmp), n_spectra = 5)
+  expect_index_offsets_exact(write_dda(tmp, compress = FALSE), n_spectra = 5)
+})
+
+test_that("write_mzml refuses MS levels that share scan numbers", {
+  local_reproducible_output()
+  x <- dda_fixture()
+  x$MS2$scan[x$MS2$scan == 2] <- 1L
+  attr(x$MS2, "scan_info")$scan[1] <- 1L
+  expect_error(write_mzml(x, path_out = tempdir(), sample_name = "dup",
+                          force = TRUE, show_progress = FALSE),
+               "share scan numbers")
+})
+
+test_that("write_mzml writes spectra named as 'RaMS' names them", {
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  # what `read_mzml` hands back: no `scan`, and the precursor and the fragment
+  # under names no other reader in the package uses
+  long <- function(df){
+    df <- data.table::as.data.table(df)
+    attr(df, "data_format") <- "long"
+    df
+  }
+  ms1 <- long(data.frame(rt = c(0.1, 0.1, 0.4), mz = c(100, 200, 110),
+                         intensity = c(1, 2, 3)))
+  ms2 <- long(data.frame(rt = c(0.2, 0.2, 0.3), premz = c(200, 200, 100),
+                         fragmz = c(50, 60, 40), intensity = c(5, 6, 7),
+                         voltage = NA_integer_))
+  nms <- names(ms2)
+
+  f <- write_mzml(list(MS1 = ms1, MS2 = ms2), path_out = tmp,
+                  sample_name = "rams", force = TRUE, show_progress = FALSE)
+  # renaming must not reach back into the caller's table, which `setnames`
+  # would do
+  expect_identical(names(ms2), nms)
+
+  txt <- paste(readLines(f, warn = FALSE), collapse = "\n")
+  expect_equal(regmatches(txt, gregexpr(
+    '(?<=name="selected ion m/z" value=")[0-9.]+', txt, perl = TRUE))[[1]],
+    c("200", "100"))
+  # with no `scan` to merge on, the levels interleave by retention time
+  expect_equal(regmatches(txt, gregexpr('(?<=name="ms level" value=")[0-9]+',
+                                        txt, perl = TRUE))[[1]],
+               c("1", "2", "2", "1"))
+  expect_equal(regmatches(txt, gregexpr('(?<=defaultArrayLength=")[0-9]+', txt,
+                                        perl = TRUE))[[1]],
+               c("2", "2", "1", "1"))
+  expect_no_error(xml2::read_xml(f))
+})
+
+test_that("write_mzml refuses a table it cannot build a spectrum from", {
+  local_reproducible_output()
+  # a missing column used to encode as an empty binary array, leaving the
+  # spectrum declaring a `defaultArrayLength` that neither array matched
+  x <- data.frame(rt = c(1, 2), intensity = c(3, 4))
+  attr(x, "data_format") <- "long"
+  attr(x, "detector") <- "MS"
+  expect_error(write_mzml(x, path_out = tempdir(), sample_name = "no_mz",
+                          force = TRUE, show_progress = FALSE),
+               "has no 'mz' column")
+
+  x$mz <- c(100, 200)
+  x$intensity <- NULL
+  expect_error(write_mzml(x, path_out = tempdir(), sample_name = "no_int",
+                          force = TRUE, show_progress = FALSE),
+               "has no 'intensity' column")
+})
+
+# The metadata the writer takes from the chromatogram: an MS1 stream carrying
+# the fields chromConverter records, written without external files.
+
+make_ms1 <- function(n_scan = 3, n_pt = 4){
+  ms <- data.frame(rt = rep(seq_len(n_scan) * 0.1, each = n_pt),
+                   mz = rep(seq_len(n_pt) + 99, times = n_scan),
+                   intensity = seq_len(n_scan * n_pt))
+  attr(ms, "data_format") <- "long"
+  attr(ms, "time_unit") <- "Minutes"
+  attr(ms, "detector") <- "MS"
+  ms
+}
+
+write_ms1_mzml <- function(dir, ms, name = "meta"){
+  write_mzml(list(MS1 = ms), path_out = dir, sample_name = name, force = TRUE,
+             show_progress = FALSE)
+}
+
+test_that("write_mzml records the metadata the chromatogram carries", {
+  skip_on_cran()
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  ms <- make_ms1()
+  attr(ms, "polarity") <- "negative"
+  attr(ms, "instrument") <- "LCMS8040"
+  attr(ms, "detector_model") <- "LCMS-3030"
+  attr(ms, "software") <- "LabSolutions"
+  attr(ms, "software_version") <- "5.65"
+  attr(ms, "operator") <- "A. Chemist"
+  attr(ms, "sample_id") <- "JOU 812"
+  attr(ms, "source_file_format") <- "andi_ms"
+
+  txt <- paste(readLines(write_ms1_mzml(tmp, ms)), collapse = "\n")
+
+  # one polarity cvParam per spectrum
+  expect_equal(lengths(regmatches(txt, gregexpr("MS:1000129", txt)))[[1]], 3)
+  expect_match(txt, 'accession="MS:1000031" name="instrument model" value="LCMS-3030"')
+  expect_match(txt, 'accession="MS:1001455" name="acquisition software" value="LabSolutions"')
+  expect_match(txt, '<software id="acquisition" version="5.65">', fixed = TRUE)
+  expect_match(txt, '<softwareList count="2">', fixed = TRUE)
+  expect_match(txt, 'accession="MS:1000586" name="contact name" value="A. Chemist"')
+  expect_match(txt, 'accession="MS:1002441" name="Andi-MS format"')
+  # `id` is an `xs:ID`, so the space cannot be carried into it
+  expect_match(txt, '<sample id="sJOU_812" name="meta">', fixed = TRUE)
+})
+
+test_that("write_mzml falls back where the chromatogram records nothing", {
+  skip_on_cran()
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  txt <- paste(readLines(write_ms1_mzml(tmp, make_ms1())), collapse = "\n")
+
+  expect_false(grepl("MS:1000129|MS:1000130", txt))
+  expect_false(grepl("MS:1000586", txt))
+  expect_match(txt, '<cvParam cvRef="MS" accession="MS:1000031" name="instrument model"/>',
+               fixed = TRUE)
+  expect_match(txt, '<softwareList count="1">', fixed = TRUE)
+  # a format with no term of its own is described by the parent term
+  expect_match(txt, 'accession="MS:1000560" name="mass spectrometer file format"')
+  # and a missing `sample_id` cannot become the string "sNA"
+  expect_match(txt, '<sample id="s1"', fixed = TRUE)
+  expect_false(grepl('id="sNA"', txt, fixed = TRUE))
+})
+
+test_that("write_mzml writes no polarity for a run that switched polarity", {
+  skip_on_cran()
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  ms <- make_ms1()
+  attr(ms, "polarity") <- "positive"
+  attr(ms, "scan_info") <- data.frame(scan = 1:3, rt = (1:3) * 0.1,
+                                      ms_level = 1L,
+                                      polarity = c("positive", "negative",
+                                                   "positive"))
+  txt <- paste(readLines(write_ms1_mzml(tmp, ms)), collapse = "\n")
+  expect_false(grepl("MS:1000129|MS:1000130", txt))
+})
+
+test_that("write_mzml skips a stream it was asked for but does not have", {
+  skip_on_cran()
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  expect_warning(
+    expect_warning(
+      path <- write_mzml(list(MS1 = make_ms1(), MS2 = make_ms1(n_scan = 0)),
+                         what = c("MS1", "MS2", "TIC"), path_out = tmp,
+                         sample_name = "gaps", force = TRUE,
+                         show_progress = FALSE),
+      "MS2 data not found"),
+    "TIC data not found")
+
+  txt <- paste(readLines(path), collapse = "\n")
+  # the header may not promise a stream the file does not go on to hold
+  expect_false(grepl("MSn spectrum", txt, fixed = TRUE))
+  expect_false(grepl("<chromatogramList", txt, fixed = TRUE))
+  expect_s3_class(xml2::read_xml(path), "xml_document")
+})
+
+test_that("write_mzml leaves out a scan start time it does not have", {
+  skip_on_cran()
+
+  make_level <- function(scans, level){
+    n_pt <- 4
+    x <- data.frame(rt = rep(scans * 0.1, each = n_pt),
+                    mz = rep(seq_len(n_pt) + 99, times = length(scans)),
+                    intensity = seq_len(length(scans) * n_pt),
+                    scan = rep(scans, each = n_pt))
+    attr(x, "data_format") <- "long"
+    attr(x, "time_unit") <- "Minutes"
+    attr(x, "ms_level") <- level
+    x
+  }
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  ms1 <- make_level(1:3, 1L)
+  attr(ms1, "scan_info") <- data.frame(scan = 1:3, rt = c(0.1, NA, 0.3))
+  ms2 <- make_level(4L, 2L)
+  attr(ms2, "scan_info") <- data.frame(scan = 4L, rt = 0.4,
+                                       precursor_mz = 100)
+
+  path <- write_mzml(list(MS1 = ms1, MS2 = ms2), path_out = tmp,
+                     sample_name = "narts", force = TRUE,
+                     show_progress = FALSE)
+  txt <- paste(readLines(path), collapse = "\n")
+  # "NA" is not an `xs:double`, so the term is dropped rather than written
+  expect_false(grepl('value="NA"', txt, fixed = TRUE))
+  expect_equal(lengths(regmatches(txt, gregexpr("scan start time", txt)))[[1]],
+               3)
+  expect_s3_class(xml2::read_xml(path), "xml_document")
+})
+
+test_that("write_mzml escapes the sample name, matches the source format
+          case-insensitively and normalizes polarity", {
+  skip_if_not_installed("xml2")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  x <- data.frame(rt = rep(c(0.1, 0.2), each = 2), mz = c(100, 101, 100, 101),
+                  intensity = 1:4)
+  attr(x, "data_format") <- "long"
+  attr(x, "time_unit") <- "Minutes"
+  attr(x, "source_file_format") <- "mzML"
+  attr(x, "polarity") <- "Positive Polarity"
+
+  path <- write_mzml(list(MS1 = x), path_out = tmp,
+                     sample_name = 'Std "A" & B', force = TRUE,
+                     show_progress = FALSE)
+  expect_s3_class(xml2::read_xml(path), "xml_document")
+  txt <- paste(readLines(path), collapse = "\n")
+  expect_true(grepl("MS:1000584", txt, fixed = TRUE))
+  expect_true(grepl("MS:1000130", txt, fixed = TRUE))
 })

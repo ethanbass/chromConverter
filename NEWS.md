@@ -8,6 +8,9 @@
 ### New features
 
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
+* `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.
+* mzML files now record each scan's polarity, and a new `centroided` argument lets profile data be marked as profile. All spectra were previously assumed to be centroided.
+* mzML files now name the instrument, acquisition software and operator from the chromatogram's metadata. The `instrument_info` argument still overrides the instrument.
 
 ### Bug fixes and other minor changes
 
@@ -28,6 +31,13 @@
 #### 'rainbow'
 
 * A chromatogram read with the `rainbow` parser no longer loses its retention times when the parser returns fewer of them than the trace has rows (as the compressed 181 `.ch` container does). The time axis is rebuilt from the first and last time, with a warning.
+
+#### mzML export
+
+* mzML files now name the format of the source file (e.g. `Andi-MS format`) instead of always claiming `MS1 format`.
+* mzML files no longer carry a placeholder sample `id` (`sNA`) or characters an ID cannot hold, and `sample_name` now also names the `<sample>` element. Metadata values are now XML-escaped.
+* mzML files written from data without a `run_datetime` no longer fail schema validation.
+* `write_mzml` now errors on a table without `mz` (or `lambda`) and `intensity` columns, instead of writing a corrupt file.
 
 ## chromConverter 0.10.0
 

@@ -1,28 +1,72 @@
 #' Write mzML
 #'
-#' This function constructs mzML files by writing XML strings directly to a file
-#' connection. While this approach is fast, it may be less flexible than
-#' methods based on an explicit Document Object Model (DOM).
+#' Writes spectra and chromatograms to an mzML file.
 #'
-#' The function supports writing various types of spectral data including MS1,
-#' TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
-#' (Diode Array Detector) data. DAD spectra are written as electromagnetic
-#' radiation spectra (`MS:1000804`) using Thermo's naming convention with
-#' `controllerType=4` in the spectrum ID for compatibility with existing
-#' tools. Support for MS2 may be added in a future release.
+#' Mass spectra and DAD spectra are written to the `spectrumList`, while the
+#' total ion current (`TIC`) and the base peak chromatogram (`BPC`) go to the
+#' `chromatogramList`, since the controlled vocabulary has terms for those two
+#' summaries. DAD spectra are written as electromagnetic radiation spectra
+#' (`MS:1000804`) using Thermo's naming convention, with `controllerType=4` in
+#' the spectrum ID for compatibility with existing tools.
+#'
+#' Asking for both `MS1` and `MS2` writes them into one `spectrumList`,
+#' interleaved in acquisition order: on the `scan` column they share, or on
+#' retention time where neither has one. Each spectrum is then named for its
+#' scan (`scan=417`) rather than for its position in the list, which keeps the
+#' names unique across the levels. An MS2 spectrum carries the
+#' precursor it came from as `MS:1000744` ("selected ion m/z"), and a
+#' `spectrumRef` to the MS1 spectrum that precedes it. Collision energy,
+#' isolation window and precursor charge are not written, as no parser in the
+#' package reads them.
+#'
+#' Retention times are written in minutes (`UO:0000031`), as chromConverter
+#' reports them, rather than converted to seconds as [write_andi_ms] does.
+#'
+#' The streams to write come from the names of `data`, so a bare chromatogram
+#' has to say what it holds through its `detector` attribute: `UV` and `DAD`
+#' are written as a DAD stream, and `MS` as `MS1`, or as `MS2` where the table
+#' also carries an `ms_level` attribute above 1. Any other `detector`,
+#' including a missing or `NA` one (which is how several parsers report an
+#' unknown detector), is an error: the function stops rather than guess, and
+#' asks for a named list instead.
+#'
+#' A one-dimensional DAD stream (a single wavelength) is refused: mzML has no
+#' axis to write it along, so it would become one single-point spectrum per
+#' retention time. Use
+#' [write_andi_chrom] for a single trace. If it is the only stream requested
+#' this is an error; otherwise it is dropped with a warning and the rest is
+#' written.
+#'
+#' The file's metadata are taken from the `MS1` stream if it is written, and
+#' otherwise from the first stream requested. That stream's `sample_name`
+#' attribute names the file unless `sample_name` is supplied.
 #'
 #' If `indexed = TRUE`, the function will generate an indexed mzML file, which
-#' allows faster random access to spectra.
+#' allows faster random access to spectra. The file is assembled by writing XML
+#' strings straight to a connection rather than by building a document in
+#' memory.
 #'
 #' @importFrom utils packageVersion
-#' @param data List of `data.frame`s or `data.table`s containing spectral data.
+#' @param data A named list of `data.frame`s or `data.table`s, keyed by stream
+#' (`MS1`, `MS2`, `TIC`, `BPC`, `DAD`), or a single chromatogram carrying a
+#' `detector` attribute that says which stream it is.
 #' @param path_out The path to write the file.
 #' @param sample_name The name of the file. If a name is not provided, the name
-#' will be derived from the `sample_name` attribute.
-#' @param what Which streams to write to mzML: `"MS1"`, `"TIC"`, `"BPC"`,
-#' and/or `"DAD"`. `"MS2"` is accepted but skipped with a warning, as MS2
-#' spectra are not written yet.
-#' @param instrument_info Instrument info to write to mzML file.
+#' will be derived from the `sample_name` attribute, and it is an error if
+#' there is no such attribute.
+#' @param what Which streams to write to mzML: `"MS1"`, `"MS2"`, `"TIC"`,
+#' `"BPC"`, and/or `"DAD"`. Defaults to every element of `data` that holds any
+#' rows.
+#' @param instrument_info Controlled-vocabulary terms describing the
+#' instrument, as a list of lists with elements `cvRef`, `accession`, `name`
+#' and `value`, each written as one `cvParam` of the
+#' `instrumentConfiguration`. Defaults to `NULL`, in which case `MS:1000031`
+#' ("instrument model") is written with the chromatogram's `detector_model` or
+#' `instrument` as its value, or bare where it records neither.
+#' @param centroided Logical. Whether the spectra are centroided, written as
+#' `MS:1000127` or, when `FALSE`, `MS:1000128` ("profile spectrum"). Defaults
+#' to `TRUE`. Set it to `FALSE` for the profile scan types of a triple
+#' quadrupole (a full scan or a product-ion scan, as opposed to SIM or MRM).
 #' @param compress Logical. Whether to use zlib compression. Defaults to `TRUE`.
 #' @param indexed Logical. Whether to write indexed mzML. Defaults to `TRUE`.
 #' @param force Logical. Whether to overwrite existing files at `path_out`.
@@ -39,7 +83,8 @@
 #' @export
 
 write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
-                      instrument_info = NULL, compress = TRUE, indexed = TRUE,
+                      instrument_info = NULL, centroided = TRUE,
+                      compress = TRUE, indexed = TRUE,
                       force = FALSE, show_progress = TRUE,
                        verbose = getOption("verbose")) {
   if (!inherits(data, "list")){
@@ -66,25 +111,21 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
            call. = FALSE)
     }
     detector <- streams[[detector]]
+    # a file holding one level and nothing else comes back as a bare table, so
+    # the detector alone would send an MRM or product-ion run to MS1
+    if (identical(detector, "MS1") && isTRUE(attr(data, "ms_level") > 1)){
+      detector <- "MS2"
+    }
     data <- setNames(list(data), detector)
     what <- detector
   }
   names(data) <- toupper(names(data))
+  populated <- names(data)[vapply(data, NROW, integer(1)) > 0]
   if (is.null(what)){
-    what <- names(data[sapply(data, nrow) > 0])
+    what <- populated
   }
   what <- match.arg(toupper(what), c("MS1", "MS2", "TIC", "BPC", "DAD"),
                     several.ok = TRUE)
-  if (any(what == "MS2")){
-    # `write_spectra` has no MS2 branch, so the spectra would be counted in the
-    # header and then not written
-    warning("MS2 data cannot be written to mzML yet. It will be skipped.",
-            call. = FALSE)
-    what <- setdiff(what, "MS2")
-    if (length(what) == 0){
-      stop("There is nothing left to write.", call. = FALSE)
-    }
-  }
   # mzML stores scans of (m/z or wavelength, intensity), so a single trace has
   # no axis to put in one: written as spectra it becomes one single-point scan
   # per retention time. `TIC` and `BPC` are the exception, since the CV has
@@ -103,14 +144,17 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
     warning("Skipping the DAD data. ", why, call. = FALSE, immediate. = TRUE)
     what <- setdiff(what, "DAD")
   }
-  # The header has to describe a stream that is actually written, so it takes
-  # its metadata from `what` (a stream dropped above is no longer in there),
-  # preferring `MS1` since it usually carries the fullest metadata.
-  avail <- intersect(what, names(data))
+  # A stream that was asked for but is empty or absent is dropped here, rather
+  # than at the branch that would have written it: the header has to describe
+  # the streams that actually follow it, and one of them has to supply the
+  # metadata --- `MS1` where there is one, since it usually carries the most.
+  avail <- intersect(what, populated)
   if (length(avail) == 0){
     stop("None of the requested data is present in `data`.", call. = FALSE)
   }
-  meta <- attributes(data[[if ("MS1" %in% avail) "MS1" else avail[1]]])
+  for (i in setdiff(what, avail)) warning(sprintf("%s data not found.", i))
+  what <- avail
+  meta <- attributes(data[[if ("MS1" %in% what) "MS1" else what[1]]])
   if (is.null(sample_name)){
     sample_name <- meta$sample_name
     # a zero-length `sample_name` would collapse the `sprintf` calls in the
@@ -123,39 +167,49 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
                            force = force, ext = "mzML")
 
+  # More than one MS level goes into one `spectrumList`, in acquisition order,
+  # so the levels are merged before anything is written: the header has to
+  # count the spectra that follow it. A single level keeps the per-stream path,
+  # which pads the spectra out to the TIC for the parsers that need it.
+  ms_what <- intersect(what, c("MS1", "MS2"))
+  roster <- if ("MS2" %in% ms_what) ms_scan_roster(data, ms_what) else NULL
+
   w <- new_mzml_writer(file_out)
   on.exit(close(w$con))
 
-  n_scan <- sum(vapply(intersect(what, c("MS1", "MS2", "DAD")), function(i){
+  counted <- intersect(what, if (is.null(roster)) c("MS1", "DAD") else "DAD")
+  n_scan <- sum(vapply(counted, function(i){
     tryCatch(n_spectra(data, i), error = function(cond) NA_real_)
   }, numeric(1)), na.rm = TRUE)
-  write_mzml_header(w, meta = meta, n_scan = n_scan,
+  if (!is.null(roster)) n_scan <- n_scan + nrow(roster$info)
+  write_mzml_header(w, meta = meta, n_scan = n_scan, what = what,
                     indexed = indexed, instrument_info = instrument_info,
                     sample_name = sample_name)
   spectrum_indices <- c()
-  if (any(what == "MS1")){
-    if ("MS1" %in% names(data)){
-      MS1 <- write_spectra(w, data = data, what = "MS1", indexed = indexed,
-                             idx_start = 0, compress = compress,
-                             show_progress = show_progress, verbose = verbose)
-      spectrum_indices <- c(spectrum_indices, MS1)
-    } else{
-      warning("MS1 data not found.")
-    }
+  if (!is.null(roster)){
+    spectrum_indices <- write_ms_spectra(w, roster = roster, indexed = indexed,
+                                         idx_start = 0, compress = compress,
+                                         centroided = centroided,
+                                         show_progress = show_progress,
+                                         verbose = verbose)
+  } else if (length(ms_what) == 1){
+    spectrum_indices <- write_spectra(w, data = data, what = ms_what,
+                                      indexed = indexed, idx_start = 0,
+                                      compress = compress,
+                                      centroided = centroided,
+                                      show_progress = show_progress,
+                                      verbose = verbose)
   }
   if (any(what == "DAD")){
-    if ("DAD" %in% names(data)){
-      # the DAD spectra carry on from the MS1 spectra. `spectrum_indices` has
-      # one element per spectrum written, whether or not it holds an offset,
-      # so the count is right even when `indexed` is `FALSE`.
-      start <- length(spectrum_indices)
-      DAD <- write_spectra(w, data, what = "DAD", indexed = indexed,
-                             idx_start = start, compress = compress,
-                             show_progress = show_progress, verbose = verbose)
-      spectrum_indices <- c(spectrum_indices, DAD)
-    } else{
-      warning("DAD data not found.")
-    }
+    # the DAD spectra carry on from the MS1 spectra. `spectrum_indices` has
+    # one element per spectrum written, whether or not it holds an offset,
+    # so the count is right even when `indexed` is `FALSE`.
+    start <- length(spectrum_indices)
+    DAD <- write_spectra(w, data, what = "DAD", indexed = indexed,
+                         idx_start = start, compress = compress,
+                         centroided = centroided,
+                         show_progress = show_progress, verbose = verbose)
+    spectrum_indices <- c(spectrum_indices, DAD)
   }
 
   mz_write(w, '  </spectrumList>\n') # close spectrumList
@@ -271,21 +325,21 @@ n_spectra <- function(data, what){
 #' @param indexed Logical. Whether mzML file is to be indexed.
 #' @author Ethan Bass
 #' @noRd
-write_mzml_header <- function(w, meta, n_scan, indexed = TRUE,
+write_mzml_header <- function(w, meta, n_scan, what = "MS1", indexed = TRUE,
                               instrument_info = NULL, sample_name){
   # Write XML declaration and opening tags
   mz_write(w,
     '<?xml version="1.0" encoding="UTF-8"?>\n',
     ifelse(indexed, '<indexedmzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml">\n', ''),
     sprintf('<mzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml" id="%s" version="1.1.0">\n',
-            sample_name),
+            mzml_escape(sample_name)),
     '<cvList count="2">
           <cv id="MS" fullName="Proteomics Standards Initiative Mass Spectrometry Ontology" version="4.1.0" URI="https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo"/>
           <cv id="UO" fullName="Unit Ontology" version="releases/2020-03-10" URI="http://data.bioontology.org/ontologies/UO"/>
       </cvList>\n',
-  create_mzml_file_description(meta),
-  create_mzml_sample_list(meta),
-  create_mzml_software_list(),
+  create_mzml_file_description(meta, what = what),
+  create_mzml_sample_list(meta, sample_name = sample_name),
+  create_mzml_software_list(meta),
   '<instrumentConfigurationList count="1">
     <instrumentConfiguration id="IC">\n')
 
@@ -296,9 +350,13 @@ write_mzml_header <- function(w, meta, n_scan, indexed = TRUE,
                   param$cvRef, param$accession, param$name, param$value))
     }
   } else {
-    mz_write(w, '      <cvParam cvRef="MS" accession="MS:1000031" name="instrument model"/>\n')
+    mz_write(w, mzml_instrument_param(meta))
   }
-  date_time <- tryCatch(format(meta$run_datetime[1], "%Y-%m-%dT%H:%M:%SZ"), error = function(err) NA)
+  run_datetime <- meta$run_datetime[1]
+  date_time <- if (inherits(run_datetime, c("POSIXct", "POSIXlt", "Date"))){
+    tryCatch(format(run_datetime, "%Y-%m-%dT%H:%M:%SZ"),
+             error = function(err) NA)
+  } else NA
   timestamp_attr <- if(is.na(date_time)) "" else sprintf(' startTimeStamp="%s"', date_time)
   mz_write(w, sprintf('    </instrumentConfiguration>
   </instrumentConfigurationList>
@@ -318,49 +376,135 @@ write_mzml_header <- function(w, meta, n_scan, indexed = TRUE,
 
 #' Create mzml sample list
 #' @noRd
-create_mzml_sample_list <- function(meta){
+create_mzml_sample_list <- function(meta, sample_name = NULL){
+  # `id` is an `xs:ID`, so an absent `sample_id` cannot be pasted in as the
+  # string "NA" and a real one has to lose any character the type disallows
+  id <- gsub("[^A-Za-z0-9_.-]", "_", mzml_value(meta[["sample_id"]]) %||% "1")
+  # the name `write_mzml` resolved, which is the `sample_name` attribute unless
+  # the caller supplied one of their own
+  name <- mzml_value(sample_name) %||% mzml_value(meta[["sample_name"]]) %||% ""
   sprintf(
   '<sampleList count="1">
     <sample id="%s" name="%s">
     </sample>
   </sampleList>
-          ', paste0("s", meta$sample_id %||% ""), meta$sample_name %||% "")
+          ', paste0("s", id), mzml_escape(name))
 }
 
 #' Create mzml file description
 #' @noRd
-create_mzml_file_description <- function(meta){
+create_mzml_file_description <- function(meta, what = "MS1"){
   # a missing field would make `sprintf` return `character(0)`, which `paste0`
   # in `mz_write` then drops, taking the whole element out of the file
   source_file <- meta$source_file %||% NA
   source_sha1 <- meta$source_sha1 %||% NA
+  content <- '<cvParam cvRef="MS" accession="MS:1000294" name="mass spectrum"/>'
+  if ("MS1" %in% what){
+    content <- c(content,
+      '<cvParam cvRef="MS" accession="MS:1000579" name="MS1 spectrum"/>')
+  }
+  if ("MS2" %in% what){
+    content <- c(content,
+      '<cvParam cvRef="MS" accession="MS:1000580" name="MSn spectrum"/>')
+  }
   sprintf(
   '  <fileDescription>
         <fileContent>
-          <cvParam cvRef="MS" accession="MS:1000294" name="mass spectrum"/>
+          %s
         </fileContent>
         <sourceFileList count="1">
           <sourceFile id="SF1" name="%s" location="%s">
-            <cvParam cvRef="MS" accession="MS:1002597" name="MS1 format"/>
+            %s
             <cvParam cvRef="MS" accession="MS:1000569" name="SHA-1" value="%s"/>
             <cvParam cvRef="MS" accession="MS:1000776" name="scan number only nativeID format"/>
           </sourceFile>
-        </sourceFileList>
+        </sourceFileList>%s
     </fileDescription>',
-          ifelse(is.na(source_file), "", basename(source_file)),
-          ifelse(is.na(source_file), "", source_file),
-          ifelse(is.na(source_sha1), "", source_sha1))
+          paste(content, collapse = "\n          "),
+          mzml_escape(ifelse(is.na(source_file), "", basename(source_file))),
+          mzml_escape(ifelse(is.na(source_file), "", source_file)),
+          mzml_source_format_param(meta[["source_file_format"]]),
+          ifelse(is.na(source_sha1), "", source_sha1),
+          mzml_contact(meta[["operator"]]))
+}
+
+#' A metadata value fit to write, or `NULL`
+#' @noRd
+mzml_value <- function(x){
+  andi_ms_setting(x[1])
+}
+
+#' Escape a value for an XML attribute
+#' @noRd
+mzml_escape <- function(x){
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  x <- gsub(">", "&gt;", x, fixed = TRUE)
+  gsub("\"", "&quot;", x, fixed = TRUE)
+}
+
+#' Instrument model cvParam
+#'
+#' `MS:1000031` is written bare where the model is unknown, since the schema
+#' asks the `instrumentConfiguration` for at least one `cvParam`.
+#' @noRd
+mzml_instrument_param <- function(meta){
+  model <- mzml_value(meta[["detector_model"]]) %||%
+    mzml_value(meta[["instrument"]])
+  if (is.null(model)){
+    '      <cvParam cvRef="MS" accession="MS:1000031" name="instrument model"/>\n'
+  } else {
+    sprintf(paste0('      <cvParam cvRef="MS" accession="MS:1000031" ',
+                   'name="instrument model" value="%s"/>\n'),
+            mzml_escape(model))
+  }
+}
+
+#' File format cvParam for the source file
+#'
+#' Only a few of the formats chromConverter reads have a term of their own, so
+#' anything else is described by the parent term rather than by a format it is
+#' not. `andi_chrom` sits under `chromatograph file format` instead.
+#' @noRd
+mzml_source_format_param <- function(format){
+  terms <- list(andi_ms = c("MS:1002441", "Andi-MS format"),
+                andi_chrom = c("MS:1002443", "Andi-CHROM format"),
+                thermoraw = c("MS:1000563", "Thermo RAW format"),
+                waters_raw = c("MS:1000526", "Waters raw format"),
+                mzml = c("MS:1000584", "mzML format"),
+                mzxml = c("MS:1000566", "ISB mzXML format"))
+  term <- terms[[tolower(mzml_value(format) %||% "")]] %||%
+    c("MS:1000560", "mass spectrometer file format")
+  sprintf('<cvParam cvRef="MS" accession="%s" name="%s"/>', term[1], term[2])
+}
+
+#' Contact block naming the operator
+#' @noRd
+mzml_contact <- function(operator){
+  operator <- mzml_value(operator)
+  if (is.null(operator)) return("")
+  sprintf(paste0('\n        <contact>\n          <cvParam cvRef="MS" ',
+                 'accession="MS:1000586" name="contact name" value="%s"/>',
+                 '\n        </contact>'), mzml_escape(operator))
 }
 
 #' Create mzml software list
 #' @noRd
-create_mzml_software_list <- function(){
-  sprintf(
-  '  <softwareList count="1">
-      <software id="chromConverter" version="%s">
+create_mzml_software_list <- function(meta){
+  entries <- sprintf(
+  '      <software id="chromConverter" version="%s">
         <cvParam cvRef="MS" accession="MS:1000799" name="custom unreleased software tool" value="chromConverter R package"/>
-      </software>
-    </softwareList>', as.character(packageVersion("chromConverter")))
+      </software>', as.character(packageVersion("chromConverter")))
+  acquisition <- mzml_value(meta[["software"]])
+  if (!is.null(acquisition)){
+    entries <- c(sprintf(
+  '      <software id="acquisition" version="%s">
+        <cvParam cvRef="MS" accession="MS:1001455" name="acquisition software" value="%s"/>
+      </software>', mzml_escape(mzml_value(meta[["software_version"]]) %||% "unknown"),
+      mzml_escape(acquisition)), entries)
+  }
+  sprintf('  <softwareList count="%d">\n%s\n    </softwareList>',
+          length(entries), paste(entries, collapse = "\n"))
 }
 
 
@@ -368,33 +512,29 @@ create_mzml_software_list <- function(){
 #' @importFrom data.table .SD
 #' @author Ethan Bass
 #' @noRd
-write_spectra <- function(w, data, what = c("MS1", "MS2", "TIC", "DAD"),
+write_spectra <- function(w, data, what = c("MS1", "DAD"),
                           indexed = TRUE, idx_start = 0, compress = TRUE,
-                          show_progress = TRUE,
+                          centroided = TRUE, show_progress = TRUE,
                           verbose = getOption("verbose")){
-  what <- match.arg(toupper(what), c("MS1", "MS2", "TIC", "DAD"))
+  what <- match.arg(toupper(what), c("MS1", "DAD"))
 
   if (verbose)
     message(sprintf("Writing %s spectra.", toupper(what)))
 
   laplee <- ifelse(show_progress, pbapply::pblapply, lapply)
 
-  spectra_data <- data[[toupper(what)]]
-
-  if (attr(spectra_data, "data_format") == "wide"){
-    spectra_data <- reshape_chrom_long(spectra_data)
-  }
-  if (!inherits(spectra_data, "data.table")){
-    spectra_data <- data.table::as.data.table(spectra_data)
-    attr(spectra_data, "data_format") <- "long"
-  }
+  # read before `prepare_spectra`, which does not carry attributes over
+  polarity <- stream_polarity(data[[toupper(what)]])
+  spectra_data <- prepare_spectra(data[[toupper(what)]], what)
 
   create_spectrum <- switch(what,
-                            "MS1" = create_mzml_ms1_spectrum,
+                            "MS1" = function(...){
+                              create_mzml_ms_spectrum(..., polarity = polarity)
+                            },
                             "DAD" = create_mzml_dad_spectrum)
 
   scans <- group_scans(spectra_data)
-  rts <- scans$rts
+  rts <- scans$keys
   get_scan <- scans$get_scan
 
   if (what == 'MS1'){
@@ -430,6 +570,7 @@ write_spectra <- function(w, data, what = c("MS1", "MS2", "TIC", "DAD"),
     spectrum_xml <- create_spectrum(scan_data = scan_data, scan = i,
                                     index = (i + idx_start - 1),
                                     rt = rts[i], compress = compress,
+                                    centroided = centroided,
                                     tic = ifelse(!is.null(data$TIC),
                                                  data$TIC[[i, "intensity"]],
                                                  sum(scan_data$intensity)),
@@ -455,35 +596,255 @@ write_spectra <- function(w, data, what = c("MS1", "MS2", "TIC", "DAD"),
 #' Retention times that are *not* contiguous (the same time appearing in two
 #' separate blocks) fall back to `split()`, which gathers them.
 #'
-#' The retention times are taken from the same grouping as the rows, so scan
-#' `i` and `rts[i]` cannot disagree.
+#' The keys are taken from the same grouping as the rows, so scan `i` and
+#' `keys[i]` cannot disagree.
+#'
+#' @param by Column to group on: `rt` for a stream of one level, `scan` where
+#' MS1 and MS2 are interleaved and two levels can share a retention time.
 #' @noRd
-group_scans <- function(x){
-  rt <- get_column(x, "rt")
-  runs <- rle(rt)
-  if (length(runs$values) == length(unique(rt))){
+group_scans <- function(x, by = "rt"){
+  key <- get_column(x, by)
+  runs <- rle(key)
+  if (length(runs$values) == length(unique(key))){
     ends <- cumsum(runs$lengths)
     starts <- ends - runs$lengths + 1L
-    list(rts = runs$values,
+    list(keys = runs$values,
          get_scan = function(i) x[starts[i]:ends[i]])
   } else {
-    scan_list <- split(x, rt)
-    list(rts = as.numeric(names(scan_list)),
+    scan_list <- split(x, key)
+    list(keys = as.numeric(names(scan_list)),
          get_scan = function(i) scan_list[[i]])
   }
 }
 
-#' Create mzML MS1 spectrum node
-#' This function generates an mzML-formatted XML string for a single MS1 scan.
-#' It is designed to be used as part of a larger process for creating
-#' mzML files. Wavelength and intensity data are encoded (and optionally
+#' Normalize a spectral table for writing
+#' @param x A chromatogram.
+#' @param what The stream `x` holds.
+#' @return `x`, long, as a `data.table`.
+#' @author Ethan Bass
+#' @noRd
+prepare_spectra <- function(x, what){
+  if (identical(attr(x, "data_format"), "wide")){
+    x <- reshape_chrom_long(x)
+  }
+  if (!inherits(x, "data.table")){
+    x <- data.table::as.data.table(x)
+    attr(x, "data_format") <- "long"
+  }
+  if (what != "DAD"){
+    aliases <- c(fragmz = "mz", premz = "precursor_mz")
+    hits <- intersect(names(aliases), names(x))
+    hits <- hits[!aliases[hits] %in% names(x)]
+    if (length(hits) > 0){
+      # `setnames` renames in place, which would rename the caller's columns
+      x <- data.table::copy(x)
+      data.table::setnames(x, hits, unname(aliases[hits]))
+    }
+  }
+  required <- c(if (what == "DAD") "lambda" else "mz", "intensity")
+  absent <- setdiff(required, names(x))
+  if (length(absent) > 0){
+    stop(sprintf(paste0("The %s data has no %s column, so there is nothing to ",
+                        "write as a spectrum.\nIt has %s."),
+                 what, paste(sQuote(absent), collapse = " or "),
+                 paste(sQuote(names(x)), collapse = ", ")), call. = FALSE)
+  }
+  x
+}
+
+#' Roster of the mass spectra to write
+#' @param data Named list of chromatograms.
+#' @param what Which of `MS1` and `MS2` to include.
+#' @return `info`, one row per spectrum with `scan`, `rt`, `ms_level`,
+#' `polarity` and `precursor_mz`, and `get_scan`, an accessor for its peaks.
+#' @author Ethan Bass
+#' @noRd
+ms_scan_roster <- function(data, what){
+  lvls <- intersect(c("MS1", "MS2"), what)
+  parts <- lapply(lvls, function(lvl){
+    # read before the coercion below, which does not carry attributes over
+    info <- attr(data[[lvl]], "scan_info")
+    default_polarity <- stream_polarity(data[[lvl]])
+    x <- prepare_spectra(data[[lvl]], lvl)
+    by <- if ("scan" %in% names(x)) "scan" else "rt"
+    grp <- group_scans(x, by = by)
+    lvl_n <- as.integer(sub("MS", "", lvl))
+    if (!is.null(info) && nrow(info) > 0 && by == "scan"){
+      info <- as.data.frame(info)
+      info <- data.frame(key = info$scan, rt = info$rt, ms_level = lvl_n,
+                         polarity = info$polarity %||% default_polarity,
+                         precursor_mz = info$precursor_mz %||% NA_real_)
+    } else {
+      # `match` rather than the first row of each group: `group_scans` sorts
+      # the keys when it has to fall back on `split`
+      rt <- get_column(x, "rt")[match(grp$keys, get_column(x, by))]
+      info <- data.frame(key = grp$keys, rt = rt, ms_level = lvl_n,
+                         polarity = default_polarity,
+                         precursor_mz = NA_real_)
+    }
+    info$j <- match(info$key, grp$keys)
+    list(info = info, by = by, get_scan = grp$get_scan, empty = x[0])
+  })
+  names(parts) <- lvls
+
+  info <- do.call(rbind, lapply(parts, function(p) p$info))
+  info$part <- rep(seq_along(parts),
+                   vapply(parts, function(p) nrow(p$info), integer(1)))
+  # a spectrum is named for its scan, so the whole roster has to be on one
+  # numbering. Where a table has no `scan` column the levels are ordered by
+  # retention time and renumbered, since a time is not an mzML scan number.
+  by <- vapply(parts, function(p) p$by, character(1))
+  if (length(unique(by)) > 1){
+    stop("Only some of the MS levels carry a `scan` column, so there is no ",
+         "one axis to interleave them on.", call. = FALSE)
+  }
+  on_scan <- by[1] == "scan"
+  info <- info[order(info$key, info$ms_level), , drop = FALSE]
+  if (on_scan){
+    if (anyDuplicated(info$key)){
+      stop("The MS levels share scan numbers, so their spectra cannot be told ",
+           "apart in the mzML index.", call. = FALSE)
+    }
+    info$scan <- as.integer(info$key)
+  } else {
+    info$scan <- seq_len(nrow(info))
+  }
+  row.names(info) <- NULL
+  list(info = info,
+       get_scan = function(i){
+         p <- parts[[info$part[i]]]
+         if (is.na(info$j[i])) p$empty else p$get_scan(info$j[i])
+       })
+}
+
+#' Write the mass spectra of every level as one spectrumList
+#' @author Ethan Bass
+#' @noRd
+write_ms_spectra <- function(w, roster, indexed = TRUE, idx_start = 0,
+                             compress = TRUE, centroided = TRUE,
+                             show_progress = TRUE,
+                             verbose = getOption("verbose")){
+  info <- roster$info
+  if (verbose){
+    message(sprintf("Writing %d mass spectra.", nrow(info)))
+  }
+  laplee <- ifelse(show_progress, pbapply::pblapply, lapply)
+
+  ids <- sprintf("scan=%d", info$scan)
+  parent <- rep(NA_character_, nrow(info))
+  ms1 <- which(info$ms_level == 1)
+  if (length(ms1) > 0){
+    j <- findInterval(seq_len(nrow(info)), ms1)
+    parent[j > 0] <- ids[ms1[j[j > 0]]]
+  }
+  parent[info$ms_level == 1] <- NA_character_
+
+  laplee(seq_len(nrow(info)), function(i){
+    if (indexed){
+      offset <- w$pos
+    }
+    scan_data <- roster$get_scan(i)
+    precursor <- info$precursor_mz[i]
+    if (is.na(precursor) && !is.null(scan_data$precursor_mz)){
+      # an MRM or SIM record carries a Q1 per transition rather than one for
+      # the scan, so `scan_info` leaves it out. It still describes the spectrum
+      # where every transition shares it.
+      precursor <- unique(scan_data$precursor_mz)
+      if (length(precursor) != 1) precursor <- NA_real_
+    }
+    spectrum_xml <- create_mzml_ms_spectrum(
+      scan_data = scan_data, scan = info$scan[i], index = i + idx_start - 1,
+      rt = info$rt[i], ms_level = info$ms_level[i], precursor_mz = precursor,
+      parent_id = parent[i], polarity = info$polarity[i],
+      centroided = centroided, compress = compress,
+      tic = sum(scan_data$intensity),
+      bpc = if (nrow(scan_data) == 0) 0 else max(scan_data$intensity))
+    mz_write(w, spectrum_xml, "\n")
+    if (indexed){
+      list(id = ids[i], offset = offset)
+    }
+  })
+}
+
+#' The polarity of a whole stream, or `NA` where its scans disagree
+#'
+#' `write_spectra` writes one polarity for every spectrum it emits, so a run
+#' that switched polarity mid-acquisition records none rather than the wrong
+#' one. Only the roster, which `write_ms_spectra` uses, is per-scan.
+#' @noRd
+stream_polarity <- function(x){
+  info <- attr(x, "scan_info", exact = TRUE)
+  recorded <- unique(info$polarity[!is.na(info$polarity)])
+  if (length(recorded) > 1) return(NA_character_)
+  as.character(recorded %||% attr(x, "polarity", exact = TRUE) %||% NA)
+}
+
+#' Scan start time cvParam
+#' @noRd
+mzml_scan_time_param <- function(rt){
+  if (length(rt) != 1 || is.na(rt)) return("")
+  sprintf(paste0('\n        <cvParam cvRef="MS" accession="MS:1000016" ',
+                 'name="scan start time" value="%s" unitCvRef="UO" ',
+                 'unitAccession="UO:0000031" unitName="minute"/>'),
+          as.character(rt))
+}
+
+#' Scan polarity cvParam
+#' @noRd
+mzml_polarity_param <- function(polarity){
+  polarity <- andi_ms_polarity(polarity)
+  if (is.null(polarity)) return("")
+  positive <- polarity == "Positive Polarity"
+  sprintf('\n    <cvParam cvRef="MS" accession="%s" name="%s scan"/>',
+          if (positive) "MS:1000130" else "MS:1000129",
+          if (positive) "positive" else "negative")
+}
+
+#' Precursor block of an MSn spectrum
+#'
+#' `activation` is required by the schema even where nothing is recorded about
+#' it, so the parent term is written rather than a specific method: no parser
+#' in the package reads a dissociation method or a collision energy.
+#' @noRd
+mzml_precursor_list <- function(ms_level, precursor_mz, parent_id){
+  if (ms_level <= 1 || length(precursor_mz) != 1 || is.na(precursor_mz)){
+    return("")
+  }
+  ref <- if (length(parent_id) == 1 && !is.na(parent_id)){
+    sprintf(' spectrumRef="%s"', parent_id)
+  } else ""
+  sprintf('
+    <precursorList count="1">
+      <precursor%s>
+        <selectedIonList count="1">
+          <selectedIon>
+            <cvParam cvRef="MS" accession="MS:1000744" name="selected ion m/z" value="%s" unitCvRef="MS" unitAccession="MS:1000040" unitName="m/z"/>
+          </selectedIon>
+        </selectedIonList>
+        <activation>
+          <cvParam cvRef="MS" accession="MS:1000044" name="dissociation method"/>
+        </activation>
+      </precursor>
+    </precursorList>', ref, as.character(precursor_mz))
+}
+
+#' Create mzML mass spectrum node
+#' This function generates an mzML-formatted XML string for a single mass
+#' spectrum of any level. It is designed to be used as part of a larger process
+#' for creating mzML files. Mass and intensity data are encoded (and optionally
 #' compressed, according to the value of `compress`) into base64 format.
 #' @param scan The scan number (integer).
 #' @param index The scan index (integer).
 #' @param rt The retention time of the scan in minutes (numeric).
-#' @param scan_data: A `data.frame` or `data.table` containing the
-#' wavelength of each scan (in the `'lambda'` column) and the intensity of
-#' each scan (in the `'int'` column).
+#' @param scan_data: A `data.frame` or `data.table` containing the mass of each
+#' peak (in the `'mz'` column) and the intensity of each peak (in the
+#' `'intensity'` column).
+#' @param ms_level The MS level of the scan (integer).
+#' @param precursor_mz The m/z selected for fragmentation, or `NA`.
+#' @param parent_id The `id` of the spectrum the precursor was selected from,
+#' or `NA`.
+#' @param polarity `"positive"`, `"negative"`, or `NA`.
+#' @param centroided Logical. Whether the spectrum is centroided.
 #' @param tic The total ion current intensity (numeric).
 #' @param bpc The peak peak current intensity (numeric).
 #' @param compress Logical. Whether to compress the binary data. Defaults to
@@ -491,7 +852,10 @@ group_scans <- function(x){
 #' @author Ethan Bass
 #' @noRd
 
-create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
+create_mzml_ms_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
+                                precursor_mz = NA_real_,
+                                parent_id = NA_character_,
+                                polarity = NA_character_, centroided = TRUE,
                                 compress = TRUE, tic = NULL, bpc = NULL) {
 
   # Encode mz and intensity data
@@ -510,19 +874,23 @@ create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
   } else {
     '<cvParam cvRef="MS" accession="MS:1000579" name="MS1 spectrum"/>'
   }
+  peak_mode <- if (centroided){
+    '<cvParam cvRef="MS" accession="MS:1000127" name="centroid spectrum"/>'
+  } else {
+    '<cvParam cvRef="MS" accession="MS:1000128" name="profile spectrum"/>'
+  }
 
   sprintf('<spectrum id="scan=%d" index="%d" defaultArrayLength="%d">
     %s
     <cvParam cvRef="MS" accession="MS:1000511" name="ms level" value="%d"/>
-    <cvParam cvRef="MS" accession="MS:1000127" name="centroid spectrum"/>
+    %s%s
     <cvParam cvRef="MS" accession="MS:1000505" name="base peak intensity" unitAccession="MS:1000131" unitName="number of detector counts" unitCvRef="MS" value="%f"/>
     <cvParam cvRef="MS" accession="MS:1000285" name="total ion current" value="%f"/>
     <scanList count="1">
     <cvParam cvRef="MS" accession="MS:1000795" name="no combination" value=""/>
-      <scan>
-        <cvParam cvRef="MS" accession="MS:1000016" name="scan start time" value="%s" unitCvRef="UO" unitAccession="UO:0000031" unitName="minute"/>
+      <scan>%s
       </scan>
-    </scanList>
+    </scanList>%s
     <binaryDataArrayList count="2">
       <binaryDataArray encodedLength="%d">
         <cvParam cvRef="MS" accession="MS:1000514" name="m/z array" unitCvRef="MS" unitAccession="MS:1000040" unitName="m/z"/>
@@ -538,7 +906,9 @@ create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
       </binaryDataArray>
     </binaryDataArrayList>
   </spectrum>',
-          scan, index, nrow(scan_data), spectrum_type, ms_level, bpc, tic, as.character(rt),
+          scan, index, nrow(scan_data), spectrum_type, ms_level, peak_mode,
+          mzml_polarity_param(polarity), bpc, tic, mzml_scan_time_param(rt),
+          mzml_precursor_list(ms_level, precursor_mz, parent_id),
           nchar(mz_encoded$base64), mz_encoded$compression_param, mz_encoded$base64,
           nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64)
 }
@@ -557,13 +927,15 @@ create_mzml_ms1_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
 #' each scan (in the `'int'` column).
 #' @param tic Extra argument.
 #' @param bpc Extra argument.
+#' @param centroided Extra argument.
 #' @param compress Logical. Whether to compress the binary data. Defaults to
 #' `TRUE`.
 #' @author Ethan Bass
 #' @noRd
 
 create_mzml_dad_spectrum <- function(scan_data, scan, index, rt, tic = NULL,
-                                     bpc = NULL, compress = TRUE) {
+                                     bpc = NULL, centroided = TRUE,
+                                     compress = TRUE) {
   # Encode wavelength and intensity data
   wavelength_encoded <- encode_data(scan_data$lambda, compress = compress)
   int_encoded <- encode_data(scan_data$intensity, compress = compress)
@@ -575,8 +947,7 @@ create_mzml_dad_spectrum <- function(scan_data, scan, index, rt, tic = NULL,
     <cvParam cvRef="MS" accession="MS:1000618" value="%s" name="highest observed wavelength" unitAccession="UO:0000018" unitName="nanometer" unitCvRef="UO" />
     <scanList count="1">
       <cvParam cvRef="MS" accession="MS:1000795" value="" name="no combination" />
-      <scan>
-        <cvParam cvRef="MS" accession="MS:1000016" value="%s" name="scan start time" unitAccession="UO:0000031" unitName="minute" unitCvRef="UO" />
+      <scan>%s
       </scan>
     </scanList>
     <binaryDataArrayList count="2">
@@ -596,7 +967,7 @@ create_mzml_dad_spectrum <- function(scan_data, scan, index, rt, tic = NULL,
   </spectrum>',
           ID, index, length(scan_data$lambda),
           min(scan_data$lambda), max(scan_data$lambda),
-          as.character(rt),
+          mzml_scan_time_param(rt),
           nchar(wavelength_encoded$base64),
           wavelength_encoded$compression_param, wavelength_encoded$base64,
           nchar(int_encoded$base64),
