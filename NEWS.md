@@ -7,6 +7,8 @@
 
 ### New features
 
+* Files read with the `rainbow` parser now report most of the metadata the parser supplies, including `instrument`, `operator`, `detector_model`, `wavelength` and `instrument_modules`.
+* Run times of 'OpenLab' `.dx` files read with the `rainbow` parser are now returned as `POSIXct` in UTC, applying the time-zone offset the file records, rather than as a string.
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
 * `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.
 * mzML files now record each scan's polarity, and a new `centroided` argument lets profile data be marked as profile. All spectra were previously assumed to be centroided.

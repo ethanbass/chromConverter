@@ -782,6 +782,20 @@ sz_has_instrument <- function(x){
   length(x) == 1 && !is.na(x) && is.character(x) && nzchar(trimws(x))
 }
 
+#' Get the instrument a 'rainbow' run was acquired on
+#' @noRd
+rb_instrument <- function(meta){
+  chassis <- Filter(function(module){
+    length(module$model) == 1 && toupper(module$model) %in% c("GC", "LC", "MS")
+  }, meta$modules)
+  if (length(chassis) > 0) return(chassis[[1]]$name)
+  instrument <- get_metadata_field(meta, "instrument")
+  if (isTRUE(grepl("chemstation", instrument, ignore.case = TRUE))){
+    instrument <- NA
+  }
+  get_metadata_field(meta, "technique", null_val = instrument)
+}
+
 #' Extract ASM wavelength from metadata list
 #' @author Ethan Bass
 #' @noRd
@@ -798,12 +812,48 @@ get_asm_wavelength <- function(meta, lab = "absorbance_wavelength_setting.value"
 masshunter_datetime_formats <- c("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%OS",
                                  "%m/%d/%Y %I:%M:%S %p")
 
+#' Pattern for an ISO 8601 date-time, with optional fractional seconds and
+#' offset
+#' @noRd
+iso8601_regex <- paste0("^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})",
+                        "([.][0-9]+)?(Z|[+-][0-9]{2}:?[0-9]{2})?$")
+
+#' Parse an ISO 8601 date-time as UTC
+#'
+#' `%z` accepts neither `Z` nor an offset written with a colon (`-05:00`), so
+#' the offset is applied by hand. A time without an offset is taken to be UTC.
+#' @param x Character vector of ISO 8601 date-times.
+#' @return A `POSIXct` vector in UTC, with `NA` wherever `x` does not match.
+#' @noRd
+parse_iso8601 <- function(x){
+  ok <- !is.na(x) & grepl(iso8601_regex, x)
+  out <- .POSIXct(rep(NA_real_, length(x)), tz = "UTC")
+  if (!any(ok)) return(out)
+  base <- sub(iso8601_regex, "\\1", x[ok])
+  frac <- sub(iso8601_regex, "\\2", x[ok])
+  offset <- sub(iso8601_regex, "\\3", x[ok])
+  secs <- as.numeric(as.POSIXct(base, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC"))
+  secs <- secs + ifelse(nzchar(frac), as.numeric(paste0("0", frac)), 0)
+  zoned <- nzchar(offset) & offset != "Z"
+  if (any(zoned)){
+    hm <- gsub(":", "", offset[zoned])
+    sign <- ifelse(substr(hm, 1, 1) == "-", -1, 1)
+    secs[zoned] <- secs[zoned] - sign * (as.numeric(substr(hm, 2, 3)) * 3600 +
+                                           as.numeric(substr(hm, 4, 5)) * 60)
+  }
+  out[ok] <- .POSIXct(secs, tz = "UTC")
+  out
+}
+
 #' Convert date-time string to POSIXct
 #' @author Ethan Bass
 #' @noRd
 convert_timestamp <- function(string, datetime_formats){
   if (length(string) == 0 || all(is.na(string))){
     return(.POSIXct(NA_real_, tz = "UTC"))
+  }
+  if (all(grepl(iso8601_regex, string[!is.na(string)]))){
+    return(parse_iso8601(string))
   }
   tryCatch({
     as.POSIXct(string, tz = "UTC", tryFormats = datetime_formats)

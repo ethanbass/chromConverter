@@ -1245,6 +1245,44 @@ test_that("`precision` and `bin_width` control the m/z grid from 'rainbow'", {
   expect_equal(colnames(x), colnames(half))
 })
 
+test_that("'rainbow' metadata is mapped onto chromConverter's fields", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_dependencies("rainbow")
+
+  path <- system.file("chemstation_181.D",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- suppressWarnings(call_rainbow(path, format_in = "agilent_d"))$FID$FID1A.ch
+  expect_equal(attr(x, "sample_name"), "blanc421")
+  expect_equal(attr(x, "operator"), "IFP1\\R0521_gen")
+  expect_equal(attr(x, "method"), "DET3300.M")
+  # the chassis module, not the `instrument` 'rainbow' reports, which for this
+  # header layout is the 'ChemStation' edition
+  expect_equal(attr(x, "instrument"), "6890")
+  expect_equal(attr(x, "instrument_modules")[[1]],
+               list(name = "6890", model = "GC"))
+  expect_equal(attr(x, "sample_dilution"), 1L)
+  expect_equal(attr(x, "run_datetime"),
+               as.POSIXct("2022-8-23 12:16:25", tz = "UTC"))
+
+  path_dx <- system.file("MeOH1.dx", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_dx))
+
+  y <- call_rainbow(path_dx, format_in = "agilent_d")$UV$DAD1C.CH
+  expect_equal(attr(y, "sample_name"), "MeOH1")
+  expect_equal(attr(y, "operator"), "SYSTEM (SYSTEM)")
+  expect_equal(attr(y, "method"), "coumarins1.amx")
+  expect_equal(attr(y, "detector_model"), "DAD")
+  expect_equal(attr(y, "signal_descriptor"), "DAD1C,Sig=254,4  Ref=off")
+  expect_equal(attr(y, "wavelength"), 254)
+  expect_equal(attr(y, "bandwidth"), 4)
+  expect_equal(attr(y, "sample_injection_volume"), 5)
+  expect_equal(attr(y, "run_datetime"),
+               as.POSIXct("2025-06-10 23:04:16.8943567", tz = "UTC"))
+})
+
 test_that("a short 'rainbow' time axis is rebuilt rather than dropped", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

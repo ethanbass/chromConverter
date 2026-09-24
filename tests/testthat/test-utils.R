@@ -310,3 +310,22 @@ test_that("'Shimadzu' stream names are matched in any spelling", {
   expect_equal(sz_match_streams(c("ms2", "tic")), c("MS2", "TIC"))
   expect_error(sz_match_streams("nonsense"), "`what` should be one of")
 })
+
+test_that("rb_instrument picks the chassis and skips a software name", {
+  modules <- list(list(name = "A"), list(name = "B", model = "GC"))
+  expect_equal(rb_instrument(list(modules = modules)), "B")
+  expect_true(is.na(rb_instrument(list(instrument = "Asterix ChemStation"))))
+  expect_equal(rb_instrument(list(instrument = "LC")), "LC")
+})
+
+test_that("parse_iso8601 applies the offset an ISO 8601 date-time records", {
+  x <- parse_iso8601(c("2025-06-10T18:04:16.5-05:00", "2025-06-10T18:04:16Z",
+                       "2025-06-10T18:04:16+0130", "2025-06-10T18:04:16",
+                       "10-Jun-25, 18:04:16", NA))
+  expect_equal(format(x, "%Y-%m-%d %H:%M:%OS1", tz = "UTC"),
+               c("2025-06-10 23:04:16.5", "2025-06-10 18:04:16.0",
+                 "2025-06-10 16:34:16.0", "2025-06-10 18:04:16.0", NA, NA))
+  expect_equal(attr(x, "tzone"), "UTC")
+  expect_equal(convert_timestamp("2025-06-10T18:04:16-05:00", "%d-%b-%y"),
+               as.POSIXct("2025-06-10 23:04:16", tz = "UTC"))
+})

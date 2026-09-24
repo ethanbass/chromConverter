@@ -583,29 +583,52 @@ meta_thermoraw <- function(meta, ctx){
 }
 
 #' Field map for files read by the 'rainbow' parser
+#'
+#' 'rainbow' reports the run at two levels, and `extract_rb_data` hands both to
+#' this map as one list: the directory metadata (sample, operator, modules and
+#' the method sidecars) and the metadata of the individual data file (its
+#' header strings, and the optics of a single-wavelength channel).
+#'
+#' `device` is not the name it has here: it names the detector module a trace
+#' came from ("DAD", "RID"), which is the model an export asks for rather than
+#' the `detector` class 'rainbow' sorts the run by.
 #' @noRd
 meta_rainbow <- function(meta, ctx){
   meta$date <- convert_timestamp(meta$date, datetime_formats =
   c("%d %b %y %I:%M %p %z", "%d-%b-%Y %H:%M:%S",
   "%d-%b-%y, %H:%M:%S", "%d %b %y %I:%M %p"))
+  meta$notebook <- meta$notebook %||% meta$sample
   list(sample_name = sample_name_or_file(meta, "notebook", ctx$source_file),
        sample_position = meta$vialpos,
        file_version = NA,
        file_type =  NA,
-       instrument =  NA,
+       instrument = rb_instrument(meta),
+       instrument_modules = get_metadata_field(meta, "modules",
+                                               null_val = NULL),
        detector = meta$detector,
+       detector_model = get_metadata_field(meta, "device"),
        detector_range = NA,
        detector_y_unit = meta$unit,
+       signal_descriptor = get_metadata_field(meta, "description",
+                             null_val = get_metadata_field(meta, "signal",
+                                                           null_val = NULL)),
+       wavelength = get_metadata_field(meta, "wavelength", null_val = NULL),
+       bandwidth = get_metadata_field(meta, "bandwidth", null_val = NULL),
+       scan_type = get_metadata_field(meta, "acquisition_mode",
+                                      null_val = NULL),
        polarity = meta$polarity,
-       software =  NA,
+       software = get_metadata_field(meta, "software"),
        software_version =  NA,
        software_revision =  NA,
-       method = meta$method,
+       method = get_metadata_field(meta, "method",
+                  null_val = get_metadata_field(meta, "acq_method")),
        batch =  NA,
-       operator =  NA,
+       operator = get_metadata_field(meta, "operator"),
        run_datetime = get_metadata_field(meta, "date"),
-       sample_injection_volume =  NA,
-       sample_amount =  NA,
+       sample_injection_volume = get_metadata_field(meta$injection_volume,
+                                                    "value"),
+       sample_amount = get_metadata_field(meta, "sample_amount"),
+       sample_dilution = get_metadata_field(meta, "dilution", null_val = NULL),
        time_range =  NA,
        time_interval = NA,
        time_unit =  "Minutes",

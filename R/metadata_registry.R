@@ -152,6 +152,9 @@ validate_metadata_names <- function(attrs){
   # the channel a 'Shimadzu' OLE trace was read from, which is also what names
   # the peak table that goes with it
   "channel_id",
+  # the instrument modules an 'Agilent' acquisition method lists, as
+  # `name`/`model` pairs
+  "instrument_modules",
   # detector specifics
   "wavelength", "bandwidth", "detector_reference", "signal_descriptor",
   "polarity",
