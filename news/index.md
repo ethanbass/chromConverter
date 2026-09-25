@@ -26,6 +26,9 @@
 - ‘OpenLab’ `.dx` files now report their injection volume.
 - ‘Agilent’ `.ch`, `.uv` and `.it` traces now report the channel they
   were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`).
+- `extract_metadata` now accepts an element of a nested field in `what`,
+  such as `"SampleLabel"` or `"acaml_metadata.SampleLabel"`, and returns
+  that column alone.
 - `read_thermoraw` now accepts `format_out = "data.table"`, like every
   other parser.
 - `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan

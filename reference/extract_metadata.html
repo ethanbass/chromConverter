@@ -71,8 +71,11 @@ extract. Defaults to every field chromConverter attaches; no format
 records all of them, so the elements a format does not provide are
 absent from the result. Superseded names (e.g. <code>injection_volume</code>,
 <code>software_name</code>, <code>time_start</code>) are accepted and mapped to the names
-that replaced them. A field requested by name that no chromatogram carries
-produces a warning.</p></dd>
+that replaced them. An element of a nested field (see <code>expand</code>) may be
+named too, either by the column it is reported under (<code>SampleLabel</code>) or in
+full (<code>acaml_metadata.SampleLabel</code>), to report it without the rest of its
+field. A field requested by name that no chromatogram carries produces a
+warning.</p></dd>
 
 
 <dt id="arg-detector">detector<a class="anchor" aria-label="anchor" href="#arg-detector"></a></dt>

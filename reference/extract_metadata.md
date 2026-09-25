@@ -31,8 +31,11 @@ extract_metadata(
   of them, so the elements a format does not provide are absent from the
   result. Superseded names (e.g. `injection_volume`, `software_name`,
   `time_start`) are accepted and mapped to the names that replaced them.
-  A field requested by name that no chromatogram carries produces a
-  warning.
+  An element of a nested field (see `expand`) may be named too, either
+  by the column it is reported under (`SampleLabel`) or in full
+  (`acaml_metadata.SampleLabel`), to report it without the rest of its
+  field. A field requested by name that no chromatogram carries produces
+  a warning.
 
 - detector:
 

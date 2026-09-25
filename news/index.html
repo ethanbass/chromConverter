@@ -50,6 +50,8 @@
 <li>‘OpenLab’ <code>.dx</code> files now report their injection volume.</li>
 <li>‘Agilent’ <code>.ch</code>, <code>.uv</code> and <code>.it</code> traces now report the channel they were recorded on as <code>channel_id</code> (e.g. <code>DAD1A</code> or <code>PMP1A</code>).</li>
 <li>
+<code>extract_metadata</code> now accepts an element of a nested field in <code>what</code>, such as <code>"SampleLabel"</code> or <code>"acaml_metadata.SampleLabel"</code>, and returns that column alone.</li>
+<li>
 <code>read_thermoraw</code> now accepts <code>format_out = "data.table"</code>, like every other parser.</li>
 <li>
 <code>write_mzml</code> now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.</li>
