@@ -103,6 +103,10 @@
 <code>read_agilent_dx(what = "instrument")</code> now gives a clear error for an archive without instrument data.</li>
 </ul></div>
 <div class="section level4">
+<h4 id="export-0-10-1">Export<a class="anchor" aria-label="anchor" href="#export-0-10-1"></a></h4>
+<ul><li>Exported file names now replace characters that file names cannot hold, such as <code>"</code> or <code>:</code>, with <code>_</code>. Sample names containing them previously failed to export on Windows.</li>
+</ul></div>
+<div class="section level4">
 <h4 id="other-formats-0-10-1">Other formats<a class="anchor" aria-label="anchor" href="#other-formats-0-10-1"></a></h4>
 <ul><li>
 <code>read_chromeleon</code> now honors <code>decimal_mark = ","</code> when it is given explicitly. The commas were being erroneously stripped due to a logic error, inflating every value.</li>
