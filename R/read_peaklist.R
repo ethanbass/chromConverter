@@ -96,6 +96,15 @@ read_peaklist <- function(paths, find_files,
     data <- laplee(X = files, function(file){
       try(parser(file), silent = TRUE)
     })
+    errors <- which(vapply(data, inherits, logical(1), "try-error"))
+    if (length(errors) > 0){
+      warning(paste0(unlist(data[errors]), collapse = ""),
+              "The following peak tables could not be interpreted: ",
+              paste(sQuote(file_names[errors]), collapse = ", "),
+              immediate. = TRUE)
+      data <- data[-errors]
+      file_names <- file_names[-errors]
+    }
     data <- lapply(seq_along(data), function(i){
       if (inherits(data[[i]], "list")){
         lapply(data[[i]], function(xx){

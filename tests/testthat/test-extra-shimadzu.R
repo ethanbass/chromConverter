@@ -1557,6 +1557,26 @@ test_that("read_sz_qtof records whether the intensities were scaled", {
   expect_false(attr(read_sz_qtof(path, scale = FALSE)$MS1, "scaled"))
 })
 
+test_that("read_peaklist warns about a file it cannot parse and drops it", {
+  skip_on_cran()
+  skip_if_missing_dependencies("olefile")
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_gcd <- system.file("FS19_214.gcd", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path_gcd))
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+  bad <- file.path(tmp, "broken.gcd")
+  writeLines("not a gcd file", bad)
+
+  expect_warning(x <- read_peaklist(c(path_gcd, bad), format_in = "shimadzu_gcd",
+                                    progress_bar = FALSE),
+                 "could not be interpreted: .broken.")
+  expect_equal(names(x), "FS19_214")
+})
+
 qgd_scan_block <- function(n_bytes, mz, int){
   header <- c(writeBin(c(7L, 60000L, 0L, 0L, 0L), raw(), size = 4,
                        endian = "little"),

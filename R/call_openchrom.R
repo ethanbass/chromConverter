@@ -70,7 +70,9 @@ call_openchrom <- function(files, path_out = NULL, format_in,
   export_format <- match.arg(export_format, c("mzml", "csv", "cdf", "animl"))
   if (is.null(path_out)){
     path_out <- temp_directory()
-    on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
+    if (!return_paths){
+      on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
+    }
   } else{
     path_out <- fs::path_expand(path_out)
   }
@@ -89,6 +91,12 @@ call_openchrom <- function(files, path_out = NULL, format_in,
                         ext = switch(export_format, "animl" = "animl",
                                      "csv" = "csv", "cdf" = "CDF",
                                      "mzml" = "mzML"))
+  if (!return_paths && export_format == "animl"){
+    warning("An animl parser is not currently available in chromConverter, ",
+            "so the paths to the exported files are returned instead.",
+            call. = FALSE)
+    return(new_files)
+  }
   if (return_paths){
     new_files
   } else{
@@ -96,7 +104,6 @@ call_openchrom <- function(files, path_out = NULL, format_in,
                           "csv" = read.csv,
                           "cdf" = purrr::partial(read_cdf, format_out = format_out,
                                                  data_format = data_format),
-                          "animl" = warning("An animl parser is not currently available in chromConverter"),
                           "mzml" = read_mzml)
       lapply(new_files, function(x){
         xx <- file_reader(x)

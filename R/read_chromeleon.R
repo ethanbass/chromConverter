@@ -36,12 +36,14 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
   x <- x[, -2, drop = FALSE]
   x <- x[, colSums(is.na(x)) < nrow(x)]
   meta <- try(read_chromeleon_metadata(xx))
-  if (is.null(decimal_mark) && grepl(",", meta$`Dilution Factor`)){
-    decimal_mark <- ","
+  if (is.null(decimal_mark)){
+    decimal_mark <- if (!inherits(meta, "try-error") &&
+                        isTRUE(grepl(",", meta$`Dilution Factor`))) "," else "."
+  }
+  if (decimal_mark == ","){
     x <- apply(x, 2, function(x) gsub("\\.", "", x))
     x <- apply(x, 2, function(x) gsub(",", ".", x))
   } else {
-    decimal_mark <- "."
     x <- apply(x, 2, function(x) gsub(",", "", x))
   }
   x <- apply(x, 2, as.numeric)
@@ -59,10 +61,10 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
   }
   x <- convert_chrom_format(x, format_out = format_out)
   if (read_metadata){
-    if (decimal_mark == ","){
-      meta <- lapply(meta, function(x) gsub(",", ".", x))
-    }
     if (!inherits(meta, "try-error")){
+      if (decimal_mark == ","){
+        meta <- lapply(meta, function(x) gsub(",", ".", x))
+      }
       x <- attach_metadata(x, meta, format_in = metadata_format,
                            format_out = format_out, data_format = data_format,
                            parser = "chromconverter", source_file = path,

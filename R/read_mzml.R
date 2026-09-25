@@ -59,7 +59,7 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
           format_2d_chromatogram(x$rt, x$intensity, data_format = "wide",
                                  format_out = format_out)
         } else if (h == "DAD" && nrow(x) > 0){
-          reshape_chrom_wide(x)
+          convert_chrom_format(reshape_chrom_wide(x), format_out = format_out)
         } else{
           x
         }

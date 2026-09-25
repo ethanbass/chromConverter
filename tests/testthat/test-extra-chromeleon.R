@@ -151,3 +151,14 @@ test_that("read_chroms can return raw 'Chromeleon' metadata", {
   # the chromConverter vocabulary is not applied in raw mode
   expect_null(attr(x, "detector"))
 })
+
+test_that("read_chromeleon honors an explicit `decimal_mark`", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("chromeleon_comma.txt",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  expect_equal(read_chromeleon(path, decimal_mark = ","), read_chromeleon(path))
+})

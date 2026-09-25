@@ -59,6 +59,12 @@
 * The `solvents` table from `read_agilent_amx` now returns the class that `format_out` asks for.
 * `read_agilent_dx(what = "instrument")` now gives a clear error for an archive without instrument data.
 
+#### Other formats
+
+* `read_chromeleon` now honors `decimal_mark = ","` when it is given explicitly. The commas were being erroneously stripped due to a logic error, inflating every value.
+* `read_peaklist` now warns about files it cannot parse and drops them, rather than returning the error message as a peak table.
+* `read_mzml` now returns DAD data in the correct class as requested by `format_out`.
+
 ## chromConverter 0.10.0
 
 ### Breaking changes

@@ -616,3 +616,21 @@ test_that("write_mzml escapes the sample name, matches the source format
   expect_true(grepl("MS:1000584", txt, fixed = TRUE))
   expect_true(grepl("MS:1000130", txt, fixed = TRUE))
 })
+
+test_that("read_mzml returns DAD data in the class `format_out` asks for", {
+  skip_if_not_installed("RaMS")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  dad <- data.frame(rt = c(3, 3, 4, 4), lambda = c(200, 210, 200, 210),
+                    intensity = 1:4)
+  attr(dad, "data_format") <- "long"
+  f <- write_mzml(list(DAD = dad), path_out = tmp, sample_name = "dad",
+                  show_progress = FALSE)
+
+  expect_true(is.matrix(read_mzml(f, what = "DAD", format_out = "matrix")$DAD))
+  expect_s3_class(read_mzml(f, what = "DAD", format_out = "data.table")$DAD,
+                  "data.table")
+})
