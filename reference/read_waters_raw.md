@@ -39,13 +39,13 @@ read_waters_raw(
 
 ## Value
 
-A chromatogram in the format specified by the `format_out` and
-`data_format` arguments.
+A list of 2D chromatograms, one per trace and named by it, in the format
+specified by `format_out` and `data_format`.
 
 ## Note
 
-For now this parser only reads 1D chromatograms (not mass spectra or DAD
-data) and does not support parsing of metadata from 'Waters' RAW files.
+This parser reads only 2D chromatograms (retention time and intensity),
+not mass spectra or DAD data.
 
 ## See also
 

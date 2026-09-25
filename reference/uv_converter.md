@@ -33,7 +33,7 @@ uv_converter(
 
 - correction:
 
-  Logical. Whether to apply empirical correction. Defaults is TRUE.
+  Logical. Whether to apply empirical correction. Defaults to `TRUE`.
 
 - read_metadata:
 
@@ -56,7 +56,7 @@ This function wrapped 'Aston”s generic `TraceFile` reader, which imports
 Python session. Since `.uv` files are read by chromConverter's internal
 parser,
 [read_chemstation_uv](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md),
-this wrapper was retired rather than constrain scipy for everyone.
+this wrapper was retired rather than constraining scipy for everyone.
 
 ## See also
 

@@ -15,7 +15,7 @@ joined against."><meta property="og:image" content="https://ethanbass.github.io/
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,7 @@ joined against."><meta property="og:image" content="https://ethanbass.github.io/
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Summarize a chrom_list object</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/chrom_list-methods.R" class="external-link"><code>R/chrom_list-methods.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/chrom_list-methods.R" class="external-link"><code>R/chrom_list-methods.R</code></a></small>
       <div class="d-none name"><code>summary.chrom_list.Rd</code></div>
     </div>
 
@@ -74,8 +74,8 @@ joined against.</p>
 <dt id="arg-cols">cols<a class="anchor" aria-label="anchor" href="#arg-cols"></a></dt>
 <dd><p>Character vector of attribute names to report. Defaults to:
 <code>sample_name</code>, <code>run_datetime</code>, <code>method</code>, <code>detector</code>, <code>wavelength</code>, <code>detector_range</code>, <code>scan_type</code>, <code>polarity</code>, <code>precursor_mz</code>, <code>product_mz</code>, <code>mz_range</code>.
-A field that no chromatogram carries is omitted rather
-than filled with <code>NA</code>.</p></dd>
+A field that no chromatogram carries, or that all of them
+leave empty, is omitted rather than filled with <code>NA</code>.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
@@ -95,9 +95,9 @@ where the chromatogram sits and how large it is — <code>sample</code>, <code>t
 when a sample holds more than one), <code>n_rows</code> and <code>n_cols</code> — followed by one
 column per metadata field found. A field no chromatogram records, or that
 every one of them leaves empty, is dropped rather than filled with <code>NA</code>. A
-field holding more than one value, such as the <code>product_mz</code> of an MRM event
-monitoring several transitions, is collapsed to a comma-separated string so
-that it occupies one column.</p>
+field holding more than one value, such
+as the <code>product_mz</code> of an MRM event monitoring several transitions, is
+collapsed to a comma-separated string so that it occupies one column.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

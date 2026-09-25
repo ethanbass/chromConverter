@@ -6,14 +6,12 @@ Triple quadrupole files store their TIC differently and are read by
 `read_sz_tlm_tic` instead. LCD files are encoded as 'Microsoft' OLE
 documents. The parser relies on the
 [olefile](https://pypi.org/project/olefile/) package in Python to unpack
-the files. The TIC data is encoded in a stream called `Centroid SumTIC`.
-The TIC data stream contains a segment for each retention time,
-beginning with a 8-byte header. After the header, the file consists of a
-series of 4-byte little-endian integers in blocks of 3 (16-bytes per
-block), followed by a 4-byte spacer (`00000000`) The first integer is
-the retention time in milliseconds, the second integer is the scan
-number, and the third integer is the intensity. Retention times are
-converted to minutes, as elsewhere in the package.
+the files. The TIC data is encoded in a stream called `Centroid SumTIC`,
+which opens with an 8-byte header and holds one 16-byte record per scan:
+three 4-byte little-endian integers — the retention time in
+milliseconds, the scan number and the intensity — followed by a 4-byte
+spacer (`00000000`). Retention times are converted to minutes, as
+elsewhere in the package.
 
 ## Usage
 
@@ -44,6 +42,10 @@ read_sz_qtof_tic(
 - read_metadata:
 
   Logical. Whether to attach metadata.
+
+- metadata_format:
+
+  Format to output metadata.
 
 ## Value
 

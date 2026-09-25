@@ -1,11 +1,7 @@
 # Read the cached mass correction from a 'Shimadzu' QTOF file
 
-`Mass Data Load Format/Mass Correction Cache` holds the mass correction
-'LabSolutions' applied to the run: the reference ions it found and the
-coefficients it fitted to them. Like the other QTOF parameter streams it
-is a protocol buffer with a block per polarity (field `10` positive,
-`20` negative), the reference compounds under `10` and the result under
-`30`:
+Reads the mass correction 'LabSolutions' fitted for the run, where the
+file carries one.
 
 ## Usage
 
@@ -30,6 +26,13 @@ A list of `scale`, `offset` and `shift`, or `NULL` if the stream is
 missing or holds no usable result.
 
 ## Details
+
+`Mass Data Load Format/Mass Correction Cache` holds the mass correction
+'LabSolutions' applied to the run: the reference ions it found and the
+coefficients it fitted to them. Like the other QTOF parameter streams it
+is a protocol buffer with a block per polarity (field `10` positive,
+`20` negative), the reference compounds under `10` and the result under
+`30`:
 
 - `30.<pol>.10.10` — offset of the correction, in flight-time units
 

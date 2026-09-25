@@ -31,15 +31,18 @@ read_agilent_rslt(
 - what:
 
   Whether to extract chromatograms (`chroms`), DAD data (`dad`) and/or
-  auxiliary instrumental data (`instrument`) (e.g., temperature,
-  pressure, solvent composition, etc.). Accepts multiple arguments.
+  auxiliary instrumental data (`instrument`), such as temperature,
+  pressure or solvent composition. Accepts multiple arguments, and
+  defaults to `chroms` and `dad`. When more than one is requested, any
+  the archive does not contain are left out; a single one that is
+  missing is an error.
 
 - path_out:
 
-  A directory to export unzipped files. If a path is not specified, the
-  files will be written to a temp directory on the disk. The function
-  will overwrite existing folders in the specified directory that share
-  the basename of the file specified by `path`.
+  A directory to export unzipped files. If a path is not specified, a
+  temporary directory is used. The files are extracted into a folder
+  named for `path`, overwriting any files of the same name already
+  there.
 
 - format_out:
 
@@ -91,8 +94,8 @@ read_agilent_rslt(
 A list of chromatograms (one `read_agilent_dx`-style result per
 injection in the sequence), in the format specified by `data_format` and
 `format_out`. If `read_metadata` is `TRUE`, injection-level metadata
-parsed from the `.acaml` file is attached to each chromatogram as an
-attribute.
+parsed from the `.acaml` file is attached to each chromatogram as
+attributes.
 
 ## Details
 

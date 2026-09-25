@@ -56,15 +56,17 @@ saturated the detector. The retention times come from the
 `Retention Time` stream. Neither stream needs the spectra themselves to
 be decompressed, so this is much cheaper than `read_sz_tlm`.
 
-Each acquisition event is returned as a separate chromatogram, since
-events can differ in polarity, MS level and scan range, and are
-interleaved in acquisition order.
+Each acquisition event is returned as a separate chromatogram, named
+`Event 1`, `Event 2` and so on, since events can differ in polarity, MS
+level and scan range, and are interleaved in acquisition order.
 
 The `SumTIC Data` stream (one 12-byte record per cycle: retention time,
 value, saturation flag) is a curve computed by the instrument. It is not
-a plain sum of the per-spectrum TICs — in MRM files it matches the cycle
-sum exactly, but in scan files it comes out as the cycle mean divided by
-six — so it is returned as stored rather than recomputed.
+a plain sum of the per-spectrum TICs: in the MRM files examined it
+matches the cycle mean (which, with one event per cycle, is also the
+sum), in the scan files the cycle mean divided by six, and in a file
+mixing SIM with product-ion scans neither. It is therefore returned as
+stored rather than recomputed.
 
 ## Author
 

@@ -1,13 +1,10 @@
 # Parse files with OpenChrom
 
-Writes `xml` batch-files and calls OpenChrom file parsers using a system
-call to the command-line interface. Unfortunately, the command-line
-interface is no longer supported in newer versions of OpenChrom
-(starting with version 1.5.0) and older versions of OpenChrom that do
-support the command line interface are no longer available from
-Lablicate. Thus, this function is deprecated since it will only work if
-you happen to have access to OpenChrom version 1.4.0, which has been
-scrubbed from the internet.
+Converts files with the OpenChrom command-line interface, then reads the
+converted files back into R. OpenChrom removed the command-line
+interface in version 1.5.0, and Lablicate no longer distributes older
+versions, so this function works only with an existing installation of
+OpenChrom 1.4 or earlier. It is deprecated for that reason.
 
 ## Usage
 
@@ -32,11 +29,13 @@ call_openchrom(
 
 - path_out:
 
-  Directory to export converted files.
+  Directory to export converted files. Defaults to `NULL`, in which case
+  the files go to a temporary directory that is deleted when the
+  function returns.
 
 - format_in:
 
-  Either `msd` for mass spectrometry data, `csd` for flame ionization
+  Either `msd` for mass spectrometry data, `csd` for FID, ECD or NPD
   data, or `wsd` for DAD/UV data.
 
 - format_out:
@@ -49,7 +48,8 @@ call_openchrom(
 
 - export_format:
 
-  Either `mzml`, `csv`, `cdf`, `animl`. Defaults to `mzml`.
+  Either `mzml`, `csv`, `cdf`, or `animl`. Defaults to `mzml`. `mzml`
+  and `cdf` are available only for `msd`.
 
 - return_paths:
 
@@ -62,11 +62,15 @@ call_openchrom(
 
 ## Value
 
-If `return_paths` is `FALSE`, the function will return a list of
-chromatograms (if an appropriate parser is available to import the files
-into R). The chromatograms will be returned in `matrix` or `data.frame`
-format according to the value of `format_out`. If `return_paths` is
-`TRUE`, the function will return a character vector of paths to the
+If `return_paths` is `FALSE`, a list with one chromatogram per file,
+read back with
+[read_mzml](https://ethanbass.github.io/chromConverter/reference/read_mzml.md),
+[read_cdf](https://ethanbass.github.io/chromConverter/reference/read_cdf.md)
+or [read.csv](https://rdrr.io/r/utils/read.table.html) according to
+`export_format`. `format_out` and `data_format` apply only to `cdf`
+files, except that `format_out = "matrix"` also converts `csv` files.
+`animl` files cannot be read back, so use `return_paths = TRUE` for
+them. If `return_paths` is `TRUE`, a character vector of paths to the
 newly created files.
 
 ## Details
@@ -84,15 +88,14 @@ specified using the `format_in` argument.
 
 ## Note
 
-Activating the OpenChrom command-line will deactivate the graphical user
-interface (GUI). Thus, if you wish to continue using the OpenChrom GUI,
-it is recommended to create a separate command-line version of OpenChrom
-to call from R.
+Activating the OpenChrom command-line deactivates the graphical user
+interface (GUI). To keep using the GUI, install a second copy of
+OpenChrom and call that one from R.
 
 ## Side effects
 
-Chromatograms will be exported in the format specified by
-`export_format` in the folder specified by `path_out`.
+Chromatograms are exported in the format specified by `export_format` to
+the folder specified by `path_out`.
 
 ## References
 

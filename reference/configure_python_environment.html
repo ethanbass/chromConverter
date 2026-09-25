@@ -6,14 +6,14 @@ v1.41.0) chromConverter declares its python requirements with
 reticulate::py_require and they are provisioned automatically the first
 time a python parser is called. It can still be useful if you need a
 persistent environment, e.g. to work offline or to avoid re-resolving
-packages."><meta property="og:description" content="Creates a dedicated python virtual environment (or conda environment) with
+packages. It is an error if an environment named envname already exists."><meta property="og:description" content="Creates a dedicated python virtual environment (or conda environment) with
 the packages required by the parsers that have python dependencies. This
 should not be necessary in most cases, since (starting with reticulate
 v1.41.0) chromConverter declares its python requirements with
 reticulate::py_require and they are provisioned automatically the first
 time a python parser is called. It can still be useful if you need a
 persistent environment, e.g. to work offline or to avoid re-resolving
-packages."><meta property="og:image" content="https://ethanbass.github.io/chromConverter/logo.png"></head><body>
+packages. It is an error if an environment named envname already exists."><meta property="og:image" content="https://ethanbass.github.io/chromConverter/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -21,7 +21,7 @@ packages."><meta property="og:image" content="https://ethanbass.github.io/chromC
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,7 @@ packages."><meta property="og:image" content="https://ethanbass.github.io/chromC
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Configure python environment</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/utils.R" class="external-link"><code>R/utils.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/utils.R" class="external-link"><code>R/utils.R</code></a></small>
       <div class="d-none name"><code>configure_python_environment.Rd</code></div>
     </div>
 
@@ -58,7 +58,7 @@ should not be necessary in most cases, since (starting with reticulate
 <a href="https://rstudio.github.io/reticulate/reference/py_require.html" class="external-link">reticulate::py_require</a> and they are provisioned automatically the first
 time a python parser is called. It can still be useful if you need a
 persistent environment, e.g. to work offline or to avoid re-resolving
-packages.</p>
+packages. It is an error if an environment named <code>envname</code> already exists.</p>
     </div>
 
     <div class="section level2">
@@ -82,7 +82,7 @@ environment (<code>"venv"</code>) or a conda environment (<code>"conda"</code>).
 
 
 <dt id="arg-envname">envname<a class="anchor" aria-label="anchor" href="#arg-envname"></a></dt>
-<dd><p>The name of, or path to, a Python virtual environment.</p></dd>
+<dd><p>The name of, or path to, the environment to create.</p></dd>
 
 
 <dt id="arg-parser">parser<a class="anchor" aria-label="anchor" href="#arg-parser"></a></dt>
@@ -91,8 +91,9 @@ environment (<code>"venv"</code>) or a conda environment (<code>"conda"</code>).
 
 
 <dt id="arg-python">python<a class="anchor" aria-label="anchor" href="#arg-python"></a></dt>
-<dd><p>Argument to <code><a href="https://rstudio.github.io/reticulate/reference/virtualenv-tools.html" class="external-link">reticulate::virtualenv_create</a></code>, specifying
-the path to a Python interpreter.</p></dd>
+<dd><p>Path to the Python interpreter passed to
+<a href="https://rstudio.github.io/reticulate/reference/virtualenv-tools.html" class="external-link">reticulate::virtualenv_create</a>. Used only when <code>what = "venv"</code>. Defaults to
+<code>NULL</code>, in which case <a href="https://rstudio.github.io/reticulate/reference/virtualenv-tools.html" class="external-link">reticulate::virtualenv_starter</a> chooses one.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -102,7 +103,7 @@ the path to a Python interpreter.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Returns the name of the environment (invisibly).</p>
+    <p>The name of the environment, invisibly.</p>
     </div>
     <div class="section level2">
     <h2 id="side-effects">Side effects<a class="anchor" aria-label="anchor" href="#side-effects"></a></h2>

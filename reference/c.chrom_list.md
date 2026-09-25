@@ -1,7 +1,8 @@
 # Combine `chrom_list` objects
 
-Combines multiple `chrom_list` objects (or a mix of `chrom_list` and
-plain lists/matrices) into a single `chrom_list`, preserving the class.
+Combines `chrom_list` objects, or a mix of `chrom_list` objects and
+plain lists of chromatograms, into a single `chrom_list`, preserving the
+class.
 
 ## Usage
 
@@ -14,8 +15,10 @@ c(...)
 
 - ...:
 
-  One or more `chrom_list` objects (or objects coercible via
-  [`c()`](https://rdrr.io/r/base/c.html)) to combine.
+  `chrom_list` objects or lists of chromatograms to combine. Wrap a
+  single chromatogram in [`list()`](https://rdrr.io/r/base/list.html),
+  since a bare matrix is split into its individual values and a bare
+  data frame into its columns.
 
 ## Value
 

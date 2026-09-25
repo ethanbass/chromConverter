@@ -41,9 +41,9 @@ read_chemstation_ch(
 
 - scale:
 
-  Whether to scale the data by the scaling factor present in the file.
-  Defaults to `TRUE`. 'MassHunter' seems to ignore the scaling factor in
-  at least some types of 'ChemStation' files.
+  Whether to multiply the data by the file's scaling factor and add its
+  intercept. Defaults to `TRUE`. 'MassHunter' seems to ignore the
+  scaling factor in at least some types of 'ChemStation' files.
 
 - source_file:
 
@@ -53,22 +53,22 @@ read_chemstation_ch(
 
 A 2D chromatogram in the format specified by `data_format` and
 `format_out`. If `data_format` is `wide`, the chromatogram will be
-returned with retention times as rows and a single column for the
+returned with retention times as row names and a single column for the
 intensity. If `long` format is requested, two columns will be returned:
 one for the retention time and one for the intensity. The `format_out`
 argument determines whether the chromatogram is returned as a `matrix`,
-`data.frame`, or `data.table`. Metadata can be attached to the
-chromatogram as [attributes](https://rdrr.io/r/base/attributes.html) if
+`data.frame`, or `data.table`. Metadata are attached to the chromatogram
+as [attributes](https://rdrr.io/r/base/attributes.html) if
 `read_metadata` is `TRUE`.
 
 ## Details
 
-'Agilent' `.ch` files come in several different formats. This parser can
-automatically detect and read several versions of these files from
-'Agilent ChemStation' and 'Agilent OpenLab', including versions `30` and
-`130`, which are generally produced by ultraviolet detectors, as well as
-`81`, `179`, and `181` which are generally produced by flame ionization
-(FID) detectors.
+'Agilent' `.ch` files come in several formats. This parser detects the
+version from the file and reads versions `8`, `30`, `130`, `81`, `179`
+and `181` from 'Agilent ChemStation' and 'Agilent OpenLab'; any other
+version is an error. Versions `30` and `130` are generally produced by
+ultraviolet detectors, and `81`, `179` and `181` by flame ionization
+detectors (FID).
 
 ## Note
 

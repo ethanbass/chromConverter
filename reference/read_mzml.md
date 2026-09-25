@@ -1,9 +1,6 @@
 # Read mzML files
 
 Extracts data from `mzML` files using parsers from either RaMS or mzR.
-The RaMS parser (default) will only return data in tidy (long) format.
-The mzR parser will return data in wide format. Currently the mzR-based
-parser is configured to return only DAD data.
 
 ## Usage
 
@@ -27,9 +24,8 @@ read_mzml(
 
 - format_out:
 
-  Class of output. Only applies if `mzR` is selected. Either `matrix`,
-  `data.frame`, or `data.table`. `RaMS` will return a list of
-  data.tables regardless of what is selected here.
+  Class of output. Either `matrix`, `data.frame`, or `data.table`. With
+  RaMS, applies only to the `TIC` and `BPC` in wide format.
 
 - data_format:
 
@@ -44,7 +40,7 @@ read_mzml(
   What types of data to return (argument to
   [RaMS::grabMSdata](https://rdrr.io/pkg/RaMS/man/grabMSdata.html)).
   Options include `MS1`, `MS2`, `BPC`, `TIC`, `DAD`, `chroms`,
-  `metadata`, or `everything`).
+  `metadata`, or `everything`. Defaults to all of them.
 
 - verbose:
 
@@ -56,10 +52,17 @@ read_mzml(
 
 ## Value
 
-If `RaMS` is selected, the function will return a list of "tidy"
-`data.table` objects. If `mzR` is selected, the function will return a
-chromatogram in `matrix` or `data.frame` format according to the value
-of `format_out`.
+With RaMS, a named list of the streams in `what`. With mzR, a DAD
+chromatogram in the format specified by `format_out` and `data_format`.
+
+## Details
+
+The RaMS parser (default) returns a list with one element per stream in
+`what`. Mass spectra are always long. With `data_format = "wide"` (the
+default), `TIC` and `BPC` are returned as 2D chromatograms of class
+`format_out`, and `DAD` as a wide chromatogram of class `format_out`;
+with `"long"`, every stream is a long `data.table`. The mzR parser
+returns only the DAD data, as a single chromatogram.
 
 ## Author
 

@@ -1,7 +1,7 @@
 # Configure 'OpenChrom' parser
 
 Configures [OpenChrom](https://lablicate.com/platform/openchrom) to use
-command-line interface. Requires OpenChrom version prior to 0.5.0.
+command-line interface. Requires OpenChrom version prior to 1.5.0.
 
 ## Usage
 
@@ -13,20 +13,22 @@ configure_openchrom(cli = c("null", "true", "false", "status"), path = NULL)
 
 - cli:
 
-  Defaults to NULL. If "true", R will rewrite openchrom ini file to
-  enable CLI. If "false", R will disable CLI. If NULL, R will not modify
-  the ini file.
+  One of `"null"` (default), `"true"`, `"false"` or `"status"`. `"true"`
+  and `"false"` rewrite the OpenChrom ini file to enable or disable the
+  command-line interface. `"null"` leaves the ini file alone unless the
+  interface is disabled, in which case it asks whether to enable it.
+  `"status"` reports the current setting without changing anything.
 
 - path:
 
-  Path to 'OpenChrom' executable (Optional). The supplied path will
-  overwrite the current path.
+  Path to the 'OpenChrom' executable (optional). The supplied path is
+  saved and used in later calls.
 
 ## Value
 
-If `cli` is set to `"status"`, returns a Boolean value indicating
-whether 'OpenChrom' is configured correctly. Otherwise, returns the path
-to OpenChrom command-line application.
+If `cli` is `"status"`, the string `"true"` or `"false"`, saying whether
+the command-line interface is enabled. Otherwise, the path to the
+OpenChrom command-line application.
 
 ## See also
 

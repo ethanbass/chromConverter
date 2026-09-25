@@ -9,7 +9,7 @@ LabSolutions' .lcd files."><meta property="og:image" content="https://ethanbass.
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@ LabSolutions' .lcd files."><meta property="og:image" content="https://ethanbass.
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Shimadzu' TLM stream</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_shimadzu_tlm.R" class="external-link"><code>R/read_shimadzu_tlm.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_shimadzu_tlm.R" class="external-link"><code>R/read_shimadzu_tlm.R</code></a></small>
       <div class="d-none name"><code>read_sz_tlm.Rd</code></div>
     </div>
 
@@ -77,7 +77,7 @@ always returned in <code>long</code> format.</p></dd>
 
 <dt id="arg-levels">levels<a class="anchor" aria-label="anchor" href="#arg-levels"></a></dt>
 <dd><p>Which MS levels to return, spelled <code>MS1</code> and <code>MS2</code>. Both are
-decoded either way, since the level of a scan is recorded inside its own
+decoded either way, because the level of a scan is recorded inside its own
 compressed record.</p></dd>
 
 
@@ -98,9 +98,10 @@ of magnitude more memory.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A named list holding whichever of <code>MS1</code> and <code>MS2</code> the file has, each
-a long table with columns <code>scan</code>, <code>rt</code> (minutes), <code>mz</code> and <code>intensity</code>,
-preceded by <code>precursor_mz</code> where the scans carry one. A per-scan summary
+    <p>A named list holding whichever of the requested <code>levels</code> the file
+has, each a long table with columns <code>scan</code>, <code>rt</code> (minutes), <code>mz</code> and
+<code>intensity</code>, and a <code>precursor_mz</code> column before <code>mz</code> where the scans carry
+one. A per-scan summary
 (retention time, event, MS level, polarity, precursor m/z, point count) is
 attached to each as a <code>scan_info</code> attribute.</p>
     </div>
@@ -109,7 +110,7 @@ attached to each as a <code>scan_info</code> attribute.</p>
     <p>Spectra live in the <code>MS Raw Data</code> stream and are located through
 <code>Spectrum Index</code>, which holds one 24-byte entry per spectrum:</p><table class="table table"><tr><td><strong>Offset</strong></td><td><strong>Type</strong></td><td><strong>Field</strong></td></tr><tr><td>0–3</td><td><code>uint32</code></td><td>Record size in bytes</td></tr><tr><td>4–7</td><td><code>uint32</code></td><td>Event number</td></tr><tr><td>8–11</td><td><code>uint32</code></td><td>Offset into <code>MS Raw Data</code></td></tr><tr><td>12–15</td><td><code>uint32</code></td><td>Padding</td></tr><tr><td>16–19</td><td><code>uint32</code></td><td>Cycle number</td></tr><tr><td>20–23</td><td><code>uint32</code></td><td>Scan number</td></tr></table><p>Each record begins with a 12-byte wrapper (<code>0xFFFFFFFF</code>, uncompressed size,
 compressed size) followed by a zlib stream. The decompressed block opens
-with a 44-byte header shared by every scan type:</p><table class="table table"><tr><td><strong>Offset</strong></td><td><strong>Type</strong></td><td><strong>Field</strong></td></tr><tr><td>0–3</td><td><code>uint32</code></td><td>Retention time (milliseconds)</td></tr><tr><td>4–7</td><td><code>uint32</code></td><td>Retention time of the first scan in the cycle</td></tr><tr><td>8–11</td><td><code>uint32</code></td><td>Event number</td></tr><tr><td>12–15</td><td><code>uint32</code></td><td>Scan counter within the event</td></tr><tr><td>16–19</td><td><code>uint32</code></td><td>Scan index (0-based)</td></tr><tr><td>20–21</td><td><code>uint16</code></td><td>Scan type: 10 = MS1 profile, 14 = MS2 profile, 15 = MRM/SIM</td></tr><tr><td>22–23</td><td><code>uint16</code></td><td>MS level + 1 (0 in a truncated final scan)</td></tr><tr><td>24–27</td><td><code>uint32</code></td><td>Constant (<code>0x00010000</code>)</td></tr><tr><td>28–31</td><td><code>uint32</code></td><td>Last precursor m/z x 100 (stale outside MS2 scans)</td></tr><tr><td>32–35</td><td><code>uint32</code></td><td>Instrument state bit field; bit 0 follows polarity</td></tr><tr><td>36–39</td><td><code>uint32</code></td><td>Polarity (0 = positive, 1 = negative)</td></tr><tr><td>40–43</td><td><code>uint32</code></td><td>Number of data points (profile) or transitions (MRM)</td></tr></table><p><strong>Profile scans</strong> (type 10 and 14) follow the header with two m/z pairs
+with a 44-byte header shared by every scan type:</p><table class="table table"><tr><td><strong>Offset</strong></td><td><strong>Type</strong></td><td><strong>Field</strong></td></tr><tr><td>0–3</td><td><code>uint32</code></td><td>Retention time (milliseconds)</td></tr><tr><td>4–7</td><td><code>uint32</code></td><td>Retention time of the first scan in the cycle</td></tr><tr><td>8–11</td><td><code>uint32</code></td><td>Event number</td></tr><tr><td>12–15</td><td><code>uint32</code></td><td>Scan counter within the event</td></tr><tr><td>16–19</td><td><code>uint32</code></td><td>Scan index (0-based)</td></tr><tr><td>20–21</td><td><code>uint16</code></td><td>Scan type: 10 = MS1 profile, 11 = SIM, 14 = MS2 profile, 15 = MRM</td></tr><tr><td>22–23</td><td><code>uint16</code></td><td>MS level + 1 (0 in a truncated final scan)</td></tr><tr><td>24–27</td><td><code>uint32</code></td><td>Constant (<code>0x00010000</code>)</td></tr><tr><td>28–31</td><td><code>uint32</code></td><td>Last precursor m/z x 100 (stale outside product-ion scans)</td></tr><tr><td>32–35</td><td><code>uint32</code></td><td>Instrument state bit field; bit 0 follows polarity</td></tr><tr><td>36–39</td><td><code>uint32</code></td><td>Polarity (0 = positive, 1 = negative)</td></tr><tr><td>40–43</td><td><code>uint32</code></td><td>Number of data points (profile) or transitions (MRM, SIM)</td></tr></table><p><strong>Profile scans</strong> (type 10 and 14) follow the header with two m/z pairs
 stored as m/z x 100 — the isolation window (equal low and high values for
 MS2; the scan range for MS1), then the scan range — and then <code>n</code>
 unsigned 32-bit intensities. Bit 31 of an intensity marks detector
@@ -120,7 +121,7 @@ range, with a bin width of <code>(high - low) / (100 * n)</code> (0.1 in the fil
 seen so far). The grid overhangs the acquired range by 10 bins at the bottom
 and 9 at the top; those are dropped, which is what makes the summed
 intensity match the <code>TIC Data</code> stream exactly.</p>
-<p><strong>MRM and SIM scans</strong> (type 15) instead follow the header with <code>n</code>
+<p><strong>MRM and SIM scans</strong> (types 15 and 11) instead follow the header with <code>n</code>
 12-byte transitions: Q1 m/z x 100, Q3 m/z x 100, and intensity.</p>
     </div>
     <div class="section level2">

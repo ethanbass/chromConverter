@@ -25,7 +25,7 @@ read_chromatotec(
 - what:
 
   Whether to extract chromatograms (`chrom`) and/or `peak_table` data.
-  Accepts multiple arguments.
+  Accepts multiple arguments, and defaults to both.
 
 - format_out:
 

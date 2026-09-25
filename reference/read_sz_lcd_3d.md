@@ -64,8 +64,8 @@ The 24 byte header consists of the following fields:
 - 4 bytes: segment label (`17234`).
 
 - 4 bytes: Little-endian integer specifying the sampling rate along the
-  spectral axis (?), where the equivalent field of a 2D stream gives the
-  sampling rate along the time axis.
+  spectral axis, where the equivalent field of a 2D stream gives the
+  sampling rate along the time axis. This reading is not confirmed.
 
 - 4 bytes: Little-endian integer specifying the number of wavelength
   values in the segment.

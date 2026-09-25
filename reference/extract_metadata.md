@@ -21,16 +21,18 @@ extract_metadata(
 - chrom_list:
 
   A list of chromatograms with attached metadata (as returned by
-  `read_chroms` with `read_metadata = TRUE`).
+  `read_chroms` with `read_metadata = TRUE`), or a single chromatogram.
+  Nested lists are flattened, one row per chromatogram.
 
 - what:
 
   A character vector specifying the metadata elements to extract.
   Defaults to every field chromConverter attaches; no format records all
-  of them, so the elements a format does not provide are simply absent
-  from the result. Superseded names (`injection_volume`,
-  `software_name`, `time_start`) are accepted and mapped to the names
-  that replaced them.
+  of them, so the elements a format does not provide are absent from the
+  result. Superseded names (e.g. `injection_volume`, `software_name`,
+  `time_start`) are accepted and mapped to the names that replaced them.
+  A field requested by name that no chromatogram carries produces a
+  warning.
 
 - detector:
 
@@ -38,7 +40,7 @@ extract_metadata(
   `c("UV", "MS")`), matched case-insensitively against each
   chromatogram's `detector` attribute. Defaults to `NULL`, in which case
   all chromatograms are included. Useful for lists containing more than
-  one detector per sample.
+  one detector per sample. It is an error if no chromatogram matches.
 
 - format_out:
 
@@ -69,8 +71,10 @@ extract_metadata(
 ## Value
 
 A `data.frame`, `tibble`, or `data.table` (according to the value of
-`format_out`), with samples as rows and the specified metadata elements
-as columns, or `NA` if none of the specified elements could be found.
+`format_out`), with one row per chromatogram and the specified metadata
+elements as columns, or `NA` if none of the specified elements could be
+found. For a list, the first column, `name`, identifies each
+chromatogram by its path through the list (e.g. `blue.UV`).
 
 ## Examples
 

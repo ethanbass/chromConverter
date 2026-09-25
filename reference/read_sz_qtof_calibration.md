@@ -1,11 +1,7 @@
 # Read TOF calibration coefficients from a 'Shimadzu' QTOF file
 
-The `TOF Calibration Table` stream holds the calibration points
-themselves: pairs of a known m/z and the flight time at which the
-instrument actually observed it. It is encoded as a protocol buffer, a
-binary format in which every value is tagged with a number rather than a
-name, so the fields are referred to below by those numbers. The
-top-level ones are:
+Fits the flight-time-to-m/z coefficients `A` and `B` from the
+calibration points stored in the file.
 
 ## Usage
 
@@ -50,6 +46,13 @@ read_sz_qtof_calibration(
 Named numeric vector with elements `A` and `B`.
 
 ## Details
+
+The `TOF Calibration Table` stream holds the calibration points
+themselves: pairs of a known m/z and the flight time at which the
+instrument actually observed it. It is encoded as a protocol buffer, a
+binary format in which every value is tagged with a number rather than a
+name, so the fields are referred to below by those numbers. The
+top-level ones are:
 
 - `10` – positive mode (`Na(NaI)n` calibrants)
 

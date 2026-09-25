@@ -1,6 +1,6 @@
 # Read 'Shimadzu' peak tables
 
-Read the integration results 'Lab Solutions' stored alongside the raw
+Read the integration results 'LabSolutions' stored alongside the raw
 data in a 'Shimadzu' OLE container (`.lcd` or `.gcd`), one table per
 channel.
 
@@ -31,11 +31,12 @@ message, so one bad channel does not lose the others.
 ## Details
 
 Each table lives in its own stream, a short header followed by one
-fixed-length record per peak. A chromatographic table is named for the
-channel it belongs to (`PT-LC.1.1.DET.1.CH#1`, matching that channel's
-`channel_id` metadata), while the tables a mass spectrometry run
-produces are named for what they hold (`Mass Peak Table`,
-`Compound Peak Table`).
+fixed-length record per peak. Only chromatographic tables are read:
+streams named `PT-` plus the channel (`PT-LC.1.1.DET.1.CH#1`, matching
+that channel's `channel_id` metadata), or `Peak Table-` plus a number
+(`Peak Table-100`). The tables a mass spectrometry run produces
+(`Mass Peak Table`, `Compound Peak Table`, `Ident Peak Table`) have
+layouts of their own and are skipped.
 
 There are two layouts. **V0** has no magic number and opens with an
 8-byte header: the peak count as a `uint32`, then four unparsed bytes.
@@ -43,15 +44,11 @@ There are two layouts. **V0** has no magic number and opens with an
 count as a `uint32`, and twelve further unparsed bytes, for a 20-byte
 header.
 
-Despite the `VER1` magic number, the two are not successive versions of
-one format: a single file can hold both. `shimadzu_qtof_neg.lcd` carries
-a V1 `PT-PDA.1.1.PDA.1.1` alongside a V0 `Mass Peak Table`, written by
-the same software at the same time. What the layouts track is the kind
-of table — a `PT-` channel table is V1 in every file seen so far, and a
-mass spectrometry table is V0 — which also explains why V0 has no
-identification fields (`Conc`, `ID`, `k`). The parser still dispatches
-on the magic number rather than on the name of the stream, since the
-name is the weaker signal.
+In every file seen so far the layout follows the stream name: `PT-`
+streams, under `LSS Data Processing`, are V1, and `Peak Table-` streams,
+under `LC Data Processing`, are V0. The parser still dispatches on the
+magic number rather than on the name of the stream, since the name is
+the weaker signal.
 
 Retention, initial and final times are stored in milliseconds and
 converted to minutes, as elsewhere in the package. All values are
@@ -78,9 +75,7 @@ A V0 record is 280 bytes:
 | 232–239    | `double`     | Tailing factor                  |
 | 240–247    | `double`     | Resolution                      |
 | 248–255    | `double`     | Separation factor               |
-| 256–263    | `double`     | Concentration, percent          |
-| 264–271    | `double`     | Concentration, normalized       |
-| 272–279    | `uint32` x 2 | Unparsed                        |
+| 256–279    |              | Unparsed                        |
 
 A V1 record is longer and its length is not fixed by the format: it is
 derived as `(stream size - 20) / peak count`. The first 728 bytes are
@@ -116,15 +111,24 @@ the part this parser reads, and any remainder is skipped.
 | 712–719 | `double` | Concentration, percent |
 | 720–727 | `double` | Concentration, normalized |
 
-Note that `AH` is a scaled integer in V0 but a `double` in V1, and that
-the V1 values sit mostly on a 64-byte stride, which suggests each
-derived quantity occupies a slot of its own rather than being packed.
-The field names are this package's reading of the format rather than the
-vendor's own.
+Two things the tables above do not show. `AH` is a scaled integer in V0
+but a `double` in V1, so the same field has to be decoded differently in
+each. The V1 values are also spaced rather than packed: seven doubles
+lie exactly 64 bytes apart — `Plate.no` (248), `Plate.ht` (376) and the
+tailing factor (504), with unidentified values at 312, 440, 568 and 632
+— while `k` (240), the resolution (512) and the separation factor (640)
+each sit 8 bytes to one side of that grid, paired with the value on it.
+Each derived quantity therefore seems to occupy a 64-byte slot and use
+only the first eight bytes of it. The field names are this package's
+reading of the format rather than the vendor's own.
 
-A V0 record length is not recorded anywhere in the stream, so unlike V1
-it cannot be checked against the file. A V0 variant with a different
-record size would be misread rather than rejected.
+A V0 record is not always 280 bytes: the `Peak Table-100` streams under
+`LC Data Processing` hold 544-byte records whose first 256 bytes follow
+the table above, with the retention factor (`k`) as a `double` at 208.
+As for V1, the record length is derived as
+`(stream size - 8) / peak count` and any remainder beyond 280 bytes is
+skipped. A table whose records are shorter than 280 bytes, or do not
+divide the stream evenly, is rejected.
 
 ## See also
 

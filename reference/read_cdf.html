@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read CDF</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_cdf.R" class="external-link"><code>R/read_cdf.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_cdf.R" class="external-link"><code>R/read_cdf.R</code></a></small>
       <div class="d-none name"><code>read_cdf.Rd</code></div>
     </div>
 
@@ -69,16 +69,14 @@
 
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
 <dd><p>Whether to return data in <code>wide</code> or <code>long</code> format.
-For 2D files, "long" format returns the retention time as the first column of
-the data.frame or matrix while "wide" format returns the retention time as the
-rownames of the object. This argument applies only to 2D chromatograms, since
-MS data will always be returned in long format.</p></dd>
+<code>"long"</code> returns the retention time as the first column of the data.frame
+or matrix, while <code>"wide"</code> returns it as the rownames. The mass spectra of an
+ANDI MS file are always long, so there it applies only to the TIC.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
-<dd><p>For <code>ANDI chrom</code> files, whether to extract <code>chroms</code>
-and/or <code>peak_table</code>. For <code>ANDI ms</code> files, whether to extract MS1 scans
-(<code>MS1</code>) or the total ion chromatogram (<code>TIC</code>).</p></dd>
+<dd><p>For ANDI chrom files, <code>chroms</code> and/or <code>peak_table</code>. For ANDI MS
+files, MS1 scans (<code>MS1</code>) and/or the total ion chromatogram (<code>TIC</code>).</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
@@ -96,15 +94,30 @@ element. Defaults to <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments to parser. The <code>ms_format</code> argument
-can be used here to specify whether to return mass spectra in <code>list</code>
-format or as a <code>data.frame</code>.</p></dd>
+<dd><p>Additional arguments to the parser. For ANDI MS files, pass
+<code>ms_format</code> to return the mass spectra as a <code>data.frame</code> (the default) or a
+<code>list</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A chromatogram in the format specified by the <code>format_out</code> and
 <code>data_format</code> arguments.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Retention times are returned in minutes, converted from the unit the file
+declares. An ANDI chrom file declares it in its <code>retention_unit</code> attribute,
+which also governs the peak table. Seconds is both what the template uses
+and what all but one of its conformance files declare, so a file that
+declares no unit is read as seconds, unless chromConverter wrote it, in
+which case it is read as minutes.</p>
+<p>An ANDI MS file has no mandatory unit attribute, since the specification
+never formally defined its axes units, so <code>scan_acquisition_time</code> is read as
+seconds, the only unit the specification suggests, unless a
+<code>raw_data_time_units</code> attribute says otherwise.</p>
+<p>Either kind of file warns about a unit it does not recognize and reads it
+as seconds.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

@@ -1,6 +1,6 @@
 # Read 'Agilent ChemStation' CSV files
 
-Reads 'Agilent Chemstation' `.csv` files.
+Reads 'Agilent ChemStation' `.csv` files.
 
 ## Usage
 
@@ -29,9 +29,9 @@ read_chemstation_csv(
 
 - read_metadata:
 
-  Logical. Whether to attach metadata. Defaults to `TRUE`. There is no
-  instrumental metadata saved in the CSV files so this will only attach
-  metadata about the settings used by chromConverter to parse the file.
+  Logical. Whether to attach metadata. Defaults to `TRUE`. The files
+  record no instrument metadata, so only the settings chromConverter
+  used to parse the file are attached.
 
 ## Value
 
@@ -40,7 +40,7 @@ A chromatogram in the format specified by `format_out` and
 
 ## Details
 
-'Agilent Chemstation' CSV files are encoded in UTF-16.
+'Agilent ChemStation' CSV files are encoded in UTF-16.
 
 ## See also
 

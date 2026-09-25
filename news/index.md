@@ -1,20 +1,147 @@
 # Changelog
 
+## chromConverter 0.10.1
+
+### Breaking changes
+
+- Retention times from ‘ANDI MS’ files, and from ‘ANDI chrom’ files
+  recorded in seconds, are now 60x smaller. Both formats are now read in
+  minutes, peak tables included, matching the package convention. See
+  [`?read_cdf`](https://ethanbass.github.io/chromConverter/reference/read_cdf.md).
+- Run times of ‘OpenLab’ `.dx` files are now in UTC, read from the
+  archive’s `injection.acmd`, so they shift by the site’s offset from
+  UTC. They were the local time labelled as UTC.
+- Dropped `what = "chroms"` from `read_varian_sms`, which returned an
+  internal table rather than a chromatogram. Use `what = "TIC"` or
+  `"BPC"`.
+
+### New features
+
+- Files read with the `rainbow` parser now report most of the metadata
+  the parser supplies, including `instrument`, `operator`,
+  `detector_model`, `wavelength` and `instrument_modules`.
+- Run times of ‘OpenLab’ `.dx` files read with the `rainbow` parser are
+  now returned as `POSIXct` in UTC, applying the time-zone offset the
+  file records.
+- ‘OpenLab’ `.dx` files now report their injection volume.
+- ‘Agilent’ `.ch`, `.uv` and `.it` traces now report the channel they
+  were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`).
+- `read_thermoraw` now accepts `format_out = "data.table"`, like every
+  other parser.
+- `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan
+  order, each with its precursor m/z and a reference to the MS1 scan
+  before it. MS2 was previously skipped.
+- mzML files now record each scan’s polarity, and a new `centroided`
+  argument lets profile data be marked as profile. All spectra were
+  previously assumed to be centroided.
+- mzML files now name the instrument, acquisition software and operator
+  from the chromatogram’s metadata. The `instrument_info` argument still
+  overrides the instrument.
+
+### Bug fixes and other minor changes
+
+#### ANDI (netCDF)
+
+- Retention times from evenly sampled ‘ANDI chrom’ files are now
+  reconstructed accurately. Previously, the run length was treated as
+  the time of the last point, which resulted in slight stretching of the
+  time axis.
+- Unevenly sampled ‘ANDI chrom’ data now keep their original retention
+  times on import and on export with `write_andi_chrom`.
+- ‘ANDI chrom’ peak tables now include text columns such as `peak_name`,
+  which were previously dropped.
+- Files written by `write_andi_chrom` now record the correct time unit,
+  run length and detector range.
+- ‘ANDI MS’ files with flagged peaks no longer fail to read or return
+  the flags as extra data points.
+- ‘ANDI MS’ files without scan times, such as spectral libraries, can
+  now be read. Retention times are `NA` and no TIC is returned.
+- ‘ANDI MS’ files now report their intensity unit in `detector_y_unit`,
+  which was always empty, and files from other software also report
+  their mass unit in `detector_x_unit`.
+- Exporting data that include MS2 scans to ‘ANDI MS’ no longer fails.
+  The MS1 scans are written, and the MS2 scans are left out with a
+  warning, since the format cannot hold them; `write_mzml` keeps both.
+- Files written by `write_andi_ms` now record the chromatogram’s
+  polarity, instrument, software and acquisition mode (full scan or
+  selected ion monitoring). See
+  [`?write_andi_ms`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md).
+- Setting one entry of `ms_params` in `write_andi_ms` no longer drops
+  the defaults of the others.
+- Files written by `write_andi_ms` now follow the ANDI MS specification
+  more closely, including each scan’s actual mass and time range and the
+  chromatogram’s intensity unit.
+
+#### ‘rainbow’
+
+- `call_rainbow` now works when `format_in` is not supplied, which
+  failed on R 4.2 and later.
+- A chromatogram read with the `rainbow` parser no longer loses its
+  retention times when the parser returns fewer of them than the trace
+  has rows (as the compressed 181 `.ch` container does). The time axis
+  is rebuilt from the first and last time, with a warning.
+
+#### mzML export
+
+- mzML files now name the format of the source file
+  (e.g. `Andi-MS format`).
+- mzML files no longer carry a placeholder sample `id` (`sNA`) or
+  characters an ID cannot hold, and `sample_name` now also names the
+  `<sample>` element. Metadata values are now XML-escaped.
+- mzML files written from data without a `run_datetime` no longer fail
+  schema validation.
+- `write_mzml` now errors on a table without `mz` (or `lambda`) and
+  `intensity` columns, instead of writing a corrupt file.
+
+#### ‘Shimadzu’
+
+- Raw ‘Shimadzu’ `.lcd` chromatograms (`scale = FALSE`) now report
+  `detector_y_unit` as `NA` where the channel’s calibration factor is
+  not 1, since those values are not in a defined unit.
+- QTOF mass spectra from `.lcd` files now carry the `scaled` attribute.
+- ‘Shimadzu’ `.qgd` scans whose intensities are more than 4 bytes wide
+  can now be read. They are read with a warning, since the decoding of
+  values this wide has not been checked against a ‘LabSolutions’ export.
+- ‘Shimadzu’ `.lcd` peak tables stored as `Peak Table-100` and similar
+  now read correctly; every peak after the first was misread.
+- ‘Shimadzu’ `.lcd` peak tables no longer include mass spectrometry
+  tables (`Mass Peak Table`, `Compound Peak Table`), which were misread.
+
+#### ‘Agilent’
+
+- `read_agilent_amx` now warns when a method doesn’t contain a requested
+  module, such as a DAD on an instrument that has none, and returns the
+  others. Asking for that module alone now gives a clear error.
+- The `solvents` table from `read_agilent_amx` now returns the class
+  that `format_out` asks for.
+- `read_agilent_dx(what = "instrument")` now gives a clear error for an
+  archive without instrument data.
+
+#### Other formats
+
+- `read_chromeleon` now honors `decimal_mark = ","` when it is given
+  explicitly. The commas were being erroneously stripped due to a logic
+  error, inflating every value.
+- `read_peaklist` now warns about files it cannot parse and drops them,
+  rather than returning the error message as a peak table.
+- `read_mzml` now returns DAD data in the correct class as requested by
+  `format_out`.
+
 ## chromConverter 0.10.0
 
 ### Breaking changes
 
 - 2D chromatograms from ‘Shimadzu’ `.lcd` files are now scaled by the
   calibration factor as well as the value factor, so the intensities
-  match those reported by ‘Lab Solutions’. The calibration factor
+  match those reported by ‘LabSolutions’. The calibration factor
   converts the encoded integers into the base unit of the detector, and
   is stored alongside the raw data in the `Chromatogram Status` stream.
   The parser was instead taking it from the copy of the `2D Data Item`
   under `LSS Data Processing`, where it is always `1`. Channels where it
   is not `1` were off by a constant factor, such as ~42x for an SPD-20A
   UV detector and ~310x for an RID-10A refractive index detector, so any
-  factor applied by hand to match ‘Lab Solutions’ should now be removed.
-  Older files, written by ‘LCsolution’ rather than ‘Lab Solutions’, have
+  factor applied by hand to match ‘LabSolutions’ should now be removed.
+  Older files, written by ‘LCsolution’ rather than ‘LabSolutions’, have
   no `2D Data Item` at all, so neither factor reached them; both are now
   read from the status record, changing the scale of those chromatograms
   by up to ~5000x. `scale = FALSE` still returns the unscaled integers.
@@ -230,10 +357,6 @@
   rather than an empty string when the channel records none, as a
   refractive index or FID trace does. An empty string printed as a blank
   cell instead of as a missing value.
-- ‘Shimadzu’ `.lcd`, `.gcd` and `.qgd` files now report `file_version`,
-  the version of the container format (`5.01` for files written by ‘Lab
-  Solutions’; absent in the older files, which report only a
-  `software_version` of `1.x`).
 - ‘Shimadzu’ `.lcd` and `.gcd` files now report the instrument the file
   was acquired on, rather than the detector module of whichever trace
   you are looking at: one run on one HPLC previously came back as
@@ -251,6 +374,10 @@
   `channel_id`, (replacing `detector_id`). This field is used to name
   the peak table belonging to a trace (`PT-LC.1.1.DET.1.CH#1`), so the
   two can still be matched up.
+- ‘Shimadzu’ `.lcd`, `.gcd` and `.qgd` files now report `file_version`,
+  the version of the container format (`5.01` for files written by
+  ‘LabSolutions’; absent in the older files, which report only a
+  `software_version` of `1.x`).
 
 #### ‘Varian’ SMS
 
@@ -860,7 +987,7 @@ CRAN release: 2025-03-31
 
 ### Major features
 
-- Added preliminary support for ‘Varian Worktation’ (`.sms`) format
+- Added preliminary support for ‘Varian Workstation’ (`.sms`) format
   through `read_varian_sms` function.
 - Added preliminary support for ‘Shimadzu QGD’ GC-MS files through the
   `read_shimadzu_qgd` function.
@@ -924,7 +1051,7 @@ CRAN release: 2025-03-31
 - Added metadata field for source checksum (SHA1) and source file
   format.
 - Other minor changes to metadata fields.
-- Return all times in Coordinated Univeral Time (UTC) for consistency
+- Return all times in Coordinated Universal Time (UTC) for consistency
   across systems.
 
 ## chromConverter 0.6.4

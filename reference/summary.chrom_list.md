@@ -30,8 +30,8 @@ summary(
   Character vector of attribute names to report. Defaults to:
   `sample_name`, `run_datetime`, `method`, `detector`, `wavelength`,
   `detector_range`, `scan_type`, `polarity`, `precursor_mz`,
-  `product_mz`, `mz_range`. A field that no chromatogram carries is
-  omitted rather than filled with `NA`.
+  `product_mz`, `mz_range`. A field that no chromatogram carries, or
+  that all of them leave empty, is omitted rather than filled with `NA`.
 
 - format_out:
 

@@ -1,7 +1,7 @@
-# Read 'Agilent' ACAML files from directory.
+# Read 'Agilent' ACAML files
 
 Extracts injection metadata from 'Agilent Common Analytical Markup
-Language' (ACAML) files into an R object.
+Language' (ACAML) files into a table.
 
 ## Usage
 
@@ -23,9 +23,9 @@ read_acaml(
 
 - find_files:
 
-  Logical. Set to `TRUE` (default) if you are providing the function
-  with a folder or vector of folders containing the files. Otherwise,
-  set to `FALSE`.
+  Logical. Whether to treat the supplied paths as directories to search
+  for files. Inferred if not supplied, by testing whether every path is
+  a file.
 
 - format_out:
 
@@ -52,8 +52,8 @@ read_acaml(
 ## Value
 
 A `data.frame`, `data.table` or `tibble` (according to the value of
-`format_out`) containing sample metadata derived from the supplied ACAML
-files.
+`format_out`) with one row per injection, and a `SourceFile` column
+naming the ACAML file it came from.
 
 ## Details
 

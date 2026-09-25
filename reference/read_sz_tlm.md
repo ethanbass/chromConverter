@@ -36,7 +36,7 @@ read_sz_tlm(
 - levels:
 
   Which MS levels to return, spelled `MS1` and `MS2`. Both are decoded
-  either way, since the level of a scan is recorded inside its own
+  either way, because the level of a scan is recorded inside its own
   compressed record.
 
 - sparse:
@@ -57,11 +57,12 @@ read_sz_tlm(
 
 ## Value
 
-A named list holding whichever of `MS1` and `MS2` the file has, each a
-long table with columns `scan`, `rt` (minutes), `mz` and `intensity`,
-preceded by `precursor_mz` where the scans carry one. A per-scan summary
-(retention time, event, MS level, polarity, precursor m/z, point count)
-is attached to each as a `scan_info` attribute.
+A named list holding whichever of the requested `levels` the file has,
+each a long table with columns `scan`, `rt` (minutes), `mz` and
+`intensity`, and a `precursor_mz` column before `mz` where the scans
+carry one. A per-scan summary (retention time, event, MS level,
+polarity, precursor m/z, point count) is attached to each as a
+`scan_info` attribute.
 
 ## Details
 
@@ -90,13 +91,13 @@ opens with a 44-byte header shared by every scan type:
 | 8–11 | `uint32` | Event number |
 | 12–15 | `uint32` | Scan counter within the event |
 | 16–19 | `uint32` | Scan index (0-based) |
-| 20–21 | `uint16` | Scan type: 10 = MS1 profile, 14 = MS2 profile, 15 = MRM/SIM |
+| 20–21 | `uint16` | Scan type: 10 = MS1 profile, 11 = SIM, 14 = MS2 profile, 15 = MRM |
 | 22–23 | `uint16` | MS level + 1 (0 in a truncated final scan) |
 | 24–27 | `uint32` | Constant (`0x00010000`) |
-| 28–31 | `uint32` | Last precursor m/z x 100 (stale outside MS2 scans) |
+| 28–31 | `uint32` | Last precursor m/z x 100 (stale outside product-ion scans) |
 | 32–35 | `uint32` | Instrument state bit field; bit 0 follows polarity |
 | 36–39 | `uint32` | Polarity (0 = positive, 1 = negative) |
-| 40–43 | `uint32` | Number of data points (profile) or transitions (MRM) |
+| 40–43 | `uint32` | Number of data points (profile) or transitions (MRM, SIM) |
 
 **Profile scans** (type 10 and 14) follow the header with two m/z pairs
 stored as m/z x 100 — the isolation window (equal low and high values
@@ -111,8 +112,8 @@ files seen so far). The grid overhangs the acquired range by 10 bins at
 the bottom and 9 at the top; those are dropped, which is what makes the
 summed intensity match the `TIC Data` stream exactly.
 
-**MRM and SIM scans** (type 15) instead follow the header with `n`
-12-byte transitions: Q1 m/z x 100, Q3 m/z x 100, and intensity.
+**MRM and SIM scans** (types 15 and 11) instead follow the header with
+`n` 12-byte transitions: Q1 m/z x 100, Q3 m/z x 100, and intensity.
 
 ## Author
 

@@ -9,7 +9,7 @@ chromatograms."><meta property="og:image" content="https://ethanbass.github.io/c
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@ chromatograms."><meta property="og:image" content="https://ethanbass.github.io/c
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Extract metadata</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/attach_metadata.R" class="external-link"><code>R/attach_metadata.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/attach_metadata.R" class="external-link"><code>R/attach_metadata.R</code></a></small>
       <div class="d-none name"><code>extract_metadata.Rd</code></div>
     </div>
 
@@ -61,16 +61,18 @@ chromatograms.</p>
 
 <dl><dt id="arg-chrom-list">chrom_list<a class="anchor" aria-label="anchor" href="#arg-chrom-list"></a></dt>
 <dd><p>A list of chromatograms with attached metadata (as returned
-by <code>read_chroms</code> with <code>read_metadata = TRUE</code>).</p></dd>
+by <code>read_chroms</code> with <code>read_metadata = TRUE</code>), or a single chromatogram.
+Nested lists are flattened, one row per chromatogram.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>A character vector specifying the metadata elements to
 extract. Defaults to every field chromConverter attaches; no format
 records all of them, so the elements a format does not provide are
-simply absent from the result. Superseded names (<code>injection_volume</code>,
+absent from the result. Superseded names (e.g. <code>injection_volume</code>,
 <code>software_name</code>, <code>time_start</code>) are accepted and mapped to the names
-that replaced them.</p></dd>
+that replaced them. A field requested by name that no chromatogram carries
+produces a warning.</p></dd>
 
 
 <dt id="arg-detector">detector<a class="anchor" aria-label="anchor" href="#arg-detector"></a></dt>
@@ -78,7 +80,7 @@ that replaced them.</p></dd>
 <code>c("UV", "MS")</code>), matched case-insensitively against each chromatogram's
 <code>detector</code> attribute. Defaults to <code>NULL</code>, in which case all chromatograms
 are included. Useful for lists containing more than one detector per
-sample.</p></dd>
+sample. It is an error if no chromatogram matches.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
@@ -111,8 +113,10 @@ right).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.frame</code>, <code>tibble</code>, or <code>data.table</code> (according to the value of
-<code>format_out</code>), with samples as rows and the specified metadata elements as
-columns, or <code>NA</code> if none of the specified elements could be found.</p>
+<code>format_out</code>), with one row per chromatogram and the specified metadata
+elements as columns, or <code>NA</code> if none of the specified elements could be
+found. For a list, the first column, <code>name</code>, identifies each chromatogram
+by its path through the list (e.g. <code>blue.UV</code>).</p>
     </div>
 
     <div class="section level2">

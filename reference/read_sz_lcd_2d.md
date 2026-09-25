@@ -1,6 +1,6 @@
 # Read 'Shimadzu' LCD 2D data
 
-Reads 2D PDA data stream from 'Shimadzu' `.lcd` files.
+Reads the chromatogram data streams from 'Shimadzu' `.lcd` files.
 
 ## Usage
 
@@ -40,15 +40,16 @@ read_sz_lcd_2d(
 - scale:
 
   Whether to scale the data by the calibration factor and the value
-  factor, converting the encoded integers into the unit reported by 'Lab
-  Solutions' (e.g. `mV`).
+  factor, converting the encoded integers into the unit reported by
+  'LabSolutions' (e.g. `mV`).
 
 ## Value
 
 One or more 2D chromatograms from the chromatogram streams in `matrix`
-or `data.frame` format, according to the value of
-`format_out. If multiple chromatograms are found, they will be returned as a list of matrices or data.frames. The chromatograms will be returned in `wide
-or `long format according to the value of `data_format\`.
+or `data.frame` format, according to the value of `format_out`. If
+multiple chromatograms are found, they will be returned as a list of
+matrices or data.frames. The chromatograms will be returned in `wide` or
+`long` format according to the value of `data_format`.
 
 ## Details
 

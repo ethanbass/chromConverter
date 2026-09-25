@@ -1,6 +1,6 @@
-# Read 'Agilent ChemStation' report files.
+# Read 'Agilent ChemStation' report files
 
-Reads 'Agilent ChemStation' reports into R.
+Reads peak tables from 'Agilent ChemStation' `Report.TXT` files.
 
 ## Usage
 
@@ -34,8 +34,8 @@ read_chemstation_reports(
 
 ## Value
 
-A `data.frame` containing the information from the specified
-'ChemStation' report.
+A `peak_list`: a list with one element per report, named by its `.D`
+directory, each holding one peak table per signal, named by wavelength.
 
 ## See also
 

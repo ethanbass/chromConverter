@@ -28,15 +28,15 @@ read_peaklist(
 
 - find_files:
 
-  Logical. Set to `TRUE` (default) if you are providing the function
-  with a folder or vector of folders containing the files. Otherwise,
-  set to `FALSE`.
+  Logical. Whether to treat the supplied paths as directories to search
+  for files. Inferred if not supplied, by testing whether every path is
+  a file.
 
 - format_in:
 
-  Format of files to be imported/converted. Current options include:
-  `chemstation`, `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`, and
-  `shimadzu_gcd`.
+  Format of files to be imported/converted. One of `chemstation` (the
+  default), `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`,
+  `shimadzu_gcd`, or `chromatotec`.
 
 - pattern:
 
@@ -76,9 +76,9 @@ read_peaklist(
 
 ## Value
 
-A list of `data.frame`s containing information about peaks where each
-list element represents a sample and each row represents an individual
-peak in that sample.
+A `peak_list`: a list with one element per sample, holding its peak
+table, or a list of peak tables named by signal where the file records
+more than one. Each row is a peak.
 
 ## Author
 

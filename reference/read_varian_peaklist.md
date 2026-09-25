@@ -1,4 +1,4 @@
-# Read 'Varian' peak list.
+# Read 'Varian' peak list
 
 Read peak list(s) from 'Varian MS Workstation'.
 

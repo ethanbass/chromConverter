@@ -29,17 +29,15 @@ read_cdf(
 
 - data_format:
 
-  Whether to return data in `wide` or `long` format. For 2D files,
-  "long" format returns the retention time as the first column of the
-  data.frame or matrix while "wide" format returns the retention time as
-  the rownames of the object. This argument applies only to 2D
-  chromatograms, since MS data will always be returned in long format.
+  Whether to return data in `wide` or `long` format. `"long"` returns
+  the retention time as the first column of the data.frame or matrix,
+  while `"wide"` returns it as the rownames. The mass spectra of an ANDI
+  MS file are always long, so there it applies only to the TIC.
 
 - what:
 
-  For `ANDI chrom` files, whether to extract `chroms` and/or
-  `peak_table`. For `ANDI ms` files, whether to extract MS1 scans
-  (`MS1`) or the total ion chromatogram (`TIC`).
+  For ANDI chrom files, `chroms` and/or `peak_table`. For ANDI MS files,
+  MS1 scans (`MS1`) and/or the total ion chromatogram (`TIC`).
 
 - read_metadata:
 
@@ -57,14 +55,31 @@ read_cdf(
 
 - ...:
 
-  Additional arguments to parser. The `ms_format` argument can be used
-  here to specify whether to return mass spectra in `list` format or as
-  a `data.frame`.
+  Additional arguments to the parser. For ANDI MS files, pass
+  `ms_format` to return the mass spectra as a `data.frame` (the default)
+  or a `list`.
 
 ## Value
 
 A chromatogram in the format specified by the `format_out` and
 `data_format` arguments.
+
+## Details
+
+Retention times are returned in minutes, converted from the unit the
+file declares. An ANDI chrom file declares it in its `retention_unit`
+attribute, which also governs the peak table. Seconds is both what the
+template uses and what all but one of its conformance files declare, so
+a file that declares no unit is read as seconds, unless chromConverter
+wrote it, in which case it is read as minutes.
+
+An ANDI MS file has no mandatory unit attribute, since the specification
+never formally defined its axes units, so `scan_acquisition_time` is
+read as seconds, the only unit the specification suggests, unless a
+`raw_data_time_units` attribute says otherwise.
+
+Either kind of file warns about a unit it does not recognize and reads
+it as seconds.
 
 ## Author
 

@@ -1,8 +1,7 @@
 # Write ANDI MS CDF file from chromatogram
 
 Exports mass spectrometry data in ANDI (Analytical Data Interchange) MS
-format (ASTM E1947-98). Retention times are converted to seconds, as the
-specification requires. A total ion chromatogram is derived from the MS1
+format (ASTM E1947-98). A total ion chromatogram is derived from the MS1
 scans if the supplied object does not already carry one.
 
 ## Usage
@@ -13,8 +12,7 @@ write_andi_ms(
   path_out,
   sample_name = NULL,
   force = FALSE,
-  ms_params = list(ionization_mode = "Electron Impact", ionization_polarity =
-    "Positive Polarity", detector_type = "Electron Multiplier")
+  ms_params = list()
 )
 ```
 
@@ -42,13 +40,28 @@ write_andi_ms(
 
 - ms_params:
 
-  A list of instrument settings recorded in the file, since they cannot
-  be derived from the data: `ionization_mode`, `ionization_polarity` and
-  `detector_type`.
+  A list of settings recorded in the file: `ionization_mode`,
+  `ionization_polarity`, `detector_type`, `scan_function` and
+  `experiment_type`. A setting that is not given is taken from the
+  chromatogram's metadata where it records one: the polarity from its
+  `polarity` attribute, the scan function from `scan_type`, and the
+  ionization mode and detector type from its `ms_params` attribute.
+  Failing that, the defaults are `"Electron Impact"`,
+  `"Positive Polarity"` and `"Electron Multiplier"`, and a scan function
+  is left out of the file. `experiment_type` is not read from metadata
+  and defaults to `"Centroided Mass Spectrum"`.
 
 ## Value
 
 Invisibly returns the path to the written CDF file.
+
+## Details
+
+Retention times are written in seconds, the only time unit the
+specification suggests, and declared in `raw_data_time_units`. A
+chromatogram is converted unless its `time_unit` already reports
+seconds, so one whose unit is missing or unrecognized is taken to be in
+minutes.
 
 ## Side effects
 

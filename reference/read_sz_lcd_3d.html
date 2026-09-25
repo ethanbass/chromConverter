@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Shimadzu' LCD 3D data</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
       <div class="d-none name"><code>read_sz_lcd_3d.Rd</code></div>
     </div>
 
@@ -100,8 +100,8 @@ The PDA data stream contains a segment for each retention time, beginning
 with a 24-byte header.</p>
 <p>The 24 byte header consists of the following fields:</p><ul><li><p>4 bytes: segment label (<code>17234</code>).</p></li>
 <li><p>4 bytes: Little-endian integer specifying the sampling rate along the
-spectral axis (?), where the equivalent field of a 2D stream gives the
-sampling rate along the time axis.</p></li>
+spectral axis, where the equivalent field of a 2D stream gives the
+sampling rate along the time axis. This reading is not confirmed.</p></li>
 <li><p>4 bytes: Little-endian integer specifying the number of wavelength values
 in the segment.</p></li>
 <li><p>4 bytes: Little-endian integer specifying the total number of bytes in the segment.</p></li>

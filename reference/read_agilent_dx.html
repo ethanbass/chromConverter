@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Agilent' DX files</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_agilent_dx.R" class="external-link"><code>R/read_agilent_dx.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_agilent_dx.R" class="external-link"><code>R/read_agilent_dx.R</code></a></small>
       <div class="d-none name"><code>read_agilent_dx.Rd</code></div>
     </div>
 
@@ -64,15 +64,17 @@
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>Whether to extract chromatograms (<code>chroms</code>), DAD data
-(<code>dad</code>) and/or auxiliary instrumental data (<code>instrument</code>) (e.g.,
-temperature, pressure, solvent composition, etc.). Accepts multiple arguments.</p></dd>
+(<code>dad</code>) and/or auxiliary instrumental data (<code>instrument</code>), such as
+temperature, pressure or solvent composition. Accepts multiple arguments,
+and defaults to <code>chroms</code> and <code>dad</code>. When more than one is requested, any the archive does not contain
+are left out; a single one that is missing is an error.</p></dd>
 
 
 <dt id="arg-path-out">path_out<a class="anchor" aria-label="anchor" href="#arg-path-out"></a></dt>
 <dd><p>A directory to export unzipped files. If a path is not
-specified, the files will be written to a temp directory on the disk. The
-function will overwrite existing folders in the specified directory
-that share the basename of the file specified by <code>path</code>.</p></dd>
+specified, a temporary directory is used. The files are extracted into a
+folder named for <code>path</code>, overwriting any files of the same name already
+there.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
@@ -100,13 +102,21 @@ element. Defaults to <code>TRUE</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A chromatogram in the format specified by <code>format_out</code> (retention
-time x wavelength).</p>
+    <p>A list with one element per type in <code>what</code>, each a chromatogram or
+a list of chromatograms named by signal, in the format specified by
+<code>format_out</code> and <code>data_format</code>. With <code>collapse = TRUE</code>, a list of one
+element is replaced by that element.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function unzips 'Agilent'  <code>.dx</code> into a temporary directory using
-<a href="https://rdrr.io/r/utils/unzip.html" class="external-link">unzip</a> and calls the appropriate parser on the unzipped file.</p>
+    <p>The archive is extracted to <code>path_out</code>, or to a temporary directory that is
+deleted afterwards, and its <code>.ch</code>, <code>.uv</code> and <code>.it</code> files are read with
+<a href="read_chemstation_ch.html">read_chemstation_ch</a>, <a href="read_chemstation_uv.html">read_chemstation_uv</a> and an internal reader for
+<code>.it</code> files.</p>
+<p>Where the archive holds an <code>injection.acmd</code> file, the <code>run_datetime</code> and
+<code>sample_injection_volume</code> attributes are taken from it. Its run time
+records the offset from UTC, while the <code>.ch</code> and <code>.uv</code> headers give only
+the local time.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

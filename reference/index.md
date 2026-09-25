@@ -26,13 +26,13 @@
 - [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md)
   : Read 'Agilent ChemStation' CSV files
 - [`read_chemstation_ms()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.md)
-  : Read 'Agilent ChemStation' MS file.
+  : Read 'Agilent ChemStation' MS files
 - [`read_chemstation_reports()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_reports.md)
-  : Read 'Agilent ChemStation' report files.
+  : Read 'Agilent ChemStation' report files
 - [`read_chemstation_uv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md)
   : Read 'Agilent ChemStation' DAD files
 - [`read_acaml()`](https://ethanbass.github.io/chromConverter/reference/read_acaml.md)
-  : Read 'Agilent' ACAML files from directory.
+  : Read 'Agilent' ACAML files
 
 ## Shimadzu parsers
 
@@ -69,7 +69,7 @@
 - [`read_varian_sms()`](https://ethanbass.github.io/chromConverter/reference/read_varian_sms.md)
   : Read 'Varian' SMS
 - [`read_varian_peaklist()`](https://ethanbass.github.io/chromConverter/reference/read_varian_peaklist.md)
-  : Read 'Varian' peak list.
+  : Read 'Varian' peak list
 
 ## Bindings to external parsers
 
@@ -82,8 +82,7 @@
 - [`read_thermoraw()`](https://ethanbass.github.io/chromConverter/reference/read_thermoraw.md)
   : Read ThermoRaw
 - [`call_rainbow()`](https://ethanbass.github.io/chromConverter/reference/call_rainbow.md)
-  : Call 'rainbow' parsers Parse 'Agilent' or 'Waters' files with
-  rainbow parsers
+  : Call 'rainbow' parsers
 - [`sp_converter()`](https://ethanbass.github.io/chromConverter/reference/sp_converter.md)
   : Converter for 'Agilent MassHunter' UV files
 - [`uv_converter()`](https://ethanbass.github.io/chromConverter/reference/uv_converter.md)

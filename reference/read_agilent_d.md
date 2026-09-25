@@ -1,6 +1,7 @@
 # Read files from 'Agilent ChemStation' .D directories
 
-Reads files from 'Agilent' `.D` directories.
+Reads the `.ch`, `.uv` and `Report.TXT` files in an 'Agilent' `.D`
+directory. Other files in the directory are ignored.
 
 ## Usage
 
@@ -25,7 +26,9 @@ read_agilent_d(
 - what:
 
   Whether to extract chromatograms (`chroms`), DAD data (`dad`) and/or
-  peak tables (`peak_table`). Accepts multiple arguments.
+  peak tables (`peak_table`). Accepts multiple arguments, and defaults
+  to all three. Types the directory does not contain are left out, and
+  it is an error if it contains none of them.
 
 - format_out:
 
@@ -51,20 +54,17 @@ read_agilent_d(
 
 ## Value
 
-A list of chromatograms in the format specified by `data_format` and
-`format_out`. If `data_format` is `wide`, the chromatograms will be
+A list with one element per type found, each a chromatogram or a list of
+them named by file, in the format specified by `format_out` and
+`data_format`. If `data_format` is `wide`, the chromatograms will be
 returned with retention times as rows and columns containing signal
 intensity for each signal. If `long` format is requested, retention
 times will be in the first column. The `format_out` argument determines
 whether the chromatogram is returned as a `matrix`, `data.frame` or
-`data.table`. Metadata can be attached to the chromatogram as
+`data.table`. Metadata are attached as
 [attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
-is `TRUE`.
-
-## Details
-
-Currently this function is limited to reading `.uv`, `.ch` and
-`peak_table` elements.
+is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by
+that element.
 
 ## See also
 

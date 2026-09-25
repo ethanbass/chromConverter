@@ -43,7 +43,7 @@ write_chroms(
 
 - force:
 
-  Logical. Whether to overwrite existing files. Defaults to `TRUE`.
+  Logical. Whether to overwrite existing files. Defaults to `FALSE`.
 
 - show_progress:
 

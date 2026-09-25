@@ -1,8 +1,7 @@
 # Converter for 'Agilent MassHunter' UV files
 
-Converts a single chromatogram from MassHunter `.sp` format to R
-`data.frame` using the [Aston](https://github.com/bovee/aston) file
-parser.
+Reads a single chromatogram from a MassHunter `.sp` file using the
+[Aston](https://github.com/bovee/aston) file parser.
 
 ## Usage
 
@@ -50,9 +49,8 @@ The 'aston' parser is deprecated and will be removed in a future
 release. 'Aston' has been unmaintained since 2020. This is the only
 remaining 'aston' binding, and
 [read_chroms](https://ethanbass.github.io/chromConverter/reference/read_chroms.md)
-selects it automatically only as a last resort, when no other parser can
-read the file. Please use the 'entab' parser (by the same author as
-'Aston') instead, e.g.
+selects it automatically only when 'entab' is not installed. Please use
+the 'entab' parser (by the same author as 'Aston') instead, e.g.
 `read_chroms(path, format_in = "masshunter_dad", parser = "entab")`.
 
 ## See also

@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Shimadzu' LCD</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
       <div class="d-none name"><code>read_shimadzu_lcd.Rd</code></div>
     </div>
 
@@ -70,11 +70,14 @@
 <dd><p>What stream to get: current options are <code>DAD</code> (for which <code>PDA</code>
 is accepted as a synonym, since that is what 'Shimadzu' calls the same
 detector), chromatograms (<code>chroms</code>), <code>TIC</code>, mass spectra (<code>MS1</code>, <code>MS2</code>, or
-<code>MS</code> for both), and/or peak lists (<code>peak_table</code>). Note that an MRM or SIM acquisition is a single
-stage of mass selection either way: MRM scans are <code>MS2</code>, and SIM scans,
-whose Q1 (first quadrupole) and Q3 (third quadrupole) are the same, are <code>MS1</code>.</p>
+<code>MS</code> for both), and/or peak lists (<code>peak_table</code>). <code>MS1</code> and <code>MS2</code> count
+stages of mass selection rather than name a scan type, so a triple
+quadrupole acquisition can land on either: an MRM scan selects a precursor
+in Q1 (the first quadrupole) and a product in Q3 (the third), so it is
+<code>MS2</code>, while a SIM scan sets Q1 and Q3 to the same mass, selecting nothing
+after the collision cell, and so is <code>MS1</code>.</p>
 <p>If a stream is not specified, the richest one the file contains is returned:
-<code>PDA</code> if there is a PDA stream, otherwise <code>chroms</code>, and otherwise <code>MS</code> for a
+<code>DAD</code> if there is a PDA stream, otherwise <code>chroms</code>, and otherwise <code>MS</code> for a
 file whose only detector is the mass spectrometer. The mass spectrometry
 streams are read from whichever container the file uses: <code>QTFL RawData</code>
 (centroided quadrupole time-of-flight data) or <code>TLM Raw Data</code> (triple
@@ -118,14 +121,17 @@ element. Defaults to <code>TRUE</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A chromatogram or list of chromatograms in the format specified by
-<code>data_format</code> and <code>format_out</code>. If <code>data_format</code> is <code>wide</code>, the
-chromatogram(s) will be returned with retention times as rows and a
-single column for the intensity. If <code>long</code> format is requested, two
-columns will be returned: one for the retention time and one for the intensity.
-The <code>format_out</code> argument determines whether chromatograms are returned
-in <code>matrix</code>, <code>data.frame</code>, or <code>data.table</code> format. Metadata will be
-attached to the chromatogram as <a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a> when <code>read_metadata</code> is <code>TRUE</code>.</p>
+    <p>A named list with one element per stream requested, or the element
+itself where there is only one and <code>collapse</code> is <code>TRUE</code>. Chromatograms and
+the PDA data are returned in the format specified by <code>data_format</code> and
+<code>format_out</code>. In <code>wide</code> format, retention times are the rows, and each 2D
+chromatogram has a single intensity column while the PDA data have one
+column per wavelength. If <code>long</code> format is requested, the retention time
+and the intensity are returned as columns, alongside the detector, channel,
+wavelength and unit for a 2D chromatogram. The <code>format_out</code> argument
+determines whether they are returned in <code>matrix</code>, <code>data.frame</code>, or
+<code>data.table</code> format. Mass spectra and peak tables are always long.
+Metadata are attached as <a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a> when <code>read_metadata</code> is <code>TRUE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -134,8 +140,9 @@ encoded as 'Microsoft' OLE documents. The parser relies on the
 <a href="https://pypi.org/project/olefile/" class="external-link">olefile</a> package in Python to unpack the
 files. Each detector writes its own storage, and this function dispatches
 over them:</p><ul><li><p><strong>PDA</strong> (<code>PDA 3D Raw Data:3D Raw Data</code>), requested as <code>DAD</code>: one
-delta-encoded segment per retention time, each holding a full spectrum. Read by <code><a href="read_sz_lcd_3d.html">read_sz_lcd_3d()</a></code>,
-which documents the segment header and the delta encoding.</p></li>
+delta-encoded segment per retention time, each holding a full spectrum.
+Read by <code><a href="read_sz_lcd_3d.html">read_sz_lcd_3d()</a></code>, which documents the segment header and the
+delta encoding.</p></li>
 <li><p><strong>Chromatograms</strong> (<code>LSS Raw Data:Chromatogram Ch&lt;#&gt;</code>): one stream per
 channel, delta-encoded in the same way. Read by <code><a href="read_sz_lcd_2d.html">read_sz_lcd_2d()</a></code>.</p></li>
 <li><p><strong>Quadrupole time-of-flight mass spectra</strong> (<code>QTFL RawData</code>): centroided
@@ -150,7 +157,7 @@ scan, MRM and SIM acquisitions. Read by <code><a href="read_sz_tlm.html">read_sz
 index, the scan header and the layout of each scan type. The total ion
 current is again held separately, in <code>TIC Data</code>.</p></li>
 <li><p><strong>Peak tables</strong> (<code>Peak Table</code>): integration results as reported by
-'Lab Solutions', one stream per channel. Read by <code><a href="read_sz_tables.html">read_sz_tables()</a></code>, which
+'LabSolutions', one stream per channel. Read by <code><a href="read_sz_tables.html">read_sz_tables()</a></code>, which
 documents the two record layouts.</p></li>
 </ul><p>The two mass spectrometry containers are mutually exclusive: a file holds
 one or the other, according to the instrument that wrote it.</p>
@@ -168,35 +175,36 @@ names the event every scan came from.</p>
 local time zone (e.g. <code>+01'00'</code>), but this is the standard offset of the
 zone rather than the offset that was in force, and it seems that no daylight
 saving information is stored anywhere in the file. The local times displayed by
-'Lab Solutions' therefore cannot be reconstructed from the recorded offset
+'LabSolutions' therefore cannot be reconstructed from the recorded offset
 alone: where daylight saving time applied, they are an hour ahead of it.
 Rendering <code>run_datetime</code> in the zone where the data were acquired, e.g.
 <code>format(attr(x, "run_datetime"), tz = "Europe/Paris")</code>, recovers them
 exactly.</p>
 <p>As of <code>v0.10.0</code>, 2D chromatograms are scaled by the calibration factor and
 the value factor recorded for each channel, so their intensities match those
-reported by 'Lab Solutions'. An absorbance axis can be reported in <code>uAU</code>,
+reported by 'LabSolutions'. An absorbance axis can be reported in <code>uAU</code>,
 <code>mAU</code> or <code>AU</code>, and the file records the size of each as a <strong>value factor</strong>:
 <code>1</code>, <code>1000</code> and <code>1e6</code>, since one <code>mAU</code> is a thousand <code>uAU</code> and one <code>AU</code> a
-million. The smallest of them is the <strong>base unit</strong>, while 'Lab Solutions'
+million. The smallest of them is the <strong>base unit</strong>, while 'LabSolutions'
 displays the data in whichever unit the method selected, usually <code>mAU</code>.
 Other detectors work the same way: a refractive index axis measures in <code>nRI</code>
 and displays <code>uRI</code>.</p>
 <p>Two factors separate the stored integers from the displayed value. The
 calibration factor converts an integer into base units, and the value factor
-converts base units into the displayed unit; an intensity as 'Lab Solutions'
+converts base units into the displayed unit; an intensity as 'LabSolutions'
 reports it is the integer times the one divided by the other. The
-calibration factor is <code>1</code> on some channels and not on others (~42 for an
-SPD-20A, ~310 for an RID-10A), which suggests the integers are detector
-counts whose size varies by module, though the file does not say so.</p>
+calibration factor is <code>1</code> on some channels and not on others (e.g. about
+<code>0.024</code> for an SPD-20A and <code>0.0032</code> for an RID-10A), which suggests the
+integers are detector counts whose size varies by module, though the file
+does not say so.</p>
 <p>For a 2D chromatogram, <code>scale = TRUE</code> applies both factors. <code>scale = FALSE</code>
-returns the stored integers, and reports them as <code>uAU</code> only where the
-calibration factor is <code>1</code>; where it is not, the integers are in no unit we
-can name, so the displayed unit is left in place rather than claiming one
-they are not in. Either way the values and the <code>detector_y_unit</code> attribute
-agree.</p>
+returns the stored integers. Where the calibration factor is <code>1</code>, their
+<code>detector_y_unit</code> is the base unit (e.g. <code>uAU</code>), and the values and the
+attribute agree. Where it is not, the integers are in no unit we can name,
+so <code>detector_y_unit</code> is <code>NA</code>; the <code>scaled</code> attribute records which of the
+two was returned.</p>
 <p>PDA data is instead returned as it is encoded in the file, matching the
-<code>[PDA 3D]</code> section of a 'Lab Solutions' ASCII export, which declares no
+<code>[PDA 3D]</code> section of a 'LabSolutions' ASCII export, which declares no
 intensity unit or multiplier. The <code>3D Data Item</code> describes the absorbance
 axis in <code>mAU</code> with a value factor of <code>1000</code>, which would imply scaling the
 values by <code>0.001</code>, but the <code>[PDA Multi Chromatogram]</code> traces in the ASCII
@@ -209,7 +217,7 @@ the value at the next, and no single wavelength describes the trace. It is
 derived from the PDA data but is read as a 2D chromatogram, so it is scaled
 and currently differs from the PDA data by a factor of <code>1000</code>. The
 wavelength range it was taken over is not recorded in the <code>2D Data Item</code>,
-whose nanometre axis spans <code>0</code> to <code>0</code>, so its <code>wavelength</code> attribute is <code>NA</code>
+whose nanometer axis spans <code>0</code> to <code>0</code>, so its <code>wavelength</code> attribute is <code>NA</code>
 rather than the acquisition range of the PDA stream.</p>
     </div>
     <div class="section level2">

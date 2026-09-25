@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Waters' RAW</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_waters_raw.R" class="external-link"><code>R/read_waters_raw.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_waters_raw.R" class="external-link"><code>R/read_waters_raw.R</code></a></small>
       <div class="d-none name"><code>read_waters_raw.Rd</code></div>
     </div>
 
@@ -79,13 +79,13 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A chromatogram in the format specified by the <code>format_out</code> and
-<code>data_format</code> arguments.</p>
+    <p>A list of 2D chromatograms, one per trace and named by it, in the
+format specified by <code>format_out</code> and <code>data_format</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
-    <p>For now this parser only reads 1D chromatograms (not mass spectra or
-DAD data) and does not support parsing of metadata from 'Waters' RAW files.</p>
+    <p>This parser reads only 2D chromatograms (retention time and
+intensity), not mass spectra or DAD data.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

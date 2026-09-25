@@ -26,15 +26,18 @@ read_agilent_dx(
 - what:
 
   Whether to extract chromatograms (`chroms`), DAD data (`dad`) and/or
-  auxiliary instrumental data (`instrument`) (e.g., temperature,
-  pressure, solvent composition, etc.). Accepts multiple arguments.
+  auxiliary instrumental data (`instrument`), such as temperature,
+  pressure or solvent composition. Accepts multiple arguments, and
+  defaults to `chroms` and `dad`. When more than one is requested, any
+  the archive does not contain are left out; a single one that is
+  missing is an error.
 
 - path_out:
 
-  A directory to export unzipped files. If a path is not specified, the
-  files will be written to a temp directory on the disk. The function
-  will overwrite existing folders in the specified directory that share
-  the basename of the file specified by `path`.
+  A directory to export unzipped files. If a path is not specified, a
+  temporary directory is used. The files are extracted into a folder
+  named for `path`, overwriting any files of the same name already
+  there.
 
 - format_out:
 
@@ -60,14 +63,24 @@ read_agilent_dx(
 
 ## Value
 
-A chromatogram in the format specified by `format_out` (retention time x
-wavelength).
+A list with one element per type in `what`, each a chromatogram or a
+list of chromatograms named by signal, in the format specified by
+`format_out` and `data_format`. With `collapse = TRUE`, a list of one
+element is replaced by that element.
 
 ## Details
 
-This function unzips 'Agilent' `.dx` into a temporary directory using
-[unzip](https://rdrr.io/r/utils/unzip.html) and calls the appropriate
-parser on the unzipped file.
+The archive is extracted to `path_out`, or to a temporary directory that
+is deleted afterwards, and its `.ch`, `.uv` and `.it` files are read
+with
+[read_chemstation_ch](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md),
+[read_chemstation_uv](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md)
+and an internal reader for `.it` files.
+
+Where the archive holds an `injection.acmd` file, the `run_datetime` and
+`sample_injection_volume` attributes are taken from it. Its run time
+records the offset from UTC, while the `.ch` and `.uv` headers give only
+the local time.
 
 ## See also
 

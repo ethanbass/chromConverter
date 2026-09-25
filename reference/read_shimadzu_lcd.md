@@ -30,13 +30,16 @@ read_shimadzu_lcd(
   What stream to get: current options are `DAD` (for which `PDA` is
   accepted as a synonym, since that is what 'Shimadzu' calls the same
   detector), chromatograms (`chroms`), `TIC`, mass spectra (`MS1`,
-  `MS2`, or `MS` for both), and/or peak lists (`peak_table`). Note that
-  an MRM or SIM acquisition is a single stage of mass selection either
-  way: MRM scans are `MS2`, and SIM scans, whose Q1 (first quadrupole)
-  and Q3 (third quadrupole) are the same, are `MS1`.
+  `MS2`, or `MS` for both), and/or peak lists (`peak_table`). `MS1` and
+  `MS2` count stages of mass selection rather than name a scan type, so
+  a triple quadrupole acquisition can land on either: an MRM scan
+  selects a precursor in Q1 (the first quadrupole) and a product in Q3
+  (the third), so it is `MS2`, while a SIM scan sets Q1 and Q3 to the
+  same mass, selecting nothing after the collision cell, and so is
+  `MS1`.
 
   If a stream is not specified, the richest one the file contains is
-  returned: `PDA` if there is a PDA stream, otherwise `chroms`, and
+  returned: `DAD` if there is a PDA stream, otherwise `chroms`, and
   otherwise `MS` for a file whose only detector is the mass
   spectrometer. The mass spectrometry streams are read from whichever
   container the file uses: `QTFL RawData` (centroided quadrupole
@@ -81,14 +84,17 @@ read_shimadzu_lcd(
 
 ## Value
 
-A chromatogram or list of chromatograms in the format specified by
-`data_format` and `format_out`. If `data_format` is `wide`, the
-chromatogram(s) will be returned with retention times as rows and a
-single column for the intensity. If `long` format is requested, two
-columns will be returned: one for the retention time and one for the
-intensity. The `format_out` argument determines whether chromatograms
-are returned in `matrix`, `data.frame`, or `data.table` format. Metadata
-will be attached to the chromatogram as
+A named list with one element per stream requested, or the element
+itself where there is only one and `collapse` is `TRUE`. Chromatograms
+and the PDA data are returned in the format specified by `data_format`
+and `format_out`. In `wide` format, retention times are the rows, and
+each 2D chromatogram has a single intensity column while the PDA data
+have one column per wavelength. If `long` format is requested, the
+retention time and the intensity are returned as columns, alongside the
+detector, channel, wavelength and unit for a 2D chromatogram. The
+`format_out` argument determines whether they are returned in `matrix`,
+`data.frame`, or `data.table` format. Mass spectra and peak tables are
+always long. Metadata are attached as
 [attributes](https://rdrr.io/r/base/attributes.html) when
 `read_metadata` is `TRUE`.
 
@@ -128,7 +134,7 @@ dispatches over them:
   type. The total ion current is again held separately, in `TIC Data`.
 
 - **Peak tables** (`Peak Table`): integration results as reported by
-  'Lab Solutions', one stream per channel. Read by
+  'LabSolutions', one stream per channel. Read by
   [`read_sz_tables()`](https://ethanbass.github.io/chromConverter/reference/read_sz_tables.md),
   which documents the two record layouts.
 
@@ -149,41 +155,41 @@ Times are stored as a 'Windows' `FILETIME`, which is always UTC, so
 the local time zone (e.g. `+01'00'`), but this is the standard offset of
 the zone rather than the offset that was in force, and it seems that no
 daylight saving information is stored anywhere in the file. The local
-times displayed by 'Lab Solutions' therefore cannot be reconstructed
-from the recorded offset alone: where daylight saving time applied, they
-are an hour ahead of it. Rendering `run_datetime` in the zone where the
-data were acquired, e.g.
+times displayed by 'LabSolutions' therefore cannot be reconstructed from
+the recorded offset alone: where daylight saving time applied, they are
+an hour ahead of it. Rendering `run_datetime` in the zone where the data
+were acquired, e.g.
 `format(attr(x, "run_datetime"), tz = "Europe/Paris")`, recovers them
 exactly.
 
 As of `v0.10.0`, 2D chromatograms are scaled by the calibration factor
 and the value factor recorded for each channel, so their intensities
-match those reported by 'Lab Solutions'. An absorbance axis can be
+match those reported by 'LabSolutions'. An absorbance axis can be
 reported in `uAU`, `mAU` or `AU`, and the file records the size of each
 as a **value factor**: `1`, `1000` and `1e6`, since one `mAU` is a
 thousand `uAU` and one `AU` a million. The smallest of them is the
-**base unit**, while 'Lab Solutions' displays the data in whichever unit
+**base unit**, while 'LabSolutions' displays the data in whichever unit
 the method selected, usually `mAU`. Other detectors work the same way: a
 refractive index axis measures in `nRI` and displays `uRI`.
 
 Two factors separate the stored integers from the displayed value. The
 calibration factor converts an integer into base units, and the value
-factor converts base units into the displayed unit; an intensity as 'Lab
-Solutions' reports it is the integer times the one divided by the other.
-The calibration factor is `1` on some channels and not on others (~42
-for an SPD-20A, ~310 for an RID-10A), which suggests the integers are
-detector counts whose size varies by module, though the file does not
-say so.
+factor converts base units into the displayed unit; an intensity as
+'LabSolutions' reports it is the integer times the one divided by the
+other. The calibration factor is `1` on some channels and not on others
+(e.g. about `0.024` for an SPD-20A and `0.0032` for an RID-10A), which
+suggests the integers are detector counts whose size varies by module,
+though the file does not say so.
 
 For a 2D chromatogram, `scale = TRUE` applies both factors.
-`scale = FALSE` returns the stored integers, and reports them as `uAU`
-only where the calibration factor is `1`; where it is not, the integers
-are in no unit we can name, so the displayed unit is left in place
-rather than claiming one they are not in. Either way the values and the
-`detector_y_unit` attribute agree.
+`scale = FALSE` returns the stored integers. Where the calibration
+factor is `1`, their `detector_y_unit` is the base unit (e.g. `uAU`),
+and the values and the attribute agree. Where it is not, the integers
+are in no unit we can name, so `detector_y_unit` is `NA`; the `scaled`
+attribute records which of the two was returned.
 
 PDA data is instead returned as it is encoded in the file, matching the
-`[PDA 3D]` section of a 'Lab Solutions' ASCII export, which declares no
+`[PDA 3D]` section of a 'LabSolutions' ASCII export, which declares no
 intensity unit or multiplier. The `3D Data Item` describes the
 absorbance axis in `mAU` with a value factor of `1000`, which would
 imply scaling the values by `0.001`, but the `[PDA Multi Chromatogram]`
@@ -198,7 +204,7 @@ wavelength than the value at the next, and no single wavelength
 describes the trace. It is derived from the PDA data but is read as a 2D
 chromatogram, so it is scaled and currently differs from the PDA data by
 a factor of `1000`. The wavelength range it was taken over is not
-recorded in the `2D Data Item`, whose nanometre axis spans `0` to `0`,
+recorded in the `2D Data Item`, whose nanometer axis spans `0` to `0`,
 so its `wavelength` attribute is `NA` rather than the acquisition range
 of the PDA stream.
 

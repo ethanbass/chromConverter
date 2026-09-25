@@ -1,11 +1,6 @@
-# Call 'rainbow' parsers Parse 'Agilent' or 'Waters' files with rainbow parsers
+# Call 'rainbow' parsers
 
-Uses [rainbow](https://rainbow-api.readthedocs.io) parsers to read in
-Agilent (`.D`) and Waters (`.raw`) files. If `format_in` is
-`"agilent_d"` or `"waters_raw"`, a directory of the appropriate format
-(`.D` or `.raw`) should be provided to the `path` argument. If
-`format_in` is `"chemstation_uv"` a `.uv` file should be provided. Data
-can be filtered by detector type using the `what` argument.
+Parse 'Agilent' or 'Waters' files with rainbow parsers.
 
 ## Usage
 
@@ -35,8 +30,9 @@ call_rainbow(
 
 - format_in:
 
-  Format of the supplied files. Either `agilent_d`, `waters_raw`, or
-  `chemstation`.
+  Format of the supplied files. Either `agilent_d`, `waters_raw`,
+  `masshunter`, `chemstation`, `chemstation_uv`, `chemstation_fid`, or
+  `chemstation_ms`.
 
 - format_out:
 
@@ -48,13 +44,14 @@ call_rainbow(
 
 - by:
 
-  How to order the list that is returned. Either `detector` (default) or
-  `name`.
+  How to group the returned list: by `detector` (default), or by `name`,
+  one element per data file in the directory.
 
 - what:
 
-  What types of data to return (e.g. `MS`, `UV`, `CAD`, `ELSD`). This
-  argument only applies if `by == "detector"`.
+  Which detectors to return (e.g. `MS`, `UV`, `CAD`, `ELSD`). Applies
+  only when `by = "detector"`. Defaults to `NULL`, which returns all of
+  them.
 
 - read_metadata:
 
@@ -72,14 +69,13 @@ call_rainbow(
 
 - precision:
 
-  Number of decimals to round mz values. Defaults to `1`. Ignored if
-  `bin_width` is supplied.
+  Number of decimals of the m/z grid, which is spaced `10^-precision`
+  apart. Defaults to `1`. Ignored if `bin_width` is supplied.
 
 - sparse:
 
-  Logical. Whether to return MS data in sparse format (excluding zeros).
-  Defaults to `TRUE`. Applies only when data are requested in `long`
-  format.
+  Logical. Whether to drop zero intensities from MS data. Applies only
+  to `long` format. Defaults to `TRUE`.
 
 - bin_width:
 
@@ -89,8 +85,19 @@ call_rainbow(
 
 ## Value
 
-Returns a (nested) list of matrices or `data.frame`s according to the
-value of `format_out`. Data is ordered according to the value of `by`.
+A (nested) list of chromatograms, or a single chromatogram for the
+`chemstation` formats, in the class given by `format_out`. The list is
+grouped according to the value of `by`.
+
+## Details
+
+Uses [rainbow](https://rainbow-api.readthedocs.io) parsers to read in
+Agilent (`.D`) and Waters (`.raw`) files. For `agilent_d`, `waters_raw`
+and `masshunter`, `path` is the data directory (`.D` or `.raw`), and the
+result is a list grouped according to `by`. For the `chemstation`
+formats, `path` is a single file (e.g. `.uv`), the result is a single
+chromatogram, and `by` and `what` are ignored. Otherwise, data can be
+filtered by detector type using the `what` argument.
 
 ## See also
 

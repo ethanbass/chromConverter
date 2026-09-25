@@ -1,8 +1,6 @@
 # Write mzML
 
-This function constructs mzML files by writing XML strings directly to a
-file connection. While this approach is fast, it may be less flexible
-than methods based on an explicit Document Object Model (DOM).
+Writes spectra and chromatograms to an mzML file.
 
 ## Usage
 
@@ -13,6 +11,7 @@ write_mzml(
   sample_name = NULL,
   what = NULL,
   instrument_info = NULL,
+  centroided = TRUE,
   compress = TRUE,
   indexed = TRUE,
   force = FALSE,
@@ -25,7 +24,9 @@ write_mzml(
 
 - data:
 
-  List of `data.frame`s or `data.table`s containing spectral data.
+  A named list of `data.frame`s or `data.table`s, keyed by stream
+  (`MS1`, `MS2`, `TIC`, `BPC`, `DAD`), or a single chromatogram carrying
+  a `detector` attribute that says which stream it is.
 
 - path_out:
 
@@ -34,17 +35,31 @@ write_mzml(
 - sample_name:
 
   The name of the file. If a name is not provided, the name will be
-  derived from the `sample_name` attribute.
+  derived from the `sample_name` attribute, and it is an error if there
+  is no such attribute.
 
 - what:
 
-  Which streams to write to mzML: `"MS1"`, `"TIC"`, `"BPC"`, and/or
-  `"DAD"`. `"MS2"` is accepted but skipped with a warning, as MS2
-  spectra are not written yet.
+  Which streams to write to mzML: `"MS1"`, `"MS2"`, `"TIC"`, `"BPC"`,
+  and/or `"DAD"`. Defaults to every element of `data` that holds any
+  rows.
 
 - instrument_info:
 
-  Instrument info to write to mzML file.
+  Controlled-vocabulary terms describing the instrument, as a list of
+  lists with elements `cvRef`, `accession`, `name` and `value`, each
+  written as one `cvParam` of the `instrumentConfiguration`. Defaults to
+  `NULL`, in which case `MS:1000031` ("instrument model") is written
+  with the chromatogram's `detector_model` or `instrument` as its value,
+  or bare where it records neither.
+
+- centroided:
+
+  Logical. Whether the spectra are centroided, written as `MS:1000127`
+  or, when `FALSE`, `MS:1000128` ("profile spectrum"). Defaults to
+  `TRUE`. Set it to `FALSE` for the profile scan types of a triple
+  quadrupole (a full scan or a product-ion scan, as opposed to SIM or
+  MRM).
 
 - compress:
 
@@ -73,15 +88,52 @@ Invisibly returns the path to the written mzML file.
 
 ## Details
 
-The function supports writing various types of spectral data including
-MS1, TIC (Total Ion Current), BPC (Base Peak Chromatogram), and DAD
-(Diode Array Detector) data. DAD spectra are written as electromagnetic
-radiation spectra (`MS:1000804`) using Thermo's naming convention with
+Mass spectra and DAD spectra are written to the `spectrumList`, while
+the total ion current (`TIC`) and the base peak chromatogram (`BPC`) go
+to the `chromatogramList`, since the controlled vocabulary has terms for
+those two summaries. DAD spectra are written as electromagnetic
+radiation spectra (`MS:1000804`) using Thermo's naming convention, with
 `controllerType=4` in the spectrum ID for compatibility with existing
-tools. Support for MS2 may be added in a future release.
+tools.
+
+Asking for both `MS1` and `MS2` writes them into one `spectrumList`,
+interleaved in acquisition order: on the `scan` column they share, or on
+retention time where neither has one. Each spectrum is then named for
+its scan (`scan=417`) rather than for its position in the list, which
+keeps the names unique across the levels. An MS2 spectrum carries the
+precursor it came from as `MS:1000744` ("selected ion m/z"), and a
+`spectrumRef` to the MS1 spectrum that precedes it. Collision energy,
+isolation window and precursor charge are not written, as no parser in
+the package reads them.
+
+Retention times are written in minutes (`UO:0000031`), as chromConverter
+reports them, rather than converted to seconds as
+[write_andi_ms](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md)
+does.
+
+The streams to write come from the names of `data`, so a bare
+chromatogram has to say what it holds through its `detector` attribute:
+`UV` and `DAD` are written as a DAD stream, and `MS` as `MS1`, or as
+`MS2` where the table also carries an `ms_level` attribute above 1. Any
+other `detector`, including a missing or `NA` one (which is how several
+parsers report an unknown detector), is an error: the function stops
+rather than guess, and asks for a named list instead.
+
+A one-dimensional DAD stream (a single wavelength) is refused: mzML has
+no axis to write it along, so it would become one single-point spectrum
+per retention time. Use
+[write_andi_chrom](https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.md)
+for a single trace. If it is the only stream requested this is an error;
+otherwise it is dropped with a warning and the rest is written.
+
+The file's metadata are taken from the `MS1` stream if it is written,
+and otherwise from the first stream requested. That stream's
+`sample_name` attribute names the file unless `sample_name` is supplied.
 
 If `indexed = TRUE`, the function will generate an indexed mzML file,
-which allows faster random access to spectra.
+which allows faster random access to spectra. The file is assembled by
+writing XML strings straight to a connection rather than by building a
+document in memory.
 
 ## See also
 

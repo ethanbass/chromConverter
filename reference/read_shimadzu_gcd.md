@@ -54,12 +54,12 @@ read_shimadzu_gcd(
 
 A 2D chromatogram in the format specified by `data_format` and
 `format_out`. If `data_format` is `wide`, the chromatogram will be
-returned with retention times as rows and a single column for the
+returned with retention times as row names and a single column for the
 intensity. If `long` format is requested, two columns will be returned:
 one for the retention time and one for the intensity. The `format_out`
 argument determines whether the chromatogram is returned as a `matrix`,
-`data.frame`, or `data.table`. Metadata can be attached to the
-chromatogram as [attributes](https://rdrr.io/r/base/attributes.html) if
+`data.frame`, or `data.table`. Metadata are attached to the chromatogram
+as [attributes](https://rdrr.io/r/base/attributes.html) if
 `read_metadata` is `TRUE`.
 
 ## Details
@@ -67,11 +67,9 @@ chromatogram as [attributes](https://rdrr.io/r/base/attributes.html) if
 A parser to read chromatogram data streams from 'Shimadzu' `.gcd` files.
 GCD files are encoded as 'Microsoft' OLE documents. The parser relies on
 the [olefile](https://pypi.org/project/olefile/) package in Python to
-unpack the files. The PDA data is encoded in a stream called
-`PDA 3D Raw Data:3D Raw Data`. The GCD data stream contains a segment
-for each retention time, beginning with a 24-byte header.
-
-The 24 byte header consists of the following fields:
+unpack the files. The chromatogram data is encoded in streams titled
+`LSS Raw Data:Chromatogram Ch<#>`. Each stream begins with a 24-byte
+header:
 
 - 4 bytes: segment label (`17234`).
 
@@ -79,22 +77,18 @@ The 24 byte header consists of the following fields:
   milliseconds.
 
 - 4 bytes: Little-endian integer specifying the number of values in the
-  file.
+  stream.
 
-- 4 bytes: Little-endian integer specifying the total number of bytes in
-  the file (However, this seems to be off by a few bytes?).
+- 4 bytes: Little-endian integer specifying a byte count, which does not
+  match the size of the stream exactly.
 
 - 8 bytes of `00`s
 
-After the header, the data are simply encoded as 64-bit (little-endian)
-floating-point numbers. The retention times can be (approximately?)
-derived from the number of values and the sampling interval encoded in
-the header.
-
-## Note
-
-This parser is experimental and may still need some work. It is not yet
-able to interpret much metadata from the files.
+After the header, the data are encoded as 64-bit (little-endian)
+floating-point numbers. Retention times are derived from the number of
+values and the sampling interval encoded in the header, rather than read
+from the file: the `n`th value is placed at `n` times the sampling
+interval.
 
 ## See also
 

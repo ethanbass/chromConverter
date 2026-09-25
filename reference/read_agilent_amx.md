@@ -33,8 +33,8 @@ read_agilent_amx(
 
 - format_out:
 
-  Class of output (for tables). Either `"data.frame"`, `"tibble"` or
-  `"data.table"`.
+  Class of the `gradient`, `solvents`, `signals` and `temp_controls`
+  tables. Either `"data.frame"`, `"tibble"` or `"data.table"`.
 
 - gradient_format:
 
@@ -43,8 +43,11 @@ read_agilent_amx(
 
 ## Value
 
-A named list with one element per parsed module, plus `"metadata"`.
-Elements present depend on `what`; see below for the structure of each.
+A named list with one element per parsed module, plus `"metadata"`. A
+module the archive has no driver file for is left out with a warning,
+and it is an error if none of the requested modules has one. The `comp`
+module is returned as `column` and `sampler` as `autosampler`. See below
+for the structure of each.
 
 **`metadata`** — a list with scalar elements:
 
@@ -81,14 +84,15 @@ Elements present depend on `what`; see below for the structure of each.
 
 - `solvents`:
 
-  A data.frame of active solvent channels: `channel`, `percentage`,
+  A table of active solvent channels: `channel`, `percentage`,
   `solvent`.
 
 - `gradient`:
 
-  A data.frame of timetable entries. Wide format (default): `time_min`
-  plus one `pct_<channel>` column per active channel. Long format:
-  `time_min`, `channel`, `percent`.
+  A table of timetable entries. Wide format (default): `time_min` plus
+  one `pct_<channel>` column per active channel, and a `flow_mL_min`
+  column if the timetable changes the flow. Long format: `time_min`,
+  `channel`, `percent`, where a `flow` channel holds the flow in mL/min.
 
 **`dad`** — a list with scalar elements `peakwidth_nm`, `slitwidth_nm`,
 `uv_lamp_required`, `vis_lamp_required`, `spectra_from_nm`,
@@ -96,16 +100,16 @@ Elements present depend on `what`; see below for the structure of each.
 
 - `signals`:
 
-  A data.frame of active signals: `id`, `wavelength_nm`, `bandwidth_nm`.
+  A table of active signals: `id`, `wavelength_nm`, `bandwidth_nm`.
 
-**`comp`** — a list with scalar element `post_time_min`, plus:
+**`column`** — a list with scalar element `post_time_min`, plus:
 
 - `temp_controls`:
 
-  Two-row data.frame (Left/Right): `side`, `temperature_C`,
+  Two-row table (Left/Right): `side`, `temperature_C`,
   `not_ready_limit_C`, `equilibration_time_min`.
 
-**`sampler`** — a list with scalar elements: `thermostat_installed`,
+**`autosampler`** — a list with scalar elements: `thermostat_installed`,
 `draw_speed_uL_min`, `eject_speed_uL_min`, `wait_after_draw_min`,
 `injection_volume_uL`, `wash_time_s`.
 

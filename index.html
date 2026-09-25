@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,7 +85,7 @@
 <h3 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h3>
 <p>chromConverter provides a simple way to read chromatography data into R from a variety of vendor formats. It includes parsers implemented directly in R as well as interfaces to various external tools including <a href="https://github.com/bovee/entab" class="external-link">Entab</a>, <a href="https://rainbow-api.readthedocs.io/" class="external-link">rainbow</a>, the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a>, and <a href="https://github.com/wkumler/RaMS/" class="external-link">RaMS</a>.</p>
-<p>We aim to support open science and reproducible research by reducing dependence on proprietary vendor software. Since most of the supported file formats are not publicly documented, many of the parsers are developed through reverse-engineering. If you run into a file that doesn’t parse correctly (or at all), please <a href="https://github.com/ethanbass/chromConverter/issues" class="external-link">open an issue</a>.</p>
+<p>We aim to support open science and reproducible research by reducing dependence on proprietary vendor software. Since most of the supported file formats are not publicly documented, many of the parsers are developed through reverse engineering. If you run into a file that doesn’t parse correctly (or at all), please <a href="https://github.com/ethanbass/chromConverter/issues" class="external-link">open an issue</a>.</p>
 <p>For downstream analysis of chromatographic data, see the companion package <a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a>.</p>
 </div>
 <div class="section level3">
@@ -124,18 +124,18 @@
 <li>‘Agilent ChemStation’ <code>.ms</code> and <code>.csv</code> files</li>
 <li>‘Agilent OpenLab’ <code>.dx</code>, <code>.acaml</code>, <code>.amx</code>, and <code>.D</code> directories</li>
 <li>‘Agilent OpenLab’ <code>.rslt</code> sequence directories</li>
-<li>Allotrope® Simple Model (ASM) 2D chromatograms (<code>.asm</code>)</li>
+<li>Allotrope® Simple Model (ASM) 2D chromatograms (<code>.json</code>)</li>
 <li>ANDI (Analytical Data Interchange) Chromatography &amp; MS formats (<code>.cdf</code>)</li>
-<li>mzML (<code>.mzml</code>) &amp; mzXML (.<code>mzxml</code>) (via <em>RaMS</em>).</li>
+<li>mzML (<code>.mzml</code>) &amp; mzXML (<code>.mzxml</code>) (via <em>RaMS</em>)</li>
 <li>‘Shimadzu LabSolutions’ ascii (<code>.txt</code>)</li>
 <li>‘Shimadzu GCsolution’ data files (<code>.gcd</code>)</li>
 <li>‘Shimadzu GCMSsolution’ data files (<code>.qgd</code>)</li>
-<li>‘Shimadzu LabSolutions’<code>.lcd</code> (PDA, QTOF, TLM (triple quadrupole MS), TIC, chromatogram, and peak table streams)</li>
+<li>‘Shimadzu LabSolutions’ <code>.lcd</code> (PDA, QTOF, TLM (triple quadrupole MS), TIC, chromatogram, and peak table streams)</li>
 <li>‘Lumex’ <code>.mdf</code> files</li>
 <li>‘Thermo Scientific Chromeleon’ ascii (<code>.txt</code>)</li>
 <li>‘Varian Workstation’ (<code>.SMS</code>)</li>
 <li>‘Waters Empower’ ascii (<code>.arw</code>)</li>
-<li>‘Waters Empower’ <code>.raw</code> files (2D chromatograms only)</li>
+<li>‘Waters MassLynx’ <code>.raw</code> directories (2D chromatograms only)</li>
 <li>Chromatotec <code>.Chrom</code> files.</li>
 </ul>
 </div>
@@ -143,15 +143,16 @@
 <h5 id="external-libraries">External Libraries<a class="anchor" aria-label="anchor" href="#external-libraries"></a>
 </h5>
 <div class="section level6">
-<h6 id="entab-entab-requires-separate-installation-see-instructions-below">Entab (<em>Entab requires separate installation, see <a href="README.html#Installation">instructions below</a></em>)<a class="anchor" aria-label="anchor" href="#entab-entab-requires-separate-installation-see-instructions-below"></a>
+<h6 id="entab-entab-requires-separate-installation-see-instructions-below">Entab (<em>Entab requires separate installation, see <a href="#optional-dependencies">instructions below</a></em>)<a class="anchor" aria-label="anchor" href="#entab-entab-requires-separate-installation-see-instructions-below"></a>
 </h6>
 <ul>
-<li>Agilent ChemStation (<code>.ch</code>, <code>.fid</code>, <code>.ms</code>, .<code>mwd</code>, &amp; <code>.uv</code>)</li>
+<li>Agilent ChemStation (<code>.ch</code>, <code>.fid</code>, <code>.ms</code>, <code>.mwd</code>, &amp; <code>.uv</code>)</li>
 <li>Agilent MassHunter DAD (<code>.sp</code>)</li>
+<li>Thermo RAW (<code>.raw</code>)</li>
 </ul>
 </div>
 <div class="section level6">
-<h6 id="thermorawfileparser-requires-separate-installation-see-instructions-below">ThermoRawFileParser (<em>requires separate installation, see <a href="README.html#Installation">instructions below</a></em>)<a class="anchor" aria-label="anchor" href="#thermorawfileparser-requires-separate-installation-see-instructions-below"></a>
+<h6 id="thermorawfileparser-requires-separate-installation-see-instructions-below">ThermoRawFileParser (<em>requires separate installation, see <a href="#optional-dependencies">instructions below</a></em>)<a class="anchor" aria-label="anchor" href="#thermorawfileparser-requires-separate-installation-see-instructions-below"></a>
 </h6>
 <ul>
 <li>Thermo RAW (<code>.raw</code>)</li>
@@ -161,7 +162,7 @@
 <h6 id="rainbow">rainbow<a class="anchor" aria-label="anchor" href="#rainbow"></a>
 </h6>
 <ul>
-<li>Agilent (<code>.ch</code>, <code>.fid</code>, <code>.ms</code>, .<code>MSProfile.bin</code>, &amp; <code>.uv</code>)</li>
+<li>Agilent (<code>.ch</code>, <code>.fid</code>, <code>.ms</code>, <code>.MSProfile.bin</code>, &amp; <code>.uv</code>)</li>
 <li>Waters (<code>.raw</code> [UV, MS, CAD, ELSD])</li>
 </ul>
 </div>
@@ -173,34 +174,35 @@
 <div class="section level5">
 <h5 id="importing-chromatograms">Importing chromatograms<a class="anchor" aria-label="anchor" href="#importing-chromatograms"></a>
 </h5>
-<p>The central function of chromConverter is <code>read_chroms</code>, which functions as a wrapper around all of the supported parsers. To convert a set of files, call <code>read_chroms</code>, specifying the <code>paths</code> to a vector of directories or files and the appropriate file format (<code>format_in</code>). Supported formats include <code>chemstation_uv</code>, <code>chemstation_csv</code>, <code>masshunter_dad</code>, <code>shimadzu_fid</code>, <code>shimadzu_dad</code>, <code>chromeleon_uv</code>, <code>thermoraw</code>, <code>mzml</code>, <code>waters_arw</code>, <code>msd</code> (mass selective detectors), <code>csd</code> (current selective detectors, e.g. FID), and <code>wsd</code> (wavelength selective detectors, e.g. DAD/UV).</p>
+<p>The central function of chromConverter is <code>read_chroms</code>, a wrapper around all of the supported parsers. To convert a set of files, call <code>read_chroms</code>, specifying the <code>paths</code> to a vector of directories or files and the appropriate file format (<code>format_in</code>), such as <code>chemstation_uv</code>, <code>shimadzu_lcd</code>, <code>cdf</code> or <code>mzml</code>. See <code><a href="reference/read_chroms.html">?read_chroms</a></code> for the full list of values and <a href="#formats">Formats</a> above for what each parser covers.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ethanbass.github.io/chromConverter/">chromConverter</a></span><span class="op">)</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></span></code></pre></div>
-<p>The <code>read_chroms</code> function will attempt to determine an appropriate parser to use and whether you’ve provided a vector of directories or files. However, if you’d like to be more explicit, you can provide arguments to the <code>parsers</code> and <code>find_files</code> arguments. Setting <code>find_files = FALSE</code> will instruct the function that you are providing a vector of files, while <code>find_files = TRUE</code> implies that you are providing a vector of directories.</p>
+<p><code>read_chroms</code> chooses a parser and works out whether you’ve provided directories or files. To be explicit, set the <code>parser</code> and <code>find_files</code> arguments: <code>find_files = FALSE</code> means <code>paths</code> are files, and <code>find_files = TRUE</code> means they are directories to search.</p>
 <div class="section level6">
 <h6 id="exporting-files">Exporting files<a class="anchor" aria-label="anchor" href="#exporting-files"></a>
 </h6>
-<p>If you’d like to automatically export the files, include the desired file format (<code>export_format</code>) and the path where you’d like to export the files (<code>path_out</code>). Some parsers (e.g. <code>ThermoRawFileParser</code>) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to <code>path_out</code>.</p>
+<p>To export the files as they are read, give the file format (<code>export_format</code>) and the directory to write them to (<code>path_out</code>). Reading Thermo RAW files or using <code>parser = "openchrom"</code> also writes files, so <code>read_chroms</code> asks for <code>path_out</code> in those cases too; if it is not given, you are offered a <code>temp</code> folder in the working directory.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ethanbass.github.io/chromConverter/">chromConverter</a></span><span class="op">)</span></span>
-<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, path_out<span class="op">=</span><span class="st">"temp"</span>, export<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, find_files <span class="op">=</span> <span class="cn">FALSE</span>, path_out <span class="op">=</span> <span class="st">"temp"</span>,</span>
+<span>                   export_format <span class="op">=</span> <span class="st">"csv"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level6">
 <h6 id="choosing-between-multiple-parsers">Choosing between multiple parsers<a class="anchor" aria-label="anchor" href="#choosing-between-multiple-parsers"></a>
 </h6>
-<p>For formats where multiple parsers are available, you can choose between them using the <code>parser</code> argument. For example, ‘Agilent’ files can now be read using parsers from a number of external libraries, including Entab and rainbow. Some of these parsers must be installed manually as described in the <a href="README.html#Optional-dependencies">installation instructions</a>.</p>
+<p>For formats where multiple parsers are available, you can choose between them using the <code>parser</code> argument. For example, ‘Agilent’ files can be read by parsers from several external libraries, including Entab and rainbow. Some of these parsers must be installed manually as described in the <a href="#optional-dependencies">installation instructions</a>.</p>
 </div>
 <div class="section level6">
 <h6 id="extracting-metadata">Extracting metadata<a class="anchor" aria-label="anchor" href="#extracting-metadata"></a>
 </h6>
-<p>chromConverter includes some options to extract metadata from the provided files. If <code>read_metadata = TRUE</code>, metadata will be extracted and stored as <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html" class="external-link">attributes</a> of the associated object. The metadata can then be accessed using the <code>attributes</code> or <code>attr</code> functions on individual chromatograms, or extracted into a data.frame or tibble from a list of chromatograms using the <code>extract_metadata</code> function.</p>
+<p>chromConverter can extract metadata from the files it reads. If <code>read_metadata = TRUE</code>, metadata will be extracted and stored as <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html" class="external-link">attributes</a> of the associated object. The metadata can then be accessed using the <code>attributes</code> or <code>attr</code> functions on individual chromatograms, or extracted into a data.frame or tibble from a list of chromatograms using the <code>extract_metadata</code> function.</p>
 </div>
 </div>
 <div class="section level5">
 <h5 id="importing-peak-lists">Importing peak lists<a class="anchor" aria-label="anchor" href="#importing-peak-lists"></a>
 </h5>
-<p>The <code>read_peaklist</code> function can be used to import peak lists from ‘Agilent ChemStation’ REPORT files or ‘Shimadzu’ ascii files. The syntax is similar to <code>read_chroms</code>. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (<code>format_in</code>), e.g.</p>
+<p>The <code>read_peaklist</code> function imports peak lists from ‘Agilent ChemStation’ REPORT files, ‘Shimadzu’ ascii, <code>.lcd</code> and <code>.gcd</code> files, and ‘Chromatotec’ <code>.Chrom</code> files. The syntax is similar to <code>read_chroms</code>. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (<code>format_in</code>), e.g.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>pks <span class="ot">&lt;-</span> <span class="fu">read_peaklist</span>(<span class="sc">&lt;</span>path_to_directory<span class="sc">&gt;</span>, <span class="at">format_in =</span> <span class="st">"chemstation"</span>)</span></code></pre></div>
 </div>
 </div>
@@ -220,21 +222,23 @@
 <h5 id="thermorawfileparser">
 <strong>ThermoRawFileParser</strong><a class="anchor" aria-label="anchor" href="#thermorawfileparser"></a>
 </h5>
-<p>Thermo RAW files can be converted by calling the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a> on the command-line. To install the ThermoRawFileParser, follow the instructions <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">here</a>. If you are running Linux or Mac OS X, you will also need to install <a href="https://www.mono-project.com/download/stable/#download-lin" class="external-link">mono</a>, following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.</p>
+<p>Thermo RAW files can be converted by calling the <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">ThermoRawFileParser</a> on the command-line. To install the ThermoRawFileParser, follow the instructions <a href="https://github.com/compomics/ThermoRawFileParser" class="external-link">here</a>. If you are running Linux or macOS, you will also need to install <a href="https://www.mono-project.com/download/stable/#download-lin" class="external-link">mono</a>, following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.</p>
 </div>
 <div class="section level5">
 <h5 id="openchrom">
 <strong>OpenChrom</strong><a class="anchor" aria-label="anchor" href="#openchrom"></a>
 </h5>
 <div class="section level6">
-<h6 id="note-support-for-the-command-line-interface-has-been-removed-from-openchrom-as-of-version-150-version-14-which-is-required-for-command-line-use-is-no-longer-available-for-download-the-instructions-below-are-preserved-for-users-who-already-have-it-installed">(<strong>Note:</strong> Support for the command line interface has been removed from OpenChrom (as of <code>version 1.5.0</code>). Version 1.4, which is required for command-line use, is no longer available for download. The instructions below are preserved for users who already have it installed.<a class="anchor" aria-label="anchor" href="#note-support-for-the-command-line-interface-has-been-removed-from-openchrom-as-of-version-150-version-14-which-is-required-for-command-line-use-is-no-longer-available-for-download-the-instructions-below-are-preserved-for-users-who-already-have-it-installed"></a>
+<h6 id="note-support-for-the-command-line-interface-was-removed-from-openchrom-in-version-150-version-14-which-is-required-for-command-line-use-is-no-longer-available-for-download-the-instructions-below-are-preserved-for-users-who-already-have-it-installed">
+<strong>Note:</strong> Support for the command-line interface was removed from OpenChrom in <code>version 1.5.0</code>. Version 1.4, which is required for command-line use, is no longer available for download. The instructions below are preserved for users who already have it installed.<a class="anchor" aria-label="anchor" href="#note-support-for-the-command-line-interface-was-removed-from-openchrom-in-version-150-version-14-which-is-required-for-command-line-use-is-no-longer-available-for-download-the-instructions-below-are-preserved-for-users-who-already-have-it-installed"></a>
 </h6>
-<p><a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> is a free chromatography software, containing a large number of file parsers, which can now be conveniently accessed directly from R. Strangely, configuring OpenChrom for use on the command-line deactivates the graphical user interface (GUI). Thus, it is recommended to make a separate copy of OpenChrom if you’d still like to access the GUI. To use the OpenChrom parsers, follow the steps detailed below:</p>
+<p><a href="https://lablicate.com/platform/openchrom" class="external-link">OpenChrom</a> is free chromatography software containing a large number of file parsers, which can be called from R. Configuring OpenChrom for command-line use deactivates its graphical user interface (GUI), so keep a second copy of OpenChrom if you also want the GUI. To use the OpenChrom parsers, follow the steps below:</p>
 <ol style="list-style-type: decimal">
 <li>
-<a href="https://lablicate.com/platform/openchrom/download" class="external-link">OpenChrom</a> <strong>version ≤ 1.4</strong> is unfortunately no longer available from Lablicate. If you already have version 1.4 and like using the commandline interface make sure you have it backed up!!</li>
-<li>If you intend to use the GUI in the future, it is recommended to make a separate copy of OpenChrom for command-line use.</li>
-<li>Call <code>read_chroms</code> with <code>parser = "openchrom"</code>. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line. Alternatively, the command-line option can be activated from R by calling <code>configure_openchrom(cli = "true")</code> or following the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> to manually activate the CLI. This process can be reversed using the same function: e.g. <code>configure_openchrom(cli = "false"). To specify an OpenChrom executable in a non-standard location, call</code>configure_openchrom<code>with the</code>path<code>argument, e.g.</code>configure_openchrom(cli = “true”, path = “path_to_openchrom_executable”).</li>
+<a href="https://lablicate.com/platform/openchrom/download" class="external-link">OpenChrom</a> <strong>version ≤ 1.4</strong> is no longer available from Lablicate. If you have version 1.4 and use the command-line interface, keep a backup of it.</li>
+<li>If you intend to use the GUI in the future, make a separate copy of OpenChrom for command-line use.</li>
+<li>Call <code>read_chroms</code> with <code>parser = "openchrom"</code>. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line. Alternatively, the command-line option can be activated from R by calling <code>configure_openchrom(cli = "true")</code> or following the <a href="https://github.com/OpenChrom/openchrom/wiki/CLI" class="external-link">instructions</a> to manually activate the CLI. This process can be reversed using the same function: e.g. <code>configure_openchrom(cli = "false")</code>. To specify an OpenChrom executable in a non-standard location, call <code>configure_openchrom</code> with the <code>path</code> argument, e.g. <code>configure_openchrom(cli = "true", path = "path_to_openchrom_executable")</code>.</li>
+<li>Specify the detector category with <code>format_in</code>, since the OpenChrom parsers are organized by detector type rather than by file format: <code>csd</code> for current selective detectors (e.g. FID, ECD, NPD), <code>msd</code> for mass selective detectors, or <code>wsd</code> for wavelength selective detectors (e.g. DAD, UV/VIS).</li>
 </ol>
 </div>
 </div>
@@ -242,12 +246,12 @@
 <div class="section level3">
 <h3 id="further-analysis">Further analysis<a class="anchor" aria-label="anchor" href="#further-analysis"></a>
 </h3>
-<p>For downstream analyses of chromatographic data, you can also check out my package <a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a>. For interactive visualization of chromatograms, you can check out my new package <a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release). There is also a vignette providing an introduction to some basic syntax for <a href="https://ethanbass.github.io/chromConverter/articles/plot_ms.html">plotting mass spectrometry data</a> returned by chromConverter in various R dialects (e.g., base R, tidyverse, and data.table).</p>
+<p>For downstream analyses of chromatographic data, see <a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a>. For interactive visualization of chromatograms, see <a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release). There is also a vignette providing an introduction to some basic syntax for <a href="https://ethanbass.github.io/chromConverter/articles/plot_ms.html">plotting mass spectrometry data</a> returned by chromConverter in various R dialects (e.g., base R, tidyverse, and data.table).</p>
 </div>
 <div class="section level3">
 <h3 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
 </h3>
-<p>Contributions of source code, ideas, or documentation are always welcome. Please get in touch (preferable by opening a GitHub <a href="https://github.com/ethanbass/chromConverter/issues" class="external-link">issue</a>) to discuss any suggestions or to file a bug report. Some good reasons to file an issue:</p>
+<p>Contributions of source code, ideas, or documentation are always welcome. Please get in touch (preferably by opening a GitHub <a href="https://github.com/ethanbass/chromConverter/issues" class="external-link">issue</a>) to discuss any suggestions or to file a bug report. Some good reasons to file an issue:</p>
 <ul>
 <li>You think you’ve found a bug.<br>
 </li>
@@ -264,7 +268,7 @@
 </h3>
 <p>You can cite chromConverter as follows:</p>
 <p><code>Bass, E. (2026). chromConverter: Chromatographic File Converter. http://doi.org/10.5281/zenodo.6792521</code>.</p>
-<p>If you use external libraries to convert your files, it is suggested to also cite these libraries in published work.</p>
+<p>If you use external libraries to convert your files, please cite those libraries as well.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -308,7 +312,7 @@
 <li><a href="https://github.com/ethanbass/chromConverter" class="external-link"><img src="https://img.shields.io/github/last-commit/ethanbass/chromConverter" alt="Last commit"></a></li>
 <li><a href="https://r-pkg.org/pkg/chromConverter" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/chromConverter?color=blue" alt="CRAN RStudio mirror downloads"></a></li>
 <li><a href="https://cran.r-project.org/package=chromConverter" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/last-month/chromConverter" alt="metacran downloads"></a></li>
-<li><a href="https://doi.org/10.5281/zenodo.6944342" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6944342.svg" alt="DOI"></a></li>
+<li><a href="https://doi.org/10.5281/zenodo.6792521" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.6792521.svg" alt="DOI"></a></li>
 </ul>
 </div>
 

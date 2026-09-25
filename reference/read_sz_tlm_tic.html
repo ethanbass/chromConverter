@@ -9,7 +9,7 @@ of 'Shimadzu LabSolutions' .lcd files."><meta property="og:image" content="https
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@ of 'Shimadzu LabSolutions' .lcd files."><meta property="og:image" content="https
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read TIC from 'Shimadzu' TLM stream</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_shimadzu_tlm.R" class="external-link"><code>R/read_shimadzu_tlm.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_shimadzu_tlm.R" class="external-link"><code>R/read_shimadzu_tlm.R</code></a></small>
       <div class="d-none name"><code>read_sz_tlm_tic.Rd</code></div>
     </div>
 
@@ -97,14 +97,16 @@ total ion current and a flag that is <code>0x80000000</code> when any point in
 the spectrum saturated the detector. The retention times come from the
 <code>Retention Time</code> stream. Neither stream needs the spectra themselves to
 be decompressed, so this is much cheaper than <code>read_sz_tlm</code>.</p>
-<p>Each acquisition event is returned as a separate chromatogram, since events
-can differ in polarity, MS level and scan range, and are interleaved in
-acquisition order.</p>
+<p>Each acquisition event is returned as a separate chromatogram, named
+<code>Event 1</code>, <code>Event 2</code> and so on, since events can differ in polarity, MS
+level and scan range, and are interleaved in acquisition order.</p>
 <p>The <code>SumTIC Data</code> stream (one 12-byte record per cycle: retention time,
 value, saturation flag) is a curve computed by the instrument. It is not a
-plain sum of the per-spectrum TICs — in MRM files it matches the cycle sum
-exactly, but in scan files it comes out as the cycle mean divided by six —
-so it is returned as stored rather than recomputed.</p>
+plain sum of the per-spectrum TICs: in the MRM files examined it matches the
+cycle mean (which, with one event per cycle, is also the sum), in the scan
+files the cycle mean divided by six, and in a file mixing SIM with
+product-ion scans neither. It is therefore returned as stored rather than
+recomputed.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

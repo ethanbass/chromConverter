@@ -5,27 +5,23 @@ quadrupole files store their TIC differently and are read by
 read_sz_tlm_tic instead. LCD files are encoded as 'Microsoft' OLE
 documents. The parser relies on the
 olefile package in Python to unpack the
-files. The TIC data is encoded in a stream called Centroid SumTIC.
-The TIC data stream contains a segment for each retention time, beginning
-with a 8-byte header. After the header, the file consists of a series of
-4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
-a 4-byte spacer (00000000) The first integer is the retention time
-in milliseconds, the second integer is the scan number, and the third integer
-is the intensity. Retention times are converted to minutes, as elsewhere in
-the package."><meta property="og:description" content="A parser to read total ion chromatogram data streams from the quadrupole
+files. The TIC data is encoded in a stream called Centroid SumTIC, which
+opens with an 8-byte header and holds one 16-byte record per scan: three
+4-byte little-endian integers — the retention time in milliseconds, the
+scan number and the intensity — followed by a 4-byte spacer
+(00000000). Retention times are converted to minutes, as elsewhere in the
+package."><meta property="og:description" content="A parser to read total ion chromatogram data streams from the quadrupole
 time-of-flight (QTFL RawData) container of 'Shimadzu' .lcd files. Triple
 quadrupole files store their TIC differently and are read by
 read_sz_tlm_tic instead. LCD files are encoded as 'Microsoft' OLE
 documents. The parser relies on the
 olefile package in Python to unpack the
-files. The TIC data is encoded in a stream called Centroid SumTIC.
-The TIC data stream contains a segment for each retention time, beginning
-with a 8-byte header. After the header, the file consists of a series of
-4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
-a 4-byte spacer (00000000) The first integer is the retention time
-in milliseconds, the second integer is the scan number, and the third integer
-is the intensity. Retention times are converted to minutes, as elsewhere in
-the package."><meta property="og:image" content="https://ethanbass.github.io/chromConverter/logo.png"></head><body>
+files. The TIC data is encoded in a stream called Centroid SumTIC, which
+opens with an 8-byte header and holds one 16-byte record per scan: three
+4-byte little-endian integers — the retention time in milliseconds, the
+scan number and the intensity — followed by a 4-byte spacer
+(00000000). Retention times are converted to minutes, as elsewhere in the
+package."><meta property="og:image" content="https://ethanbass.github.io/chromConverter/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -33,7 +29,7 @@ the package."><meta property="og:image" content="https://ethanbass.github.io/chr
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +54,7 @@ the package."><meta property="og:image" content="https://ethanbass.github.io/chr
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Shimadzu' QTOF TIC stream</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
       <div class="d-none name"><code>read_sz_qtof_tic.Rd</code></div>
     </div>
 
@@ -69,14 +65,12 @@ quadrupole files store their TIC differently and are read by
 <code>read_sz_tlm_tic</code> instead. LCD files are encoded as 'Microsoft' OLE
 documents. The parser relies on the
 <a href="https://pypi.org/project/olefile/" class="external-link">olefile</a> package in Python to unpack the
-files. The TIC data is encoded in a stream called <code>Centroid SumTIC</code>.
-The TIC data stream contains a segment for each retention time, beginning
-with a 8-byte header. After the header, the file consists of a series of
-4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
-a 4-byte spacer (<code>00000000</code>) The first integer is the retention time
-in milliseconds, the second integer is the scan number, and the third integer
-is the intensity. Retention times are converted to minutes, as elsewhere in
-the package.</p>
+files. The TIC data is encoded in a stream called <code>Centroid SumTIC</code>, which
+opens with an 8-byte header and holds one 16-byte record per scan: three
+4-byte little-endian integers — the retention time in milliseconds, the
+scan number and the intensity — followed by a 4-byte spacer
+(<code>00000000</code>). Retention times are converted to minutes, as elsewhere in the
+package.</p>
     </div>
 
     <div class="section level2">
@@ -108,6 +102,10 @@ the package.</p>
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>
 <dd><p>Logical. Whether to attach metadata.</p></dd>
+
+
+<dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
+<dd><p>Format to output metadata.</p></dd>
 
 </dl></div>
     <div class="section level2">

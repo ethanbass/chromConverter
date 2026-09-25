@@ -14,11 +14,11 @@ library(data.table)
 #>     %notin%
 ```
 
-MS chromatograms are returned by default in `long` format (one row per
-scan–m/z pair) with three columns: retention time, m/z, and intensity.
+Mass spectra are returned in `long` format (one row per scan–m/z pair)
+with three columns: retention time, m/z, and intensity.
 
-As an example, we can load the ‘Varian’ SMS chromatogram included in the
-`chromConverterExtraTests` package.
+The examples use a ‘Varian’ SMS file from the `chromConverterExtraTests`
+repository.
 
 ``` r
 
@@ -44,10 +44,11 @@ matplot(tic$rt, tic$intensity, type = 'l',
         ylab = "Total intensity", xlab = "Time (min)")
 ```
 
-![](plot_ms_files/figure-html/plot_tic_base-1.png)
+![Total ion chromatogram of the example Varian SMS file, summed
+intensity plotted against retention time in
+minutes.](plot_ms_files/figure-html/plot_tic_base-1.png)
 
-Here is a simple plot function you could use to plot mass spectra using
-base R graphics:
+A plot function for mass spectra, using base R graphics:
 
 ``` r
 
@@ -60,16 +61,20 @@ plot_spec <- function(spec, lab_int=0.2, digits=1){
 ```
 
 Mass spectra can be extracted by filtering on the time column. For
-example to get the mass spectrum of the first scan:
+example, to get the mass spectrum of the hundredth scan:
 
 ``` r
 
 times <- unique(x$rt)
-spec <- x[x$rt == times[100], -1]
+rt_spec <- times[100]
+spec <- x[x$rt == rt_spec, -1]
 plot_spec(spec)
 ```
 
-![](plot_ms_files/figure-html/plot_spectrum_base-1.png)
+![Mass spectrum of the hundredth scan, plotted as vertical lines from
+m/z on the x axis to intensity on the y axis, with the most intense
+peaks labeled by
+m/z.](plot_ms_files/figure-html/plot_spectrum_base-1.png)
 
 ## Plot TIC and mass spectra using *dplyr* syntax
 
@@ -83,18 +88,20 @@ plot(intensity ~ rt, data=tic, type = 'l',
         ylab = "Total intensity", xlab = "Time (min)")
 ```
 
-![](plot_ms_files/figure-html/plot_tic_dplyr-1.png)
+![The same total ion chromatogram, computed with
+dplyr.](plot_ms_files/figure-html/plot_tic_dplyr-1.png)
 
 Plot spectrum with dplyr:
 
 ``` r
 
-dplyr::filter(x, rt == 7.26355) |> 
+dplyr::filter(x, rt == rt_spec) |> 
   dplyr::select(mz, intensity) |> 
   plot_spec()
 ```
 
-![](plot_ms_files/figure-html/plot_spectrum_dplyr-1.png)
+![The same mass spectrum, extracted with dplyr and drawn with
+plot_spec.](plot_ms_files/figure-html/plot_spectrum_dplyr-1.png)
 
 ## Plot TIC and mass spectra using *data.table* syntax
 
@@ -122,27 +129,31 @@ matplot(tic$rt, tic$intensity, type = 'l',
         ylab = "Total intensity", xlab = "Time (min)")
 ```
 
-![](plot_ms_files/figure-html/tic_dt-1.png)
+![The same total ion chromatogram, computed with
+data.table.](plot_ms_files/figure-html/tic_dt-1.png)
 
-Extract the base ion chromatogram:
+Extract the base peak chromatogram:
 
 ``` r
 
 bpc <- x[, .(intensity = max(intensity)), by = rt]
 matplot(bpc$rt, bpc$intensity, type = 'l',
-        ylab = "Base ion chromatogram", xlab = "Time (min)")
+        ylab = "Maximum intensity", xlab = "Time (min)")
 ```
 
-![](plot_ms_files/figure-html/bpc_dt-1.png)
+![Base peak chromatogram of the example Varian SMS file: the most
+intense signal at each retention time, plotted against time in
+minutes.](plot_ms_files/figure-html/bpc_dt-1.png)
 
-To obtain a mass spectrum we just filter by retention time as before:
+To obtain a mass spectrum, filter by retention time as before:
 
 ``` r
 
-plot_spec(x[rt == 7.26355, c('mz', 'intensity')])
+plot_spec(x[rt == rt_spec, c('mz', 'intensity')])
 ```
 
-![](plot_ms_files/figure-html/spectrum_dt-1.png)
+![The same mass spectrum, extracted with
+data.table.](plot_ms_files/figure-html/spectrum_dt-1.png)
 
 ## Plot TIC and mass spectra using *ggplot*
 
@@ -155,7 +166,8 @@ ggplot(data = tic, aes(x=rt, y=intensity)) +
   theme_minimal()
 ```
 
-![](plot_ms_files/figure-html/plot_tic_ggplot-1.png)
+![The same total ion chromatogram, drawn with ggplot2 as a line in the
+minimal theme.](plot_ms_files/figure-html/plot_tic_ggplot-1.png)
 
 Plot mass spectrum with ggplot:
 
@@ -163,7 +175,7 @@ Plot mass spectrum with ggplot:
 
 lab_int <- 0.2
 digits <- 1
-dplyr::filter(x, rt == 7.26355) |> 
+dplyr::filter(x, rt == rt_spec) |> 
   dplyr::select(mz, intensity) |> 
   ggplot(aes(x = mz, y = intensity)) +
   geom_segment(aes(xend = mz, yend = 0), linewidth = 0.5) +
@@ -174,7 +186,9 @@ dplyr::filter(x, rt == 7.26355) |>
   theme_minimal()
 ```
 
-![](plot_ms_files/figure-html/plot_spectrum_ggplot-1.png)
+![The same mass spectrum, drawn with ggplot2 as vertical segments from
+zero to each intensity, with the most intense peaks labeled by
+m/z.](plot_ms_files/figure-html/plot_spectrum_ggplot-1.png)
 
 ## Session Information
 
@@ -202,7 +216,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] data.table_1.18.6.1   ggplot2_4.0.3         chromConverter_0.10.0
+#> [1] data.table_1.18.6.1   ggplot2_4.0.3         chromConverter_0.10.1
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] sass_0.4.10        generics_0.1.4     bitops_1.1-0       xml2_1.6.0        

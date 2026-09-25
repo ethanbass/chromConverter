@@ -8,7 +8,8 @@ with
 [reticulate::py_require](https://rstudio.github.io/reticulate/reference/py_require.html)
 and they are provisioned automatically the first time a python parser is
 called. It can still be useful if you need a persistent environment,
-e.g. to work offline or to avoid re-resolving packages.
+e.g. to work offline or to avoid re-resolving packages. It is an error
+if an environment named `envname` already exists.
 
 ## Usage
 
@@ -31,7 +32,7 @@ configure_python_environment(
 
 - envname:
 
-  The name of, or path to, a Python virtual environment.
+  The name of, or path to, the environment to create.
 
 - parser:
 
@@ -40,9 +41,11 @@ configure_python_environment(
 
 - python:
 
-  Argument to
-  [`reticulate::virtualenv_create`](https://rstudio.github.io/reticulate/reference/virtualenv-tools.html),
-  specifying the path to a Python interpreter.
+  Path to the Python interpreter passed to
+  [reticulate::virtualenv_create](https://rstudio.github.io/reticulate/reference/virtualenv-tools.html).
+  Used only when `what = "venv"`. Defaults to `NULL`, in which case
+  [reticulate::virtualenv_starter](https://rstudio.github.io/reticulate/reference/virtualenv-tools.html)
+  chooses one.
 
 - ...:
 
@@ -54,7 +57,7 @@ configure_python_environment(
 
 ## Value
 
-Returns the name of the environment (invisibly).
+The name of the environment, invisibly.
 
 ## Side effects
 

@@ -9,7 +9,7 @@ from one or more of its driver sub-files."><meta property="og:image" content="ht
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@ from one or more of its driver sub-files."><meta property="og:image" content="ht
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read Agilent AMX method file</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.10.0/R/read_agilent_amx.R" class="external-link"><code>R/read_agilent_amx.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_agilent_amx.R" class="external-link"><code>R/read_agilent_amx.R</code></a></small>
       <div class="d-none name"><code>read_agilent_amx.Rd</code></div>
     </div>
 
@@ -75,8 +75,8 @@ cleaned up on exit.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
-<dd><p>Class of output (for tables). Either <code>"data.frame"</code>,
-<code>"tibble"</code> or <code>"data.table"</code>.</p></dd>
+<dd><p>Class of the <code>gradient</code>, <code>solvents</code>, <code>signals</code> and
+<code>temp_controls</code> tables. Either <code>"data.frame"</code>, <code>"tibble"</code> or <code>"data.table"</code>.</p></dd>
 
 
 <dt id="arg-gradient-format">gradient_format<a class="anchor" aria-label="anchor" href="#arg-gradient-format"></a></dt>
@@ -87,7 +87,9 @@ or <code>"long"</code> format.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A named list with one element per parsed module, plus <code>"metadata"</code>.
-Elements present depend on <code>what</code>; see below for the structure of each.</p>
+A module the archive has no driver file for is left out with a warning,
+and it is an error if none of the requested modules has one. The <code>comp</code> module is returned as <code>column</code> and
+<code>sampler</code> as <code>autosampler</code>. See below for the structure of each.</p>
 <p><strong><code>metadata</code></strong> — a list with scalar elements:</p><dl><dt><code>method_name</code></dt>
 <dd><p>Original method name.</p></dd>
 
@@ -112,30 +114,32 @@ Elements present depend on <code>what</code>; see below for the structure of eac
 
 </dl><p><strong><code>pump</code></strong> — a list with scalar elements <code>flow_mL_min</code>, <code>stop_time_min</code>,
 <code>post_time_min</code>, <code>pressure_low_bar</code>, <code>pressure_high_bar</code>, plus:</p><dl><dt><code>solvents</code></dt>
-<dd><p>A data.frame of active solvent channels: <code>channel</code>,
+<dd><p>A table of active solvent channels: <code>channel</code>,
 <code>percentage</code>, <code>solvent</code>.</p></dd>
 
 <dt><code>gradient</code></dt>
-<dd><p>A data.frame of timetable entries. Wide format (default):
-<code>time_min</code> plus one <code>pct_&lt;channel&gt;</code> column per active channel. Long
-format: <code>time_min</code>, <code>channel</code>, <code>percent</code>.</p></dd>
+<dd><p>A table of timetable entries. Wide format (default):
+<code>time_min</code> plus one <code>pct_&lt;channel&gt;</code> column per active channel, and a
+<code>flow_mL_min</code> column if the timetable changes the flow. Long format:
+<code>time_min</code>, <code>channel</code>, <code>percent</code>, where a <code>flow</code> channel holds the
+flow in mL/min.</p></dd>
 
 
 </dl><p><strong><code>dad</code></strong> — a list with scalar elements <code>peakwidth_nm</code>, <code>slitwidth_nm</code>,
 <code>uv_lamp_required</code>, <code>vis_lamp_required</code>, <code>spectra_from_nm</code>,
 <code>spectra_to_nm</code>, <code>spectra_step_nm</code>, plus:</p><dl><dt><code>signals</code></dt>
-<dd><p>A data.frame of active signals: <code>id</code>, <code>wavelength_nm</code>,
+<dd><p>A table of active signals: <code>id</code>, <code>wavelength_nm</code>,
 <code>bandwidth_nm</code>.</p></dd>
 
 
-</dl><p><strong><code>comp</code></strong> — a list with scalar element <code>post_time_min</code>, plus:</p><dl><dt><code>temp_controls</code></dt>
-<dd><p>Two-row data.frame (Left/Right): <code>side</code>,
+</dl><p><strong><code>column</code></strong> — a list with scalar element <code>post_time_min</code>, plus:</p><dl><dt><code>temp_controls</code></dt>
+<dd><p>Two-row table (Left/Right): <code>side</code>,
 <code>temperature_C</code>, <code>not_ready_limit_C</code>, <code>equilibration_time_min</code>.</p></dd>
 
 
-</dl><p><strong><code>sampler</code></strong> — a list with scalar elements: <code>thermostat_installed</code>,
+</dl><p><strong><code>autosampler</code></strong> — a list with scalar elements: <code>thermostat_installed</code>,
 <code>draw_speed_uL_min</code>, <code>eject_speed_uL_min</code>,
-<code>wait_after_draw_min</code>, <code>injection_volume_uL</code>,  <code>wash_time_s</code>.</p>
+<code>wait_after_draw_min</code>, <code>injection_volume_uL</code>, <code>wash_time_s</code>.</p>
     </div>
 
     <div class="section level2">
