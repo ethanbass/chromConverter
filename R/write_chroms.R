@@ -204,7 +204,8 @@ write_andi_chrom <- function(x, path_out, sample_name = NULL,
 get_filepath <- function(path_out, sample_name, ext, force = FALSE,
                          replacement = "_"){
   path_out <- fs::path_expand(path_out)
-  sample_name <- gsub(" ", replacement, sample_name)
+  sample_name <- fs::path_sanitize(gsub(" ", replacement, sample_name),
+                                   replacement = replacement)
   # filename <- fs::path_ext_remove(fs::path_file(sample_name))
   file_out <- fs::path(path_out, sample_name, ext = ext)
   if (fs::file_exists(file_out)){
