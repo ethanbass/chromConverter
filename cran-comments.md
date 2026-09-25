@@ -9,13 +9,13 @@ There is 1 NOTE:
 Availability using Additional_repositories specification:
   entab                      yes   https://ethanbass.github.io/drat/
   chromConverterExtraTests   yes   https://ethanbass.github.io/drat/
-  ?                            ?   https://ethanbass.r-universe.dev/
 
 Uses the non-portable package: ‘mzR’
 
-Entab, mzR, and chromConverterExtraTests are not required. The entab and 
-chromConverterExtraTests packages can be installed from my drat repository or 
-from my R-universe repository.
+Entab, mzR, and chromConverterExtraTests are not required; all uses of them are
+conditional. Both entab and chromConverterExtraTests are available from my drat
+repository, which is listed in 'Additional_repositories', and where to obtain
+them is also described in the 'Description' field.
 
 ## Test environments
 
