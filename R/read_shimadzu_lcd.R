@@ -97,11 +97,11 @@
 #' counts whose size varies by module, though the file does not say so.
 #'
 #' For a 2D chromatogram, `scale = TRUE` applies both factors. `scale = FALSE`
-#' returns the stored integers, and reports them as `uAU` only where the
-#' calibration factor is `1`; where it is not, the integers are in no unit we
-#' can name, so the displayed unit is left in place rather than claiming one
-#' they are not in. Either way the values and the `detector_y_unit` attribute
-#' agree.
+#' returns the stored integers. Where the calibration factor is `1`, their
+#' `detector_y_unit` is the base unit (e.g. `uAU`), and the values and the
+#' attribute agree. Where it is not, the integers are in no unit we can name,
+#' so `detector_y_unit` is `NA`; the `scaled` attribute records which of the
+#' two was returned.
 #'
 #' PDA data is instead returned as it is encoded in the file, matching the
 #' `[PDA 3D]` section of a 'Lab Solutions' ASCII export, which declares no
@@ -986,13 +986,15 @@ sz_match_streams <- function(what, choices = sz_lcd_streams()){
 #' @param level MS level of every row of `dat`. Both readers already know this
 #' from the peak counts they built `dat` with, so passing it in avoids a hash
 #' probe per peak; it is joined from `scan_info` when it is not supplied.
+#' @param scale Whether the intensities were scaled, recorded as `scaled`, or
+#' `NULL` for a reader with no `scale` argument.
 #' @return A named list holding whichever of the requested levels the file has.
 #' @author Ethan Bass
 #' @noRd
 sz_split_ms_levels <- function(dat, scan_info, levels = c("MS1", "MS2"),
                                meta = NULL, path, format_out,
                                metadata_format = "shimadzu_lcd",
-                               level = NULL){
+                               level = NULL, scale = NULL){
   scan_info <- as.data.frame(scan_info)
   if (is.null(level)){
     level <- scan_info$ms_level[match(dat$scan, scan_info$scan)]
@@ -1029,7 +1031,7 @@ sz_split_ms_levels <- function(dat, scan_info, levels = c("MS1", "MS2"),
       }
       x <- attach_metadata(x, meta, format_in = metadata_format,
                            source_file = path, data_format = "long",
-                           format_out = format_out,
+                           format_out = format_out, scale = scale,
                            source_file_format = "shimadzu_lcd")
     }
     attr(x, "scan_info") <- info
@@ -1350,18 +1352,20 @@ extract_sz_base_unit <- function(selected, us){
 #'
 #' The integers in a data stream are encoded in the base unit of the detector,
 #' but only once the calibration factor has been applied to them. Where the
-#' calibration factor is not `1`, the unscaled values are raw converter counts,
-#' so the unit selected for display is left in place rather than claiming a
-#' unit the unscaled values do not have.
+#' calibration factor is not `1` or is unknown, the unscaled values are raw
+#' converter counts, which are in no unit we can name, so `NA` is returned
+#' rather than claiming a unit the unscaled values do not have.
 #' @param DI Data item metadata.
 #' @param cf The calibration factor applied to the stream.
 #' @author Ethan Bass
 #' @noRd
 
 sz_stored_unit <- function(DI, cf = 1){
+  if (length(cf) != 1 || is.na(cf) || cf != 1){
+    return(NA_character_)
+  }
   base_unit <- DI$detector.base_unit
-  if (length(cf) == 1 && !is.na(cf) && cf == 1 &&
-      length(base_unit) == 1 && !is.na(base_unit)){
+  if (length(base_unit) == 1 && !is.na(base_unit)){
     base_unit
   } else{
     DI$detector.unit

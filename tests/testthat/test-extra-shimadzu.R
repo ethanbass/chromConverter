@@ -334,12 +334,11 @@ test_that("'Shimadzu' LCD chromatograms report the unit of the values returned",
   expect_length(names(scaled), 3)
 
   # every channel in this file has a calibration factor, so the unscaled values
-  # are converter counts rather than the base unit, and the unit reported for
-  # display is left in place
+  # are converter counts rather than the base unit, and no unit is reported
   unscaled <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                           scale = FALSE, progress_bar = FALSE)[[1]]
   expect_equal(unname(sapply(unscaled, attr, "detector_y_unit")),
-               rep("mV", 3))
+               rep(NA_character_, 3))
   expect_false(any(sapply(unscaled, attr, "scaled")))
 })
 
@@ -924,6 +923,18 @@ test_that("every trace from one 'Shimadzu' file reports the same instrument", {
   # the channel is what ties a trace to its peak table
   pt <- read_shimadzu_lcd(path_lc, what = "peak_table")
   expect_equal(names(pt), paste0("PT-", meta_lc$channel_id))
+})
+
+test_that("read_sz_tables skips mass spectrometry peak tables", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_qtof_neg.lcd",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  expect_equal(names(read_sz_tables(path)), "PT-PDA.1.1.PDA.1.1")
 })
 
 test_that("read_shimadzu_lcd can read 'Shimadzu' QTOF data", {
@@ -1532,4 +1543,52 @@ test_that("read_shimadzu_lcd can read negative-mode 'Shimadzu' QTOF data", {
     expect_lt(max(abs(om - gm)/gm), 6e-7)
     expect_equal(o$intensity[order(o$mz)], g$intensity[order(g$mz)])
   }
+})
+
+test_that("read_sz_qtof records whether the intensities were scaled", {
+  skip_on_cran()
+  skip_if_missing_dependencies("olefile")
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("shimadzu_qtof.lcd", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  expect_true(attr(read_sz_qtof(path)$MS1, "scaled"))
+  expect_false(attr(read_sz_qtof(path, scale = FALSE)$MS1, "scaled"))
+})
+
+qgd_scan_block <- function(n_bytes, mz, int){
+  header <- c(writeBin(c(7L, 60000L, 0L, 0L, 0L), raw(), size = 4,
+                       endian = "little"),
+              writeBin(as.integer(c(n_bytes, length(mz))), raw(), size = 2,
+                       endian = "little"),
+              writeBin(c(0L, 0L), raw(), size = 4, endian = "little"))
+  records <- unlist(lapply(seq_along(mz), function(i){
+    c(writeBin(as.integer(mz[i] * 20), raw(), size = 2, endian = "little"),
+      as.raw((int[i] %/% 256^(0:(n_bytes - 1))) %% 256))
+  }))
+  c(header, records)
+}
+
+read_qgd_block <- function(block){
+  con <- rawConnection(block)
+  on.exit(close(con))
+  read_qgd_ms_scan(con, offsets = c(0, length(block)), scan_no = 1)
+}
+
+test_that("read_qgd_ms_scan decodes 2-byte intensities as unsigned", {
+  skip_on_cran()
+  x <- read_qgd_block(qgd_scan_block(2, mz = c(50, 51), int = c(100, 60000)))
+  expect_equal(x[, "intensity"], c(100, 60000))
+  expect_equal(x[, "mz"], c(50, 51))
+  expect_equal(x[, "rt"], c(1, 1))
+  expect_null(attr(x, "unvalidated_width"))
+})
+
+test_that("read_qgd_ms_scan decodes intensities wider than 4 bytes", {
+  skip_on_cran()
+  x <- read_qgd_block(qgd_scan_block(5, mz = c(50, 51), int = c(1, 2^33 + 5)))
+  expect_equal(x[, "intensity"], c(1, 2^33 + 5))
+  expect_equal(x[, "mz"], c(50, 51))
+  expect_equal(attr(x, "unvalidated_width"), 5)
 })

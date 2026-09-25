@@ -24,24 +24,23 @@ in a 'Shimadzu' OLE container (\code{.lcd} or \code{.gcd}), one table per channe
 }
 \details{
 Each table lives in its own stream, a short header followed by one
-fixed-length record per peak. A chromatographic table is named for the
-channel it belongs to (\code{PT-LC.1.1.DET.1.CH#1}, matching that channel's
-\code{channel_id} metadata), while the tables a mass spectrometry run produces
-are named for what they hold (\verb{Mass Peak Table}, \verb{Compound Peak Table}).
+fixed-length record per peak. Only chromatographic tables are read: streams
+named \verb{PT-} plus the channel (\code{PT-LC.1.1.DET.1.CH#1}, matching that
+channel's \code{channel_id} metadata), or \verb{Peak Table-} plus a number
+(\verb{Peak Table-100}). The tables a mass spectrometry run produces
+(\verb{Mass Peak Table}, \verb{Compound Peak Table}, \verb{Ident Peak Table}) have layouts
+of their own and are skipped.
 
 There are two layouts. \strong{V0} has no magic number and opens with an 8-byte
 header: the peak count as a \code{uint32}, then four unparsed bytes. \strong{V1} opens
 with the magic number \verb{56 45 52 31} (\code{VER1}), the peak count as a \code{uint32},
 and twelve further unparsed bytes, for a 20-byte header.
 
-Despite the \code{VER1} magic number, the two are not successive versions of one
-format: a single file can hold both. \code{shimadzu_qtof_neg.lcd} carries a V1
-\code{PT-PDA.1.1.PDA.1.1} alongside a V0 \verb{Mass Peak Table}, written by the same
-software at the same time. What the layouts track is the kind of table --- a
-\verb{PT-} channel table is V1 in every file seen so far, and a mass spectrometry
-table is V0 --- which also explains why V0 has no identification fields
-(\code{Conc}, \code{ID}, \code{k}). The parser still dispatches on the magic number rather
-than on the name of the stream, since the name is the weaker signal.
+In every file seen so far the layout follows the stream name: \verb{PT-} streams,
+under \verb{LSS Data Processing}, are V1, and \verb{Peak Table-} streams, under
+\verb{LC Data Processing}, are V0. The parser still dispatches on the magic
+number rather than on the name of the stream, since the name is the weaker
+signal.
 
 Retention, initial and final times are stored in milliseconds and converted
 to minutes, as elsewhere in the package. All values are little-endian.
@@ -64,9 +63,7 @@ A V0 record is 280 bytes:\tabular{lll}{
    232–239 \tab \code{double} \tab Tailing factor \cr
    240–247 \tab \code{double} \tab Resolution \cr
    248–255 \tab \code{double} \tab Separation factor \cr
-   256–263 \tab \code{double} \tab Concentration, percent \cr
-   264–271 \tab \code{double} \tab Concentration, normalized \cr
-   272–279 \tab \code{uint32} x 2 \tab Unparsed \cr
+   256–279 \tab  \tab Unparsed \cr
 }
 
 
@@ -114,9 +111,12 @@ therefore seems to occupy a 64-byte slot and use only the first eight bytes
 of it. The field names are this package's reading of the format rather than
 the vendor's own.
 
-A V0 record length is not recorded anywhere in the stream, so unlike V1 it
-cannot be checked against the file. A V0 variant with a different record
-size would be misread rather than rejected.
+A V0 record is not always 280 bytes: the \verb{Peak Table-100} streams under
+\verb{LC Data Processing} hold 544-byte records whose first 256 bytes follow the
+table above, with the retention factor (\code{k}) as a \code{double} at 208. As for
+V1, the record length is derived as \verb{(stream size - 8) / peak count} and
+any remainder beyond 280 bytes is skipped. A table whose records are
+shorter than 280 bytes, or do not divide the stream evenly, is rejected.
 }
 \seealso{
 Other 'Shimadzu' parsers:

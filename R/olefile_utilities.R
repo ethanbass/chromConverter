@@ -110,7 +110,7 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks",
     streams <- ole$listdir()
     what <- switch(what, "chroms" = "Chromatogram Ch|Max Plot",
                    "tic" = "Centroid SumTIC",
-                   "peaks" = "Peak Table|PT",
+                   "peaks" = "Peak Table-|PT-",
                    "qtof" = "Centroid Data")
     selected_streams <- streams[grep(what, streams)]
     sizes <- sapply(selected_streams, function(x){

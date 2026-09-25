@@ -9,7 +9,7 @@
 ### New features
 
 * Files read with the `rainbow` parser now report most of the metadata the parser supplies, including `instrument`, `operator`, `detector_model`, `wavelength` and `instrument_modules`.
-* Run times of 'OpenLab' `.dx` files read with the `rainbow` parser are now returned as `POSIXct` in UTC, applying the time-zone offset the file records, rather than as a string.
+* Run times of 'OpenLab' `.dx` files read with the `rainbow` parser are now returned as `POSIXct` in UTC, applying the time-zone offset the file records.
 * 'OpenLab' `.dx` files now report their injection volume.
 * 'Agilent' `.ch`, `.uv` and `.it` traces now report the channel they were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`).
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
@@ -22,14 +22,14 @@
 #### ANDI (netCDF)
 
 * Retention times from evenly sampled 'ANDI chrom' files are now reconstructed accurately. Previously, the run length was treated as the time of the last point, which resulted in slight stretching of the time axis.
-* Unevenly sampled 'ANDI chrom' data now keep their original retention times on import and on export with `write_andi_chrom`, instead of being spaced evenly.
+* Unevenly sampled 'ANDI chrom' data now keep their original retention times on import and on export with `write_andi_chrom`.
 * 'ANDI chrom' peak tables now include text columns such as `peak_name`, which were previously dropped.
 * Files written by `write_andi_chrom` now record the correct time unit, run length and detector range.
 * 'ANDI MS' files with flagged peaks no longer fail to read or return the flags as extra data points.
 * 'ANDI MS' files without scan times, such as spectral libraries, can now be read. Retention times are `NA` and no TIC is returned.
 * 'ANDI MS' files now report their intensity unit in `detector_y_unit`, which was always empty, and files from other software also report their mass unit in `detector_x_unit`.
 * Exporting data that include MS2 scans to 'ANDI MS' no longer fails. The MS1 scans are written, and the MS2 scans are left out with a warning, since the format cannot hold them; `write_mzml` keeps both.
-* Files written by `write_andi_ms` now record the chromatogram's polarity, instrument, software and acquisition mode (full scan or selected ion monitoring), instead of fixed defaults or empty fields. See `?write_andi_ms`.
+* Files written by `write_andi_ms` now record the chromatogram's polarity, instrument, software and acquisition mode (full scan or selected ion monitoring). See `?write_andi_ms`.
 * Setting one entry of `ms_params` in `write_andi_ms` no longer drops the defaults of the others.
 * Files written by `write_andi_ms` now follow the ANDI MS specification more closely, including each scan's actual mass and time range and the chromatogram's intensity unit.
 
@@ -40,15 +40,23 @@
 
 #### mzML export
 
-* mzML files now name the format of the source file (e.g. `Andi-MS format`) instead of always claiming `MS1 format`.
+* mzML files now name the format of the source file (e.g. `Andi-MS format`).
 * mzML files no longer carry a placeholder sample `id` (`sNA`) or characters an ID cannot hold, and `sample_name` now also names the `<sample>` element. Metadata values are now XML-escaped.
 * mzML files written from data without a `run_datetime` no longer fail schema validation.
 * `write_mzml` now errors on a table without `mz` (or `lambda`) and `intensity` columns, instead of writing a corrupt file.
 
+#### 'Shimadzu'
+
+* Raw 'Shimadzu' `.lcd` chromatograms (`scale = FALSE`) now report `detector_y_unit` as `NA` where the channel's calibration factor is not 1, since those values are not in a defined unit.
+* QTOF mass spectra from `.lcd` files now carry the `scaled` attribute.
+* 'Shimadzu' `.qgd` scans whose intensities are more than 4 bytes wide can now be read. They are read with a warning, since the decoding of values this wide has not been checked against a 'LabSolutions' export.
+* 'Shimadzu' `.lcd` peak tables stored as `Peak Table-100` and similar now read correctly; every peak after the first was misread.
+* 'Shimadzu' `.lcd` peak tables no longer include mass spectrometry tables (`Mass Peak Table`, `Compound Peak Table`), which were misread.
+
 #### 'Agilent'
 
 * `read_agilent_amx` now warns when a method doesn't contain a requested module, such as a DAD on an instrument that has none, and returns the others. Asking for that module alone now gives a clear error.
-* The `solvents` table from `read_agilent_amx` now returns the class that `format_out` asks for instead of always returning a `data.frame`.
+* The `solvents` table from `read_agilent_amx` now returns the class that `format_out` asks for.
 * `read_agilent_dx(what = "instrument")` now gives a clear error for an archive without instrument data.
 
 ## chromConverter 0.10.0

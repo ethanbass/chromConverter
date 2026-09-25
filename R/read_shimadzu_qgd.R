@@ -135,6 +135,11 @@ read_qgd_ms_scan <- function(f, offsets, scan_no){
     }
   }
 
+  if (!n_bytes %in% 1:8){
+    stop(sprintf("Unsupported intensity width (%d bytes) at scan `%d`.",
+                 n_bytes, scan_no))
+  }
+
   # read the whole block at once and reshape so that each column is one record
   record_size <- 2L + n_bytes
   block <- matrix(readBin(f, what = "raw", n = nval * record_size),
@@ -142,6 +147,16 @@ read_qgd_ms_scan <- function(f, offsets, scan_no){
 
   mz <- readBin(as.vector(block[1:2, , drop = FALSE]), what = "integer",
                 size = 2, endian = "little", n = nval)
+
+  if (n_bytes > 4){
+    intensity <- colSums(matrix(as.numeric(block[3:record_size, , drop = FALSE]),
+                                nrow = n_bytes) * 256^(0:(n_bytes - 1)))
+    out <- matrix(c(rep.int(scan, nval), rep.int(rt/60000, nval), mz/20,
+                    intensity), nrow = nval, ncol = 4,
+                  dimnames = list(NULL, c("scan", "rt", "mz", "intensity")))
+    attr(out, "unvalidated_width") <- n_bytes
+    return(out)
+  }
 
   # we have to add a byte of 00s for odd numbers of bytes because R can't deal
   # with integers that have odd numbers of bytes
@@ -208,6 +223,16 @@ read_qgd_ms_stream <- function(path, format_out = "data.frame"){
                                         i, conditionMessage(e)))
     )
   })
+  widths <- lapply(xx, attr, "unvalidated_width")
+  odd <- which(lengths(widths) > 0)
+  if (length(odd) > 0){
+    warning(sprintf(paste0("%d scan(s) store intensities %s bytes wide (e.g. ",
+                           "scan %d), a width not yet checked against a ",
+                           "'LabSolutions' export. Check these intensities."),
+                    length(odd),
+                    paste(sort(unique(unlist(widths[odd]))), collapse = "/"),
+                    odd[1]), call. = FALSE)
+  }
   dat <- do.call(rbind, xx)
   dat <- convert_chrom_format(dat, format_out = format_out)
   dat

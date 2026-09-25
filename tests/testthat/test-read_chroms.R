@@ -833,3 +833,27 @@ test_that("collect_files warns when files do not match the expected extension", 
                  "Some of the files do not have the expected file extension")
   expect_no_warning(collect_files("dad1.uv", "\\.uv$", search_dirs = FALSE))
 })
+
+test_that("V0 'Shimadzu' peak tables are read with the record length of the stream", {
+  sz_v0_stream <- function(block_len, rt_ms){
+    rec <- lapply(rt_ms, function(rt){
+      r <- raw(block_len)
+      r[5:8] <- writeBin(as.integer(rt), raw(), size = 4, endian = "little")
+      r
+    })
+    c(writeBin(c(length(rt_ms), 0L), raw(), size = 4, endian = "little"),
+      unlist(rec))
+  }
+  read_stream <- function(bytes){
+    path <- withr::local_tempfile()
+    writeBin(bytes, path)
+    f <- file(path, "rb")
+    on.exit(close(f))
+    read_sz_table_v0(f)
+  }
+  rt_ms <- c(60000, 120000, 180000)
+  expect_equal(read_stream(sz_v0_stream(280, rt_ms))$R.time, 1:3)
+  expect_equal(read_stream(sz_v0_stream(544, rt_ms))$R.time, 1:3)
+  expect_error(read_stream(sz_v0_stream(200, rt_ms)),
+               "Unrecognized V0 record length")
+})

@@ -151,7 +151,7 @@ read_sz_qtof <- function(path, format_out = c("matrix", "data.frame",
                                           time_range = range(rts)/60000)
                      } else NULL,
                      path = path, format_out = format_out,
-                     metadata_format = metadata_format)
+                     metadata_format = metadata_format, scale = scale)
 }
 
 #' Read a varint from a protobuf-encoded stream
