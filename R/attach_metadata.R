@@ -292,8 +292,11 @@ read_waters_metadata <- function(file){
 #' records all of them, so the elements a format does not provide are
 #' absent from the result. Superseded names (e.g. `injection_volume`,
 #' `software_name`, `time_start`) are accepted and mapped to the names
-#' that replaced them. A field requested by name that no chromatogram carries
-#' produces a warning.
+#' that replaced them. An element of a nested field (see `expand`) may be
+#' named too, either by the column it is reported under (`SampleLabel`) or in
+#' full (`acaml_metadata.SampleLabel`), to report it without the rest of its
+#' field. A field requested by name that no chromatogram carries produces a
+#' warning.
 #' @param detector A character vector of detectors to include (e.g. `"UV"` or
 #' `c("UV", "MS")`), matched case-insensitively against each chromatogram's
 #' `detector` attribute. Defaults to `NULL`, in which case all chromatograms
@@ -362,12 +365,24 @@ extract_metadata <- function(chrom_list,
          call. = FALSE)
   }
   what <- union(what, expand)
+  taken <- expand_taken_names(chrom_list, all_nested, all_nested)
+  # an element named in `what` by the column it would be reported under picks
+  # out that element alone, and only that element, from its field
+  picks <- list()
+  for (f in all_nested){
+    el <- nested_element_names(f, chrom_list)
+    long <- paste(f, el, sep = ".")
+    short <- ifelse(el %in% taken[[f]], long, el)
+    hit <- short %in% what | long %in% what
+    if (!any(hit)) next
+    picks[[f]] <- el[hit]
+    what <- union(setdiff(what, c(short[hit], long[hit])), f)
+  }
   # a nested field reached through `what` is expanded and named just as one
   # reached through `expand` is, so the two ways of asking for it agree. Which
   # is why this is derived from `what` rather than from `expand`, whose members
   # need not be nested at all.
   nested <- intersect(what, all_nested)
-  taken <- expand_taken_names(chrom_list, nested, all_nested)
   metadata <- purrr::imap_dfr(chrom_list, function(chrom, name){
     c(name = name, unlist(lapply(what, function(w){
       val <- attr(chrom, which = w, exact = TRUE)
@@ -381,6 +396,7 @@ extract_metadata <- function(chrom_list,
       out <- flatten_metadata_field(val, "", collapse)
       # a nested field is nested across the whole list, but an individual
       # chromatogram need not carry it: a UV trace has no `ms_params`
+      if (!is.null(picks[[w]])) out <- out[names(out) %in% picks[[w]]]
       if (length(out) == 0) return(NULL)
       hit <- names(out) %in% taken[[w]]
       names(out)[hit] <- paste(w, names(out)[hit], sep = ".")
@@ -483,19 +499,23 @@ flatten_metadata_field <- function(val, name, collapse = FALSE){
 #' @return A list of character vectors, named by `fields`.
 #' @noRd
 expand_taken_names <- function(chrom_list, fields, all_nested){
-  element_names <- function(field){
-    unique(unlist(lapply(chrom_list, function(chrom){
-      # `collapse` cannot change these names, only how many values sit under
-      # each of them, so it does not matter which way it is set here
-      names(flatten_metadata_field(attr(chrom, field, exact = TRUE), ""))
-    })))
-  }
-  elements <- lapply(stats::setNames(nm = all_nested), element_names)
+  elements <- lapply(stats::setNames(nm = all_nested), nested_element_names,
+                     chrom_list = chrom_list)
   vocabulary <- c("name", chrom_metadata_fields(), .metadata_extra_fields)
   lapply(stats::setNames(nm = fields), function(field){
     intersect(elements[[field]], c(vocabulary, unlist(elements[-match(field,
                                                               all_nested)])))
   })
+}
+
+#' The element names of a nested field across a list of chromatograms
+#' @noRd
+nested_element_names <- function(field, chrom_list){
+  unique(unlist(lapply(chrom_list, function(chrom){
+    # `collapse` cannot change these names, only how many values sit under
+    # each of them, so it does not matter which way it is set here
+    names(flatten_metadata_field(attr(chrom, field, exact = TRUE), ""))
+  })))
 }
 
 #' Enumerate the individual chromatograms in a (possibly nested) list

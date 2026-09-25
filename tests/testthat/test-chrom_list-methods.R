@@ -294,6 +294,34 @@ test_that("an expanded element is prefixed only where its name is taken", {
     c("name", "ms_params.foo"))
 })
 
+test_that("extract_metadata picks single elements out of a nested field", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  acaml <- list(SampleName = "s1", SampleLabel = "lab1")
+  x <- structure(list(a = mk(sample_name = "a", acaml_metadata = acaml,
+                             ms_params = list(polarity = "+",
+                                              ion_time = 25))),
+                 class = "chrom_list")
+
+  expect_named(extract_metadata(x, what = "SampleLabel"),
+               c("name", "SampleLabel"))
+  expect_named(extract_metadata(x, what = "SampleLabel", expand = TRUE),
+               c("name", "SampleLabel", "ms_params.polarity", "ion_time"))
+  # an element whose name is taken is asked for by its prefixed column
+  expect_named(extract_metadata(x, what = c("sample_name",
+                                            "ms_params.polarity")),
+               c("name", "sample_name", "ms_params.polarity"))
+  expect_equal(extract_metadata(x, what = "SampleLabel")$SampleLabel, "lab1")
+  expect_equal(extract_metadata(x, what = "acaml_metadata.SampleLabel"),
+               extract_metadata(x, what = "SampleLabel"))
+  # an element carried by two nested fields has no short name to ask for
+  y <- structure(list(a = mk(ms_params = list(foo = 1),
+                             acaml_metadata = list(foo = 2))),
+                 class = "chrom_list")
+  expect_warning(extract_metadata(y, what = "foo"), "not found")
+  expect_named(extract_metadata(y, what = "acaml_metadata.foo"),
+               c("name", "acaml_metadata.foo"))
+})
+
 test_that("extract_metadata expands a nested field attached to the sample", {
   # `read_agilent_rslt` attaches the acaml record to the list holding the
   # traces, and one row describes every trace in it
