@@ -732,10 +732,10 @@ test_that("read_chroms can read 'Agilent' .dx files with OL179", {
                  1e-3,1e-3,1e-6,5e-3),
                ignore_attr = TRUE)
 
-  expect_true(all(
+  expect_true(all(abs(
     sapply(x$instrument, function(xx){
       attr(xx, "run_datetime")
-    }) == 1636717143))
+    }) - 1636713543.9322988) < 1e-3))
   expect_equal(basename(attr(x$instrument[[1]], "source_file")), "agilent.dx")
 
   x1 <- read_chroms(path, format_in="agilent_dx", what = c("chroms","instrument"),
@@ -845,10 +845,10 @@ test_that("read_chroms can read 'Agilent' .dx files with OL130", {
                  1e-3, 1e-6, 5e-3, 1e0),
                ignore_attr = TRUE)
 
-  expect_true(all(
+  expect_true(all(abs(
     sapply(x$instrument, function(xx){
       attr(xx, "run_datetime")
-    }) == 1749578656))
+    }) - 1749596656.8943567) < 1e-3))
   expect_equal(attributes(x$dad)$sample_position, "D1B-B3")
 
   # check that source file is passed through
@@ -1304,6 +1304,88 @@ test_that("a short 'rainbow' time axis is rebuilt rather than dropped", {
   expect_equal(rb_times(1:5, 5), 1:5)
   expect_null(rb_times(numeric(), 5))
   expect_warning(expect_equal(rb_times(c(0, 4), 5), seq(0, 4, length.out = 5)))
+})
+
+rezip_without <- function(path, pattern, dir){
+  src <- file.path(dir, "src")
+  unzip(path, exdir = src)
+  keep <- list.files(src, recursive = TRUE, all.files = TRUE)
+  keep <- keep[!grepl(pattern, keep)]
+  out <- file.path(dir, basename(path))
+  withr::with_dir(src, utils::zip(out, keep, flags = "-q"))
+  out
+}
+
+test_that("read_agilent_amx drops a module the archive has no driver for", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("Glucosinolates-XDB5.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+  # as for an instrument whose detector is not a DAD
+  no_dad <- rezip_without(path, "DadDriver", tmp)
+
+  expect_warning(x <- read_agilent_amx(no_dad), "No driver files found for .dad.")
+  expect_false("dad" %in% names(x))
+  expect_true(all(c("metadata", "pump", "column", "autosampler") %in% names(x)))
+  expect_error(read_agilent_amx(no_dad, what = "dad"),
+               "No driver files found for .dad.")
+
+  x <- read_agilent_amx(path, what = "pump", format_out = "data.table")
+  expect_s3_class(x$pump$solvents, "data.table")
+})
+
+test_that("read_agilent_dx errors when asked for instrument data it lacks", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("agilent.dx", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+  no_it <- rezip_without(path, "[.]IT$", tmp)
+
+  expect_error(read_agilent_dx(no_it, what = "instrument"),
+               "Instrument data could not be found.")
+})
+
+test_that("read_agilent_dx reads the run time and injection volume from `injection.acmd`", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("MeOH1.dx", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  # the file records 2025-06-10T18:04:16.8943567-05:00
+  x <- read_agilent_dx(path, what = c("chroms", "dad", "instrument"))
+  for (trace in list(x$chroms[[1]], x$dad, x$instrument[[1]])){
+    expect_equal(attr(trace, "run_datetime"),
+                 as.POSIXct("2025-06-10 23:04:16.8943567", tz = "UTC"))
+    expect_equal(attr(trace, "sample_injection_volume"), 5)
+  }
+  # the channel each trace was recorded on, from its signal descriptor
+  expect_equal(unname(sapply(x$chroms, attr, "channel_id")),
+               sub(",.*", "", names(x$chroms)))
+  expect_equal(attr(x$instrument[["PMP1A,Pressure"]], "channel_id"), "PMP1A")
+  expect_equal(attr(x$instrument[["THM1A,Left Temperature"]], "channel_id"),
+               "THM1A")
+
+  # without it, the local time in the trace headers is all there is
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+  no_acmd <- rezip_without(path, "[.]acmd$", tmp)
+  y <- read_agilent_dx(no_acmd, what = "dad")
+  expect_equal(attr(y, "run_datetime"),
+               as.POSIXct("2025-06-10 18:04:16", tz = "UTC"))
+  expect_null(attr(y, "sample_injection_volume"))
 })
 
 test_that("call_rainbow works without `format_in`", {

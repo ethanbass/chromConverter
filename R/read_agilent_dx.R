@@ -5,6 +5,11 @@
 #' This function unzips 'Agilent'  `.dx` into a temporary directory using
 #' [unzip] and calls the appropriate parser on the unzipped file.
 #'
+#' Where the archive holds an `injection.acmd` file, the `run_datetime` and
+#' `sample_injection_volume` attributes are taken from it. Its run time
+#' records the offset from UTC, while the `.ch` and `.uv` headers give only
+#' the local time.
+#'
 #' @importFrom utils unzip
 #' @inheritParams shared_params
 #' @param path Path to Agilent `.dx` file.
@@ -35,6 +40,8 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
   what <- match.arg(what, c("chroms", "dad", "instrument"), several.ok = TRUE)
   files <- unzip(path, list = TRUE)
+  acmd <- grep("^injection\\.acmd$", files$Name, ignore.case = TRUE,
+               value = TRUE)
   exts <- c(chroms = "\\.ch$", dad = "\\.uv$", instrument = "\\.it$")
   files <- lapply(exts[what], function(ext){
     grep(ext, files$Name, ignore.case = TRUE, value = TRUE)
@@ -54,11 +61,14 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
   files.path <- lapply(files, function(fl){
     fs::path(path_out, fl)
   })
+  acmd <- if (read_metadata && metadata_format == "chromconverter" &&
+              length(acmd) > 0) read_acmd(unz(path, acmd[1]))
   if (any(what == "chroms")) {
     if (length(files.path$chroms) > 0){
       chroms <- lapply(files.path$chroms, read_chemstation_ch, format_out = format_out,
                        data_format = data_format, read_metadata = read_metadata,
                        metadata_format = metadata_format, source_file = path)
+      chroms <- lapply(chroms, add_acmd_metadata, acmd = acmd)
       names(chroms) <- get_signal_names(chroms)
       chroms <- collapse_list(chroms)
     } else{
@@ -72,6 +82,7 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
                                  read_metadata = read_metadata,
                                  metadata_format = metadata_format,
                                  source_file = path)
+      dad <- add_acmd_metadata(dad, acmd)
     } else{
       stop("DAD data could not be found.")
     }
@@ -82,10 +93,11 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
                            format_out = format_out, data_format = data_format,
                            read_metadata = read_metadata,
                            metadata_format = metadata_format, source_file = path)
+      instrument <- lapply(instrument, add_acmd_metadata, acmd = acmd)
       names(instrument) <- get_signal_names(instrument)
       instrument <- collapse_list(instrument)
     } else{
-      "Instrument data could not be found."
+      stop("Instrument data could not be found.")
     }
   }
   dat <- mget(what)
@@ -93,6 +105,39 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
     dat <- collapse_list(dat)
   }
   dat
+}
+
+#' Read the injection metadata of an 'OpenLab' `.dx` archive
+#'
+#' `injection.acmd` records the run time with its offset from UTC, which the
+#' `.ch` and `.uv` headers leave out, and the injection volume, which they do
+#' not record at all.
+#' @param path Path to, or connection to, `injection.acmd`.
+#' @return A named list of metadata fields, `NA` where the file has none.
+#' @noRd
+read_acmd <- function(path){
+  info <- xml2::xml_find_first(xml2::read_xml(path),
+                               "./*[local-name()='InjectionInfo']")
+  field <- function(name){
+    node <- xml2::xml_find_first(info, sprintf("./*[local-name()='%s']", name))
+    val <- if (is.na(node)) "" else trimws(xml2::xml_text(node))
+    if (nzchar(val)) val else NA_character_
+  }
+  volume <- suppressWarnings(as.numeric(field("InjectionVolume")))
+  if (!isTRUE(field("InjectionVolumeUnits") %in% c("\u00b5L", "uL"))){
+    volume <- NA_real_
+  }
+  list(run_datetime = parse_iso8601(field("RunDateTime")),
+       sample_injection_volume = volume)
+}
+
+#' Attach `injection.acmd` metadata to a trace read from the archive
+#' @noRd
+add_acmd_metadata <- function(x, acmd){
+  for (field in names(acmd)){
+    if (!is.na(acmd[[field]])) attr(x, field) <- acmd[[field]]
+  }
+  x
 }
 
 #' Name traces by their signal descriptor

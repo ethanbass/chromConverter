@@ -149,8 +149,9 @@ validate_metadata_names <- function(attrs){
   # the control platform a 'Shimadzu' triple quadrupole reports for itself,
   # which names a line of instruments rather than one of them
   "instrument_config",
-  # the channel a 'Shimadzu' OLE trace was read from, which is also what names
-  # the peak table that goes with it
+  # the channel a trace was read from: a 'Shimadzu' OLE stream, which is also
+  # what names the peak table that goes with it, or an 'Agilent' module
+  # channel such as `DAD1A`
   "channel_id",
   # the instrument modules an 'Agilent' acquisition method lists, as
   # `name`/`model` pairs

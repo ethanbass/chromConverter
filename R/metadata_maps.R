@@ -29,6 +29,7 @@ meta_chemstation <- function(meta, ctx){
        detector_model = get_metadata_field(meta, "detector_model"),
        detector_range = get_metadata_field(meta, "signal"),
        signal_descriptor = get_metadata_field(meta, "signal_desc"),
+       channel_id = chemstation_channel_id(meta$signal_desc),
        detector_y_unit = meta$units,
        detector_x_unit = meta$detector_x_unit,
        software = meta$software,
@@ -44,6 +45,18 @@ meta_chemstation <- function(meta, ctx){
        time_interval = NA,
        time_unit = "Minutes",
        intensity_multiplier = meta$intensity_multiplier)
+}
+
+#' Channel a 'ChemStation' trace was recorded on
+#'
+#' The signal descriptor opens with the module, its number and the channel
+#' (`DAD1A,Sig=210,4  Ref=off`, `PMP1A,Pressure`).
+#' @return The channel (`DAD1A`), or `NULL` where the descriptor has none.
+#' @noRd
+chemstation_channel_id <- function(desc){
+  if (length(desc) != 1 || is.na(desc)) return(NULL)
+  id <- trimws(sub(",.*$", "", desc))
+  if (grepl("^[A-Z]{2,}[0-9]* ?[A-Z]$", id)) id else NULL
 }
 
 #' Field map for 'ChemStation' report (peak list) files

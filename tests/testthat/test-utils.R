@@ -329,3 +329,13 @@ test_that("parse_iso8601 applies the offset an ISO 8601 date-time records", {
   expect_equal(convert_timestamp("2025-06-10T18:04:16-05:00", "%d-%b-%y"),
                as.POSIXct("2025-06-10 23:04:16", tz = "UTC"))
 })
+
+test_that("chemstation_channel_id takes the channel from a signal descriptor", {
+  expect_equal(chemstation_channel_id("DAD1A,Sig=210,4  Ref=off"), "DAD1A")
+  expect_equal(chemstation_channel_id("PMP1A,Pressure"), "PMP1A")
+  expect_equal(chemstation_channel_id("DAD A, Sig=280,10 Ref=off"), "DAD A")
+  expect_null(chemstation_channel_id("Front Signal"))
+  expect_null(chemstation_channel_id(""))
+  expect_null(chemstation_channel_id(NA))
+  expect_null(chemstation_channel_id(NULL))
+})

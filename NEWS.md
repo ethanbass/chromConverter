@@ -3,12 +3,15 @@
 ### Breaking changes
 
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
+* Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
 
 ### New features
 
 * Files read with the `rainbow` parser now report most of the metadata the parser supplies, including `instrument`, `operator`, `detector_model`, `wavelength` and `instrument_modules`.
 * Run times of 'OpenLab' `.dx` files read with the `rainbow` parser are now returned as `POSIXct` in UTC, applying the time-zone offset the file records, rather than as a string.
+* 'OpenLab' `.dx` files now report their injection volume.
+* 'Agilent' `.ch`, `.uv` and `.it` traces now report the channel they were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`).
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
 * `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.
 * mzML files now record each scan's polarity, and a new `centroided` argument lets profile data be marked as profile. All spectra were previously assumed to be centroided.
@@ -41,6 +44,12 @@
 * mzML files no longer carry a placeholder sample `id` (`sNA`) or characters an ID cannot hold, and `sample_name` now also names the `<sample>` element. Metadata values are now XML-escaped.
 * mzML files written from data without a `run_datetime` no longer fail schema validation.
 * `write_mzml` now errors on a table without `mz` (or `lambda`) and `intensity` columns, instead of writing a corrupt file.
+
+#### 'Agilent'
+
+* `read_agilent_amx` now warns when a method doesn't contain a requested module, such as a DAD on an instrument that has none, and returns the others. Asking for that module alone now gives a clear error.
+* The `solvents` table from `read_agilent_amx` now returns the class that `format_out` asks for instead of always returning a `data.frame`.
+* `read_agilent_dx(what = "instrument")` now gives a clear error for an archive without instrument data.
 
 ## chromConverter 0.10.0
 

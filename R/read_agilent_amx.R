@@ -11,13 +11,15 @@
 #' @param path_out Directory into which the archive
 #'   is extracted. If `NULL` (default), a temporary directory is used and
 #'   cleaned up on exit.
-#' @param format_out Class of output (for tables). Either `"data.frame"`,
-#' `"tibble"` or `"data.table"`.
+#' @param format_out Class of the `gradient`, `solvents`, `signals` and
+#' `temp_controls` tables. Either `"data.frame"`, `"tibble"` or `"data.table"`.
 #' @param gradient_format Whether to return the gradient in `"wide"` (default)
 #' or `"long"` format.
 #'
 #' @return A named list with one element per parsed module, plus `"metadata"`.
-#'   Elements present depend on `what`; see below for the structure of each.
+#'   A module the archive has no driver file for is left out with a warning,
+#'   and it is an error if none of the requested modules has one. The `comp` module is returned as `column` and
+#'   `sampler` as `autosampler`. See below for the structure of each.
 #'
 #'   **`metadata`** — a list with scalar elements:
 #'   \describe{
@@ -81,12 +83,18 @@ read_agilent_amx <- function(path, what = c("dad", "pump", "comp", "sampler"),
 
   # grep("CollectorDriver(?!.*\\.chk$)", files$Name, perl = TRUE)
 
-  if (length(files_sel) > 1){
-    what <- what[vapply(files_sel, length, FUN.VALUE = numeric(1)) > 0]
+  missing_driver <- names(files_sel)[lengths(files_sel) == 0]
+  if (length(missing_driver) == length(files_sel)){
+    stop("No driver files found for ",
+         paste(sQuote(missing_driver), collapse = ", "), ".", call. = FALSE)
+  }
+  if (length(missing_driver) > 0){
+    warning("No driver files found for ",
+            paste(sQuote(missing_driver), collapse = ", "), ".", call. = FALSE)
+    files_sel <- files_sel[lengths(files_sel) > 0]
   }
   files_sel <- c(metadata=grep("ReportableInformation",
                                files$Name, value = TRUE), files_sel)
-  what <- c("metadata", what)
   if (is.null(path_out)) {
     tmp <- temp_directory(path)
     on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
@@ -233,6 +241,7 @@ parse_pump_method <- function(file_path, format_out = "data.frame",
   }
 
   gradient <- convert_format_out(gradient, format_out = format_out)
+  solvents <- convert_format_out(solvents, format_out = format_out)
   list(
     flow_mL_min       = get_amx_num(doc, "/PumpMethod/Flow"),
     stop_time_min     = get_amx_num(doc, "/PumpMethod/StopTime/StopTimeValue"),
