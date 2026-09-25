@@ -30,15 +30,15 @@ A chromatogram in the format specified by the \code{format_out} and
 \code{data_format} arguments.
 }
 \description{
-Converts a single chromatogram from MassHunter \code{.sp} format to R
-\code{data.frame} using the \href{https://github.com/bovee/aston}{Aston} file parser.
+Reads a single chromatogram from a MassHunter \code{.sp} file using the
+\href{https://github.com/bovee/aston}{Aston} file parser.
 }
 \section{Deprecation}{
 
 The 'aston' parser is deprecated and will be removed in a future release.
 'Aston' has been unmaintained since 2020. This is the only remaining 'aston'
-binding, and \link{read_chroms} selects it automatically only as a last resort,
-when no other parser can read the file. Please use the 'entab' parser (by
+binding, and \link{read_chroms} selects it automatically only when 'entab' is not
+installed. Please use the 'entab' parser (by
 the same author as 'Aston') instead, e.g.
 \code{read_chroms(path, format_in = "masshunter_dad", parser = "entab")}.
 }

@@ -5,9 +5,10 @@
 #' @importFrom stats setNames
 #' @inheritParams shared_params
 #' @param path Path to Waters `.raw` file.
-#' @inherit shared_params return
-#' @note For now this parser only reads 1D chromatograms (not mass spectra or
-#' DAD data) and does not support parsing of metadata from 'Waters' RAW files.
+#' @return A list of 2D chromatograms, one per trace and named by it, in the
+#' format specified by `format_out` and `data_format`.
+#' @note This parser reads only 2D chromatograms (retention time and
+#' intensity), not mass spectra or DAD data.
 #' @examples \dontrun{
 #' read_waters_raw("path/to/file.raw")
 #' }

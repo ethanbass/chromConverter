@@ -566,8 +566,8 @@ meta_mzml <- function(meta, ctx){
 #' instrument details, but 'RaMS' does not surface them, while the text file does
 #' not carry the wavelength range or polarity that it does.
 #'
-#' Twelve fields are set by both maps, so fields are read with `meta$x` rather
-#' than `get_metadata_field`: one the text file omits yields `NULL`, which
+#' Eight fields are set by both maps, so fields are read with `meta$x` rather
+#' than `get_metadata_field`: one that the text file omits yields `NULL`, which
 #' `finalize_metadata` drops, leaving the value `meta_mzml` set. Reading it as
 #' `NA` would overwrite that value instead.
 #' @noRd
@@ -672,9 +672,9 @@ meta_default <- function(meta, ctx){
 
 #' Field map for 'ChemStation' CSV exports
 #'
-#' A CSV export carries no metadata beyond the file name, so every field is
-#' `NA`, so that `extract_metadata` reports an empty column rather than
-#' omitting it.
+#' A CSV export carries no metadata, so `sample_name` is taken from the file
+#' name and every other field is `NA`, which `extract_metadata` reports as an
+#' empty column rather than omitting it.
 #' @noRd
 meta_chemstation_csv <- function(meta, ctx){
   utils::modifyList(empty_metadata(),

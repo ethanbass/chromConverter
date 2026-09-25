@@ -51,9 +51,9 @@ check_data_format <- function(data_format, format_out){
 #' own literal tag, which invited two kinds of typo that are invisible until a
 #' user passes `metadata_format = "raw"`: an unquoted `raw` on the right-hand
 #' side, which resolves to `base::raw` and errors, and a `switch` whose second
-#' arm is unnamed, which yields `""`. Neither names a branch in
-#' `attach_metadata`, whose `switch` has no default arm and so returns `NULL`,
-#' silently discarding the chromatogram.
+#' arm is unnamed, which yields `""`. Neither names a field map, so
+#' `attach_metadata` warns and returns the chromatogram without its instrument
+#' metadata.
 #'
 #' @param metadata_format Either `chromconverter` or `raw`, as supplied by the
 #' user.
@@ -415,8 +415,8 @@ check_for_pkg <- function(pkg, return_boolean = FALSE){
 }
 
 #' Choose apply function
-#' @return Returns [pbapply::pbapply] if `progress_bar == TRUE`,
-#' otherwise returns `lapply`.
+#' @return [pbapply::pblapply] if `progress_bar` is `TRUE`, otherwise
+#' `lapply`.
 #' @noRd
 choose_apply_fnc <- function(progress_bar, parallel = FALSE, cl = NULL){
   if (progress_bar){
@@ -464,19 +464,20 @@ collapse_list <- function(x){
 #' [reticulate::py_require] and they are provisioned automatically the first
 #' time a python parser is called. It can still be useful if you need a
 #' persistent environment, e.g. to work offline or to avoid re-resolving
-#' packages.
+#' packages. It is an error if an environment named `envname` already exists.
 #'
 #' @name configure_python_environment
 #' @param what What kind of environment to create. A python virtual
 #' environment (`"venv"`) or a conda environment (`"conda"`).
-#' @param envname The name of, or path to, a Python virtual environment.
+#' @param envname The name of, or path to, the environment to create.
 #' @param parser Which parser to install requirements for. Either `"all"`
 #' (default), `"aston"`, `"rainbow"` or `"olefile"`.
-#' @param python Argument to `reticulate::virtualenv_create`, specifying
-#' the path to a Python interpreter.
+#' @param python Path to the Python interpreter passed to
+#' [reticulate::virtualenv_create]. Used only when `what = "venv"`. Defaults to
+#' `NULL`, in which case [reticulate::virtualenv_starter] chooses one.
 #' @param ... Additional arguments to [reticulate::virtualenv_create] or
 #' [reticulate::conda_create] according to the value of `what`.
-#' @return Returns the name of the environment (invisibly).
+#' @return The name of the environment, invisibly.
 #' @section Side effects:
 #' Creates and configures either a python virtual environment or conda
 #' environment (according to the value of `what`) with the packages required

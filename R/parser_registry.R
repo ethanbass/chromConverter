@@ -29,7 +29,7 @@
 #
 # The file version named by `format_in` never selects a parsing routine: the
 # readers determine the version from the file itself. It governs only which
-# parsers are permitted and how the metadata is labelled.
+# parsers are permitted and how the metadata is labeled.
 #
 # `test-parser_registry.R` checks this table against the readers' formals and
 # against the parser table it replaced.

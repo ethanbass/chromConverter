@@ -64,8 +64,8 @@ resolve_metadata_fields <- function(what){
 #' metadata onto a derived object has to leave these behind, since the derived
 #' object has its own.
 #'
-#' Note this is deliberately only the structural set. `list_metadata_attrs`
-#' skips `comment` and `acaml_metadata` as well, because those describe a list
+#' This is deliberately only the structural set: `list_metadata_attrs` also skips
+#' `comment` and `acaml_metadata`, because those describe a list
 #' as a whole and should not be copied down onto each of its traces, whereas
 #' `transfer_metadata` has to keep them: a reshaped chromatogram is the same
 #' chromatogram and should not lose its acaml table.
@@ -121,9 +121,10 @@ finalize_metadata <- function(x, attrs, ctx){
 #' Warn about metadata names outside the vocabulary
 #'
 #' A field map that invents a name puts it beyond the reach of
-#' [`extract_metadata`], which asks for the vocabulary by name. Enabled for
-#' `devtools::test()` and `R CMD check`, and a no-op otherwise, so a user never
-#' sees it.
+#' [extract_metadata], which asks for the vocabulary by name. Enabled when
+#' `NOT_CRAN` is set, as `devtools::test()` and `devtools::check()` set it, or
+#' by the `chromConverter.validate_metadata` option, and a no-op otherwise, so a
+#' user without `NOT_CRAN` set never sees it.
 #' @noRd
 validate_metadata_names <- function(attrs){
   if (!isTRUE(getOption("chromConverter.validate_metadata",

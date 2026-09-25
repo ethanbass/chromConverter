@@ -2,19 +2,18 @@
 #'
 #' Reads 'Agilent ChemStation' `.ch` files.
 #'
-#' 'Agilent' `.ch` files come in several different formats. This parser
-#' can automatically detect and read several versions of these files from
-#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions `30` and
-#' `130`, which are generally produced by ultraviolet detectors, as well as
-#' `81`, `179`, and `181` which are generally produced by flame ionization (FID)
-#' detectors.
+#' 'Agilent' `.ch` files come in several formats. This parser detects the
+#' version from the file and reads versions `8`, `30`, `130`, `81`, `179` and
+#' `181` from 'Agilent ChemStation' and 'Agilent OpenLab'; any other version is
+#' an error. Versions `30` and `130` are generally produced by ultraviolet
+#' detectors, and `81`, `179` and `181` by flame ionization detectors (FID).
 #'
 #' @importFrom bitops bitAnd bitShiftL
 #' @inheritParams shared_params
 #' @param path Path to 'Agilent' `.ch` file.
-#' @param scale Whether to scale the data by the scaling factor present in the
-#' file. Defaults to `TRUE`. 'MassHunter' seems to ignore the scaling
-#' factor in at least some types of 'ChemStation' files.
+#' @param scale Whether to multiply the data by the file's scaling factor and
+#' add its intercept. Defaults to `TRUE`. 'MassHunter' seems to ignore the
+#' scaling factor in at least some types of 'ChemStation' files.
 #' @param source_file Source file from which chromatogram data was originally
 #' derived.
 #' @author Ethan Bass

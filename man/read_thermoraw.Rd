@@ -17,7 +17,7 @@ read_thermoraw(
 \item{path}{Path to 'Thermo' \code{.raw} file.}
 
 \item{path_out}{Path to directory to export \code{mzML} files. If \code{path_out} isn't
-specified, a temp directory will be used.}
+specified, a temporary directory is used and deleted afterwards.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -28,20 +28,22 @@ specified, a temp directory will be used.}
 (standardized field names) or \code{raw} (vendor field names, unmapped).}
 
 \item{verbose}{Logical. Whether to print output from ThermoRawFileParser to
-the console.}
+the console. Ignored on Windows, where the output is always printed.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out}.
+A list of chromatograms, as returned by \link{read_mzml}, in the format
+specified by \code{format_out}.
 }
 \description{
-Converts ThermoRawFiles to \code{mzML} by calling the \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser} from the command-line.
+Converts a 'Thermo' \code{.raw} file to \code{mzML} with the \href{https://github.com/compomics/ThermoRawFileParser}{ThermoRawFileParser} and reads the result with
+\link{read_mzml}.
 }
 \details{
-To use this function, the ThermoRawFileParser must be manually installed.
+The ThermoRawFileParser must be installed separately.
 }
 \section{Side effects}{
- Exports chromatograms in \code{mzML} format to the folder
-specified by \code{path_out}.
+ If \code{path_out} is specified, the \code{mzML} file (and,
+if \code{read_metadata} is \code{TRUE}, a metadata \code{.txt} file) is left there.
 }
 
 \examples{
@@ -53,7 +55,7 @@ read_thermoraw(path)
 Hulstaert Niels, Jim Shofstahl, Timo Sachsenberg, Mathias Walzer,
 Harald Barsnes, Lennart Martens, and Yasset Perez-Riverol.
 ThermoRawFileParser: Modular, Scalable, and Cross-Platform RAW File Conversion.
-\emph{Journal of Proteome Research} \bold{19}, no. 1 (January 3, 2020): 537–42.
+\emph{Journal of Proteome Research} \strong{19}, no. 1 (January 3, 2020): 537–42.
 \doi{10.1021/acs.jproteome.9b00328}.
 }
 \seealso{

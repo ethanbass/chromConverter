@@ -168,8 +168,8 @@ cols_doc <- function(extra = character()){
 #' joined against.
 #'
 #' @param object A `chrom_list` object.
-#' @eval cols_doc("A field that no chromatogram carries is omitted rather
-#'   than filled with `NA`.")
+#' @eval cols_doc("A field that no chromatogram carries, or that all of them
+#'   leave empty, is omitted rather than filled with `NA`.")
 #' @param format_out Format of object. Either `data.frame`, `data.table` or
 #' `tibble`.
 #' @param ... Additional arguments (currently ignored).
@@ -180,9 +180,9 @@ cols_doc <- function(extra = character()){
 #' when a sample holds more than one), `n_rows` and `n_cols` --- followed by one
 #' column per metadata field found. A field no chromatogram records, or that
 #' every one of them leaves empty, is dropped rather than filled with `NA`. A
-#' field holding more than one value, such as the `product_mz` of an MRM event
-#' monitoring several transitions, is collapsed to a comma-separated string so
-#' that it occupies one column.
+#' field holding more than one value, such
+#' as the `product_mz` of an MRM event monitoring several transitions, is
+#' collapsed to a comma-separated string so that it occupies one column.
 #'
 #' @examples
 #' path <- system.file("extdata/ladder.txt", package = "chromConverter")
@@ -376,11 +376,12 @@ block_header_fields <- function(cols, group){
 
 #' Combine `chrom_list` objects
 #'
-#' Combines multiple `chrom_list` objects (or a mix of `chrom_list` and
-#' plain lists/matrices) into a single `chrom_list`, preserving the class.
+#' Combines `chrom_list` objects, or a mix of `chrom_list` objects and plain
+#' lists of chromatograms, into a single `chrom_list`, preserving the class.
 #'
-#' @param ... One or more `chrom_list` objects (or objects coercible via
-#'   `c()`) to combine.
+#' @param ... `chrom_list` objects or lists of chromatograms to combine. Wrap
+#'   a single chromatogram in [list()], since a bare matrix is split into its
+#'   individual values and a bare data frame into its columns.
 #'
 #' @return A `chrom_list` containing all elements.
 #'

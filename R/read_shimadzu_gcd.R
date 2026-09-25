@@ -6,21 +6,22 @@
 #' GCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
 #' files. The chromatogram data is encoded in streams titled
-#' `LSS Raw Data:Chromatogram Ch<#>`. The GCD data stream contains a segment
-#' for each retention time, beginning with a 24-byte header.
-#'
-#' The 24 byte header consists of the following fields:
+#' `LSS Raw Data:Chromatogram Ch<#>`. Each stream begins with a 24-byte
+#' header:
 #' * 4 bytes: segment label (`17234`).
-#' * 4 bytes: Little-endian integer specifying the sampling interval in milliseconds.
-#' * 4 bytes: Little-endian integer specifying the number of values in the file.
-#' * 4 bytes: Little-endian integer specifying the total number of bytes in the
-#' file, which does not match the size of the stream exactly.
+#' * 4 bytes: Little-endian integer specifying the sampling interval in
+#' milliseconds.
+#' * 4 bytes: Little-endian integer specifying the number of values in the
+#' stream.
+#' * 4 bytes: Little-endian integer specifying a byte count, which does not
+#' match the size of the stream exactly.
 #' * 8 bytes of `00`s
 #'
 #' After the header, the data are encoded as 64-bit (little-endian)
 #' floating-point numbers. Retention times are derived from the number of
 #' values and the sampling interval encoded in the header, rather than read
-#' from the file.
+#' from the file: the `n`th value is placed at `n` times the sampling
+#' interval.
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Shimadzu' `.gcd` file.

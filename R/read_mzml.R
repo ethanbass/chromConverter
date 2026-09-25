@@ -1,27 +1,29 @@
 #' Read mzML files
 #'
 #' Extracts data from `mzML` files using parsers from either RaMS or mzR.
-#' The RaMS parser (default) will only return data in tidy (long) format. The
-#' mzR parser will return data in wide format. Currently the mzR-based parser
-#' is configured to return only DAD data.
+#'
+#' The RaMS parser (default) returns a list with one element per stream in
+#' `what`. Mass spectra are always long. With `data_format = "wide"` (the
+#' default), `TIC` and `BPC` are returned as 2D chromatograms of class
+#' `format_out`, and `DAD` as a wide chromatogram of class `format_out`; with
+#' `"long"`, every stream is a long `data.table`. The mzR parser returns only the DAD data, as a
+#' single chromatogram.
 #'
 #' @name read_mzml
 #' @importFrom RaMS grabMSdata
 #' @inheritParams shared_params
 #' @param path Path to `.mzml` file.
-#' @param format_out Class of output. Only applies if `mzR` is selected.
-#' Either `matrix`, `data.frame`, or `data.table`. `RaMS` will return a list of
-#' data.tables regardless of what is selected here.
+#' @param format_out Class of output. Either `matrix`, `data.frame`, or
+#' `data.table`. With RaMS, applies only to the `TIC` and `BPC` in wide
+#' format.
 #' @param parser What parser to use. Either `RaMS` or `mzR`.
 #' @param what What types of data to return (argument to [RaMS::grabMSdata]).
 #' Options include `MS1`, `MS2`, `BPC`, `TIC`, `DAD`, `chroms`, `metadata`, or
-#' `everything`.
+#' `everything`. Defaults to all of them.
 #' @param verbose Argument to `grabMSdata` controlling verbosity.
 #' @param ... Additional arguments to `grabMSdata`.
-#' @return If `RaMS` is selected, the function will return a list of "tidy"
-#' `data.table` objects. If `mzR` is selected, the function will return a
-#' chromatogram in `matrix` or `data.frame` format according to the
-#' value of `format_out`.
+#' @return With RaMS, a named list of the streams in `what`. With mzR, a DAD
+#' chromatogram in the format specified by `format_out` and `data_format`.
 #' @examples \dontrun{
 #' read_mzml("path/to/file.mzML")
 #' }
@@ -116,6 +118,8 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
 #' Returns an empty list when no metadata was requested -- `what` need not
 #' include `"metadata"` -- in which case the branch fills every field with the
 #' `NA`s it already declares.
+#' @param meta The `metadata` table returned by `RaMS::grabMSdata`, or `NULL`.
+#' @return A named list of the non-missing fields, or an empty list.
 #' @noRd
 rams_meta_to_list <- function(meta){
   if (is.null(meta) || NROW(meta) == 0) return(list())

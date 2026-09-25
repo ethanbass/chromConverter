@@ -1,12 +1,10 @@
 #' Parse files with OpenChrom
 #'
-#' Writes `xml` batch-files and calls OpenChrom file parsers using a
-#' system call to the command-line interface. Unfortunately, the command-line
-#' interface is no longer supported in newer versions of OpenChrom (starting with
-#' version 1.5.0) and older versions of OpenChrom that do support
-#' the command line interface are no longer available from Lablicate. Thus, this
-#' function is deprecated since it will only work if you happen to have access
-#' to OpenChrom version 1.4.0, which has been scrubbed from the internet.
+#' Converts files with the OpenChrom command-line interface, then reads the
+#' converted files back into R. OpenChrom removed the command-line interface
+#' in version 1.5.0, and Lablicate no longer distributes older versions, so
+#' this function works only with an existing installation of OpenChrom 1.4 or
+#' earlier. It is deprecated for that reason.
 #'
 #' The `call_openchrom` function works by creating an xml batchfile
 #' and feeding it to the OpenChrom command-line interface. OpenChrom batchfiles
@@ -25,26 +23,30 @@
 #' @import xml2
 #' @inheritParams shared_params
 #' @param files Path to files.
-#' @param path_out Directory to export converted files.
-#' @param format_in Either `msd` for mass spectrometry data, `csd` for flame
-#' ionization data, or `wsd` for DAD/UV data.
-#' @param export_format Either  `mzml`, `csv`, `cdf`, `animl`. Defaults to
-#' `mzml`.
+#' @param path_out Directory to export converted files. Defaults to `NULL`, in
+#' which case the files go to a temporary directory that is deleted when the
+#' function returns.
+#' @param format_in Either `msd` for mass spectrometry data, `csd` for
+#' FID, ECD or NPD data, or `wsd` for DAD/UV data.
+#' @param export_format Either `mzml`, `csv`, `cdf`, or `animl`. Defaults to
+#' `mzml`. `mzml` and `cdf` are available only for `msd`.
 #' @param return_paths Logical. If `TRUE`, the function will return a character
 #' vector of paths to the newly created files.
 #' @param verbose Logical. Whether to print output from OpenChrom to the console.
-#' @return If `return_paths` is `FALSE`, the function will return a list of
-#' chromatograms (if an appropriate parser is available to import the files into
-#' R). The chromatograms will be returned in `matrix` or `data.frame` format
-#' according to the value of `format_out`. If `return_paths` is `TRUE`, the
-#' function will return a character vector of paths to the newly created files.
-#' @section Side effects: Chromatograms will be exported in the format specified
-#' by `export_format` in the folder specified by `path_out`.
+#' @return If `return_paths` is `FALSE`, a list with one chromatogram per file,
+#' read back with [read_mzml], [read_cdf] or [read.csv][utils::read.csv]
+#' according to `export_format`. `format_out` and `data_format` apply only to
+#' `cdf` files, except that `format_out = "matrix"` also converts `csv` files.
+#' `animl` files cannot be read back,
+#' so use `return_paths = TRUE` for them. If `return_paths` is `TRUE`, a
+#' character vector of paths to the newly created files.
+#' @section Side effects: Chromatograms are exported in the format specified
+#' by `export_format` to the folder specified by `path_out`.
 #' @author Ethan Bass
 #' @references
 #' Wenig, Philip and Odermatt, Juergen. OpenChrom: A Cross-Platform Open Source
-#' Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{
-#' BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405.
+#' Software for the Mass Spectrometric Analysis of Chromatographic Data.
+#' *BMC Bioinformatics* **11**, no. 1 (July 30, 2010): 405.
 #' \doi{10.1186/1471-2105-11-405}.
 #' @examples \dontrun{
 #' call_openchrom("path/to/file.RAW", format_in = "msd", export_format = "mzml")
@@ -185,14 +187,17 @@ write_openchrom_batchfile <- function(files, path_out,
 #' command-line interface. Requires OpenChrom version prior to 1.5.0.
 #'
 #' @name configure_openchrom
-#' @param cli Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.
-#' If "false", R will disable CLI. If NULL, R will not modify the ini file.
-#' @param path Path to 'OpenChrom' executable (Optional). The supplied path will
-#' overwrite the current path.
+#' @param cli One of `"null"` (default), `"true"`, `"false"` or `"status"`.
+#' `"true"` and `"false"` rewrite the OpenChrom ini file to enable or disable
+#' the command-line interface. `"null"` leaves the ini file alone unless the
+#' interface is disabled, in which case it asks whether to enable it.
+#' `"status"` reports the current setting without changing anything.
+#' @param path Path to the 'OpenChrom' executable (optional). The supplied
+#' path is saved and used in later calls.
 #' @importFrom utils read.table write.table
-#' @return If `cli` is set to `"status"`, returns a Boolean value
-#' indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
-#' the path to OpenChrom command-line application.
+#' @return If `cli` is `"status"`, the string `"true"` or `"false"`, saying
+#' whether the command-line interface is enabled. Otherwise, the path to the
+#' OpenChrom command-line application.
 #' @author Ethan Bass
 #' @examples \dontrun{
 #' configure_openchrom(cli = "status")

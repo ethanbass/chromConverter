@@ -8,7 +8,7 @@
 [![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/grand-total/chromConverter?color=blue)](https://r-pkg.org/pkg/chromConverter)
 [![metacran downloads](https://cranlogs.r-pkg.org/badges/last-month/chromConverter)](https://cran.r-project.org/package=chromConverter)
 <br>
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6944342.svg)](https://doi.org/10.5281/zenodo.6944342)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6792521.svg)](https://doi.org/10.5281/zenodo.6792521)
 <!-- badges: end -->
 
 ##### Table of contents
@@ -70,7 +70,7 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - 'Agilent ChemStation' `.ms` and `.csv` files
 - 'Agilent OpenLab' `.dx`, `.acaml`, `.amx`, and `.D` directories
 - 'Agilent OpenLab' `.rslt` sequence directories
-- Allotrope® Simple Model (ASM) 2D chromatograms (`.asm`)
+- Allotrope® Simple Model (ASM) 2D chromatograms (`.json`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
 - mzML (`.mzml`) & mzXML (`.mzxml`) (via *RaMS*)
 - 'Shimadzu LabSolutions' ascii (`.txt`)
@@ -81,20 +81,21 @@ dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 - 'Thermo Scientific Chromeleon' ascii (`.txt`)
 - 'Varian Workstation' (`.SMS`)
 - 'Waters Empower' ascii (`.arw`)
-- 'Waters Empower' `.raw` files (2D chromatograms only)
+- 'Waters MassLynx' `.raw` directories (2D chromatograms only)
 - Chromatotec `.Chrom` files.
 
 ##### External Libraries
 
 ###### Entab (*Entab requires separate installation, see [instructions below](#optional-dependencies)*)
-- Agilent ChemStation (`.ch`, `.fid`, `.ms`, .`mwd`, & `.uv`)
-- Agilent MassHunter DAD (`.sp`)  
+- Agilent ChemStation (`.ch`, `.fid`, `.ms`, `.mwd`, & `.uv`)
+- Agilent MassHunter DAD (`.sp`)
+- Thermo RAW (`.raw`)
 
 ###### ThermoRawFileParser (*requires separate installation, see [instructions below](#optional-dependencies)*)
 - Thermo RAW (`.raw`)
 
 ###### rainbow
-- Agilent (`.ch`, `.fid`, `.ms`, .`MSProfile.bin`, & `.uv`)
+- Agilent (`.ch`, `.fid`, `.ms`, `.MSProfile.bin`, & `.uv`)
 - Waters (`.raw` [UV, MS, CAD, ELSD])
 
 ### Usage
@@ -108,11 +109,11 @@ library(chromConverter)
 dat <- read_chroms(path, format_in = "chemstation_uv")
 ```
 
-The `read_chroms` function will attempt to determine an appropriate parser to use and whether you've provided a vector of directories or files. However, if you'd like to be more explicit, you can provide arguments to the `parser` and `find_files` arguments. Setting `find_files = FALSE` will instruct the function that you are providing a vector of files, while `find_files = TRUE` implies that you are providing a vector of directories.
+`read_chroms` chooses a parser and works out whether you've provided directories or files. To be explicit, set the `parser` and `find_files` arguments: `find_files = FALSE` means `paths` are files, and `find_files = TRUE` means they are directories to search.
 
 ###### Exporting files
 
-If you'd like to automatically export the files, include the desired file format (`export_format`) and the path where you'd like to export the files (`path_out`). Some parsers (e.g. `ThermoRawFileParser`) need to export files for their basic operations. Thus, if these parsers are selected, you will need to specify an argument to `path_out`.
+To export the files as they are read, give the file format (`export_format`) and the directory to write them to (`path_out`). Reading Thermo RAW files or using `parser = "openchrom"` also writes files, so `read_chroms` asks for `path_out` in those cases too; if it is not given, you are offered a `temp` folder in the working directory.
 
 ```r
 library(chromConverter)
@@ -130,7 +131,7 @@ chromConverter can extract metadata from the files it reads. If `read_metadata =
 
 ##### Importing peak lists
 
-The `read_peaklist` function imports peak lists from 'Agilent ChemStation' REPORT files or 'Shimadzu' ascii files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
+The `read_peaklist` function imports peak lists from 'Agilent ChemStation' REPORT files, 'Shimadzu' ascii, `.lcd` and `.gcd` files, and 'Chromatotec' `.Chrom` files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
 
 ```r
 pks <- read_peaklist(<path_to_directory>, format_in = "chemstation")
@@ -150,7 +151,7 @@ pak::pak("bovee/entab/entab-r")
 
 ##### **ThermoRawFileParser**
 
-Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser) on the command-line. To install the ThermoRawFileParser, follow the instructions [here](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or Mac OS X, you will also need to install [mono](https://www.mono-project.com/download/stable/#download-lin), following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
+Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser) on the command-line. To install the ThermoRawFileParser, follow the instructions [here](https://github.com/compomics/ThermoRawFileParser). If you are running Linux or macOS, you will also need to install [mono](https://www.mono-project.com/download/stable/#download-lin), following the instructions provided at the link. In addition, when you use chromConverter to convert Thermo RAW files for the first time you will be asked to enter the path to the program.
 
 ##### **OpenChrom** 
 ###### **Note:** Support for the command-line interface was removed from OpenChrom in `version 1.5.0`. Version 1.4, which is required for command-line use, is no longer available for download. The instructions below are preserved for users who already have it installed.
@@ -168,7 +169,7 @@ For downstream analyses of chromatographic data, see [chromatographR](https://et
 
 ### Contributing
 
-Contributions of source code, ideas, or documentation are always welcome. Please get in touch (preferable by opening a GitHub [issue](https://github.com/ethanbass/chromConverter/issues)) to discuss any suggestions or to file a bug report. Some good reasons to file an issue:
+Contributions of source code, ideas, or documentation are always welcome. Please get in touch (preferably by opening a GitHub [issue](https://github.com/ethanbass/chromConverter/issues)) to discuss any suggestions or to file a bug report. Some good reasons to file an issue:
 
 - You think you've found a bug.  
 - You're getting a cryptic error message that you don't understand.  

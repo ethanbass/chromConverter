@@ -18,7 +18,10 @@ read_agilent_d(
 \item{path}{Path to 'Agilent' \code{.D} directory.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data (\code{dad})
-and/or peak tables (\code{peak_table}). Accepts multiple arguments.}
+and/or peak tables (\code{peak_table}). Accepts multiple arguments, and defaults
+to all three. Types the
+directory does not contain are left out, and it is an error if it contains
+none of them.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -34,21 +37,19 @@ and/or peak tables (\code{peak_table}). Accepts multiple arguments.}
 element. Defaults to \code{TRUE}.}
 }
 \value{
-A list of chromatograms in the format specified by \code{data_format} and
-\code{format_out}. If \code{data_format} is \code{wide}, the chromatograms will be
+A list with one element per type found, each a chromatogram or a
+list of them named by file, in the format specified by \code{format_out} and
+\code{data_format}. If \code{data_format} is \code{wide}, the chromatograms will be
 returned with retention times as rows and columns containing signal intensity
 for each signal. If \code{long} format is requested, retention times will be
 in the first column. The \code{format_out} argument determines whether the
 chromatogram is returned as a \code{matrix}, \code{data.frame} or \code{data.table}.
-Metadata can be attached to the chromatogram as \link{attributes} if
-\code{read_metadata} is \code{TRUE}.
+Metadata are attached as \link{attributes} if \code{read_metadata} is \code{TRUE}. With \code{collapse = TRUE}, a list of one element is replaced by that
+element.
 }
 \description{
-Reads files from 'Agilent' \code{.D} directories.
-}
-\details{
-Currently this function is limited to reading \code{.uv}, \code{.ch} and \code{peak_table}
-elements.
+Reads the \code{.ch}, \code{.uv} and \code{Report.TXT} files in an 'Agilent' \code{.D}
+directory. Other files in the directory are ignored.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}

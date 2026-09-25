@@ -1,9 +1,8 @@
 #' Read 'Agilent ChemStation' DAD files
 #'
-#' Agilent `.uv` files come in several different formats. This parser can
-#' automatically detect and read several versions of these files from
-#' 'Agilent ChemStation' and 'Agilent OpenLab', including versions `31` and
-#' `131`.
+#' Agilent `.uv` files come in several formats. This parser detects the
+#' version from the file and reads versions `31` and `131` from 'Agilent
+#' ChemStation' and 'Agilent OpenLab'; any other version is an error.
 #'
 #' @importFrom utils head tail
 #' @inheritParams shared_params

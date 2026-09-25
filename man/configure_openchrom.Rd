@@ -7,16 +7,19 @@
 configure_openchrom(cli = c("null", "true", "false", "status"), path = NULL)
 }
 \arguments{
-\item{cli}{Defaults to NULL. If "true", R will rewrite openchrom ini file to enable CLI.
-If "false", R will disable CLI. If NULL, R will not modify the ini file.}
+\item{cli}{One of \code{"null"} (default), \code{"true"}, \code{"false"} or \code{"status"}.
+\code{"true"} and \code{"false"} rewrite the OpenChrom ini file to enable or disable
+the command-line interface. \code{"null"} leaves the ini file alone unless the
+interface is disabled, in which case it asks whether to enable it.
+\code{"status"} reports the current setting without changing anything.}
 
-\item{path}{Path to 'OpenChrom' executable (Optional). The supplied path will
-overwrite the current path.}
+\item{path}{Path to the 'OpenChrom' executable (optional). The supplied
+path is saved and used in later calls.}
 }
 \value{
-If \code{cli} is set to \code{"status"}, returns a Boolean value
-indicating whether 'OpenChrom' is configured correctly. Otherwise, returns
-the path to OpenChrom command-line application.
+If \code{cli} is \code{"status"}, the string \code{"true"} or \code{"false"}, saying
+whether the command-line interface is enabled. Otherwise, the path to the
+OpenChrom command-line application.
 }
 \description{
 Configures \href{https://lablicate.com/platform/openchrom}{OpenChrom} to use

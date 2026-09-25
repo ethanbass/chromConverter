@@ -17,8 +17,8 @@ read_sz_qtof(
 \arguments{
 \item{path}{Path to \code{.lcd} file.}
 
-\item{format_out}{Class of output. Either \code{matrix},
-\code{data.frame}, or \code{data.table}.}
+\item{format_out}{Class of output. Either \code{data.table} or \code{data.frame}.
+Spectra are long and mixed-type, so \code{matrix} resolves to \code{data.table}.}
 
 \item{data_format}{Format of output. Spectra have no wide representation, so
 this is always \code{long}.}
@@ -32,14 +32,15 @@ decoded either way, since the level of a scan is recorded in the scan.}
 
 \item{scale}{Logical. Whether to scale raw detector counts to the
 intensities reported by 'LabSolutions'. Defaults to \code{TRUE}, which errors if
-the accumulation count is missing from the file, since there is no safe
+the accumulation count is missing from the file or differs between its
+acquisition events, since there is no safe
 divisor to guess; \code{FALSE} returns the raw counts.}
 }
 \value{
-A named list holding whichever of \code{MS1} and \code{MS2} the file
-contains, each a \code{data.table}, \code{data.frame} or \code{matrix} in
+A named list holding whichever of the requested \code{levels} the file
+contains, each a \code{data.table} or \code{data.frame} in
 long format with columns \code{scan}, \code{rt}, \code{mz} and
-\code{intensity}, preceded by \code{precursor_mz} for product-ion
+\code{intensity}, and a \code{precursor_mz} column before \code{mz} for product-ion
 spectra. Each carries a \code{scan_info} attribute giving one row per
 spectrum of that level, including the ones that hold no peaks, with the
 acquisition event, MS level, DDA cycle, ion polarity, selected precursor
@@ -49,7 +50,8 @@ and peak count.
 Read QTOF stream from 'Shimadzu LabSolutions' \code{.lcd} files.
 }
 \details{
-Data for each scan is stored in three contiguous blocks: a 64-byte header,
+Data for each scan is stored in three contiguous blocks: a 64-byte header
+(72 bytes in some files),
 a block of flight times, followed by a block of intensities.
 
 \strong{Scan Header} (64 bytes, little-endian):\tabular{lll}{
@@ -62,7 +64,7 @@ a block of flight times, followed by a block of intensities.
    24–27 \tab \code{uint32} \tab Data block size in bytes (\code{n_peaks * (8 + int_width)}; 0 if empty scan) \cr
    28–31 \tab \code{uint32} \tab MS level in the upper 16 bits, acquisition event in the lower 16 bits (e.g. \code{0x00010001} = MS1 event 1, \code{0x00020003} = MS2 event 3) \cr
    32–35 \tab \code{uint32} \tab Padding \cr
-   36–39 \tab \code{uint32} \tab Intensity width in bytes (\code{int_width}); 1, 2 and 4 all occur on scans with data \cr
+   36–39 \tab \code{uint32} \tab Intensity width in bytes (\code{int_width}) in the low byte; the high byte is sometimes \code{0x01}. 1, 2 and 4 all occur on scans with data \cr
    40–43 \tab \code{uint32} \tab Instrument constant (scan window / detector setting) \cr
    44–47 \tab \code{uint32} \tab Instrument constant \cr
    48–51 \tab \code{uint32} \tab Instrument constant \cr
@@ -74,17 +76,19 @@ a block of flight times, followed by a block of intensities.
 \strong{m/z block} (n x 8 bytes)
 Each peak's flight time is an unsigned 64-bit little-endian integer. R has
 no 64-bit integer type, so it is read as two 32-bit halves and recombined as
-\code{low + high * 2^32}. The low half is unsigned and has to be corrected as
-such, since R has no unsigned 32-bit type either: read as signed, it shifts
-half of all flight times by \code{2^32} (~4 ppm of flight time, so ~8 ppm of
-m/z), and \code{0x80000000} comes back as \code{NA}. Conversion is
+\code{low + high * 2^32}. The low half is unsigned, but R has no unsigned 32-bit
+type and reads it as signed, so it is corrected before recombining. Left
+uncorrected, it would shift half of all flight times by \code{2^32} (2 to 9 ppm
+of flight time in the files examined, so twice that in m/z) and read
+\code{0x80000000} as \code{NA}. Conversion is
 \deqn{mz = ((t-B)/A)^2}
 
 \code{A} and \code{B} are fitted per file from the \verb{TOF Calibration Table} stream (see
 \code{read_sz_qtof_calibration}),
 which stores calibration points for both polarities; the polarity of the
 acquisition selects between them. This matters: the coefficients differ by
-~1.5\% between polarities on one instrument, which is ~3\% in m/z, so fixed
+~1.5\% between polarities on one of the two instruments examined (0.006\% on
+the other), which is ~3\% in m/z, so fixed
 coefficients are not usable. The tuning calibration alone is still a few
 ppm out, because it is recorded before the run; folding in the mass
 correction the file caches for the run closes that gap (see
@@ -99,7 +103,8 @@ ppm at the top.
 \strong{Intensity block} (n x m bytes)
 Each peak's intensity is stored as a little-endian unsigned integer of
 \code{m} bytes, where \code{m} is the \code{int_width} field from the scan
-header (2 for most scans, 4 for scans containing large values). The stored
+header (2 for most scans, 4 for scans containing large values, and
+occasionally 1). The stored
 values are raw detector counts summed over every TOF accumulation in the
 scan --- the individual time-of-flight spectra the instrument adds together
 to make one. LabSolutions (and the 'Shimadzu' library used by

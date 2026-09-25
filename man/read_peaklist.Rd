@@ -25,9 +25,9 @@ read_peaklist(
 directories to search for files. Inferred if not supplied, by testing
 whether every path is a file.}
 
-\item{format_in}{Format of files to be imported/converted. Current options
-include: \code{chemstation}, \code{shimadzu_fid}, \code{shimadzu_dad}, \code{shimadzu_lcd},
-\code{shimadzu_gcd}, and \code{chromatotec}.}
+\item{format_in}{Format of files to be imported/converted. One of
+\code{chemstation} (the default), \code{shimadzu_fid}, \code{shimadzu_dad},
+\code{shimadzu_lcd}, \code{shimadzu_gcd}, or \code{chromatotec}.}
 
 \item{pattern}{A pattern (e.g. a file extension). Defaults to \code{NULL}, in
 which case the file extension will be deduced from \code{format_in}.}
@@ -51,9 +51,9 @@ Defaults to \code{1}.}
 \item{data_format}{Deprecated. Use \code{peaktable_format} instead.}
 }
 \value{
-A list of \code{data.frame}s containing information about peaks where
-each list element represents a sample and each row represents an individual
-peak in that sample.
+A \code{peak_list}: a list with one element per sample, holding its peak
+table, or a list of peak tables named by signal where the file records more
+than one. Each row is a peak.
 }
 \description{
 Reads peak lists from specified folders or vector of paths.

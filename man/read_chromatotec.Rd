@@ -18,7 +18,7 @@ read_chromatotec(
 \item{path}{The path to 'Chromatotec' \code{.Chrom} file.}
 
 \item{what}{Whether to extract chromatograms (\code{chrom}) and/or \code{peak_table}
-data. Accepts multiple arguments.}
+data. Accepts multiple arguments, and defaults to both.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}

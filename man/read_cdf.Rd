@@ -22,14 +22,12 @@ read_cdf(
 \code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} or \code{long} format.
-For 2D files, "long" format returns the retention time as the first column of
-the data.frame or matrix while "wide" format returns the retention time as the
-rownames of the object. This argument applies only to 2D chromatograms, since
-MS data will always be returned in long format.}
+\code{"long"} returns the retention time as the first column of the data.frame
+or matrix, while \code{"wide"} returns it as the rownames. The mass spectra of an
+ANDI MS file are always long, so there it applies only to the TIC.}
 
-\item{what}{For \verb{ANDI chrom} files, whether to extract \code{chroms}
-and/or \code{peak_table}. For \verb{ANDI ms} files, whether to extract MS1 scans
-(\code{MS1}) or the total ion chromatogram (\code{TIC}).}
+\item{what}{For ANDI chrom files, \code{chroms} and/or \code{peak_table}. For ANDI MS
+files, MS1 scans (\code{MS1}) and/or the total ion chromatogram (\code{TIC}).}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -39,9 +37,9 @@ and/or \code{peak_table}. For \verb{ANDI ms} files, whether to extract MS1 scans
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
 
-\item{...}{Additional arguments to parser. The \code{ms_format} argument
-can be used here to specify whether to return mass spectra in \code{list}
-format or as a \code{data.frame}.}
+\item{...}{Additional arguments to the parser. For ANDI MS files, pass
+\code{ms_format} to return the mass spectra as a \code{data.frame} (the default) or a
+\code{list}.}
 }
 \value{
 A chromatogram in the format specified by the \code{format_out} and
@@ -49,6 +47,22 @@ A chromatogram in the format specified by the \code{format_out} and
 }
 \description{
 Reads 'Analytical Data Interchange' (ANDI) netCDF (\code{.cdf}) files.
+}
+\details{
+Retention times are returned in minutes, converted from the unit the file
+declares. An ANDI chrom file declares it in its \code{retention_unit} attribute,
+which also governs the peak table. Seconds is both what the template uses
+and what all but one of its conformance files declare, so a file that
+declares no unit is read as seconds, unless chromConverter wrote it, in
+which case it is read as minutes.
+
+An ANDI MS file has no mandatory unit attribute, since the specification
+never formally defined its axes units, so \code{scan_acquisition_time} is read as
+seconds, the only unit the specification suggests, unless a
+\code{raw_data_time_units} attribute says otherwise.
+
+Either kind of file warns about a unit it does not recognize and reads it
+as seconds.
 }
 \examples{
 \dontrun{

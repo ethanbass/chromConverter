@@ -22,13 +22,15 @@ read_agilent_rslt(
 \item{path}{Path to 'Agilent' \code{.rslt} directory.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data
-(\code{dad}) and/or auxiliary instrumental data (\code{instrument}) (e.g.,
-temperature, pressure, solvent composition, etc.). Accepts multiple arguments.}
+(\code{dad}) and/or auxiliary instrumental data (\code{instrument}), such as
+temperature, pressure or solvent composition. Accepts multiple arguments,
+and defaults to \code{chroms} and \code{dad}. When more than one is requested, any the archive does not contain
+are left out; a single one that is missing is an error.}
 
 \item{path_out}{A directory to export unzipped files. If a path is not
-specified, the files will be written to a temp directory on the disk. The
-function will overwrite existing folders in the specified directory
-that share the basename of the file specified by \code{path}.}
+specified, a temporary directory is used. The files are extracted into a
+folder named for \code{path}, overwriting any files of the same name already
+there.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -61,7 +63,7 @@ of clusters to use or a cluster object created by
 A list of chromatograms (one \code{read_agilent_dx}-style result per
 injection in the sequence), in the format specified by \code{data_format} and
 \code{format_out}. If \code{read_metadata} is \code{TRUE}, injection-level metadata parsed
-from the \code{.acaml} file is attached to each chromatogram as an attribute.
+from the \code{.acaml} file is attached to each chromatogram as attributes.
 }
 \description{
 Reads a sequence of injections from an 'Agilent' \code{.rslt} directory.

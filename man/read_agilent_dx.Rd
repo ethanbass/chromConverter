@@ -19,13 +19,15 @@ read_agilent_dx(
 \item{path}{Path to Agilent \code{.dx} file.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data
-(\code{dad}) and/or auxiliary instrumental data (\code{instrument}) (e.g.,
-temperature, pressure, solvent composition, etc.). Accepts multiple arguments.}
+(\code{dad}) and/or auxiliary instrumental data (\code{instrument}), such as
+temperature, pressure or solvent composition. Accepts multiple arguments,
+and defaults to \code{chroms} and \code{dad}. When more than one is requested, any the archive does not contain
+are left out; a single one that is missing is an error.}
 
 \item{path_out}{A directory to export unzipped files. If a path is not
-specified, the files will be written to a temp directory on the disk. The
-function will overwrite existing folders in the specified directory
-that share the basename of the file specified by \code{path}.}
+specified, a temporary directory is used. The files are extracted into a
+folder named for \code{path}, overwriting any files of the same name already
+there.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -41,15 +43,24 @@ that share the basename of the file specified by \code{path}.}
 element. Defaults to \code{TRUE}.}
 }
 \value{
-A chromatogram in the format specified by \code{format_out} (retention
-time x wavelength).
+A list with one element per type in \code{what}, each a chromatogram or
+a list of chromatograms named by signal, in the format specified by
+\code{format_out} and \code{data_format}. With \code{collapse = TRUE}, a list of one
+element is replaced by that element.
 }
 \description{
 Reads 'Agilent' \code{.dx} files.
 }
 \details{
-This function unzips 'Agilent'  \code{.dx} into a temporary directory using
-\link{unzip} and calls the appropriate parser on the unzipped file.
+The archive is extracted to \code{path_out}, or to a temporary directory that is
+deleted afterwards, and its \code{.ch}, \code{.uv} and \code{.it} files are read with
+\link{read_chemstation_ch}, \link{read_chemstation_uv} and an internal reader for
+\code{.it} files.
+
+Where the archive holds an \code{injection.acmd} file, the \code{run_datetime} and
+\code{sample_injection_volume} attributes are taken from it. Its run time
+records the offset from UTC, while the \code{.ch} and \code{.uv} headers give only
+the local time.
 }
 \examples{
 \dontrun{

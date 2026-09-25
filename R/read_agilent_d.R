@@ -1,23 +1,24 @@
 #' Read files from 'Agilent ChemStation' .D directories
 #'
-#' Reads files from 'Agilent' `.D` directories.
-#'
-#' Currently this function is limited to reading `.uv`, `.ch` and `peak_table`
-#' elements.
+#' Reads the `.ch`, `.uv` and `Report.TXT` files in an 'Agilent' `.D`
+#' directory. Other files in the directory are ignored.
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Agilent' `.D` directory.
 #' @param what Whether to extract chromatograms (`chroms`), DAD data (`dad`)
-#' and/or peak tables (`peak_table`). Accepts multiple arguments.
-#' @author Ethan Bass
-#' @return A list of chromatograms in the format specified by `data_format` and
-#' `format_out`. If `data_format` is `wide`, the chromatograms will be
+#' and/or peak tables (`peak_table`). Accepts multiple arguments, and defaults
+#' to all three. Types the
+#' directory does not contain are left out, and it is an error if it contains
+#' none of them.
+#' @return A list with one element per type found, each a chromatogram or a
+#' list of them named by file, in the format specified by `format_out` and
+#' `data_format`. If `data_format` is `wide`, the chromatograms will be
 #' returned with retention times as rows and columns containing signal intensity
 #' for each signal. If `long` format is requested, retention times will be
 #' in the first column. The `format_out` argument determines whether the
 #' chromatogram is returned as a `matrix`, `data.frame` or `data.table`.
-#' Metadata can be attached to the chromatogram as [attributes] if
-#' `read_metadata` is `TRUE`.
+#' Metadata are attached as [attributes] if `read_metadata` is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by that
+#' element.
 #' @examplesIf interactive()
 #' read_agilent_d("tests/testthat/testdata/RUTIN2.D")
 #' @author Ethan Bass

@@ -21,7 +21,9 @@ call_entab(
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{format_in}{Format of input.}
+\item{format_in}{Format of the file, used only to read the metadata that
+'entab' does not: those of 'ChemStation' formats (any value containing
+\code{chemstation}) and of \code{masshunter_dad}. Defaults to \code{""}.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -34,7 +36,8 @@ A chromatogram in the format specified by the \code{format_out} and
 }
 \description{
 Converts chromatography data files using \href{https://github.com/bovee/entab}{entab}
-parsers.
+parsers. 'entab' detects the file format itself. Mass spectra are always
+returned in long format.
 }
 \examples{
 \dontrun{

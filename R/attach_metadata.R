@@ -59,7 +59,7 @@ clean_vendor_string <- function(x){
 
 #' Parse a date-time from a 'Shimadzu' ASCII export
 #'
-#' 'Lab Solutions' writes the timestamps in its ASCII exports using the date and
+#' 'LabSolutions' writes the timestamps in its ASCII exports using the date and
 #' time format of the machine that produced the export, so no single format
 #' string can read them. The variants seen so far are a 12-hour month-first
 #' format (`4/26/2021 11:01:11 PM`) and 24-hour day-first formats separated by
@@ -68,12 +68,13 @@ clean_vendor_string <- function(x){
 #' A leading component greater than `12` can only be a day, which settles the
 #' order on its own. Otherwise the 12-hour clock is taken as the signal:
 #' 'Windows' pairs it with the month-first format, so a timestamp written on a
-#' 24-hour clock is read as day-first. Both orders are tried in either case, so
-#' an unrecognized combination still parses if it is unambiguous.
+#' 24-hour clock is read as day-first. Both orders, and ISO 8601 year-first,
+#' are tried in either case, so an unrecognized combination still parses if it
+#' is unambiguous. An ambiguous one is read in the preferred order.
 #'
-#' Note that the wall clock time is local to the machine that wrote the export,
-#' which does not record its time zone, so the result is a local time labelled
-#' as UTC rather than a true UTC instant.
+#' Whichever format is matched, the wall clock time is local to the machine
+#' that wrote the export, which does not record its time zone, so the result is
+#' a local time labeled as UTC rather than a true UTC instant.
 #' @param x Character vector of date-times.
 #' @return A `POSIXct` vector, with `NA` wherever the value could not be read.
 #' @author Ethan Bass
@@ -284,18 +285,20 @@ read_waters_metadata <- function(file){
 #' chromatograms.
 #'
 #' @param chrom_list A list of chromatograms with attached metadata (as returned
-#' by `read_chroms` with `read_metadata = TRUE`).
+#' by `read_chroms` with `read_metadata = TRUE`), or a single chromatogram.
+#' Nested lists are flattened, one row per chromatogram.
 #' @param what A character vector specifying the metadata elements to
 #' extract. Defaults to every field chromConverter attaches; no format
 #' records all of them, so the elements a format does not provide are
-#' simply absent from the result. Superseded names (`injection_volume`,
+#' absent from the result. Superseded names (e.g. `injection_volume`,
 #' `software_name`, `time_start`) are accepted and mapped to the names
-#' that replaced them.
+#' that replaced them. A field requested by name that no chromatogram carries
+#' produces a warning.
 #' @param detector A character vector of detectors to include (e.g. `"UV"` or
 #' `c("UV", "MS")`), matched case-insensitively against each chromatogram's
 #' `detector` attribute. Defaults to `NULL`, in which case all chromatograms
 #' are included. Useful for lists containing more than one detector per
-#' sample.
+#' sample. It is an error if no chromatogram matches.
 #' @param format_out Format of object. Either `data.frame`, `data.table` or
 #' `tibble`.
 #' @param collapse Logical. Whether to collapse a field holding more than one
@@ -315,8 +318,10 @@ read_waters_metadata <- function(file){
 #' (`ms_params.polarity`, since `polarity` is a metadata field in its own
 #' right).
 #' @return A `data.frame`, `tibble`, or `data.table` (according to the value of
-#' `format_out`), with samples as rows and the specified metadata elements as
-#' columns, or `NA` if none of the specified elements could be found.
+#' `format_out`), with one row per chromatogram and the specified metadata
+#' elements as columns, or `NA` if none of the specified elements could be
+#' found. For a list, the first column, `name`, identifies each chromatogram
+#' by its path through the list (e.g. `blue.UV`).
 #' @examples
 #' path <- system.file("extdata/ladder.txt", package = "chromConverter")
 #' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
@@ -437,7 +442,7 @@ extract_metadata <- function(chrom_list,
 #' @param name What to call the field. An empty string names the values of a
 #' nested field for their own elements alone (`SampleName`), rather than for
 #' the field they came from (`acaml_metadata.SampleName`); `extract_metadata`
-#' decides between the two with its `prefix` argument.
+#' decides between the two with `expand_taken_names`.
 #' @return A named list of atomic values, empty if the field holds nothing.
 #' @noRd
 flatten_metadata_field <- function(val, name, collapse = FALSE){
@@ -747,11 +752,11 @@ sz_instrument <- function(meta){
 #' two different detectors. `read_shimadzu_lcd` names the stream `DAD` as well,
 #' and accepts `PDA` as a synonym for it.
 #'
-#' Everything else is passed through as the file gives it. Note that `DETN` is
-#' not always a device type: a multichannel LC reports slot labels
-#' (`Detector A`, `DET#1`) rather than `UV` or `RID`, and those are left alone
-#' for want of anything reliable to map them to --- `detector_model` names the
-#' module in those cases.
+#' Everything else is passed through as the file gives it, so a value that is
+#' not a device type at all reaches the caller unchanged: a multichannel LC
+#' reports slot labels (`Detector A`, `DET#1`) rather than `UV` or `RID`, and
+#' those are left alone for want of anything reliable to map them to ---
+#' `detector_model` names the module in those cases.
 #' @noRd
 sz_detector <- function(meta){
   detector <- get_metadata_field(meta, "DETN")

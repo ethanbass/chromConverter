@@ -17,9 +17,9 @@ library(ggplot2)
 library(data.table)
 ```
 
-MS chromatograms are returned by default in `long` format (one row per scan–m/z pair) with three columns: retention time, m/z, and intensity.
+Mass spectra are returned in `long` format (one row per scan–m/z pair) with three columns: retention time, m/z, and intensity.
 
-As an example, we can load the 'Varian' SMS chromatogram included in the `chromConverterExtraTests` package.
+The examples use a 'Varian' SMS file from the `chromConverterExtraTests` repository.
 
 ```{r download_varian_sms}
 # download example Varian SMS file from the web

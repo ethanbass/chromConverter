@@ -25,7 +25,7 @@ resolves to \code{data.table}.}
 always returned in \code{long} format.}
 
 \item{levels}{Which MS levels to return, spelled \code{MS1} and \code{MS2}. Both are
-decoded either way, since the level of a scan is recorded inside its own
+decoded either way, because the level of a scan is recorded inside its own
 compressed record.}
 
 \item{sparse}{Logical. Whether to return spectra in sparse format
@@ -38,9 +38,10 @@ of magnitude more memory.}
 \item{metadata_format}{Format to output metadata.}
 }
 \value{
-A named list holding whichever of \code{MS1} and \code{MS2} the file has, each
-a long table with columns \code{scan}, \code{rt} (minutes), \code{mz} and \code{intensity},
-preceded by \code{precursor_mz} where the scans carry one. A per-scan summary
+A named list holding whichever of the requested \code{levels} the file
+has, each a long table with columns \code{scan}, \code{rt} (minutes), \code{mz} and
+\code{intensity}, and a \code{precursor_mz} column before \code{mz} where the scans carry
+one. A per-scan summary
 (retention time, event, MS level, polarity, precursor m/z, point count) is
 attached to each as a \code{scan_info} attribute.
 }
@@ -73,10 +74,10 @@ with a 44-byte header shared by every scan type:\tabular{lll}{
    20–21 \tab \code{uint16} \tab Scan type: 10 = MS1 profile, 11 = SIM, 14 = MS2 profile, 15 = MRM \cr
    22–23 \tab \code{uint16} \tab MS level + 1 (0 in a truncated final scan) \cr
    24–27 \tab \code{uint32} \tab Constant (\code{0x00010000}) \cr
-   28–31 \tab \code{uint32} \tab Last precursor m/z x 100 (stale outside MS2 scans) \cr
+   28–31 \tab \code{uint32} \tab Last precursor m/z x 100 (stale outside product-ion scans) \cr
    32–35 \tab \code{uint32} \tab Instrument state bit field; bit 0 follows polarity \cr
    36–39 \tab \code{uint32} \tab Polarity (0 = positive, 1 = negative) \cr
-   40–43 \tab \code{uint32} \tab Number of data points (profile) or transitions (MRM) \cr
+   40–43 \tab \code{uint32} \tab Number of data points (profile) or transitions (MRM, SIM) \cr
 }
 
 
@@ -93,7 +94,7 @@ seen so far). The grid overhangs the acquired range by 10 bins at the bottom
 and 9 at the top; those are dropped, which is what makes the summed
 intensity match the \verb{TIC Data} stream exactly.
 
-\strong{MRM and SIM scans} (type 15) instead follow the header with \code{n}
+\strong{MRM and SIM scans} (types 15 and 11) instead follow the header with \code{n}
 12-byte transitions: Q1 m/z x 100, Q3 m/z x 100, and intensity.
 }
 \author{

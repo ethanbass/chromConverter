@@ -14,7 +14,7 @@ read_varian_sms(
 )
 }
 \arguments{
-\item{path}{Path to 'Varian' \code{.SMS} files.}
+\item{path}{Path to a 'Varian' \code{.SMS} file.}
 
 \item{what}{Which streams to get: mass spectra (\code{MS1}), the total ion
 chromatogram (\code{TIC}) and/or the base peak chromatogram (\code{BPC}). Accepts
@@ -34,7 +34,8 @@ element. Defaults to \code{TRUE}.}
 \value{
 A chromatogram or list of chromatograms from the specified file,
 according to the value of \code{what}. Chromatograms are returned in the format
-specified by \code{format_out}.
+specified by \code{format_out}, except that mass spectra are returned as a
+\code{data.table} when \code{format_out} is \code{matrix}.
 }
 \description{
 Reads 'Varian Workstation' SMS files.
@@ -43,9 +44,10 @@ Reads 'Varian Workstation' SMS files.
 Varian SMS files begin with a \code{DIRECTORY} holding the offsets of each
 section. The first section is \code{MSData}, which begins at byte \code{3238} in every
 file seen so far, and is itself divided in two. The first part, after a short
-header, holds chromatogram data: scan numbers, retention times (as 64-bit
-floats), the total ion chromatogram (TIC), the base peak chromatogram (BPC),
-ion time (µsec), and further unidentified fields. The scan numbers and the
+header, holds chromatogram data, one record per scan: the scan number, the
+retention time (as a 64-bit float), the ion time (µsec, as a 2-byte unsigned
+integer), the total ion chromatogram (TIC), the base peak chromatogram
+(BPC), and further unidentified fields. The scan numbers and the
 TIC and BPC intensities are stored as 4-byte little-endian integers. A run of
 null bytes then separates this part from the segments holding the mass
 spectra.
@@ -54,8 +56,8 @@ The mass spectra are encoded differently. Each scan is a series of
 variable-length values, separated from the next scan by two null bytes.
 Within a scan the values are paired: the first of each pair is the
 delta-encoded mass-to-charge ratio and the second is the intensity. Each
-value is a big-endian integer whose length and width are set by its leading
-hexadecimal digit (\code{d}), as \code{1 + (d \%/\% 4)} bytes. Values beginning with
+value is a big-endian integer whose length, \code{1 + (d \%/\% 4)} bytes, and bit
+width are set by its leading hexadecimal digit (\code{d}). Values beginning with
 \code{0-3} are single bytes. For \code{d >= 4}, the lowest \code{n} bits are preserved
 according to the following scheme:
 \itemize{
@@ -67,8 +69,8 @@ according to the following scheme:
 \item d = 14-15 (E-F) -> preserve lowest 28 bits
 }
 
-No file seen so far carries a leading digit above \code{C}, so the 27- and 28-bit
-rules are extrapolated from the others rather than observed.
+No file seen so far carries a leading digit above \code{C}, so the rules for \code{D}
+and for \code{E}-\code{F} are extrapolated from the others rather than observed.
 }
 \note{
 There is still only limited support for the extraction of metadata from

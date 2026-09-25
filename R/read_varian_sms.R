@@ -5,9 +5,10 @@
 #' Varian SMS files begin with a `DIRECTORY` holding the offsets of each
 #' section. The first section is `MSData`, which begins at byte `3238` in every
 #' file seen so far, and is itself divided in two. The first part, after a short
-#' header, holds chromatogram data: scan numbers, retention times (as 64-bit
-#' floats), the total ion chromatogram (TIC), the base peak chromatogram (BPC),
-#' ion time (µsec), and further unidentified fields. The scan numbers and the
+#' header, holds chromatogram data, one record per scan: the scan number, the
+#' retention time (as a 64-bit float), the ion time (µsec, as a 2-byte unsigned
+#' integer), the total ion chromatogram (TIC), the base peak chromatogram
+#' (BPC), and further unidentified fields. The scan numbers and the
 #' TIC and BPC intensities are stored as 4-byte little-endian integers. A run of
 #' null bytes then separates this part from the segments holding the mass
 #' spectra.
@@ -16,8 +17,8 @@
 #' variable-length values, separated from the next scan by two null bytes.
 #' Within a scan the values are paired: the first of each pair is the
 #' delta-encoded mass-to-charge ratio and the second is the intensity. Each
-#' value is a big-endian integer whose length and width are set by its leading
-#' hexadecimal digit (`d`), as `1 + (d %/% 4)` bytes. Values beginning with
+#' value is a big-endian integer whose length, `1 + (d %/% 4)` bytes, and bit
+#' width are set by its leading hexadecimal digit (`d`). Values beginning with
 #' `0-3` are single bytes. For `d >= 4`, the lowest `n` bits are preserved
 #' according to the following scheme:
 #'
@@ -28,11 +29,11 @@
 #' * d = 12-13 (C-D) -> preserve lowest 27 bits
 #' * d = 14-15 (E-F) -> preserve lowest 28 bits
 #'
-#' No file seen so far carries a leading digit above `C`, so the 27- and 28-bit
-#' rules are extrapolated from the others rather than observed.
+#' No file seen so far carries a leading digit above `C`, so the rules for `D`
+#' and for `E`-`F` are extrapolated from the others rather than observed.
 #'
 #' @inheritParams shared_params
-#' @param path Path to 'Varian' `.SMS` files.
+#' @param path Path to a 'Varian' `.SMS` file.
 #' @param what Which streams to get: mass spectra (`MS1`), the total ion
 #' chromatogram (`TIC`) and/or the base peak chromatogram (`BPC`). Accepts
 #' multiple arguments. Defaults to all three.
@@ -40,7 +41,8 @@
 #' format. Mass spectra are always returned in `long` format.
 #' @return A chromatogram or list of chromatograms from the specified file,
 #' according to the value of `what`. Chromatograms are returned in the format
-#' specified by `format_out`.
+#' specified by `format_out`, except that mass spectra are returned as a
+#' `data.table` when `format_out` is `matrix`.
 #' @author Ethan Bass
 #' @note There is still only limited support for the extraction of metadata from
 #' this file format.

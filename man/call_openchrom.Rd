@@ -18,18 +18,20 @@ call_openchrom(
 \arguments{
 \item{files}{Path to files.}
 
-\item{path_out}{Directory to export converted files.}
+\item{path_out}{Directory to export converted files. Defaults to \code{NULL}, in
+which case the files go to a temporary directory that is deleted when the
+function returns.}
 
-\item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for flame
-ionization data, or \code{wsd} for DAD/UV data.}
+\item{format_in}{Either \code{msd} for mass spectrometry data, \code{csd} for
+FID, ECD or NPD data, or \code{wsd} for DAD/UV data.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{export_format}{Either  \code{mzml}, \code{csv}, \code{cdf}, \code{animl}. Defaults to
-\code{mzml}.}
+\item{export_format}{Either \code{mzml}, \code{csv}, \code{cdf}, or \code{animl}. Defaults to
+\code{mzml}. \code{mzml} and \code{cdf} are available only for \code{msd}.}
 
 \item{return_paths}{Logical. If \code{TRUE}, the function will return a character
 vector of paths to the newly created files.}
@@ -37,20 +39,20 @@ vector of paths to the newly created files.}
 \item{verbose}{Logical. Whether to print output from OpenChrom to the console.}
 }
 \value{
-If \code{return_paths} is \code{FALSE}, the function will return a list of
-chromatograms (if an appropriate parser is available to import the files into
-R). The chromatograms will be returned in \code{matrix} or \code{data.frame} format
-according to the value of \code{format_out}. If \code{return_paths} is \code{TRUE}, the
-function will return a character vector of paths to the newly created files.
+If \code{return_paths} is \code{FALSE}, a list with one chromatogram per file,
+read back with \link{read_mzml}, \link{read_cdf} or \link[utils:read.csv]{read.csv}
+according to \code{export_format}. \code{format_out} and \code{data_format} apply only to
+\code{cdf} files, except that \code{format_out = "matrix"} also converts \code{csv} files.
+\code{animl} files cannot be read back,
+so use \code{return_paths = TRUE} for them. If \code{return_paths} is \code{TRUE}, a
+character vector of paths to the newly created files.
 }
 \description{
-Writes \code{xml} batch-files and calls OpenChrom file parsers using a
-system call to the command-line interface. Unfortunately, the command-line
-interface is no longer supported in newer versions of OpenChrom (starting with
-version 1.5.0) and older versions of OpenChrom that do support
-the command line interface are no longer available from Lablicate. Thus, this
-function is deprecated since it will only work if you happen to have access
-to OpenChrom version 1.4.0, which has been scrubbed from the internet.
+Converts files with the OpenChrom command-line interface, then reads the
+converted files back into R. OpenChrom removed the command-line interface
+in version 1.5.0, and Lablicate no longer distributes older versions, so
+this function works only with an existing installation of OpenChrom 1.4 or
+earlier. It is deprecated for that reason.
 }
 \details{
 The \code{call_openchrom} function works by creating an xml batchfile
@@ -69,8 +71,8 @@ interface (GUI). To keep using the GUI, install a second copy of OpenChrom
 and call that one from R.
 }
 \section{Side effects}{
- Chromatograms will be exported in the format specified
-by \code{export_format} in the folder specified by \code{path_out}.
+ Chromatograms are exported in the format specified
+by \code{export_format} to the folder specified by \code{path_out}.
 }
 
 \examples{
@@ -80,8 +82,8 @@ call_openchrom("path/to/file.RAW", format_in = "msd", export_format = "mzml")
 }
 \references{
 Wenig, Philip and Odermatt, Juergen. OpenChrom: A Cross-Platform Open Source
-Software for the Mass Spectrometric Analysis of Chromatographic Data. \emph{
-BMC Bioinformatics} \bold{11}, no. 1 (July 30, 2010): 405.
+Software for the Mass Spectrometric Analysis of Chromatographic Data.
+\emph{BMC Bioinformatics} \strong{11}, no. 1 (July 30, 2010): 405.
 \doi{10.1186/1471-2105-11-405}.
 }
 \seealso{

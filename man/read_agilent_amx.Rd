@@ -23,15 +23,17 @@ all four.}
 is extracted. If \code{NULL} (default), a temporary directory is used and
 cleaned up on exit.}
 
-\item{format_out}{Class of output (for tables). Either \code{"data.frame"},
-\code{"tibble"} or \code{"data.table"}.}
+\item{format_out}{Class of the \code{gradient}, \code{solvents}, \code{signals} and
+\code{temp_controls} tables. Either \code{"data.frame"}, \code{"tibble"} or \code{"data.table"}.}
 
 \item{gradient_format}{Whether to return the gradient in \code{"wide"} (default)
 or \code{"long"} format.}
 }
 \value{
 A named list with one element per parsed module, plus \code{"metadata"}.
-Elements present depend on \code{what}; see below for the structure of each.
+A module the archive has no driver file for is left out with a warning,
+and it is an error if none of the requested modules has one. The \code{comp} module is returned as \code{column} and
+\code{sampler} as \code{autosampler}. See below for the structure of each.
 
 \strong{\code{metadata}} — a list with scalar elements:
 \describe{
@@ -47,30 +49,32 @@ Elements present depend on \code{what}; see below for the structure of each.
 \strong{\code{pump}} — a list with scalar elements \code{flow_mL_min}, \code{stop_time_min},
 \code{post_time_min}, \code{pressure_low_bar}, \code{pressure_high_bar}, plus:
 \describe{
-\item{\code{solvents}}{A data.frame of active solvent channels: \code{channel},
+\item{\code{solvents}}{A table of active solvent channels: \code{channel},
 \code{percentage}, \code{solvent}.}
-\item{\code{gradient}}{A data.frame of timetable entries. Wide format (default):
-\code{time_min} plus one \verb{pct_<channel>} column per active channel. Long
-format: \code{time_min}, \code{channel}, \code{percent}.}
+\item{\code{gradient}}{A table of timetable entries. Wide format (default):
+\code{time_min} plus one \verb{pct_<channel>} column per active channel, and a
+\code{flow_mL_min} column if the timetable changes the flow. Long format:
+\code{time_min}, \code{channel}, \code{percent}, where a \code{flow} channel holds the
+flow in mL/min.}
 }
 
 \strong{\code{dad}} — a list with scalar elements \code{peakwidth_nm}, \code{slitwidth_nm},
 \code{uv_lamp_required}, \code{vis_lamp_required}, \code{spectra_from_nm},
 \code{spectra_to_nm}, \code{spectra_step_nm}, plus:
 \describe{
-\item{\code{signals}}{A data.frame of active signals: \code{id}, \code{wavelength_nm},
+\item{\code{signals}}{A table of active signals: \code{id}, \code{wavelength_nm},
 \code{bandwidth_nm}.}
 }
 
-\strong{\code{comp}} — a list with scalar element \code{post_time_min}, plus:
+\strong{\code{column}} — a list with scalar element \code{post_time_min}, plus:
 \describe{
-\item{\code{temp_controls}}{Two-row data.frame (Left/Right): \code{side},
+\item{\code{temp_controls}}{Two-row table (Left/Right): \code{side},
 \code{temperature_C}, \code{not_ready_limit_C}, \code{equilibration_time_min}.}
 }
 
-\strong{\code{sampler}} — a list with scalar elements: \code{thermostat_installed},
+\strong{\code{autosampler}} — a list with scalar elements: \code{thermostat_installed},
 \code{draw_speed_uL_min}, \code{eject_speed_uL_min},
-\code{wait_after_draw_min}, \code{injection_volume_uL},  \code{wash_time_s}.
+\code{wait_after_draw_min}, \code{injection_volume_uL}, \code{wash_time_s}.
 }
 \description{
 Parses an Agilent \code{.amx} method archive, extracting instrument parameters

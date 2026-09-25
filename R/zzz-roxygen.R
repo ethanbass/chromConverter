@@ -25,11 +25,11 @@ NULL
 #' @name generic_return_3D
 #' @return A 3D chromatogram in the format specified by `data_format` and
 #' `format_out`. If `data_format` is `wide`, the chromatogram will
-#' be returned with retention times as rows and wavelengths as columns. If
+#' be returned with retention times as row names and wavelengths as columns. If
 #' `long` format is requested, three columns will be returned: one for the
 #' retention time, one for the wavelength and one for the intensity. The
 #' `format_out` argument determines whether the chromatogram is returned as
-#' a `matrix`, `data.frame`, or `data.table`. Metadata will be attached to the
+#' a `matrix`, `data.frame`, or `data.table`. Metadata are attached to the
 #' chromatogram as [attributes] if `read_metadata` is `TRUE`.
 #' @keywords internal
 NULL
@@ -38,11 +38,11 @@ NULL
 #' @name generic_return_2D
 #' @return A 2D chromatogram in the format specified by `data_format` and
 #' `format_out`. If `data_format` is `wide`, the chromatogram will be returned
-#' with retention times as rows and a single column for the intensity. If `long`
-#' format is requested, two columns will be returned: one for the
+#' with retention times as row names and a single column for the intensity. If
+#' `long` format is requested, two columns will be returned: one for the
 #' retention time and one for the intensity. The `format_out` argument
 #' determines whether the chromatogram is returned as a `matrix`, `data.frame`,
-#' or `data.table`. Metadata can be attached to the chromatogram as [attributes]
+#' or `data.table`. Metadata are attached to the chromatogram as [attributes]
 #' if `read_metadata` is `TRUE`.
 #' @keywords internal
 NULL

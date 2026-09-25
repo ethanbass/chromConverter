@@ -37,11 +37,11 @@ element. Defaults to \code{TRUE}.}
 \value{
 A 2D chromatogram in the format specified by \code{data_format} and
 \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will be returned
-with retention times as rows and a single column for the intensity. If \code{long}
-format is requested, two columns will be returned: one for the
+with retention times as row names and a single column for the intensity. If
+\code{long} format is requested, two columns will be returned: one for the
 retention time and one for the intensity. The \code{format_out} argument
 determines whether the chromatogram is returned as a \code{matrix}, \code{data.frame},
-or \code{data.table}. Metadata can be attached to the chromatogram as \link{attributes}
+or \code{data.table}. Metadata are attached to the chromatogram as \link{attributes}
 if \code{read_metadata} is \code{TRUE}.
 }
 \description{
@@ -52,23 +52,24 @@ A parser to read chromatogram data streams from 'Shimadzu' \code{.gcd} files.
 GCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
 \href{https://pypi.org/project/olefile/}{olefile} package in Python to unpack the
 files. The chromatogram data is encoded in streams titled
-\verb{LSS Raw Data:Chromatogram Ch<#>}. The GCD data stream contains a segment
-for each retention time, beginning with a 24-byte header.
-
-The 24 byte header consists of the following fields:
+\verb{LSS Raw Data:Chromatogram Ch<#>}. Each stream begins with a 24-byte
+header:
 \itemize{
 \item 4 bytes: segment label (\code{17234}).
-\item 4 bytes: Little-endian integer specifying the sampling interval in milliseconds.
-\item 4 bytes: Little-endian integer specifying the number of values in the file.
-\item 4 bytes: Little-endian integer specifying the total number of bytes in the
-file, which does not match the size of the stream exactly.
+\item 4 bytes: Little-endian integer specifying the sampling interval in
+milliseconds.
+\item 4 bytes: Little-endian integer specifying the number of values in the
+stream.
+\item 4 bytes: Little-endian integer specifying a byte count, which does not
+match the size of the stream exactly.
 \item 8 bytes of \code{00}s
 }
 
 After the header, the data are encoded as 64-bit (little-endian)
 floating-point numbers. Retention times are derived from the number of
 values and the sampling interval encoded in the header, rather than read
-from the file.
+from the file: the \code{n}th value is placed at \code{n} times the sampling
+interval.
 }
 \examples{
 \dontrun{

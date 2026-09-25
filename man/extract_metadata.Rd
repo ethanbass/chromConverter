@@ -15,20 +15,22 @@ extract_metadata(
 }
 \arguments{
 \item{chrom_list}{A list of chromatograms with attached metadata (as returned
-by \code{read_chroms} with \code{read_metadata = TRUE}).}
+by \code{read_chroms} with \code{read_metadata = TRUE}), or a single chromatogram.
+Nested lists are flattened, one row per chromatogram.}
 
 \item{what}{A character vector specifying the metadata elements to
 extract. Defaults to every field chromConverter attaches; no format
 records all of them, so the elements a format does not provide are
-absent from the result. Superseded names (\code{injection_volume},
+absent from the result. Superseded names (e.g. \code{injection_volume},
 \code{software_name}, \code{time_start}) are accepted and mapped to the names
-that replaced them.}
+that replaced them. A field requested by name that no chromatogram carries
+produces a warning.}
 
 \item{detector}{A character vector of detectors to include (e.g. \code{"UV"} or
 \code{c("UV", "MS")}), matched case-insensitively against each chromatogram's
 \code{detector} attribute. Defaults to \code{NULL}, in which case all chromatograms
 are included. Useful for lists containing more than one detector per
-sample.}
+sample. It is an error if no chromatogram matches.}
 
 \item{format_out}{Format of object. Either \code{data.frame}, \code{data.table} or
 \code{tibble}.}
@@ -53,8 +55,10 @@ right).}
 }
 \value{
 A \code{data.frame}, \code{tibble}, or \code{data.table} (according to the value of
-\code{format_out}), with samples as rows and the specified metadata elements as
-columns, or \code{NA} if none of the specified elements could be found.
+\code{format_out}), with one row per chromatogram and the specified metadata
+elements as columns, or \code{NA} if none of the specified elements could be
+found. For a list, the first column, \code{name}, identifies each chromatogram
+by its path through the list (e.g. \code{blue.UV}).
 }
 \description{
 Extract metadata as a \code{data.frame}, \code{data.table} or \code{tibble} from a list of

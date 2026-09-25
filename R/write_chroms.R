@@ -12,7 +12,8 @@
 #' `"chrom"` (written by `write_andi_chrom`). For `export_format = "mzml"`,
 #' any of `"MS1"`, `"MS2"`, `"TIC"`, `"BPC"` and/or `"DAD"`. If it is not
 #' specified, the streams to write are inferred from the supplied data.
-#' @param force Logical. Whether to overwrite existing files. Defaults to `TRUE`.
+#' @param force Logical. Whether to overwrite existing files. Defaults to
+#' `FALSE`.
 #' @param show_progress Logical. Whether to show progress bar. Defaults to `TRUE`.
 #' @param verbose Logical. Whether to print verbose output.
 #' @param ... Additional arguments to write function.

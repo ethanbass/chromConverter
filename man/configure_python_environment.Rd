@@ -16,19 +16,20 @@ configure_python_environment(
 \item{what}{What kind of environment to create. A python virtual
 environment (\code{"venv"}) or a conda environment (\code{"conda"}).}
 
-\item{envname}{The name of, or path to, a Python virtual environment.}
+\item{envname}{The name of, or path to, the environment to create.}
 
 \item{parser}{Which parser to install requirements for. Either \code{"all"}
 (default), \code{"aston"}, \code{"rainbow"} or \code{"olefile"}.}
 
-\item{python}{Argument to \code{reticulate::virtualenv_create}, specifying
-the path to a Python interpreter.}
+\item{python}{Path to the Python interpreter passed to
+\link[reticulate:virtualenv_create]{reticulate::virtualenv_create}. Used only when \code{what = "venv"}. Defaults to
+\code{NULL}, in which case \link[reticulate:virtualenv_starter]{reticulate::virtualenv_starter} chooses one.}
 
 \item{...}{Additional arguments to \link[reticulate:virtualenv_create]{reticulate::virtualenv_create} or
 \link[reticulate:conda_create]{reticulate::conda_create} according to the value of \code{what}.}
 }
 \value{
-Returns the name of the environment (invisibly).
+The name of the environment, invisibly.
 }
 \description{
 Creates a dedicated python virtual environment (or conda environment) with
@@ -38,7 +39,7 @@ should not be necessary in most cases, since (starting with reticulate
 \link[reticulate:py_require]{reticulate::py_require} and they are provisioned automatically the first
 time a python parser is called. It can still be useful if you need a
 persistent environment, e.g. to work offline or to avoid re-resolving
-packages.
+packages. It is an error if an environment named \code{envname} already exists.
 }
 \section{Side effects}{
 

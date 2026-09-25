@@ -20,16 +20,14 @@
 #' @inheritParams shared_params
 #' @param path Path to ANDI netCDF file.
 #' @param data_format Whether to return data in `wide` or `long` format.
-#' For 2D files, "long" format returns the retention time as the first column of
-#' the data.frame or matrix while "wide" format returns the retention time as the
-#' rownames of the object. This argument applies only to 2D chromatograms, since
-#' MS data will always be returned in long format.
-#' @param what For `ANDI chrom` files, whether to extract `chroms`
-#' and/or `peak_table`. For `ANDI ms` files, whether to extract MS1 scans
-#' (`MS1`) or the total ion chromatogram (`TIC`).
-#' @param ... Additional arguments to parser. The `ms_format` argument
-#' can be used here to specify whether to return mass spectra in `list`
-#' format or as a `data.frame`.
+#' `"long"` returns the retention time as the first column of the data.frame
+#' or matrix, while `"wide"` returns it as the rownames. The mass spectra of an
+#' ANDI MS file are always long, so there it applies only to the TIC.
+#' @param what For ANDI chrom files, `chroms` and/or `peak_table`. For ANDI MS
+#' files, MS1 scans (`MS1`) and/or the total ion chromatogram (`TIC`).
+#' @param ... Additional arguments to the parser. For ANDI MS files, pass
+#' `ms_format` to return the mass spectra as a `data.frame` (the default) or a
+#' `list`.
 #' @return A chromatogram in the format specified by the `format_out` and
 #' `data_format` arguments.
 #' @examples \dontrun{

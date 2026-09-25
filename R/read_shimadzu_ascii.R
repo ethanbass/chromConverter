@@ -9,10 +9,10 @@
 #' @importFrom stringr str_split_fixed
 #' @inheritParams shared_params
 #' @param path Path to Shimadzu `.txt` ASCII file.
-#' @param what Whether to extract chromatograms (`chroms`),
-#' `peak_table`, and/or `ms_spectra`. Accepts multiple arguments.
-#' @param include Which chromatograms to include. Options are `fid`, `lc`,
-#' `dad`, `uv`, `tic`, and `status`.
+#' @param what Whether to extract chromatograms (`chroms`), `peak_table`,
+#' and/or `ms_spectra`. Accepts multiple arguments.
+#' @param include Which chromatograms to include: any of `fid`, `lc`, `dad`,
+#' `uv`, `tic`, and `status`. Defaults to all but `status`.
 #' @param format_in This argument is deprecated and is no longer required.
 #' @param peaktable_format Whether to return peak tables in `chromatographr`
 #' or `original` format.
@@ -20,10 +20,12 @@
 #' `data.frame` or a `list`.
 #' @return A nested list of elements from the specified file, where the top
 #' levels are chromatograms, peak tables, and/or mass spectra according to the
-#' value of `what`. Chromatograms are returned in the format specified by
-#' `format_out`.
-#' @examplesIf interactive()
-#' path <- "tests/testthat/testdata/ladder.txt"
+#' value of `what`, and the chromatograms are grouped by type (e.g. `fid`).
+#' Where `collapse` is `TRUE`, a list of one is unwrapped at the top level and
+#' within each type of chromatogram. Chromatograms are returned in the format specified by
+#' `format_out` and `data_format`.
+#' @examples
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
 #' read_shimadzu(path)
 #' @author Ethan Bass
 #' @family 'Shimadzu' parsers

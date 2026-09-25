@@ -6,11 +6,11 @@
 \value{
 A 3D chromatogram in the format specified by \code{data_format} and
 \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will
-be returned with retention times as rows and wavelengths as columns. If
+be returned with retention times as row names and wavelengths as columns. If
 \code{long} format is requested, three columns will be returned: one for the
 retention time, one for the wavelength and one for the intensity. The
 \code{format_out} argument determines whether the chromatogram is returned as
-a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata will be attached to the
+a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata are attached to the
 chromatogram as \link{attributes} if \code{read_metadata} is \code{TRUE}.
 }
 \description{

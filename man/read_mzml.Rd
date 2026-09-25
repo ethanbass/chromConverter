@@ -17,9 +17,9 @@ read_mzml(
 \arguments{
 \item{path}{Path to \code{.mzml} file.}
 
-\item{format_out}{Class of output. Only applies if \code{mzR} is selected.
-Either \code{matrix}, \code{data.frame}, or \code{data.table}. \code{RaMS} will return a list of
-data.tables regardless of what is selected here.}
+\item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
+\code{data.table}. With RaMS, applies only to the \code{TIC} and \code{BPC} in wide
+format.}
 
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
@@ -27,23 +27,26 @@ data.tables regardless of what is selected here.}
 
 \item{what}{What types of data to return (argument to \link[RaMS:grabMSdata]{RaMS::grabMSdata}).
 Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD}, \code{chroms}, \code{metadata}, or
-\code{everything}.}
+\code{everything}. Defaults to all of them.}
 
 \item{verbose}{Argument to \code{grabMSdata} controlling verbosity.}
 
 \item{...}{Additional arguments to \code{grabMSdata}.}
 }
 \value{
-If \code{RaMS} is selected, the function will return a list of "tidy"
-\code{data.table} objects. If \code{mzR} is selected, the function will return a
-chromatogram in \code{matrix} or \code{data.frame} format according to the
-value of \code{format_out}.
+With RaMS, a named list of the streams in \code{what}. With mzR, a DAD
+chromatogram in the format specified by \code{format_out} and \code{data_format}.
 }
 \description{
 Extracts data from \code{mzML} files using parsers from either RaMS or mzR.
-The RaMS parser (default) will only return data in tidy (long) format. The
-mzR parser will return data in wide format. Currently the mzR-based parser
-is configured to return only DAD data.
+}
+\details{
+The RaMS parser (default) returns a list with one element per stream in
+\code{what}. Mass spectra are always long. With \code{data_format = "wide"} (the
+default), \code{TIC} and \code{BPC} are returned as 2D chromatograms of class
+\code{format_out}, and \code{DAD} as a wide chromatogram of class \code{format_out}; with
+\code{"long"}, every stream is a long \code{data.table}. The mzR parser returns only the DAD data, as a
+single chromatogram.
 }
 \examples{
 \dontrun{

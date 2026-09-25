@@ -3,33 +3,35 @@
 #' Parse 'Agilent' or 'Waters' files with rainbow parsers.
 #'
 #' Uses [rainbow](https://rainbow-api.readthedocs.io) parsers to read in Agilent
-#' (`.D`) and Waters (`.raw`) files. If `format_in` is `"agilent_d"` or
-#' `"waters_raw"`, a directory of the appropriate format (`.D` or `.raw`) should
-#' be provided to the `path` argument. If `format_in` is `"chemstation_uv"` a
-#' `.uv` file should be provided. Data can be filtered by detector type using
-#' the `what` argument.
+#' (`.D`) and Waters (`.raw`) files. For `agilent_d`, `waters_raw` and
+#' `masshunter`, `path` is the data directory (`.D` or `.raw`), and the result
+#' is a list grouped according to `by`. For the `chemstation` formats, `path`
+#' is a single file (e.g. `.uv`), the result is a single chromatogram, and `by`
+#' and `what` are ignored. Otherwise, data can be filtered by detector type
+#' using the `what` argument.
 #'
 #' @inheritParams shared_params
 #' @param path Path to file.
 #' @param format_in Format of the supplied files. Either `agilent_d`,
 #' `waters_raw`, `masshunter`, `chemstation`, `chemstation_uv`,
 #' `chemstation_fid`, or `chemstation_ms`.
-#' @param what What types of data to return (e.g. `MS`, `UV`, `CAD`, `ELSD`).
-#' This argument only applies if `by == "detector"`.
-#' @param by How to order the list that is returned. Either `detector` (default)
-#' or `name`.
-#' @param precision Number of decimals to round mz values. Defaults to `1`.
-#' Ignored if `bin_width` is supplied.
+#' @param what Which detectors to return (e.g. `MS`, `UV`, `CAD`, `ELSD`).
+#' Applies only when `by = "detector"`. Defaults to `NULL`, which returns all
+#' of them.
+#' @param by How to group the returned list: by `detector` (default), or by
+#' `name`, one element per data file in the directory.
+#' @param precision Number of decimals of the m/z grid, which is spaced
+#' `10^-precision` apart. Defaults to `1`. Ignored if `bin_width` is supplied.
 #' @param bin_width Width of the m/z grid, in daltons. An alternative to
 #' `precision` for grids that are not a power of ten (e.g. `0.5`). Defaults to
 #' `NULL`, in which case the grid is derived from `precision` as
 #' `10^-precision`.
-#' @param sparse Logical. Whether to return MS data in sparse format (excluding
-#' zeros). Defaults to `TRUE`. Applies only when data are requested in `long`
-#' format.
+#' @param sparse Logical. Whether to drop zero intensities from MS data.
+#' Applies only to `long` format. Defaults to `TRUE`.
 #' @author Ethan Bass
-#' @return Returns a (nested) list of matrices or `data.frame`s according to
-#' the value of `format_out`. Data is ordered according to the value of `by`.
+#' @return A (nested) list of chromatograms, or a single chromatogram for the
+#' `chemstation` formats, in the class given by `format_out`. The list is
+#' grouped according to the value of `by`.
 #' @examples \dontrun{
 #' call_rainbow("path/to/file.D", format_in = "agilent_d")
 #' }

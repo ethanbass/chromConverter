@@ -9,10 +9,9 @@
 #' @inheritParams shared_params
 #' @param path Path to 'Agilent' `.csv` file.
 #' @param read_metadata Logical. Whether to attach metadata. Defaults to
-#' `TRUE`. There is no instrumental metadata saved in the CSV files so this
-#' will only attach metadata about the settings used by chromConverter to parse
-#' the file.
-#' @return A chromatogram in the format specified by `format_out` and 
+#' `TRUE`. The files record no instrument metadata, so only the settings
+#' chromConverter used to parse the file are attached.
+#' @return A chromatogram in the format specified by `format_out` and
 #' `data_format`.
 #' @examplesIf interactive()
 #' read_chemstation_csv("tests/testthat/testdata/dad1.csv")

@@ -5,19 +5,18 @@
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Agilent' `.ms` file.
-#' @param what What stream to get: current options are `MS1`, `BPC` and/or
-#' `TIC`. If a stream is not specified, the function will return all streams.
-#' @param data_format Whether to return data in `long` (default) or `wide`
-#' format. Mass spectra are always returned in `long` format.
-#' @author Ethan Bass
-#' @return A list of chromatograms in the format specified by `data_format` and
-#' `format_out`. If `data_format` is `wide`, 2D chromatograms will
-#' be returned with retention times as rows and a single column for the
-#' intensity. Otherwise, two columns will be returned: one for the
-#' retention time and one for the intensity. MS data will always be returned in
-#' long format. The `format_out` argument determines whether the chromatogram is
-#' returned as a `matrix`, `data.frame`, or `data.table`. Metadata can be 
-#' attached to the chromatogram as [attributes] if `read_metadata` is `TRUE`.
+#' @param what Which streams to return: `MS1`, `BPC` and/or `TIC`. Defaults to
+#' all three.
+#' @param data_format Whether to return the `BPC` and `TIC` in `long` (default)
+#' or `wide` format. Mass spectra are always returned in `long` format.
+#' @return A list of the streams in `what`, in the format specified by
+#' `format_out`. In wide format, the `BPC` and `TIC` have retention times as
+#' rows and a single intensity column; in long format, a retention time column
+#' and an intensity column. MS data will always be returned in long format. The
+#' `format_out` argument determines whether the chromatogram is returned as a
+#' `matrix`, `data.frame`, or `data.table`. Metadata are attached as [attributes] if
+#' `read_metadata` is `TRUE`. With `collapse = TRUE`, a list of one stream is
+#' replaced by that stream.
 #' @author Ethan Bass
 #' @note Many thanks to Evan Shi and Eugene Kwan for providing helpful
 #' information on the structure of these files in the [rainbow documentation](

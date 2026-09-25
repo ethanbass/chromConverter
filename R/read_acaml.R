@@ -1,7 +1,7 @@
-#' Read 'Agilent' ACAML files from directory
+#' Read 'Agilent' ACAML files
 #'
 #' Extracts injection metadata from 'Agilent Common Analytical Markup Language'
-#' (ACAML) files into an R object.
+#' (ACAML) files into a table.
 #'
 #' ACAML is an XML-based format used by Agilent OpenLab to store sequence and
 #' sample metadata. This function extracts information from the
@@ -20,8 +20,8 @@
 #' function on the single `.acaml` file in a `.rslt` directory, where a
 #' progress bar over one element is just noise.
 #' @return A `data.frame`, `data.table` or `tibble` (according to the value of
-#' `format_out`) containing sample metadata derived from the supplied ACAML
-#' files.
+#' `format_out`) with one row per injection, and a `SourceFile` column naming
+#' the ACAML file it came from.
 #' @examples \dontrun{
 #' read_acaml(path)
 #' }

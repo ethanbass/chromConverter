@@ -5,7 +5,7 @@
 #' @inheritParams shared_params
 #' @param path The path to 'Chromatotec' `.Chrom` file.
 #' @param what Whether to extract chromatograms (`chrom`) and/or `peak_table`
-#' data. Accepts multiple arguments.
+#' data. Accepts multiple arguments, and defaults to both.
 #' @return A chromatogram and/or peak table from the specified `path`, according
 #' to the value of `what`. Chromatograms are returned in the format specified by
 #' `format_out`.

@@ -27,9 +27,9 @@ read_chemstation_ch(
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 (standardized field names) or \code{raw} (vendor field names, unmapped).}
 
-\item{scale}{Whether to scale the data by the scaling factor present in the
-file. Defaults to \code{TRUE}. 'MassHunter' seems to ignore the scaling
-factor in at least some types of 'ChemStation' files.}
+\item{scale}{Whether to multiply the data by the file's scaling factor and
+add its intercept. Defaults to \code{TRUE}. 'MassHunter' seems to ignore the
+scaling factor in at least some types of 'ChemStation' files.}
 
 \item{source_file}{Source file from which chromatogram data was originally
 derived.}
@@ -37,23 +37,22 @@ derived.}
 \value{
 A 2D chromatogram in the format specified by \code{data_format} and
 \code{format_out}. If \code{data_format} is \code{wide}, the chromatogram will be returned
-with retention times as rows and a single column for the intensity. If \code{long}
-format is requested, two columns will be returned: one for the
+with retention times as row names and a single column for the intensity. If
+\code{long} format is requested, two columns will be returned: one for the
 retention time and one for the intensity. The \code{format_out} argument
 determines whether the chromatogram is returned as a \code{matrix}, \code{data.frame},
-or \code{data.table}. Metadata can be attached to the chromatogram as \link{attributes}
+or \code{data.table}. Metadata are attached to the chromatogram as \link{attributes}
 if \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Reads 'Agilent ChemStation' \code{.ch} files.
 }
 \details{
-'Agilent' \code{.ch} files come in several different formats. This parser
-can automatically detect and read several versions of these files from
-'Agilent ChemStation' and 'Agilent OpenLab', including versions \code{30} and
-\code{130}, which are generally produced by ultraviolet detectors, as well as
-\code{81}, \code{179}, and \code{181} which are generally produced by flame ionization (FID)
-detectors.
+'Agilent' \code{.ch} files come in several formats. This parser detects the
+version from the file and reads versions \code{8}, \code{30}, \code{130}, \code{81}, \code{179} and
+\code{181} from 'Agilent ChemStation' and 'Agilent OpenLab'; any other version is
+an error. Versions \code{30} and \code{130} are generally produced by ultraviolet
+detectors, and \code{81}, \code{179} and \code{181} by flame ionization detectors (FID).
 }
 \note{
 This function was adapted from the \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}

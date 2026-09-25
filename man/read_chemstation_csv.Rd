@@ -20,9 +20,8 @@ read_chemstation_csv(
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to
-\code{TRUE}. There is no instrumental metadata saved in the CSV files so this
-will only attach metadata about the settings used by chromConverter to parse
-the file.}
+\code{TRUE}. The files record no instrument metadata, so only the settings
+chromConverter used to parse the file are attached.}
 }
 \value{
 A chromatogram in the format specified by \code{format_out} and

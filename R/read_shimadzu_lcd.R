@@ -10,8 +10,9 @@
 #' over them:
 #'
 #' * **PDA** (`PDA 3D Raw Data:3D Raw Data`), requested as `DAD`: one
-#' delta-encoded segment per retention time, each holding a full spectrum. Read by [read_sz_lcd_3d()],
-#' which documents the segment header and the delta encoding.
+#' delta-encoded segment per retention time, each holding a full spectrum.
+#' Read by [read_sz_lcd_3d()], which documents the segment header and the
+#' delta encoding.
 #' * **Chromatograms** (`LSS Raw Data:Chromatogram Ch<#>`): one stream per
 #' channel, delta-encoded in the same way. Read by [read_sz_lcd_2d()].
 #' * **Quadrupole time-of-flight mass spectra** (`QTFL RawData`): centroided
@@ -26,7 +27,7 @@
 #' index, the scan header and the layout of each scan type. The total ion
 #' current is again held separately, in `TIC Data`.
 #' * **Peak tables** (`Peak Table`): integration results as reported by
-#' 'Lab Solutions', one stream per channel. Read by [read_sz_tables()], which
+#' 'LabSolutions', one stream per channel. Read by [read_sz_tables()], which
 #' documents the two record layouts.
 #'
 #' The two mass spectrometry containers are mutually exclusive: a file holds
@@ -44,12 +45,15 @@
 #' @param what What stream to get: current options are `DAD` (for which `PDA`
 #' is accepted as a synonym, since that is what 'Shimadzu' calls the same
 #' detector), chromatograms (`chroms`), `TIC`, mass spectra (`MS1`, `MS2`, or
-#' `MS` for both), and/or peak lists (`peak_table`). Note that an MRM or SIM acquisition is a single
-#' stage of mass selection either way: MRM scans are `MS2`, and SIM scans,
-#' whose Q1 (first quadrupole) and Q3 (third quadrupole) are the same, are `MS1`.
+#' `MS` for both), and/or peak lists (`peak_table`). `MS1` and `MS2` count
+#' stages of mass selection rather than name a scan type, so a triple
+#' quadrupole acquisition can land on either: an MRM scan selects a precursor
+#' in Q1 (the first quadrupole) and a product in Q3 (the third), so it is
+#' `MS2`, while a SIM scan sets Q1 and Q3 to the same mass, selecting nothing
+#' after the collision cell, and so is `MS1`.
 #'
 #' If a stream is not specified, the richest one the file contains is returned:
-#' `PDA` if there is a PDA stream, otherwise `chroms`, and otherwise `MS` for a
+#' `DAD` if there is a PDA stream, otherwise `chroms`, and otherwise `MS` for a
 #' file whose only detector is the mass spectrometer. The mass spectrometry
 #' streams are read from whichever container the file uses: `QTFL RawData`
 #' (centroided quadrupole time-of-flight data) or `TLM Raw Data` (triple
@@ -59,20 +63,23 @@
 #' only to triple quadrupole profile spectra, whose m/z grid is largely
 #' empty; ignored for every other stream.
 #' @author Ethan Bass
-#' @return A chromatogram or list of chromatograms in the format specified by
-#' `data_format` and `format_out`. If `data_format` is `wide`, the
-#' chromatogram(s) will be returned with retention times as rows and a
-#' single column for the intensity. If `long` format is requested, two
-#' columns will be returned: one for the retention time and one for the intensity.
-#' The `format_out` argument determines whether chromatograms are returned
-#' in `matrix`, `data.frame`, or `data.table` format. Metadata will be
-#' attached to the chromatogram as [attributes] when `read_metadata` is `TRUE`.
+#' @return A named list with one element per stream requested, or the element
+#' itself where there is only one and `collapse` is `TRUE`. Chromatograms and
+#' the PDA data are returned in the format specified by `data_format` and
+#' `format_out`. In `wide` format, retention times are the rows, and each 2D
+#' chromatogram has a single intensity column while the PDA data have one
+#' column per wavelength. If `long` format is requested, the retention time
+#' and the intensity are returned as columns, alongside the detector, channel,
+#' wavelength and unit for a 2D chromatogram. The `format_out` argument
+#' determines whether they are returned in `matrix`, `data.frame`, or
+#' `data.table` format. Mass spectra and peak tables are always long.
+#' Metadata are attached as [attributes] when `read_metadata` is `TRUE`.
 #' @note Times are stored as a 'Windows' `FILETIME`, which is always UTC, so
 #' `run_datetime` is reported in UTC. The files also record the offset of the
 #' local time zone (e.g. `+01'00'`), but this is the standard offset of the
 #' zone rather than the offset that was in force, and it seems that no daylight
 #' saving information is stored anywhere in the file. The local times displayed by
-#' 'Lab Solutions' therefore cannot be reconstructed from the recorded offset
+#' 'LabSolutions' therefore cannot be reconstructed from the recorded offset
 #' alone: where daylight saving time applied, they are an hour ahead of it.
 #' Rendering `run_datetime` in the zone where the data were acquired, e.g.
 #' `format(attr(x, "run_datetime"), tz = "Europe/Paris")`, recovers them
@@ -80,21 +87,22 @@
 #'
 #' As of `v0.10.0`, 2D chromatograms are scaled by the calibration factor and
 #' the value factor recorded for each channel, so their intensities match those
-#' reported by 'Lab Solutions'. An absorbance axis can be reported in `uAU`,
+#' reported by 'LabSolutions'. An absorbance axis can be reported in `uAU`,
 #' `mAU` or `AU`, and the file records the size of each as a **value factor**:
 #' `1`, `1000` and `1e6`, since one `mAU` is a thousand `uAU` and one `AU` a
-#' million. The smallest of them is the **base unit**, while 'Lab Solutions'
+#' million. The smallest of them is the **base unit**, while 'LabSolutions'
 #' displays the data in whichever unit the method selected, usually `mAU`.
 #' Other detectors work the same way: a refractive index axis measures in `nRI`
 #' and displays `uRI`.
 #'
 #' Two factors separate the stored integers from the displayed value. The
 #' calibration factor converts an integer into base units, and the value factor
-#' converts base units into the displayed unit; an intensity as 'Lab Solutions'
+#' converts base units into the displayed unit; an intensity as 'LabSolutions'
 #' reports it is the integer times the one divided by the other. The
-#' calibration factor is `1` on some channels and not on others (~42 for an
-#' SPD-20A, ~310 for an RID-10A), which suggests the integers are detector
-#' counts whose size varies by module, though the file does not say so.
+#' calibration factor is `1` on some channels and not on others (e.g. about
+#' `0.024` for an SPD-20A and `0.0032` for an RID-10A), which suggests the
+#' integers are detector counts whose size varies by module, though the file
+#' does not say so.
 #'
 #' For a 2D chromatogram, `scale = TRUE` applies both factors. `scale = FALSE`
 #' returns the stored integers. Where the calibration factor is `1`, their
@@ -104,7 +112,7 @@
 #' two was returned.
 #'
 #' PDA data is instead returned as it is encoded in the file, matching the
-#' `[PDA 3D]` section of a 'Lab Solutions' ASCII export, which declares no
+#' `[PDA 3D]` section of a 'LabSolutions' ASCII export, which declares no
 #' intensity unit or multiplier. The `3D Data Item` describes the absorbance
 #' axis in `mAU` with a value factor of `1000`, which would imply scaling the
 #' values by `0.001`, but the `[PDA Multi Chromatogram]` traces in the ASCII
@@ -118,7 +126,7 @@
 #' derived from the PDA data but is read as a 2D chromatogram, so it is scaled
 #' and currently differs from the PDA data by a factor of `1000`. The
 #' wavelength range it was taken over is not recorded in the `2D Data Item`,
-#' whose nanometre axis spans `0` to `0`, so its `wavelength` attribute is `NA`
+#' whose nanometer axis spans `0` to `0`, so its `wavelength` attribute is `NA`
 #' rather than the acquisition range of the PDA stream.
 #' @examples \dontrun{
 #' read_shimadzu_lcd(path)
@@ -253,8 +261,8 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #' The 24 byte header consists of the following fields:
 #' * 4 bytes: segment label (`17234`).
 #' * 4 bytes: Little-endian integer specifying the sampling rate along the
-#' spectral axis (?), where the equivalent field of a 2D stream gives the
-#' sampling rate along the time axis.
+#' spectral axis, where the equivalent field of a 2D stream gives the
+#' sampling rate along the time axis. This reading is not confirmed.
 #' * 4 bytes: Little-endian integer specifying the number of wavelength values
 #' in the segment.
 #' * 4 bytes: Little-endian integer specifying the total number of bytes in the segment.
@@ -340,7 +348,7 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 
 #' Read 'Shimadzu' LCD 2D data
 #'
-#' Reads 2D PDA data stream from 'Shimadzu' `.lcd` files.
+#' Reads the chromatogram data streams from 'Shimadzu' `.lcd` files.
 #'
 #' A parser to read chromatogram data streams from 'Shimadzu' `.lcd` files.
 #' LCD files are encoded as 'Microsoft' OLE documents. The parser relies on the
@@ -378,16 +386,16 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' `raw`.
 #' @param scale Whether to scale the data by the calibration factor and the
 #' value factor, converting the encoded integers into the unit reported by
-#' 'Lab Solutions' (e.g. `mV`).
+#' 'LabSolutions' (e.g. `mV`).
 #' @examples \dontrun{
 #' read_sz_lcd_2d("path/to/file.lcd")
 #' }
 #' @author Ethan Bass
 #' @return One or more 2D chromatograms from the chromatogram streams in
-#' `matrix` or `data.frame` format, according to the value of
-#' `format_out. If multiple chromatograms are found, they will be returned
-#' as a list of matrices or data.frames. The chromatograms will be returned in
-#' `wide or `long format according to the value of `data_format`.
+#' `matrix` or `data.frame` format, according to the value of `format_out`. If
+#' multiple chromatograms are found, they will be returned as a list of
+#' matrices or data.frames. The chromatograms will be returned in `wide` or
+#' `long` format according to the value of `data_format`.
 #' @family 'Shimadzu' parsers
 #' @keywords internal
 
@@ -490,19 +498,18 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
 #' `read_sz_tlm_tic` instead. LCD files are encoded as 'Microsoft' OLE
 #' documents. The parser relies on the
 #' [olefile](https://pypi.org/project/olefile/) package in Python to unpack the
-#' files. The TIC data is encoded in a stream called `Centroid SumTIC`.
-#' The TIC data stream contains a segment for each retention time, beginning
-#' with a 8-byte header. After the header, the file consists of a series of
-#' 4-byte little-endian integers in blocks of 3 (16-bytes per block), followed by
-#' a 4-byte spacer (`00000000`) The first integer is the retention time
-#' in milliseconds, the second integer is the scan number, and the third integer
-#' is the intensity. Retention times are converted to minutes, as elsewhere in
-#' the package.
+#' files. The TIC data is encoded in a stream called `Centroid SumTIC`, which
+#' opens with an 8-byte header and holds one 16-byte record per scan: three
+#' 4-byte little-endian integers --- the retention time in milliseconds, the
+#' scan number and the intensity --- followed by a 4-byte spacer
+#' (`00000000`). Retention times are converted to minutes, as elsewhere in the
+#' package.
 #'
 #' @param path Path to 'Shimadzu' `.lcd` file.
 #' @param format_out Matrix or data.frame.
 #' @param data_format Either `wide` (default) or `long`.
 #' @param read_metadata Logical. Whether to attach metadata.
+#' @param metadata_format Format to output metadata.
 #' @author Ethan Bass
 #' @return A 2D chromatogram from the SumTIC stream in `matrix` or
 #' `data.frame` format, according to the value of `format_out`.
@@ -1150,8 +1157,8 @@ read_sz_3DDI <- function(path){
 #' unit of the detector (e.g. `uV` or `nRI`), and must be applied before the
 #' value factor (`VF`), which gives the number of base units in the unit
 #' selected for display (e.g. `mV` or `uRI`). So an intensity in the unit
-#' reported by 'Lab Solutions' is the encoded integer times `CF` divided by
-#' `VF`. `1/VF` is what 'Lab Solutions' calls the `Intensity Multiplier` in its
+#' reported by 'LabSolutions' is the encoded integer times `CF` divided by
+#' `VF`. `1/VF` is what 'LabSolutions' calls the `Intensity Multiplier` in its
 #' ASCII exports, while the calibration factor is already folded into the
 #' intensities of those exports.
 #'
@@ -1162,8 +1169,8 @@ read_sz_3DDI <- function(path){
 #' calibration, value and gain factor, and the unit whose `VF` is `1` is called
 #' the base unit, but these names are this package's reading of the format
 #' rather than the vendor's own. What is established is the arithmetic: the
-#' formula above reproduces the intensities 'Lab Solutions' reports, across
-#' detectors whose calibration factors range from `1` to ~310.
+#' formula above reproduces the intensities 'LabSolutions' reports, across
+#' detectors whose calibration factors range from about `0.003` to `1`.
 #'
 #' The factors are stored alongside the raw data in a `Chromatogram Status`
 #' stream (or `Max Plot Status`, for the PDA max plot), which consists of a
@@ -1188,7 +1195,7 @@ read_sz_3DDI <- function(path){
 #' since that stream also describes the status log channels, which are numbered
 #' separately. The `CF` in the `LSS Data Processing` copy of the
 #' `2D Data Item` is always `1`. Older files, written by 'LCsolution' rather
-#' than 'Lab Solutions', have no `2D Data Item` at all, so the status record is
+#' than 'LabSolutions', have no `2D Data Item` at all, so the status record is
 #' the only source of these factors.
 #' @param path Path to 'Shimadzu' `.lcd` file.
 #' @param stream Name of the chromatogram stream.

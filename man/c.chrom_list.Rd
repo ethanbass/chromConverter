@@ -7,14 +7,15 @@
 \method{c}{chrom_list}(...)
 }
 \arguments{
-\item{...}{One or more \code{chrom_list} objects (or objects coercible via
-\code{c()}) to combine.}
+\item{...}{\code{chrom_list} objects or lists of chromatograms to combine. Wrap
+a single chromatogram in \code{\link[=list]{list()}}, since a bare matrix is split into its
+individual values and a bare data frame into its columns.}
 }
 \value{
 A \code{chrom_list} containing all elements.
 }
 \description{
-Combines multiple \code{chrom_list} objects (or a mix of \code{chrom_list} and
-plain lists/matrices) into a single \code{chrom_list}, preserving the class.
+Combines \code{chrom_list} objects, or a mix of \code{chrom_list} objects and plain
+lists of chromatograms, into a single \code{chrom_list}, preserving the class.
 }
 \keyword{internal}

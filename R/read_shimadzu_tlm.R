@@ -29,10 +29,10 @@
 #' | 20–21 | `uint16` | Scan type: 10 = MS1 profile, 11 = SIM, 14 = MS2 profile, 15 = MRM |
 #' | 22–23 | `uint16` | MS level + 1 (0 in a truncated final scan) |
 #' | 24–27 | `uint32` | Constant (`0x00010000`) |
-#' | 28–31 | `uint32` | Last precursor m/z x 100 (stale outside MS2 scans) |
+#' | 28–31 | `uint32` | Last precursor m/z x 100 (stale outside product-ion scans) |
 #' | 32–35 | `uint32` | Instrument state bit field; bit 0 follows polarity |
 #' | 36–39 | `uint32` | Polarity (0 = positive, 1 = negative) |
-#' | 40–43 | `uint32` | Number of data points (profile) or transitions (MRM) |
+#' | 40–43 | `uint32` | Number of data points (profile) or transitions (MRM, SIM) |
 #'
 #' **Profile scans** (type 10 and 14) follow the header with two m/z pairs
 #' stored as m/z x 100 — the isolation window (equal low and high values for
@@ -47,7 +47,7 @@
 #' and 9 at the top; those are dropped, which is what makes the summed
 #' intensity match the `TIC Data` stream exactly.
 #'
-#' **MRM and SIM scans** (type 15) instead follow the header with `n`
+#' **MRM and SIM scans** (types 15 and 11) instead follow the header with `n`
 #' 12-byte transitions: Q1 m/z x 100, Q3 m/z x 100, and intensity.
 #'
 #' @param path Path to `.lcd` file.
@@ -63,11 +63,12 @@
 #' profile scan is mostly empty and keeping its zeros costs roughly an order
 #' of magnitude more memory.
 #' @param levels Which MS levels to return, spelled `MS1` and `MS2`. Both are
-#' decoded either way, since the level of a scan is recorded inside its own
+#' decoded either way, because the level of a scan is recorded inside its own
 #' compressed record.
-#' @return A named list holding whichever of `MS1` and `MS2` the file has, each
-#' a long table with columns `scan`, `rt` (minutes), `mz` and `intensity`,
-#' preceded by `precursor_mz` where the scans carry one. A per-scan summary
+#' @return A named list holding whichever of the requested `levels` the file
+#' has, each a long table with columns `scan`, `rt` (minutes), `mz` and
+#' `intensity`, and a `precursor_mz` column before `mz` where the scans carry
+#' one. A per-scan summary
 #' (retention time, event, MS level, polarity, precursor m/z, point count) is
 #' attached to each as a `scan_info` attribute.
 #' @author Ethan Bass
@@ -290,15 +291,17 @@ tlm_scan_info <- function(header){
 #' `Retention Time` stream. Neither stream needs the spectra themselves to
 #' be decompressed, so this is much cheaper than `read_sz_tlm`.
 #'
-#' Each acquisition event is returned as a separate chromatogram, since events
-#' can differ in polarity, MS level and scan range, and are interleaved in
-#' acquisition order.
+#' Each acquisition event is returned as a separate chromatogram, named
+#' `Event 1`, `Event 2` and so on, since events can differ in polarity, MS
+#' level and scan range, and are interleaved in acquisition order.
 #'
 #' The `SumTIC Data` stream (one 12-byte record per cycle: retention time,
 #' value, saturation flag) is a curve computed by the instrument. It is not a
-#' plain sum of the per-spectrum TICs — in MRM files it matches the cycle sum
-#' exactly, but in scan files it comes out as the cycle mean divided by six —
-#' so it is returned as stored rather than recomputed.
+#' plain sum of the per-spectrum TICs: in the MRM files examined it matches the
+#' cycle mean (which, with one event per cycle, is also the sum), in the scan
+#' files the cycle mean divided by six, and in a file mixing SIM with
+#' product-ion scans neither. It is therefore returned as stored rather than
+#' recomputed.
 #'
 #' @param path Path to `.lcd` file.
 #' @param format_out Class of output. Either `matrix`, `data.frame`,
@@ -474,8 +477,8 @@ read_tlm_metadata <- function(path, index = read_tlm_spectrum_index(path),
 #'
 #' `mz_min` and `mz_max` mean different things by scan type. A full
 #' scan or product-ion scan sweeps a range, and they are its two ends; an MRM
-#' or SIM event monitors a fixed set of masses, and they only span it. The set
-#' itself is in `transitions`, which carries every `Q1 > Q3` pair
+#' or SIM event monitors a fixed set of masses, and they span its Q3 masses.
+#' The set itself is in `transitions`, which carries every `Q1 > Q3` pair
 #' the first scan lists, since the first transition alone does not describe an
 #' event monitoring several. `precursor_mz` is `NA` for the rare
 #' event whose transitions do not share one precursor.

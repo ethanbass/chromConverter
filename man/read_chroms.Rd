@@ -43,8 +43,9 @@ is not a file is searched as a directory, except for the formats that are
 themselves directories (e.g. 'Agilent' \code{.d}), which are recognized by their
 extension.}
 
-\item{pattern}{pattern (e.g. a file extension). Defaults to \code{NULL}, in which
-case file extension will be deduced from \code{format_in}.}
+\item{pattern}{Regular expression that file names must match (e.g. a file
+extension). Defaults to \code{NULL}, in which case the extension is deduced from
+\code{format_in}.}
 
 \item{parser}{What parser to use (optional). Current options are
 \code{chromconverter}, \code{aston}, \code{entab}, \code{thermoraw}, \code{openchrom}, \code{rainbow}.}
@@ -55,11 +56,13 @@ case file extension will be deduced from \code{format_in}.}
 \item{data_format}{Whether to output data in wide or long format. Either
 \code{wide} (default) or \code{long}.}
 
-\item{path_out}{Path for exporting files. If path is not specified, the user
-will be prompted to create a temp directory.}
+\item{path_out}{Path for exporting files. If it is not specified, the user
+is asked whether to export to a \code{temp} directory in the working directory.
+A directory that does not exist is created after asking.}
 
-\item{export_format}{Export format. Currently the options include \code{csv},
-\code{chemstation_csv} (utf-16 encoding), \code{cdf}, \code{mzml}, \code{animl} and \code{arw}.}
+\item{export_format}{Export format: \code{csv}, \code{chemstation_csv} (UTF-16
+encoding), \code{cdf}, \code{mzml}, \code{arw}, or \code{animl}, which requires an \code{openchrom}
+parser.}
 
 \item{force}{Logical. Whether to overwrite files when exporting. Defaults to
 \code{FALSE}.}
@@ -74,32 +77,35 @@ or \code{raw}.}
 if \code{pbapply} is installed.}
 
 \item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
-of clusters to use or a cluster object created by
+of parallel workers to use or a cluster object created by
 \link[parallel:makeCluster]{makeCluster}. Defaults to \code{1}.}
 
-\item{verbose}{Logical. Whether to print output from external parsers to the
-R console.}
+\item{verbose}{Logical. Whether to print status messages, and the output of
+external parsers, to the R console.}
 
 \item{sample_names}{Which sample names to use. Options are \code{basename} to
 use the filename (default) or \code{sample_name} to use the sample
-name encoded in the file metadata.}
+name encoded in the file metadata. A sample with no \code{sample_name}, or with
+conflicting ones, is named for its file with a warning.}
 
-\item{sort_by}{How to sort the chromatograms. Either \code{none} (default,
-preserves current arbitrary/file-order behavior), \code{acquisition_time} (sorts
-by the \code{run_datetime} attribute attached to each chromatogram when
-\code{read_metadata = TRUE}, oldest first), or \code{file_time} (sorts the
-input files by file modification time before reading, oldest first).}
+\item{sort_by}{How to sort the chromatograms. Either \code{none} (default), which
+keeps them in the order of \code{paths}, with files found in a directory in
+alphabetical order; \code{acquisition_time}, which sorts by the \code{run_datetime}
+attribute, oldest first, placing chromatograms without one last with a
+warning (requires \code{read_metadata = TRUE}); or \code{file_time}, which sorts the
+files by modification time before reading, oldest first.}
 
 \item{dat}{Deprecated. Existing list of chromatograms to append results
 to. Use \code{c()} on the returned \code{chrom_list} objects instead. Defaults to \code{NULL}.}
 
-\item{...}{Additional arguments to the parser. Arguments that the selected
-parser does not accept are ignored with a warning.}
+\item{...}{Additional arguments to the parser. Where the parser does not
+take \code{...}, arguments it does not accept are dropped with a warning.}
 }
 \value{
-A list of chromatograms in \code{matrix}, \code{data.frame}, or \code{data.table}
-format, according to the value of \code{format_out}. Chromatograms may be returned
-in either \code{wide} or \code{long} format according to the value of \code{data_format}.
+A \code{chrom_list} of chromatograms in \code{matrix}, \code{data.frame}, or
+\code{data.table} format, according to the value of \code{format_out}. Chromatograms
+may be returned in either \code{wide} or \code{long} format according to the value of
+\code{data_format}.
 }
 \description{
 Reads chromatograms from specified folders or vector of paths using either an
@@ -113,28 +119,31 @@ internal parser or bindings to an external library, such as
 \details{
 Provides a unified interface to all chromConverter parsers. The formats it
 recognizes are listed under the \code{format_in} argument. It also wraps the
-'OpenChrom' parsers, which cover many additional formats. The 'Entab',
+'OpenChrom' parsers, which cover many additional formats but require
+'OpenChrom' 1.4 or earlier (see \link{call_openchrom}). The 'Entab',
 'ThermoRawFileParser' and 'OpenChrom' parsers must be installed separately;
 see the instructions in the
 \href{https://ethanbass.github.io/chromConverter/}{README}.
 
-If paths to individual files are provided, \code{read_chroms} will try to
-infer the file format and select an appropriate parser. However, when
-providing paths to directories, the file format must be specified using the
+If paths to individual files are provided, \code{read_chroms} infers the file
+format from the first file and selects a parser for it. When providing
+paths to directories, the file format must be specified using the
 \code{format_in} argument.
 }
 \section{Side effects}{
  If \code{export_format} is provided, chromatograms are
 written to the folder given by \code{path_out} in that format. The options are
 \code{csv}, \code{chemstation_csv}, \code{cdf}, \code{mzml} and \code{arw}, as well as \code{animl}
-(AnIML) when an \code{openchrom} parser is selected.
+(AnIML) when an \code{openchrom} parser is selected. Files are also
+written to \code{path_out} whenever the \code{thermoraw} or \code{openchrom} parser is
+used, as these parsers convert the files before reading them: \code{thermoraw}
+to mzML, and \code{openchrom} to \code{export_format} (\code{mzml} by default).
 }
 
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-path <- "tests/testthat/testdata/dad1.uv"
-chr <- read_chroms(path, find_files = FALSE, format_in = "chemstation_uv")
-\dontshow{\}) # examplesIf}
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
+chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+                      find_files = FALSE, progress_bar = FALSE)
 }
 \author{
 Ethan Bass

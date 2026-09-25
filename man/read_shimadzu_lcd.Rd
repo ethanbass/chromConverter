@@ -30,7 +30,7 @@ in Q1 (the first quadrupole) and a product in Q3 (the third), so it is
 after the collision cell, and so is \code{MS1}.
 
 If a stream is not specified, the richest one the file contains is returned:
-\code{PDA} if there is a PDA stream, otherwise \code{chroms}, and otherwise \code{MS} for a
+\code{DAD} if there is a PDA stream, otherwise \code{chroms}, and otherwise \code{MS} for a
 file whose only detector is the mass spectrometer. The mass spectrometry
 streams are read from whichever container the file uses: \verb{QTFL RawData}
 (centroided quadrupole time-of-flight data) or \verb{TLM Raw Data} (triple
@@ -58,14 +58,17 @@ empty; ignored for every other stream.}
 element. Defaults to \code{TRUE}.}
 }
 \value{
-A chromatogram or list of chromatograms in the format specified by
-\code{data_format} and \code{format_out}. If \code{data_format} is \code{wide}, the
-chromatogram(s) will be returned with retention times as rows and a
-single column for the intensity. If \code{long} format is requested, two
-columns will be returned: one for the retention time and one for the intensity.
-The \code{format_out} argument determines whether chromatograms are returned
-in \code{matrix}, \code{data.frame}, or \code{data.table} format. Metadata will be
-attached to the chromatogram as \link{attributes} when \code{read_metadata} is \code{TRUE}.
+A named list with one element per stream requested, or the element
+itself where there is only one and \code{collapse} is \code{TRUE}. Chromatograms and
+the PDA data are returned in the format specified by \code{data_format} and
+\code{format_out}. In \code{wide} format, retention times are the rows, and each 2D
+chromatogram has a single intensity column while the PDA data have one
+column per wavelength. If \code{long} format is requested, the retention time
+and the intensity are returned as columns, alongside the detector, channel,
+wavelength and unit for a 2D chromatogram. The \code{format_out} argument
+determines whether they are returned in \code{matrix}, \code{data.frame}, or
+\code{data.table} format. Mass spectra and peak tables are always long.
+Metadata are attached as \link{attributes} when \code{read_metadata} is \code{TRUE}.
 }
 \description{
 Read PDA, chromatogram, mass spectrometry and peak table streams from
@@ -79,8 +82,9 @@ files. Each detector writes its own storage, and this function dispatches
 over them:
 \itemize{
 \item \strong{PDA} (\verb{PDA 3D Raw Data:3D Raw Data}), requested as \code{DAD}: one
-delta-encoded segment per retention time, each holding a full spectrum. Read by \code{\link[=read_sz_lcd_3d]{read_sz_lcd_3d()}},
-which documents the segment header and the delta encoding.
+delta-encoded segment per retention time, each holding a full spectrum.
+Read by \code{\link[=read_sz_lcd_3d]{read_sz_lcd_3d()}}, which documents the segment header and the
+delta encoding.
 \item \strong{Chromatograms} (\verb{LSS Raw Data:Chromatogram Ch<#>}): one stream per
 channel, delta-encoded in the same way. Read by \code{\link[=read_sz_lcd_2d]{read_sz_lcd_2d()}}.
 \item \strong{Quadrupole time-of-flight mass spectra} (\verb{QTFL RawData}): centroided
@@ -135,16 +139,17 @@ Two factors separate the stored integers from the displayed value. The
 calibration factor converts an integer into base units, and the value factor
 converts base units into the displayed unit; an intensity as 'LabSolutions'
 reports it is the integer times the one divided by the other. The
-calibration factor is \code{1} on some channels and not on others (~42 for an
-SPD-20A, ~310 for an RID-10A), which suggests the integers are detector
-counts whose size varies by module, though the file does not say so.
+calibration factor is \code{1} on some channels and not on others (e.g. about
+\code{0.024} for an SPD-20A and \code{0.0032} for an RID-10A), which suggests the
+integers are detector counts whose size varies by module, though the file
+does not say so.
 
 For a 2D chromatogram, \code{scale = TRUE} applies both factors. \code{scale = FALSE}
-returns the stored integers, and reports them as \code{uAU} only where the
-calibration factor is \code{1}; where it is not, the integers are in no unit we
-can name, so the displayed unit is left in place rather than claiming one
-they are not in. Either way the values and the \code{detector_y_unit} attribute
-agree.
+returns the stored integers. Where the calibration factor is \code{1}, their
+\code{detector_y_unit} is the base unit (e.g. \code{uAU}), and the values and the
+attribute agree. Where it is not, the integers are in no unit we can name,
+so \code{detector_y_unit} is \code{NA}; the \code{scaled} attribute records which of the
+two was returned.
 
 PDA data is instead returned as it is encoded in the file, matching the
 \verb{[PDA 3D]} section of a 'LabSolutions' ASCII export, which declares no

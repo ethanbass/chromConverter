@@ -16,8 +16,8 @@
 
 \item{cols}{Character vector of attribute names to report. Defaults to:
 \code{sample_name}, \code{run_datetime}, \code{method}, \code{detector}, \code{wavelength}, \code{detector_range}, \code{scan_type}, \code{polarity}, \code{precursor_mz}, \code{product_mz}, \code{mz_range}.
-A field that no chromatogram carries is omitted rather
-than filled with \code{NA}.}
+A field that no chromatogram carries, or that all of them
+leave empty, is omitted rather than filled with \code{NA}.}
 
 \item{format_out}{Format of object. Either \code{data.frame}, \code{data.table} or
 \code{tibble}.}
@@ -31,9 +31,9 @@ where the chromatogram sits and how large it is --- \code{sample}, \code{trace} 
 when a sample holds more than one), \code{n_rows} and \code{n_cols} --- followed by one
 column per metadata field found. A field no chromatogram records, or that
 every one of them leaves empty, is dropped rather than filled with \code{NA}. A
-field holding more than one value, such as the \code{product_mz} of an MRM event
-monitoring several transitions, is collapsed to a comma-separated string so
-that it occupies one column.
+field holding more than one value, such
+as the \code{product_mz} of an MRM event monitoring several transitions, is
+collapsed to a comma-separated string so that it occupies one column.
 }
 \description{
 Returns what \link{print.chrom_list} displays as a table, with one row per

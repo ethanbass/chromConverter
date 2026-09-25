@@ -26,15 +26,15 @@ read_waters_raw(
 (standardized field names) or \code{raw} (vendor field names, unmapped).}
 }
 \value{
-A chromatogram in the format specified by the \code{format_out} and
-\code{data_format} arguments.
+A list of 2D chromatograms, one per trace and named by it, in the
+format specified by \code{format_out} and \code{data_format}.
 }
 \description{
 Reads 'Waters MassLynx' (\code{.raw}) files into R.
 }
 \note{
-For now this parser only reads 1D chromatograms (not mass spectra or
-DAD data) and does not support parsing of metadata from 'Waters' RAW files.
+This parser reads only 2D chromatograms (retention time and
+intensity), not mass spectra or DAD data.
 }
 \examples{
 \dontrun{

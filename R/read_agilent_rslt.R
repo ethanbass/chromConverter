@@ -23,7 +23,7 @@
 #' @return A list of chromatograms (one `read_agilent_dx`-style result per
 #' injection in the sequence), in the format specified by `data_format` and
 #' `format_out`. If `read_metadata` is `TRUE`, injection-level metadata parsed
-#' from the `.acaml` file is attached to each chromatogram as an attribute.
+#' from the `.acaml` file is attached to each chromatogram as attributes.
 #' @examples \dontrun{
 #' read_agilent_rslt("path/to/sequence.rslt")
 #' }

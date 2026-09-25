@@ -7,17 +7,17 @@
 #' @param find_files Logical. Whether to treat the supplied paths as
 #' directories to search for files. Inferred if not supplied, by testing
 #' whether every path is a file.
-#' @param format_in Format of files to be imported/converted. Current options
-#' include: `chemstation`, `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`,
-#' `shimadzu_gcd`, and `chromatotec`.
+#' @param format_in Format of files to be imported/converted. One of
+#' `chemstation` (the default), `shimadzu_fid`, `shimadzu_dad`,
+#' `shimadzu_lcd`, `shimadzu_gcd`, or `chromatotec`.
 #' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
 #' which case the file extension will be deduced from `format_in`.
 #' @param peaktable_format Whether to return peak tables in `chromatographr`
 #' or `original` format.
 #' @param data_format Deprecated. Use `peaktable_format` instead.
-#' @return A list of `data.frame`s containing information about peaks where
-#' each list element represents a sample and each row represents an individual
-#' peak in that sample.
+#' @return A `peak_list`: a list with one element per sample, holding its peak
+#' table, or a list of peak tables named by signal where the file records more
+#' than one. Each row is a peak.
 #' @import reticulate
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial

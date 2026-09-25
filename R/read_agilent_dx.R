@@ -2,8 +2,10 @@
 #'
 #' Reads 'Agilent' `.dx` files.
 #'
-#' This function unzips 'Agilent'  `.dx` into a temporary directory using
-#' [unzip] and calls the appropriate parser on the unzipped file.
+#' The archive is extracted to `path_out`, or to a temporary directory that is
+#' deleted afterwards, and its `.ch`, `.uv` and `.it` files are read with
+#' [read_chemstation_ch], [read_chemstation_uv] and an internal reader for
+#' `.it` files.
 #'
 #' Where the archive holds an `injection.acmd` file, the `run_datetime` and
 #' `sample_injection_volume` attributes are taken from it. Its run time
@@ -14,15 +16,18 @@
 #' @inheritParams shared_params
 #' @param path Path to Agilent `.dx` file.
 #' @param what Whether to extract chromatograms (`chroms`), DAD data
-#' (`dad`) and/or auxiliary instrumental data (`instrument`) (e.g.,
-#' temperature, pressure, solvent composition, etc.). Accepts multiple arguments.
+#' (`dad`) and/or auxiliary instrumental data (`instrument`), such as
+#' temperature, pressure or solvent composition. Accepts multiple arguments,
+#' and defaults to `chroms` and `dad`. When more than one is requested, any the archive does not contain
+#' are left out; a single one that is missing is an error.
 #' @param path_out A directory to export unzipped files. If a path is not
-#' specified, the files will be written to a temp directory on the disk. The
-#' function will overwrite existing folders in the specified directory
-#' that share the basename of the file specified by `path`.
-#' @author Ethan Bass
-#' @return A chromatogram in the format specified by `format_out` (retention
-#' time x wavelength).
+#' specified, a temporary directory is used. The files are extracted into a
+#' folder named for `path`, overwriting any files of the same name already
+#' there.
+#' @return A list with one element per type in `what`, each a chromatogram or
+#' a list of chromatograms named by signal, in the format specified by
+#' `format_out` and `data_format`. With `collapse = TRUE`, a list of one
+#' element is replaced by that element.
 #' @examples \dontrun{
 #' read_agilent_dx(path)
 #' }

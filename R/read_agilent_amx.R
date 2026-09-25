@@ -35,30 +35,32 @@
 #'   **`pump`** — a list with scalar elements `flow_mL_min`, `stop_time_min`,
 #'   `post_time_min`, `pressure_low_bar`, `pressure_high_bar`, plus:
 #'   \describe{
-#'     \item{`solvents`}{A data.frame of active solvent channels: `channel`,
+#'     \item{`solvents`}{A table of active solvent channels: `channel`,
 #'       `percentage`, `solvent`.}
-#'     \item{`gradient`}{A data.frame of timetable entries. Wide format (default):
-#'       `time_min` plus one `pct_<channel>` column per active channel. Long
-#'       format: `time_min`, `channel`, `percent`.}
+#'     \item{`gradient`}{A table of timetable entries. Wide format (default):
+#'       `time_min` plus one `pct_<channel>` column per active channel, and a
+#'       `flow_mL_min` column if the timetable changes the flow. Long format:
+#'       `time_min`, `channel`, `percent`, where a `flow` channel holds the
+#'       flow in mL/min.}
 #'   }
 #'
 #'   **`dad`** — a list with scalar elements `peakwidth_nm`, `slitwidth_nm`,
 #'   `uv_lamp_required`, `vis_lamp_required`, `spectra_from_nm`,
 #'   `spectra_to_nm`, `spectra_step_nm`, plus:
 #'   \describe{
-#'     \item{`signals`}{A data.frame of active signals: `id`, `wavelength_nm`,
+#'     \item{`signals`}{A table of active signals: `id`, `wavelength_nm`,
 #'       `bandwidth_nm`.}
 #'   }
 #'
-#'   **`comp`** — a list with scalar element `post_time_min`, plus:
+#'   **`column`** — a list with scalar element `post_time_min`, plus:
 #'   \describe{
-#'     \item{`temp_controls`}{Two-row data.frame (Left/Right): `side`,
+#'     \item{`temp_controls`}{Two-row table (Left/Right): `side`,
 #'       `temperature_C`, `not_ready_limit_C`, `equilibration_time_min`.}
 #'   }
 #'
-#'   **`sampler`** — a list with scalar elements: `thermostat_installed`,
+#'   **`autosampler`** — a list with scalar elements: `thermostat_installed`,
 #'   `draw_speed_uL_min`, `eject_speed_uL_min`,
-#'   `wait_after_draw_min`, `injection_volume_uL`,  `wash_time_s`.
+#'   `wait_after_draw_min`, `injection_volume_uL`, `wash_time_s`.
 #'
 #' @examples \dontrun{
 #' read_agilent_amx(path)

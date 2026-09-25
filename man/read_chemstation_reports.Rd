@@ -23,11 +23,12 @@ or \code{original} format.}
 \item{data_format}{Deprecated. Use \code{peaktable_format} instead.}
 }
 \value{
-A \code{data.frame} containing the information from the specified
-'ChemStation' report.
+A \code{peak_list}: a list with one element per report, named by its
+\code{.D} directory, each holding one peak table per signal, named by
+wavelength.
 }
 \description{
-Reads 'Agilent ChemStation' reports into R.
+Reads peak tables from 'Agilent ChemStation' \code{Report.TXT} files.
 }
 \examples{
 \dontrun{

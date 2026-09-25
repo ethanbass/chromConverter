@@ -22,13 +22,13 @@ read_shimadzu(
 \arguments{
 \item{path}{Path to Shimadzu \code{.txt} ASCII file.}
 
-\item{what}{Whether to extract chromatograms (\code{chroms}),
-\code{peak_table}, and/or \code{ms_spectra}. Accepts multiple arguments.}
+\item{what}{Whether to extract chromatograms (\code{chroms}), \code{peak_table},
+and/or \code{ms_spectra}. Accepts multiple arguments.}
 
 \item{format_in}{This argument is deprecated and is no longer required.}
 
-\item{include}{Which chromatograms to include. Options are \code{fid}, \code{lc},
-\code{dad}, \code{uv}, \code{tic}, and \code{status}.}
+\item{include}{Which chromatograms to include: any of \code{fid}, \code{lc}, \code{dad},
+\code{uv}, \code{tic}, and \code{status}. Defaults to all but \code{status}.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -55,8 +55,10 @@ file. Defaults to \code{TRUE}.}
 \value{
 A nested list of elements from the specified file, where the top
 levels are chromatograms, peak tables, and/or mass spectra according to the
-value of \code{what}. Chromatograms are returned in the format specified by
-\code{format_out}.
+value of \code{what}, and the chromatograms are grouped by type (e.g. \code{fid}).
+Where \code{collapse} is \code{TRUE}, a list of one is unwrapped at the top level and
+within each type of chromatogram. Chromatograms are returned in the format specified by
+\code{format_out} and \code{data_format}.
 }
 \description{
 Reads 'Shimadzu' ASCII (\code{.txt}) files. These files can be exported from
@@ -64,10 +66,8 @@ Reads 'Shimadzu' ASCII (\code{.txt}) files. These files can be exported from
 selecting \verb{File Conversion:Convert to ASCII}.
 }
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-path <- "tests/testthat/testdata/ladder.txt"
+path <- system.file("extdata/ladder.txt", package = "chromConverter")
 read_shimadzu(path)
-\dontshow{\}) # examplesIf}
 }
 \seealso{
 Other 'Shimadzu' parsers:

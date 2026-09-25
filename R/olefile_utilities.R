@@ -86,7 +86,7 @@ unlink_stream <- function(path){
 }
 
 #' Check OLE stream size
-#' @param min_size Minimum stream size in bytes. Defaults to 552.
+#' @param min_size Minimum stream size in bytes. Defaults to 1200.
 #' @author Ethan Bass
 #' @noRd
 

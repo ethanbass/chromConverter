@@ -1,11 +1,14 @@
 #' Call Entab
 #'
 #' Converts chromatography data files using [entab](https://github.com/bovee/entab)
-#' parsers.
+#' parsers. 'entab' detects the file format itself. Mass spectra are always
+#' returned in long format.
 #'
 #' @inheritParams shared_params
 #' @param path Path to file.
-#' @param format_in Format of input.
+#' @param format_in Format of the file, used only to read the metadata that
+#' 'entab' does not: those of 'ChemStation' formats (any value containing
+#' `chemstation`) and of `masshunter_dad`. Defaults to `""`.
 #' @inherit shared_params return
 #' @examples \dontrun{
 #' call_entab("path/to/file.uv", format_in = "chemstation_uv")

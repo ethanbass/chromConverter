@@ -10,14 +10,15 @@
 #'
 #' Provides a unified interface to all chromConverter parsers. The formats it
 #' recognizes are listed under the `format_in` argument. It also wraps the
-#' 'OpenChrom' parsers, which cover many additional formats. The 'Entab',
+#' 'OpenChrom' parsers, which cover many additional formats but require
+#' 'OpenChrom' 1.4 or earlier (see [call_openchrom]). The 'Entab',
 #' 'ThermoRawFileParser' and 'OpenChrom' parsers must be installed separately;
 #' see the instructions in the
 #' [README](https://ethanbass.github.io/chromConverter/).
 #'
-#' If paths to individual files are provided, `read_chroms` will try to
-#' infer the file format and select an appropriate parser. However, when
-#' providing paths to directories, the file format must be specified using the
+#' If paths to individual files are provided, `read_chroms` infers the file
+#' format from the first file and selects a parser for it. When providing
+#' paths to directories, the file format must be specified using the
 #' `format_in` argument.
 #'
 #' @name read_chroms
@@ -30,16 +31,19 @@
 #' is not a file is searched as a directory, except for the formats that are
 #' themselves directories (e.g. 'Agilent' `.d`), which are recognized by their
 #' extension.
-#' @param pattern pattern (e.g. a file extension). Defaults to `NULL`, in which
-#' case file extension will be deduced from `format_in`.
+#' @param pattern Regular expression that file names must match (e.g. a file
+#' extension). Defaults to `NULL`, in which case the extension is deduced from
+#' `format_in`.
 #' @param format_out Class of output. Either `matrix`, `data.frame`, or
 #' `data.table`.
 #' @param data_format Whether to output data in wide or long format. Either
 #' `wide` (default) or `long`.
-#' @param path_out Path for exporting files. If path is not specified, the user
-#' will be prompted to create a temp directory.
-#' @param export_format Export format. Currently the options include `csv`,
-#' `chemstation_csv` (utf-16 encoding), `cdf`, `mzml`, `animl` and `arw`.
+#' @param path_out Path for exporting files. If it is not specified, the user
+#' is asked whether to export to a `temp` directory in the working directory.
+#' A directory that does not exist is created after asking.
+#' @param export_format Export format: `csv`, `chemstation_csv` (UTF-16
+#' encoding), `cdf`, `mzml`, `arw`, or `animl`, which requires an `openchrom`
+#' parser.
 #' @param force Logical. Whether to overwrite files when exporting. Defaults to
 #' `FALSE`.
 #' @param read_metadata Logical, whether to attach metadata (if it's available).
@@ -49,35 +53,42 @@
 #' @param progress_bar Logical. Whether to show progress bar. Defaults to `TRUE`
 #' if `pbapply` is installed.
 #' @param cl Argument to [pbapply][pbapply::pbapply] specifying the number
-#' of clusters to use or a cluster object created by
+#' of parallel workers to use or a cluster object created by
 #' [makeCluster][parallel::makeCluster]. Defaults to `1`.
-#' @param verbose Logical. Whether to print output from external parsers to the
-#' R console.
+#' @param verbose Logical. Whether to print status messages, and the output of
+#' external parsers, to the R console.
 #' @param sample_names Which sample names to use. Options are `basename` to
 #' use the filename (default) or `sample_name` to use the sample
-#' name encoded in the file metadata.
-#' @param sort_by How to sort the chromatograms. Either `none` (default,
-#' preserves current arbitrary/file-order behavior), `acquisition_time` (sorts
-#' by the `run_datetime` attribute attached to each chromatogram when
-#' `read_metadata = TRUE`, oldest first), or `file_time` (sorts the
-#' input files by file modification time before reading, oldest first).
+#' name encoded in the file metadata. A sample with no `sample_name`, or with
+#' conflicting ones, is named for its file with a warning.
+#' @param sort_by How to sort the chromatograms. Either `none` (default), which
+#' keeps them in the order of `paths`, with files found in a directory in
+#' alphabetical order; `acquisition_time`, which sorts by the `run_datetime`
+#' attribute, oldest first, placing chromatograms without one last with a
+#' warning (requires `read_metadata = TRUE`); or `file_time`, which sorts the
+#' files by modification time before reading, oldest first.
 #' @param dat Deprecated. Existing list of chromatograms to append results
 #' to. Use `c()` on the returned `chrom_list` objects instead. Defaults to `NULL`.
-#' @param ... Additional arguments to the parser. Arguments that the selected
-#' parser does not accept are ignored with a warning.
-#' @return A list of chromatograms in `matrix`, `data.frame`, or `data.table`
-#' format, according to the value of `format_out`. Chromatograms may be returned
-#' in either `wide` or `long` format according to the value of `data_format`.
+#' @param ... Additional arguments to the parser. Where the parser does not
+#' take `...`, arguments it does not accept are dropped with a warning.
+#' @return A `chrom_list` of chromatograms in `matrix`, `data.frame`, or
+#' `data.table` format, according to the value of `format_out`. Chromatograms
+#' may be returned in either `wide` or `long` format according to the value of
+#' `data_format`.
 #' @section Side effects: If `export_format` is provided, chromatograms are
 #' written to the folder given by `path_out` in that format. The options are
 #' `csv`, `chemstation_csv`, `cdf`, `mzml` and `arw`, as well as `animl`
-#' (AnIML) when an `openchrom` parser is selected.
+#' (AnIML) when an `openchrom` parser is selected. Files are also
+#' written to `path_out` whenever the `thermoraw` or `openchrom` parser is
+#' used, as these parsers convert the files before reading them: `thermoraw`
+#' to mzML, and `openchrom` to `export_format` (`mzml` by default).
 #' @import reticulate
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial
-#' @examplesIf interactive()
-#' path <- "tests/testthat/testdata/dad1.uv"
-#' chr <- read_chroms(path, find_files = FALSE, format_in = "chemstation_uv")
+#' @examples
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+#'                       find_files = FALSE, progress_bar = FALSE)
 #' @author Ethan Bass
 #' @export read_chroms
 

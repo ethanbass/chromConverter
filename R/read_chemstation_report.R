@@ -1,6 +1,6 @@
 #' Read 'Agilent ChemStation' report files
 #'
-#' Reads 'Agilent ChemStation' reports into R.
+#' Reads peak tables from 'Agilent ChemStation' `Report.TXT` files.
 #'
 #' @param paths Paths to 'ChemStation' report files.
 #' @param peaktable_format Whether to return peak tables in `chromatographr`
@@ -8,8 +8,9 @@
 #' @param metadata_format Format to output metadata. Either `chromconverter` or
 #' `raw`.
 #' @param data_format Deprecated. Use `peaktable_format` instead.
-#' @return A `data.frame` containing the information from the specified
-#' 'ChemStation' report.
+#' @return A `peak_list`: a list with one element per report, named by its
+#' `.D` directory, each holding one peak table per signal, named by
+#' wavelength.
 #' @examples \dontrun{
 #' read_chemstation_reports("path/to/report.txt")
 #' }

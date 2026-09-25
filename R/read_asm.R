@@ -4,7 +4,10 @@
 #'
 #' @inheritParams shared_params
 #' @param path Path to ASM `.json` file.
-#' @inherit generic_return_2D return
+#' @return A 2D chromatogram in the format specified by `format_out` and
+#' `data_format`, or a list of them named by detection type if the file holds
+#' more than one (or `collapse = FALSE`). Metadata are attached as
+#' [attributes] if `read_metadata` is `TRUE`.
 #' @examples \dontrun{
 #' read_asm("path/to/file.json")
 #' }

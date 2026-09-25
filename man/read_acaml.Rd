@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_acaml.R
 \name{read_acaml}
 \alias{read_acaml}
-\title{Read 'Agilent' ACAML files from directory}
+\title{Read 'Agilent' ACAML files}
 \usage{
 read_acaml(
   path,
@@ -35,12 +35,12 @@ Defaults to \code{1}.}
 }
 \value{
 A \code{data.frame}, \code{data.table} or \code{tibble} (according to the value of
-\code{format_out}) containing sample metadata derived from the supplied ACAML
-files.
+\code{format_out}) with one row per injection, and a \code{SourceFile} column naming
+the ACAML file it came from.
 }
 \description{
 Extracts injection metadata from 'Agilent Common Analytical Markup Language'
-(ACAML) files into an R object.
+(ACAML) files into a table.
 }
 \details{
 ACAML is an XML-based format used by Agilent OpenLab to store sequence and

@@ -17,14 +17,14 @@ read_chemstation_ms(
 \arguments{
 \item{path}{Path to 'Agilent' \code{.ms} file.}
 
-\item{what}{What stream to get: current options are \code{MS1}, \code{BPC} and/or
-\code{TIC}. If a stream is not specified, the function will return all streams.}
+\item{what}{Which streams to return: \code{MS1}, \code{BPC} and/or \code{TIC}. Defaults to
+all three.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{data_format}{Whether to return data in \code{long} (default) or \code{wide}
-format. Mass spectra are always returned in \code{long} format.}
+\item{data_format}{Whether to return the \code{BPC} and \code{TIC} in \code{long} (default)
+or \code{wide} format. Mass spectra are always returned in \code{long} format.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -35,14 +35,14 @@ format. Mass spectra are always returned in \code{long} format.}
 element. Defaults to \code{TRUE}.}
 }
 \value{
-A list of chromatograms in the format specified by \code{data_format} and
-\code{format_out}. If \code{data_format} is \code{wide}, 2D chromatograms will
-be returned with retention times as rows and a single column for the
-intensity. Otherwise, two columns will be returned: one for the
-retention time and one for the intensity. MS data will always be returned in
-long format. The \code{format_out} argument determines whether the chromatogram is
-returned as a \code{matrix}, \code{data.frame}, or \code{data.table}. Metadata can be
-attached to the chromatogram as \link{attributes} if \code{read_metadata} is \code{TRUE}.
+A list of the streams in \code{what}, in the format specified by
+\code{format_out}. In wide format, the \code{BPC} and \code{TIC} have retention times as
+rows and a single intensity column; in long format, a retention time column
+and an intensity column. MS data will always be returned in long format. The
+\code{format_out} argument determines whether the chromatogram is returned as a
+\code{matrix}, \code{data.frame}, or \code{data.table}. Metadata are attached as \link{attributes} if
+\code{read_metadata} is \code{TRUE}. With \code{collapse = TRUE}, a list of one stream is
+replaced by that stream.
 }
 \description{
 Reads 'Agilent ChemStation MSD Spectral Files' beginning with

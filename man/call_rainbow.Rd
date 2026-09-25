@@ -32,11 +32,12 @@ call_rainbow(
 
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{by}{How to order the list that is returned. Either \code{detector} (default)
-or \code{name}.}
+\item{by}{How to group the returned list: by \code{detector} (default), or by
+\code{name}, one element per data file in the directory.}
 
-\item{what}{What types of data to return (e.g. \code{MS}, \code{UV}, \code{CAD}, \code{ELSD}).
-This argument only applies if \code{by == "detector"}.}
+\item{what}{Which detectors to return (e.g. \code{MS}, \code{UV}, \code{CAD}, \code{ELSD}).
+Applies only when \code{by = "detector"}. Defaults to \code{NULL}, which returns all
+of them.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -46,12 +47,11 @@ This argument only applies if \code{by == "detector"}.}
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
 
-\item{precision}{Number of decimals to round mz values. Defaults to \code{1}.
-Ignored if \code{bin_width} is supplied.}
+\item{precision}{Number of decimals of the m/z grid, which is spaced
+\code{10^-precision} apart. Defaults to \code{1}. Ignored if \code{bin_width} is supplied.}
 
-\item{sparse}{Logical. Whether to return MS data in sparse format (excluding
-zeros). Defaults to \code{TRUE}. Applies only when data are requested in \code{long}
-format.}
+\item{sparse}{Logical. Whether to drop zero intensities from MS data.
+Applies only to \code{long} format. Defaults to \code{TRUE}.}
 
 \item{bin_width}{Width of the m/z grid, in daltons. An alternative to
 \code{precision} for grids that are not a power of ten (e.g. \code{0.5}). Defaults to
@@ -59,19 +59,21 @@ format.}
 \code{10^-precision}.}
 }
 \value{
-Returns a (nested) list of matrices or \code{data.frame}s according to
-the value of \code{format_out}. Data is ordered according to the value of \code{by}.
+A (nested) list of chromatograms, or a single chromatogram for the
+\code{chemstation} formats, in the class given by \code{format_out}. The list is
+grouped according to the value of \code{by}.
 }
 \description{
 Parse 'Agilent' or 'Waters' files with rainbow parsers.
 }
 \details{
 Uses \href{https://rainbow-api.readthedocs.io}{rainbow} parsers to read in Agilent
-(\code{.D}) and Waters (\code{.raw}) files. If \code{format_in} is \code{"agilent_d"} or
-\code{"waters_raw"}, a directory of the appropriate format (\code{.D} or \code{.raw}) should
-be provided to the \code{path} argument. If \code{format_in} is \code{"chemstation_uv"} a
-\code{.uv} file should be provided. Data can be filtered by detector type using
-the \code{what} argument.
+(\code{.D}) and Waters (\code{.raw}) files. For \code{agilent_d}, \code{waters_raw} and
+\code{masshunter}, \code{path} is the data directory (\code{.D} or \code{.raw}), and the result
+is a list grouped according to \code{by}. For the \code{chemstation} formats, \code{path}
+is a single file (e.g. \code{.uv}), the result is a single chromatogram, and \code{by}
+and \code{what} are ignored. Otherwise, data can be filtered by detector type
+using the \code{what} argument.
 }
 \examples{
 \dontrun{
