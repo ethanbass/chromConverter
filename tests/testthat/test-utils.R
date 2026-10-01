@@ -339,3 +339,11 @@ test_that("chemstation_channel_id takes the channel from a signal descriptor", {
   expect_null(chemstation_channel_id(NA))
   expect_null(chemstation_channel_id(NULL))
 })
+
+test_that("chemstation_sig takes wavelength and bandwidth from a signal descriptor", {
+  expect_equal(chemstation_sig("DAD1A,Sig=210,4  Ref=off", 1), 210)
+  expect_equal(chemstation_sig("DAD A, Sig=280,10 Ref=360,100", 2), 10)
+  expect_null(chemstation_sig("PMP1A,Pressure", 1))
+  expect_null(chemstation_sig(NA, 1))
+  expect_null(chemstation_sig(NULL, 1))
+})

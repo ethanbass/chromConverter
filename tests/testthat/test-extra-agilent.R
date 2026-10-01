@@ -124,7 +124,7 @@ test_that("read_chroms can read 'Agilent ChemStation' version 30 files", {
   expect_equal(attr(x, "parser"), "chromconverter")
   expect_equal(attr(x, "sample_name"), "NVAC-6B1-S3R1")
   expect_equal(attr(x, "detector_model"), "G1315B")
-  expect_true(is.na(attr(x, "detector")))
+  expect_equal(attr(x, "detector"), "DAD")
   expect_equal(attr(x, "instrument"), "LC")
   expect_equal(attr(x, "detector_y_unit"), "mAU")
   expect_equal(attr(x, "method"), "JCMONO1.M")

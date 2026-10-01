@@ -25,11 +25,14 @@ meta_chemstation <- function(meta, ctx){
        file_version = meta$version,
        file_type = meta$file_type,
        instrument = get_metadata_field(meta, "instrument"),
-       detector = get_metadata_field(meta, "detector"),
+       detector = get_metadata_field(meta, "detector", null_val =
+         chemstation_detector(chemstation_channel_id(meta$signal_desc))),
        detector_model = get_metadata_field(meta, "detector_model"),
        detector_range = get_metadata_field(meta, "signal"),
        signal_descriptor = get_metadata_field(meta, "signal_desc"),
        channel_id = chemstation_channel_id(meta$signal_desc),
+       wavelength = chemstation_sig(meta$signal_desc, 1),
+       bandwidth = chemstation_sig(meta$signal_desc, 2),
        detector_y_unit = meta$units,
        detector_x_unit = meta$detector_x_unit,
        software = meta$software,
@@ -57,6 +60,23 @@ chemstation_channel_id <- function(desc){
   if (length(desc) != 1 || is.na(desc)) return(NULL)
   id <- trimws(sub(",.*$", "", desc))
   if (grepl("^[A-Z]{2,}[0-9]* ?[A-Z]$", id)) id else NULL
+}
+
+#' Module type of a 'ChemStation' channel, e.g. `DAD` for `DAD1 A`
+#' @noRd
+chemstation_detector <- function(channel){
+  if (is.null(channel)) NA else sub("[0-9]* ?[A-Z]$", "", channel)
+}
+
+#' Wavelength or bandwidth from a 'ChemStation' signal descriptor
+#'
+#' @param i `1` for the wavelength, `2` for the bandwidth in `Sig=254,8`.
+#' @return A number, or `NULL` where the descriptor has no `Sig=`.
+#' @noRd
+chemstation_sig <- function(desc, i){
+  if (length(desc) != 1 || is.na(desc)) return(NULL)
+  m <- regmatches(desc, regexec("Sig=([0-9.]+),([0-9.]+)", desc))[[1]]
+  if (length(m) == 3) as.numeric(m[i + 1]) else NULL
 }
 
 #' Field map for 'ChemStation' report (peak list) files

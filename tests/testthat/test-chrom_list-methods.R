@@ -45,7 +45,7 @@ test_that("extract_metadata reads doubly nested chromatograms", {
 
   # and the `detector` filter reaches nested chromatograms too
   expect_equal(nrow(suppressWarnings(
-    extract_metadata(x, what = "detector", detector = "DAD"))), 1)
+    extract_metadata(x, what = "detector", detector = "DAD"))), 9)
 })
 
 test_that("print.chrom_list groups doubly nested chromatograms", {
