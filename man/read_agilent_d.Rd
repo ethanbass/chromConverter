@@ -17,9 +17,11 @@ read_agilent_d(
 \arguments{
 \item{path}{Path to 'Agilent' \code{.D} directory.}
 
-\item{what}{Whether to extract chromatograms (\code{chroms}), DAD data (\code{dad})
-and/or peak tables (\code{peak_table}). Accepts multiple arguments, and defaults
-to all three. Types the
+\item{what}{Whether to extract chromatograms (\code{chroms}), DAD data (\code{dad}),
+peak tables (\code{peak_table}) and/or instrument traces (\code{instrument}), such as
+pump pressure, flow, solvent composition and temperature, read from
+\code{LCDIAG.REG}. Accepts multiple arguments, and
+defaults to \code{dad}, \code{chroms} and \code{peak_table}. Types the
 directory does not contain are left out, and it is an error if it contains
 none of them.}
 
@@ -48,8 +50,14 @@ Metadata are attached as \link{attributes} if \code{read_metadata} is \code{TRUE
 element.
 }
 \description{
-Reads the \code{.ch}, \code{.uv} and \code{Report.TXT} files in an 'Agilent' \code{.D}
-directory. Other files in the directory are ignored.
+Reads the \code{.ch}, \code{.uv}, \code{Report.TXT} and \code{LCDIAG.REG} files in an 'Agilent'
+\code{.D} directory. Other files in the directory are ignored.
+}
+\details{
+Instrument traces are named from \code{LCDIAG.REG}, so the names differ between
+'ChemStation' revisions and/or instruments (e.g. \code{"PMP1, Pressure"} and
+\code{"PMP1, PMP1A, Pressure"}). Parts of the file that cannot be read are skipped
+with a warning.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}

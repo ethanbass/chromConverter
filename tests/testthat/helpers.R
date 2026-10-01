@@ -62,6 +62,14 @@ skip_if_missing_openchrom <- function() {
   }
 }
 
+extra_test_file <- function(name){
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file(name, package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path), paste(name, "could not be found."))
+  path
+}
+
 #' Ground truth for a 'Shimadzu' fixture, taken from a 'ProteoWizard'
 #' conversion of the same file
 #'

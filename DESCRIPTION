@@ -10,7 +10,10 @@ Authors@R: c(
     'Chromatography Toolbox' for parsing 'Agilent' FID files.")),
     person(given = "Evan", family = "Shi", role = c("ctb", "cph"),
     comment = c("Author and copyright holder of source code adapted from 'rainbow'
-    for parsing 'Agilent' UV files."))
+    for parsing 'Agilent' UV files.")),
+    person(given = "Roderick", family = "Bovee", role = c("ctb", "cph"),
+    comment = c("Author and copyright holder of source code adapted from 'Aston'
+    for parsing 'Agilent ChemStation' register files."))
     )
 Maintainer: Ethan Bass <ethanbass@gmail.com>
 Description: Reads chromatograms from binary formats into R objects. Currently supports 

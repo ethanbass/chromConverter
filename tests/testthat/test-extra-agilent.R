@@ -1400,3 +1400,29 @@ test_that("call_rainbow works without `format_in`", {
   x <- suppressWarnings(call_rainbow(path))
   expect_true("FID" %in% names(x))
 })
+
+test_that("read_chemstation_reg reads a ChemStation A.00.01 LCDIAG.REG", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("chemstation_A0001_LCDIAG.REG",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_chemstation_reg(path)
+  expect_setequal(unique(x$traces$trace),
+                  c("PMP1, Pressure", "PMP1, Flow", paste0("PMP1, Solvent ",
+                                                           LETTERS[1:4])))
+  p <- x$traces[x$traces$trace == "PMP1, Pressure", ]
+  expect_equal(unique(p$unit), "bar")
+  expect_equal(nrow(p), 2400)
+  expect_equal(range(p$time), c(0, 11.995))
+  # RUN.LOG: "Pressure = 53.1 bar" at the end of the run
+  expect_lt(abs(p$value[nrow(p)] - 53.1), 0.5)
+  expect_true(all(x$traces$value[x$traces$trace == "PMP1, Flow"] == 0.5))
+
+  pmp <- x$conditions[x$conditions$object == "PMP1, Start/Stop Conditions", ]
+  expect_lt(abs(as.numeric(pmp$value[pmp$key == "StartPressure"]) - 47.1), 0.05)
+  expect_lt(abs(as.numeric(pmp$value[pmp$key == "StopPressure"]) - 53.1), 0.05)
+  expect_equal(pmp$value[pmp$key == "DateTime"], "18-Nov-10, 15:48:06")
+})
