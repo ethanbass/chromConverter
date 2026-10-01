@@ -497,6 +497,7 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(nrow(meta), 5L)
   expect_equal(unique(meta$sample_name), "Rutin_2")
   expect_equal(unique(meta$operator), "AK")
+  expect_equal(attr(x[[1]], "sample_injection_volume"), 15)
 
   x <- read_peaklist(path, format_in = "chemstation",
                      peaktable_format = "original")

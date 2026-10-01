@@ -24,7 +24,7 @@ chrom_metadata_fields <- function(){
     "software", "method", "batch", "operator", "run_datetime",
     # sample
     "sample_name", "sample_id", "sample_position",
-    "sample_injection_volume", "sample_amount",
+    "sample_injection_volume", "sample_injection_volume_unit", "sample_amount",
     # time and intensity axes
     "time_range", "time_interval", "time_unit", "intensity_multiplier",
     "scaled",
@@ -41,6 +41,7 @@ chrom_metadata_fields <- function(){
 #' @noRd
 .metadata_field_aliases <- c(detector_id = "detector_model",
                              injection_volume = "sample_injection_volume",
+                             injection_volume_unit = "sample_injection_volume_unit",
                              run_date = "run_datetime",
                              software_name = "software",
                              no_scans = "n_scans",
@@ -103,8 +104,11 @@ empty_metadata <- function(){
 #' and `scale`.
 #' @noRd
 finalize_metadata <- function(x, attrs, ctx){
-  # drop null values to avoid deleting attributes that have already been set
-  attrs <- attrs[!vapply(attrs, is.null, logical(1))]
+  # drop null and empty values so they don't delete attributes that have already been set
+  attrs <- attrs[lengths(attrs) > 0]
+  attrs <- split_injection_volume(attrs)
+  num <- intersect(names(attrs), .metadata_numeric_fields)
+  attrs[num] <- lapply(attrs[num], as_metadata_number)
 
   attrs$source_file <- ctx$source_file
   attrs$source_file_format <- ctx$source_file_format
@@ -116,6 +120,37 @@ finalize_metadata <- function(x, attrs, ctx){
 
   validate_metadata_names(attrs)
   do.call(structure, c(list(x), attrs))
+}
+
+#' Metadata fields that hold numbers
+#'
+#' Readers of text formats attach them as the strings they read.
+#' `finalize_metadata` converts them, unless a value does not parse as a
+#' number, such as a volume written with its unit.
+#' @noRd
+.metadata_numeric_fields <- c("time_range", "time_interval",
+                              "intensity_multiplier", "detector_range",
+                              "wavelength", "n_scans", "sample_amount",
+                              "sample_injection_volume")
+
+#' Split an injection volume written with its unit, such as `17 ul`
+#' @noRd
+split_injection_volume <- function(attrs){
+  vol <- attrs$sample_injection_volume
+  if (!is.character(vol) || length(vol) != 1 || is.na(vol)) return(attrs)
+  m <- regmatches(vol, regexec("^\\s*([0-9.]+)\\s*([^0-9.\\s].*?)\\s*$",
+                               vol, perl = TRUE))[[1]]
+  if (length(m) != 3 || is.na(suppressWarnings(as.numeric(m[2])))) return(attrs)
+  attrs$sample_injection_volume <- as.numeric(m[2])
+  attrs$sample_injection_volume_unit <- attrs$sample_injection_volume_unit %||% m[3]
+  attrs
+}
+
+#' @noRd
+as_metadata_number <- function(x){
+  if (!is.character(x)) return(x)
+  v <- suppressWarnings(as.numeric(x))
+  if (any(is.na(v) & !is.na(x))) x else v
 }
 
 #' Warn about metadata names outside the vocabulary

@@ -4,6 +4,7 @@
 
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
+* Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
 
 ### New features
