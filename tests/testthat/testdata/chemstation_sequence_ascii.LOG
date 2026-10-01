@@ -1,0 +1,118 @@
+  69 41df 6008f116    0
+Sequence     ETHAN_01_20_21.S started                       22:12:22 01/20/21
+ 7da 41e0 6008f11d    0
+Method       Loading Method AINO_DT_L12_8L.M                22:12:29 01/20/21
+ 443 41e0 6008f11f    0
+Method       Method started:  line# 1 vial# 1 inj# 1        22:12:31 01/20/21
+  67 41e0 6008f11f    0
+Method       Instrument running sample Vial 1               22:12:31 01/20/21
+   0 1da6 6008f15d  500
+PUMP       1 Pressure = 135.5 bar                           22:13:33 01/20/21
+   0 1da6 6008fe41  500
+PUMP       1 Pressure = 49.4 bar                            23:08:33 01/20/21
+ 875 41e0 6008fe44    0
+Method       Saving Method AINO_DT_L12_8L.M                 23:08:36 01/20/21
+  70 41de 6008fe45    0
+CP Macro     Analyzing rawdata MEOH.D                       23:08:37 01/20/21
+  67 41e0 600901c6    0
+Method       Instrument run completed                       23:23:34 01/20/21
+  70 41de 600901c6    0
+CP Macro     PostRun macro                                  23:23:34 01/20/21
+  70 41de 600901c6    0
+CP Macro     ========================================       23:23:34 01/20/21
+  70 41de 600901c6    0
+CP Macro     In Command evaluate in macro RunPostRun        23:23:34 01/20/21
+  70 41de 600901c6    0
+CP Macro     at line 2833 in file C:\CHEM32\CORE\SIGNAL.M>  23:23:34 01/20/21
+  70 41de 600901c6    0
+CP Macro     CX                                             23:23:34 01/20/21
+  70 41de 600901c6    0
+CP Macro     Error 40996 occurred:                          23:23:34 01/20/21
+  70 41de 600901c6    0
+CP Macro     Syntax Error in cmd/fct evaluate.              23:23:34 01/20/21
+  70 41de 600901c6    0
+CP Macro     ========================================       23:23:34 01/20/21
+  67 41e0 600901c7    0
+Method       Method completed                               23:23:35 01/20/21
+ 443 41e0 600901c8    0
+Method       Method started:  line# 2 vial# 5 inj# 1        23:23:36 01/20/21
+  67 41e0 600901c9    0
+Method       Instrument running sample Vial 5               23:23:37 01/20/21
+   0 1da6 60090208  500
+PUMP       1 Pressure = 138.1 bar                           23:24:40 01/20/21
+   0 1da6 60090eec  500
+PUMP       1 Pressure = 49.6 bar                            00:19:40 01/21/21
+ 875 41e0 60090eef    0
+Method       Saving Method AINO_DT_L12_8L.M                 00:19:43 01/21/21
+  70 41de 60090ef0    0
+CP Macro     Analyzing rawdata 885_2.D                      00:19:44 01/21/21
+  67 41e0 60091271    0
+Method       Instrument run completed                       00:34:41 01/21/21
+  70 41de 60091271    0
+CP Macro     PostRun macro                                  00:34:41 01/21/21
+  70 41de 60091271    0
+CP Macro     ========================================       00:34:41 01/21/21
+  70 41de 60091271    0
+CP Macro     In Command evaluate in macro RunPostRun        00:34:41 01/21/21
+  70 41de 60091271    0
+CP Macro     at line 2833 in file C:\CHEM32\CORE\SIGNAL.M>  00:34:41 01/21/21
+  70 41de 60091271    0
+CP Macro     CX                                             00:34:41 01/21/21
+  70 41de 60091271    0
+CP Macro     Error 40996 occurred:                          00:34:41 01/21/21
+  70 41de 60091271    0
+CP Macro     Syntax Error in cmd/fct evaluate.              00:34:41 01/21/21
+  70 41de 60091271    0
+CP Macro     ========================================       00:34:41 01/21/21
+  67 41e0 60091271    0
+Method       Method completed                               00:34:41 01/21/21
+ 443 41e0 6009a86f    0
+Method       Method started:  line# 12 vial# 30 inj# 1      11:14:39 01/21/21
+  67 41e0 6009a870    0
+Method       Instrument running sample Vial 30              11:14:40 01/21/21
+  3e 1da8 6009aac6  500
+DAD        1 Time-out                                       11:24:38 01/21/21
+  3e 1da6 6009aac6  500
+PUMP       1 Time-out                                       11:24:38 01/21/21
+  3e 1da7 6009aac6  500
+ALS        1 Time-out                                       11:24:38 01/21/21
+  d5 1da6 6009aac7  500
+PUMP       1 Error Method started                           11:24:39 01/21/21
+  d5 1da8 6009aac7  500
+DAD        1 Error Method started                           11:24:39 01/21/21
+  67 41e0 6009aac7    0
+Method       Instrument run completed                       11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     Analyzing rawdata 840.D                        11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     Data not available; Data Analysis not done     11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     PostRun macro                                  11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     ========================================       11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     In Command evaluate in macro RunPostRun        11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     at line 2833 in file C:\CHEM32\CORE\SIGNAL.M>  11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     CX                                             11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     Error 40996 occurred:                          11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     Syntax Error in cmd/fct evaluate.              11:24:39 01/21/21
+  70 41de 6009aac7    0
+CP Macro     ========================================       11:24:39 01/21/21
+  67 41e0 6009aac8    0
+Method       Method completed                               11:24:40 01/21/21
+  d5 1da7 6009aac8  500
+ALS        1 Error Method started                           11:24:40 01/21/21
+ 443 41e0 6009aac9    0
+Method       Method started:  line# 13 vial# 31 inj# 1      11:24:41 01/21/21
+  67 41e0 6009aac9    0
+Method       Instrument running sample Vial 31              11:24:41 01/21/21
+  67 41e0 6009aaca    0
+Method       Instrument Error - Method/Sequence stopped     11:24:42 01/21/21
+  67 41e0 6009aaca    0
+Method       Method aborted                                 11:24:42 01/21/21
+ 43e 41df 6009aacc    0
+Sequence     ETHAN_01_20_21.S terminated due to an error    11:24:44 01/21/21

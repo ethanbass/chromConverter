@@ -8,6 +8,7 @@
 
 ### New features
 
+* Added `read_chemstation_logs` to read the instrument errors, aborted runs and pump pressures recorded in 'Agilent ChemStation' sequence logs, including every log in a folder.
 * Files read with the `rainbow` parser now report most of the metadata the parser supplies, including `instrument`, `operator`, `detector_model`, `wavelength` and `instrument_modules`.
 * Run times of 'OpenLab' `.dx` files read with the `rainbow` parser are now returned as `POSIXct` in UTC, applying the time-zone offset the file records.
 * 'OpenLab' `.dx` files now report their injection volume.

@@ -47,6 +47,11 @@ Agilent \code{.uv} files come in several formats. This parser detects the
 version from the file and reads versions \code{31} and \code{131} from 'Agilent
 ChemStation' and 'Agilent OpenLab'; any other version is an error.
 }
+\details{
+Retention times are read from each spectrum, so they are unevenly spaced
+when the detector did not store every spectrum. Interpolate onto a common
+time axis before comparing runs.
+}
 \note{
 This function was adapted from the parser in the rainbow project
 licensed under GPL 3 by Evan Shi
@@ -64,6 +69,7 @@ Other 'Agilent' parsers:
 \code{\link[=read_agilent_rslt]{read_agilent_rslt()}},
 \code{\link[=read_chemstation_ch]{read_chemstation_ch()}},
 \code{\link[=read_chemstation_csv]{read_chemstation_csv()}},
+\code{\link[=read_chemstation_logs]{read_chemstation_logs()}},
 \code{\link[=read_chemstation_ms]{read_chemstation_ms()}},
 \code{\link[=read_chemstation_reports]{read_chemstation_reports()}}
 }

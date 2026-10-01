@@ -4,6 +4,10 @@
 #' version from the file and reads versions `31` and `131` from 'Agilent
 #' ChemStation' and 'Agilent OpenLab'; any other version is an error.
 #'
+#' Retention times are read from each spectrum, so they are unevenly spaced
+#' when the detector did not store every spectrum. Interpolate onto a common
+#' time axis before comparing runs.
+#'
 #' @importFrom utils head tail
 #' @inheritParams shared_params
 #' @param path Path to 'Agilent' `.uv` file.

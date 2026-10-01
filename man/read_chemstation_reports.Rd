@@ -42,6 +42,7 @@ Other 'Agilent' parsers:
 \code{\link[=read_agilent_rslt]{read_agilent_rslt()}},
 \code{\link[=read_chemstation_ch]{read_chemstation_ch()}},
 \code{\link[=read_chemstation_csv]{read_chemstation_csv()}},
+\code{\link[=read_chemstation_logs]{read_chemstation_logs()}},
 \code{\link[=read_chemstation_ms]{read_chemstation_ms()}},
 \code{\link[=read_chemstation_uv]{read_chemstation_uv()}}
 }
