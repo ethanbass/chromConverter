@@ -376,6 +376,83 @@ block_header_fields <- function(cols, group){
   out
 }
 
+#' Metadata fields the chromatograms of a sample agree on
+#'
+#' Keeps each attribute's type, so `subset` can compare numbers as numbers.
+#' Missing and empty values are ignored; a field the chromatograms disagree on
+#' is `NA`.
+#' @noRd
+shared_metadata_attrs <- function(x){
+  leaves <- lapply(flatten_chrom_list(x, inherit = TRUE), function(chrom){
+    a <- attributes(chrom)
+    a[setdiff(names(a), bookkeeping_attrs())]
+  })
+  filled <- function(v){
+    if (is.atomic(v) && length(v) == 1) !is_blank_value(v) else length(v) > 0
+  }
+  fields <- unique(unlist(lapply(leaves, names)))
+  stats::setNames(lapply(fields, function(f){
+    vals <- unique(Filter(filled, lapply(leaves, `[[`, f)))
+    if (length(vals) == 1) vals[[1]] else NA
+  }), fields)
+}
+
+#' Select chromatograms by their metadata
+#'
+#' Retains the chromatograms of a `chrom_list` whose metadata meet the specified
+#' condition, such as `sample_name == "blank"` or
+#' `run_datetime > as.POSIXct("2024-01-01", tz = "UTC")`. The condition can
+#' refer to any field [extract_metadata] reports, such as `sample_name` or
+#' `method`, as well as the chromatogram's name in the list.
+#'
+#' Numeric fields such as `time_range` and `sample_injection_volume` compare
+#' as numbers wherever the file's value parses as one, and a field with several
+#' values can be indexed (e.g. `time_range[2]`). A field a chromatogram does not
+#' carry is `NA`, and a chromatogram for which
+#' `subset` is `NA` is dropped, as in [subset()] for data frames. Where an
+#' element holds several chromatograms, such as the traces [read_agilent_d]
+#' returns for each `.D` directory, it is kept or dropped as a whole, and
+#' `subset` sees the fields its chromatograms agree on, ignoring those that
+#' leave a field empty; a field they disagree on is `NA`.
+#'
+#' @param x A `chrom_list` object.
+#' @param subset An expression giving a single `TRUE` or `FALSE` for each
+#' chromatogram.
+#' @param ... Ignored.
+#' @return A `chrom_list` containing the selected chromatograms.
+#' @examples
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
+#'                       find_files = FALSE, progress_bar = FALSE)
+#' subset(chroms, sample_name == "FS19_214")
+#' subset(chroms, grepl("ladder", source_file))
+#' @seealso [extract_metadata]
+#' @export
+subset.chrom_list <- function(x, subset, ...){
+  if (missing(subset)) return(x)
+  cond <- substitute(subset)
+  env <- parent.frame()
+  fields <- c(chrom_metadata_fields(), .metadata_extra_fields)
+  keep <- vapply(seq_along(x), function(i){
+    chrom <- x[[i]]
+    meta <- if (is.list(chrom) && !is.data.frame(chrom)){
+      shared_metadata_attrs(chrom)
+    } else {
+      a <- attributes(chrom)
+      a[setdiff(names(a), bookkeeping_attrs())]
+    }
+    meta[setdiff(fields, names(meta))] <- NA
+    meta["name"] <- list(if (is.null(names(x))) NA_character_ else names(x)[i])
+    r <- eval(cond, meta, env)
+    if (!is.logical(r) || length(r) != 1){
+      stop("`subset` must give a single TRUE or FALSE for each chromatogram.",
+           call. = FALSE)
+    }
+    isTRUE(r)
+  }, logical(1))
+  x[keep]
+}
+
 #' Combine `chrom_list` objects
 #'
 #' Combines `chrom_list` objects, or a mix of `chrom_list` objects and plain

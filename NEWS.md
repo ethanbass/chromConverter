@@ -18,6 +18,7 @@
 * 'Agilent' `.ch`, `.uv` and `.it` traces now report the channel they were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`), and its module as `detector` (e.g. `DAD`).
 * 'Agilent' `.ch` traces and 'ChemStation' peak tables now report `wavelength` and `bandwidth` from their signal descriptor (e.g. `Sig=254,8`); peak tables also report `detector` and `channel_id`.
 * `extract_metadata` now accepts an element of a nested field in `what`, such as `"SampleLabel"` or `"acaml_metadata.SampleLabel"`, and returns that column alone.
+* `subset()` now selects the chromatograms of a `chrom_list` by their metadata, e.g. `subset(chroms, sample_name == "S1")`. See `?subset.chrom_list`.
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
 * `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.
 * mzML files now record each scan's polarity, and a new `centroided` argument lets profile data be marked as profile. All spectra were previously assumed to be centroided.

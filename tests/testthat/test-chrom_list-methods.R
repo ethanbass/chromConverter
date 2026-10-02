@@ -596,6 +596,67 @@ test_that("summary.chrom_list omits the fields a detector does not record", {
                    %in% names(summary(pda))))
 })
 
+test_that("subset.chrom_list selects chromatograms by their metadata", {
+  x <- c(read_chroms(test_path("testdata/chemstation_130.ch"),
+                     find_files = FALSE, progress_bar = FALSE),
+         read_chroms(test_path("testdata/dad1.uv"),
+                     format_in = "chemstation_uv", parser = "chromconverter",
+                     find_files = FALSE, progress_bar = FALSE))
+
+  y <- subset(x, grepl("^DME", sample_name))
+  expect_s3_class(y, "chrom_list")
+  expect_equal(names(y), "chemstation_130")
+  expect_equal(names(subset(x, name == "dad1")), "dad1")
+
+  # fields keep their type: a date compares as a date, a range can be indexed
+  expect_equal(names(subset(x, run_datetime > as.POSIXct("2020-01-01",
+                                                         tz = "UTC"))),
+               "dad1")
+  expect_equal(names(subset(x, time_range[2] > 30)), "chemstation_130")
+
+  # a field a chromatogram lacks is NA, so it is dropped rather than matched
+  # against a variable of the same name in the calling environment
+  expect_equal(names(subset(x, detector_x_unit == "nm")), "dad1")
+  batch <- "not a field"
+  expect_equal(names(subset(x, is.na(batch))), names(x))
+
+  expect_identical(subset(x), x)
+  expect_length(subset(x, sample_name == "none"), 0)
+})
+
+test_that("subset.chrom_list compares numbers read from text formats as numbers", {
+  x <- read_chroms(test_path("testdata/ladder.txt"), format_in = "shimadzu_ascii",
+                   find_files = FALSE, progress_bar = FALSE)
+  expect_type(attr(x[[1]], "time_range"), "double")
+  expect_length(subset(x, time_range[2] > 5), 1)
+  expect_length(subset(x, sample_injection_volume > 0.5), 1)
+
+  expect_identical(as_metadata_number(c("0.000", "44.170")), c(0, 44.17))
+  expect_identical(as_metadata_number("10 uL"), "10 uL")
+  expect_identical(as_metadata_number(NA), NA)
+})
+
+test_that("subset.chrom_list rejects conditions it cannot apply", {
+  x <- c(read_chroms(test_path("testdata/chemstation_130.ch"),
+                     find_files = FALSE, progress_bar = FALSE))
+  expect_error(subset(x, sample_name), "single TRUE or FALSE")
+  expect_error(subset(x, time_range > 0), "single TRUE or FALSE")
+})
+
+test_that("subset.chrom_list keeps or drops a nested sample as a whole", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  x <- structure(list(
+    s1 = list(uv = mk(sample_name = "s1", detector = "UV"),
+              ms = mk(sample_name = "s1", detector = "MS")),
+    s2 = list(uv = mk(sample_name = "s2", detector = "UV"))),
+    class = "chrom_list")
+
+  y <- subset(x, sample_name == "s1")
+  expect_equal(names(y), "s1")
+  expect_equal(names(y$s1), c("uv", "ms"))
+  expect_equal(names(subset(x, detector == "UV")), "s2")
+})
+
 test_that("extract_metadata gives one row per sample by default", {
   mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
   x <- structure(list(
@@ -612,4 +673,14 @@ test_that("extract_metadata gives one row per sample by default", {
 
   expect_equal(nrow(extract_metadata(x, what = "detector",
                                      by = "chromatogram")), 3)
+})
+
+test_that("subset.chrom_list treats an empty metadata field as missing", {
+  x <- read_chroms(test_path("testdata/ladder.txt"), format_in = "shimadzu_ascii",
+                   find_files = FALSE, progress_bar = FALSE)
+  y <- finalize_metadata(x[[1]][, 1, drop = FALSE],
+                         list(detector_range = character()),
+                         list(source_file = attr(x[[1]], "source_file")))
+  expect_false("detector_range" %in% names(attributes(y)))
+  expect_length(subset(c(x, list(y)), detector_range == "254"), 0)
 })
