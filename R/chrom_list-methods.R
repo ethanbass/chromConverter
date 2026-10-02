@@ -44,7 +44,8 @@ print.chrom_list <- function(x, n = 10, cols = chrom_summary_cols(), ...) {
 
   if (n_traces == 0) return(invisible(x))
 
-  meta <- suppressWarnings(extract_metadata(x, cols, collapse = TRUE))
+  meta <- suppressWarnings(extract_metadata(x, cols, collapse = TRUE,
+                                            by = "chromatogram"))
   if (!inherits(meta, "data.frame")) {
     # `extract_metadata` returns `NA` when none of `cols` could be found. Say
     # so, but still list the chromatograms: their names are the only thing left
@@ -211,7 +212,8 @@ summary.chrom_list <- function(object, cols = chrom_summary_cols(),
   if (all(is.na(out$trace))) out$trace <- NULL
 
   if (length(leaves) > 0){
-    meta <- suppressWarnings(extract_metadata(object, cols, collapse = TRUE))
+    meta <- suppressWarnings(extract_metadata(object, cols, collapse = TRUE,
+                                            by = "chromatogram"))
     if (inherits(meta, "data.frame")){
       meta <- meta[, setdiff(names(meta), "name"), drop = FALSE]
       # a field that is empty for every chromatogram says only that the format

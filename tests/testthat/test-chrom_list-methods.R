@@ -38,14 +38,16 @@ test_that("extract_metadata reads doubly nested chromatograms", {
   # previously the one-level flattening left `chroms` and `instrument` as
   # lists, which carry no attributes, so all 19 of those rows were lost
   meta <- suppressWarnings(extract_metadata(x, what = c("sample_name",
-                                                        "detector")))
+                                                        "detector"),
+                                                        by = "chromatogram"))
   expect_equal(nrow(meta), 20)
   expect_equal(meta$name[1], "MeOH1.dad")
   expect_true(all(meta$sample_name == "MeOH1"))
 
   # and the `detector` filter reaches nested chromatograms too
   expect_equal(nrow(suppressWarnings(
-    extract_metadata(x, what = "detector", detector = "DAD"))), 9)
+    extract_metadata(x, what = "detector", detector = "DAD",
+                     by = "chromatogram"))), 9)
 })
 
 test_that("print.chrom_list groups doubly nested chromatograms", {
@@ -87,7 +89,8 @@ test_that("print.chrom_list shows every trace of a multi-detector sample", {
 
   x <- read_chroms(path, progress_bar = FALSE)
   expect_length(x, 1)
-  expect_equal(nrow(suppressWarnings(extract_metadata(x))), 3)
+  expect_equal(nrow(suppressWarnings(extract_metadata(x, by = "chromatogram"))),
+               3)
 
   out <- capture.output(print(x))
   expect_equal(out[1], "A chrom_list with 1 sample (3 chromatograms)")
@@ -144,7 +147,8 @@ test_that("extract_metadata falls back on sample-level attributes", {
   x <- structure(list(s1 = sample), class = "chrom_list")
 
   meta <- suppressWarnings(extract_metadata(x, c("sample_name", "detector",
-                                                 "method")))
+                                                 "method"),
+                                                 by = "chromatogram"))
   expect_equal(meta$sample_name, c("s1", "s1"))
   # a per-trace attribute is still per-trace
   expect_equal(meta$detector, c("UV", "MS"))
@@ -226,7 +230,8 @@ test_that("a sample-level attribute is not inherited over a differing trace", {
                            b = mk(time_range = c(0, 20))),
                       time_range = c(0, 99))
   meta <- suppressWarnings(extract_metadata(
-    structure(list(s1 = sample), class = "chrom_list"), "time_range"))
+    structure(list(s1 = sample), class = "chrom_list"), "time_range",
+    by = "chromatogram"))
   expect_equal(meta$time_range2, c("10", "20"))
 
   # nor is a nested field inherited over a trace that has one of its own,
@@ -237,7 +242,8 @@ test_that("a sample-level attribute is not inherited over a differing trace", {
                                                    event = "b"))),
                       ms_params = list(polarity = "+", event = "sample"))
   meta <- suppressWarnings(extract_metadata(
-    structure(list(s1 = sample), class = "chrom_list"), "ms_params"))
+    structure(list(s1 = sample), class = "chrom_list"), "ms_params",
+    by = "chromatogram"))
   expect_equal(meta$event, c("a", "b"))
 
   # a trace keeps its own nested field even where the traces agree, unlike a
@@ -246,7 +252,8 @@ test_that("a sample-level attribute is not inherited over a differing trace", {
                            b = mk(ms_params = list(event = "leaf"))),
                       ms_params = list(event = "sample"))
   meta <- suppressWarnings(extract_metadata(
-    structure(list(s1 = sample), class = "chrom_list"), "ms_params"))
+    structure(list(s1 = sample), class = "chrom_list"), "ms_params",
+    by = "chromatogram"))
   expect_equal(meta$event, c("leaf", "leaf"))
 })
 
@@ -334,7 +341,7 @@ test_that("extract_metadata expands a nested field attached to the sample", {
   x <- structure(list(s1 = sample), class = "chrom_list")
 
   meta <- extract_metadata(x, what = c("sample_name", "detector"),
-                           expand = TRUE)
+                           expand = TRUE, by = "chromatogram")
   expect_equal(meta$SampleName, c("s1", "s1"))
   expect_equal(meta$VialNumber, c("3", "3"))
   # `unlist` would otherwise leave a bare number in the column
@@ -362,7 +369,7 @@ test_that("a stale sample-level copy cannot flatten a per-trace field", {
                       detector = "UV")
   x <- structure(list(s1 = sample), class = "chrom_list")
 
-  meta <- suppressWarnings(extract_metadata(x, "detector"))
+  meta <- suppressWarnings(extract_metadata(x, "detector", by = "chromatogram"))
   expect_equal(meta$detector, c("UV", "MS"))
 })
 
@@ -587,4 +594,22 @@ test_that("summary.chrom_list omits the fields a detector does not record", {
                      what = "pda", progress_bar = FALSE)
   expect_false(any(c("scan_type", "precursor_mz", "product_mz", "mz_range")
                    %in% names(summary(pda))))
+})
+
+test_that("extract_metadata gives one row per sample by default", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  x <- structure(list(
+    s1 = list(uv = mk(sample_name = "s1", detector = "UV", method = "m"),
+              ms = mk(sample_name = "s1", detector = "MS", method = "")),
+    s2 = list(uv = mk(sample_name = "s2", detector = "UV", method = "m"))),
+    class = "chrom_list")
+
+  meta <- extract_metadata(x, what = c("sample_name", "detector", "method"))
+  expect_equal(meta$name, c("s1", "s2"))
+  expect_equal(meta$sample_name, c("s1", "s2"))
+  expect_equal(meta$detector, c(NA, "UV"))
+  expect_equal(meta$method, c("m", "m"))
+
+  expect_equal(nrow(extract_metadata(x, what = "detector",
+                                     by = "chromatogram")), 3)
 })

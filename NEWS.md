@@ -6,6 +6,7 @@
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
+* `extract_metadata` now returns one row per sample, retaining the values its chromatograms agree on. The `by = "chromatogram"` argument restores one row per chromatogram (in nested lists).
 
 ### New features
 

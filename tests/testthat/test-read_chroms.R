@@ -220,16 +220,18 @@ test_that("extract_metadata can filter by detector", {
   # a nested list, as returned for a sample with several detectors
   nested <- list(blue = list(MS = mk("MS"), UV = mk("UV"), CAD = mk("CAD")))
 
-  expect_equal(extract_metadata(nested, what = "detector")$name,
+  expect_equal(extract_metadata(nested, what = "detector",
+                                by = "chromatogram")$name,
                c("blue.MS", "blue.UV", "blue.CAD"))
   expect_equal(extract_metadata(nested, what = "detector",
-                                detector = "UV")$name, "blue.UV")
+                                detector = "UV", by = "chromatogram")$name, "blue.UV")
   # matched against the `detector` attribute, case-insensitively
   expect_equal(extract_metadata(nested, what = "detector",
                                 detector = "uv")$detector, "UV")
   # more than one detector can be requested
   expect_equal(extract_metadata(nested, what = "detector",
-                                detector = c("CAD", "UV"))$name,
+                                detector = c("CAD", "UV"),
+                                by = "chromatogram")$name,
                c("blue.UV", "blue.CAD"))
   # an informative error, rather than an empty frame, when nothing matches
   err <- expect_error(extract_metadata(nested, what = "detector",
@@ -493,7 +495,8 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(attr(x[[1]], "instrument"), "Instrument 1")
   expect_equal(attr(x[[1]], "source_file_format"), "chemstation_peaklist")
   meta <- suppressWarnings(extract_metadata(x, what = c("sample_name",
-                                                        "operator")))
+                                                        "operator"),
+                                            by = "chromatogram"))
   expect_equal(nrow(meta), 5L)
   expect_equal(unique(meta$sample_name), "Rutin_2")
   expect_equal(unique(meta$operator), "AK")

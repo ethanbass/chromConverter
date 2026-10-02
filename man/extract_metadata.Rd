@@ -10,13 +10,13 @@ extract_metadata(
   detector = NULL,
   format_out = c("data.frame", "data.table", "tibble"),
   collapse = FALSE,
-  expand = FALSE
+  expand = FALSE,
+  by = c("sample", "chromatogram")
 )
 }
 \arguments{
 \item{chrom_list}{A list of chromatograms with attached metadata (as returned
-by \code{read_chroms} with \code{read_metadata = TRUE}), or a single chromatogram.
-Nested lists are flattened, one row per chromatogram.}
+by \code{read_chroms} with \code{read_metadata = TRUE}), or a single chromatogram.}
 
 \item{what}{A character vector specifying the metadata elements to
 extract. Defaults to every field chromConverter attaches; no format
@@ -55,13 +55,23 @@ becomes a column of its own, named for itself (\code{SampleName}) unless that
 name is already taken, in which case it carries the field it came from
 (\code{ms_params.polarity}, since \code{polarity} is a metadata field in its own
 right).}
+
+\item{by}{Whether to return one row per \code{sample} (the default), that is per
+element of \code{chrom_list}, or one row per \code{chromatogram}. The two differ only
+for nested lists, such as the traces \link{read_agilent_d} returns for each \code{.D}
+directory. With \code{by = "sample"}, each field holds the value that a sample's
+chromatograms agree on, ignoring those that leave it empty, and is \code{NA} where
+they disagree; with the default \code{what}, fields that are then empty for every
+sample are left out. Fields that belong to each trace, such as \code{detector} or
+\code{source_file}, need \code{by = "chromatogram"}.}
 }
 \value{
 A \code{data.frame}, \code{tibble}, or \code{data.table} (according to the value of
-\code{format_out}), with one row per chromatogram and the specified metadata
-elements as columns, or \code{NA} if none of the specified elements could be
-found. For a list, the first column, \code{name}, identifies each chromatogram
-by its path through the list (e.g. \code{blue.UV}).
+\code{format_out}), with one row per sample or chromatogram (see \code{by}) and the
+specified metadata elements as columns, or \code{NA} if none of the specified
+elements could be found. For a list, the first column, \code{name}, identifies
+each row: by the sample's name, or with \code{by = "chromatogram"} by the
+chromatogram's path through the list (e.g. \code{blue.UV}).
 }
 \description{
 Extract metadata as a \code{data.frame}, \code{data.table} or \code{tibble} from a list of

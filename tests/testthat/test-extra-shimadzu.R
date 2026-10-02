@@ -306,7 +306,8 @@ test_that("'Shimadzu' LCD files report the container format version", {
 
   x <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
                    progress_bar = FALSE)
-  meta <- extract_metadata(x, what = c("file_version", "software_version"))
+  meta <- extract_metadata(x, what = c("file_version", "software_version"),
+                           by = "chromatogram")
   expect_equal(nrow(meta), 3)
   expect_equal(unique(meta$file_version), "5.01")
   expect_equal(unique(meta$software_version), "5.54 SP2")
@@ -905,7 +906,8 @@ test_that("every trace from one 'Shimadzu' file reports the same instrument", {
   # trace and the system on the other
   x <- read_shimadzu_lcd(path, what = c("pda", "tic"))
   meta <- extract_metadata(x, what = c("instrument", "detector",
-                                       "detector_model"))
+                                       "detector_model"),
+                           by = "chromatogram")
   expect_equal(unique(meta$instrument), "LCMS-8030")
   expect_equal(meta$detector, c("DAD", rep("MS", 4)))
   expect_equal(meta$detector_model, c("SPD-M20A", rep("LCMS-3030", 4)))
@@ -916,7 +918,8 @@ test_that("every trace from one 'Shimadzu' file reports the same instrument", {
   skip_if_not(file.exists(path_lc))
   ch <- read_shimadzu_lcd(path_lc, what = "chroms")
   meta_lc <- extract_metadata(ch, what = c("instrument", "detector_model",
-                                           "channel_id"))
+                                           "channel_id"),
+                              by = "chromatogram")
   expect_equal(unique(meta_lc$instrument), "HPLC RID")
   expect_equal(meta_lc$detector_model, c("SPD-20A", "SPD-20A", "RID-10A"))
 

@@ -286,7 +286,6 @@ read_waters_metadata <- function(file){
 #'
 #' @param chrom_list A list of chromatograms with attached metadata (as returned
 #' by `read_chroms` with `read_metadata = TRUE`), or a single chromatogram.
-#' Nested lists are flattened, one row per chromatogram.
 #' @param what A character vector specifying the metadata elements to
 #' extract. Defaults to every field chromConverter attaches; no format
 #' records all of them, so the elements a format does not provide are
@@ -320,11 +319,20 @@ read_waters_metadata <- function(file){
 #' name is already taken, in which case it carries the field it came from
 #' (`ms_params.polarity`, since `polarity` is a metadata field in its own
 #' right).
+#' @param by Whether to return one row per `sample` (the default), that is per
+#' element of `chrom_list`, or one row per `chromatogram`. The two differ only
+#' for nested lists, such as the traces [read_agilent_d] returns for each `.D`
+#' directory. With `by = "sample"`, each field holds the value that a sample's
+#' chromatograms agree on, ignoring those that leave it empty, and is `NA` where
+#' they disagree; with the default `what`, fields that are then empty for every
+#' sample are left out. Fields that belong to each trace, such as `detector` or
+#' `source_file`, need `by = "chromatogram"`.
 #' @return A `data.frame`, `tibble`, or `data.table` (according to the value of
-#' `format_out`), with one row per chromatogram and the specified metadata
-#' elements as columns, or `NA` if none of the specified elements could be
-#' found. For a list, the first column, `name`, identifies each chromatogram
-#' by its path through the list (e.g. `blue.UV`).
+#' `format_out`), with one row per sample or chromatogram (see `by`) and the
+#' specified metadata elements as columns, or `NA` if none of the specified
+#' elements could be found. For a list, the first column, `name`, identifies
+#' each row: by the sample's name, or with `by = "chromatogram"` by the
+#' chromatogram's path through the list (e.g. `blue.UV`).
 #' @examples
 #' path <- system.file("extdata/ladder.txt", package = "chromConverter")
 #' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
@@ -337,17 +345,27 @@ extract_metadata <- function(chrom_list,
                              format_out = c("data.frame", "data.table",
                                             "tibble"),
                              collapse = FALSE,
-                             expand = FALSE
+                             expand = FALSE,
+                             by = c("sample", "chromatogram")
 ){
+  by <- match.arg(by)
   defaulted <- identical(what, chrom_metadata_fields())
   what <- resolve_metadata_fields(what)
   if (inherits(chrom_list, c("matrix", "data.table", "data.frame"))){
     chrom_list <- list(chrom_list)
     use_names <- FALSE
   } else use_names <- TRUE
+  sample_names <- names(chrom_list)
+  if (is.null(sample_names)) sample_names <- rep("", length(chrom_list))
+  sample_names[!nzchar(sample_names)] <- seq_along(chrom_list)[!nzchar(sample_names)]
+  group <- rep(seq_along(chrom_list),
+               vapply(chrom_list, function(el) length(chrom_list_leaves(el)),
+                      integer(1)))
   chrom_list <- flatten_chrom_list(chrom_list, inherit = TRUE)
   if (!is.null(detector)){
-    chrom_list <- filter_by_detector(chrom_list, detector)
+    kept <- filter_by_detector(chrom_list, detector)
+    group <- group[names(chrom_list) %in% names(kept)]
+    chrom_list <- kept
   }
   format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
   # named explicitly, so a field that is nowhere to be found is worth a warning
@@ -427,6 +445,11 @@ extract_metadata <- function(chrom_list,
     metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime),
                                         tz = "UTC")
   }
+  if (by == "sample" && use_names){
+    metadata <- collapse_metadata_by_sample(metadata, group,
+                                            sample_names[unique(group)],
+                                            drop_empty = defaulted)
+  }
   if (!use_names){
     metadata <- metadata[,-1]
   }
@@ -436,6 +459,33 @@ extract_metadata <- function(chrom_list,
     data.table::setDT(metadata)
   }
   metadata
+}
+
+#' Reduce per-chromatogram metadata to one row per sample
+#'
+#' A field keeps the value a sample's chromatograms agree on, ignoring those
+#' that leave it empty, and is `NA` where they disagree.
+#' @noRd
+collapse_metadata_by_sample <- function(metadata, group, sample_names,
+                                        drop_empty){
+  rows <- split(seq_len(nrow(metadata)), factor(group, levels = unique(group)))
+  out <- metadata[vapply(rows, `[[`, integer(1), 1), , drop = FALSE]
+  for (col in setdiff(colnames(out), "name")){
+    v <- metadata[[col]]
+    filled <- lapply(rows, function(r) r[!vapply(v[r], is_blank_value, logical(1))])
+    agreed <- vapply(filled, function(r) length(unique(v[r])) == 1, logical(1))
+    out[[col]] <- v[vapply(seq_along(rows), function(i){
+      if (length(filled[[i]])) filled[[i]][1] else rows[[i]][1]
+    }, integer(1))]
+    out[[col]][!agreed] <- NA
+  }
+  out$name <- sample_names
+  if (drop_empty){
+    empty <- vapply(out, function(col) all(vapply(col, is_blank_value, logical(1))),
+                    logical(1))
+    out <- out[, !empty | colnames(out) == "name", drop = FALSE]
+  }
+  out
 }
 
 #' Reduce a metadata field to one named value per column
