@@ -15,7 +15,7 @@
 * 'OpenLab' `.dx` files now report their injection volume.
 * 'Agilent ChemStation' `.D` directories now return pump pressure, flow, solvent composition and temperature traces from `LCDIAG.REG` with `what = "instrument"`. See `?read_agilent_d`.
 * 'Agilent' `.ch`, `.uv` and `.it` traces now report the channel they were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`), and its module as `detector` (e.g. `DAD`).
-* 'Agilent' `.ch` traces now report `wavelength` and `bandwidth` from their signal descriptor (e.g. `Sig=254,8`).
+* 'Agilent' `.ch` traces and 'ChemStation' peak tables now report `wavelength` and `bandwidth` from their signal descriptor (e.g. `Sig=254,8`); peak tables also report `detector` and `channel_id`.
 * `extract_metadata` now accepts an element of a nested field in `what`, such as `"SampleLabel"` or `"acaml_metadata.SampleLabel"`, and returns that column alone.
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
 * `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.
@@ -63,6 +63,9 @@
 * `read_agilent_amx` now warns when a method doesn't contain a requested module, such as a DAD on an instrument that has none, and returns the others. Asking for that module alone now gives a clear error.
 * The `solvents` table from `read_agilent_amx` now returns the class that `format_out` asks for.
 * `read_agilent_dx(what = "instrument")` now gives a clear error for an archive without instrument data.
+* Improved handling of metadata from'ChemStation' report files including additional fields such as `run_datetime`, injection volume, `method`, and the `sample_name`.
+* `extract_metadata` no longer erroneously splits the `source_file` of 'ChemStation' peak lists into one column per sample.
+* 'Agilent' `.ch` and `.uv` traces now report the volume actually injected, which can differ from the volume the sequence requested.
 
 #### Export
 

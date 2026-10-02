@@ -42,7 +42,9 @@ meta_chemstation <- function(meta, ctx){
        batch = meta$SeqPathAndFile,
        operator = meta$operator,
        run_datetime = get_metadata_field(meta, "date"),
-       sample_injection_volume = meta$InjVolume,
+       sample_injection_volume = get_metadata_field(
+         meta, "ActInjVolume", null_val = get_metadata_field(meta, "InjVolume",
+                                                              null_val = NULL)),
        sample_amount = NA,
        time_range = meta$time_range,
        time_interval = NA,
@@ -79,18 +81,37 @@ chemstation_sig <- function(desc, i){
   if (length(m) == 3) as.numeric(m[i + 1]) else NULL
 }
 
+#' Method name from a 'ChemStation' report
+#'
+#' The report gives the full path, wrapped across lines and followed by where
+#' the method came from (`C:\CHEM32\...\RAYKODTA.M (Sequence Method)`), where
+#' the data files give only `RAYKODTA.M`.
+#' @noRd
+chemstation_report_method <- function(x){
+  if (length(x) != 1 || is.na(x)) return(x)
+  x <- sub("\\s*\\([^)]*\\)\\s*$", "", x)
+  trimws(sub(".*[\\\\/]", "", x))
+}
+
 #' Field map for 'ChemStation' report (peak list) files
 #' @noRd
 meta_chemstation_peaklist <- function(meta, ctx){
-  list(instrument = meta$`Acq. Instrument`,
+  list(instrument = get_metadata_field(meta, "Acq. Instrument"),
        detector = NA,
        software = NA,
-       method = meta$Method,
+       method = chemstation_report_method(
+         get_metadata_field(meta, "Method",
+                            null_val = get_metadata_field(meta, "Acq. Method"))),
        batch = NA,
-       operator = meta$`Acq. Operator`,
-       run_datetime = NA,
+       operator = get_metadata_field(meta, "Acq. Operator"),
+       run_datetime = convert_timestamp(
+         get_metadata_field(meta, "Injection Date"),
+         datetime_formats = c("%m/%d/%Y %I:%M:%S %p", "%d/%m/%Y %I:%M:%S %p",
+                              "%d-%b-%y, %H:%M:%S")),
        sample_name = sample_name_or_file(meta, "Sample Name", ctx$source_file),
-       sample_injection_volume = meta$`Inj Volume`,
+       sample_injection_volume = get_metadata_field(
+         meta, "Actual Inj Volume",
+         null_val = get_metadata_field(meta, "Inj Volume")),
        sample_amount = NA,
        time_range = NA,
        time_interval = NA,

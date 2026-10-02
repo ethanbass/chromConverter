@@ -498,6 +498,7 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(unique(meta$sample_name), "Rutin_2")
   expect_equal(unique(meta$operator), "AK")
   expect_equal(attr(x[[1]], "sample_injection_volume"), 15)
+  expect_equal(attr(x[[1]], "sample_injection_volume_unit"), "\u00b5l")
 
   x <- read_peaklist(path, format_in = "chemstation",
                      peaktable_format = "original")
@@ -511,6 +512,40 @@ test_that("read_peaklist can read `ChemStation` report files", {
                  "Area [mAU*s]", "Height [mAU]", "Area %", "Type"))
   expect_equal(attr(x, "fit"), "chemstation")
   expect_equal(attr(x, "class"), "peak_list")
+})
+
+test_that("read_peaklist reads the header of a 'ChemStation' sequence report", {
+  # A report from the Solidago standards with only its first signal, and the
+  # header of a batch reprint (`Batch Run`, indented `Sample Name`) and an
+  # actual injection volume added in the layout 'ChemStation' writes them
+  path <- test_path("testdata/chemstation_report.TXT")
+
+  x <- read_peaklist(path, format_in = "chemstation")[[1]]
+  expect_equal(attr(x, "sample_name"), "DME_2")
+  expect_equal(attr(x, "sample_injection_volume"), 10)
+  expect_equal(attr(x, "sample_injection_volume_unit"), "\u00b5l")
+  expect_equal(attr(x, "method"), "RAYKO_DT.M")
+  expect_equal(attr(x, "instrument"), "Instrument 1")
+  expect_equal(attr(x, "operator"), "AK")
+  expect_equal(attr(x, "run_datetime"),
+               as.POSIXct("2015-10-13 13:23:19", tz = "UTC"))
+  expect_null(names(attr(x, "source_file")))
+  expect_equal(attr(x[["254"]], "wavelength"), 254)
+  expect_equal(attr(x[["254"]], "detector"), "DAD")
+  expect_equal(attr(x[["254"]], "channel_id"), "DAD1 A")
+  expect_equal(x[["254"]]$area[1:3], c(576.81592, 655.24353, 193.04834))
+
+  meta <- extract_metadata(read_peaklist(path, format_in = "chemstation"))
+  expect_equal(nrow(meta), 1)
+  expect_false(any(grepl("^source_file\\.", colnames(meta))))
+
+  meta <- attr(read_peaklist(path, format_in = "chemstation",
+                             metadata_format = "raw")[[1]], "metadata")
+  expect_equal(meta[["Inj Volume"]], "15.0 \u00b5l")
+  expect_equal(meta[["Data File"]],
+               "C:\\CHEM32\\1\\DATA\\150922_SOLIDAGO_STANDARDS\\DEF_LC 2015-10-13 11-30-02\\DME_2.D")
+  expect_equal(meta[["Method Info"]],
+               "Solidago phenolics and diterpene acid analysis")
 })
 
 
@@ -565,6 +600,10 @@ test_that("read_agilent_d can read a `ChemStation` peak table", {
   expect_equal(colnames(x[[1]]),
                c("rt", "width", "area", "height", "type"))
   expect_equal(attr(x, "data_format"), "chromatographr")
+  expect_equal(unname(sapply(x, attr, "wavelength")),
+               c(254, 320, 360, 210, 230))
+  expect_equal(attr(x[[1]], "bandwidth"), 8)
+  expect_equal(attr(x, "method"), "RAYKODTA.M")
 })
 
 test_that("read_peaklist can read `Shimadzu` fid files", {

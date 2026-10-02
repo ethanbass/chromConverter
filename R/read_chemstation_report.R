@@ -33,11 +33,12 @@ read_chemstation_reports <- function(paths,
   names(paths) <- sub(".*/([^/]+)\\.D/.*$", "\\1", paths)
 
   pks <- lapply(seq_along(paths), function(i){
-    xx <- read_chemstation_report(paths[i], peaktable_format = peaktable_format,
+    xx <- read_chemstation_report(paths[[i]], peaktable_format = peaktable_format,
                                   metadata_format = metadata_format)
     dat <- lapply(seq_along(xx), function(ii){
       lambda <- sub(".*Sig=([0-9]+).*", "\\1", names(xx)[ii])
-      cbind(sample = names(paths)[i], lambda = lambda, xx[[ii]])
+      transfer_metadata(cbind(sample = names(paths)[i], lambda = lambda,
+                              xx[[ii]]), xx[[ii]])
     })
     names(dat) <- sub(".*Sig=([0-9]+).*", "\\1", names(xx))
     # `read_chemstation_report` attaches the sample's metadata to the list it
@@ -73,9 +74,7 @@ read_chemstation_report <- function(path,
   peaktable_format <- match.arg(tolower(peaktable_format),
                                 c("chromatographr", "original"))
   metadata_format <- check_metadata_format(metadata_format, "chemstation_peaklist")
-  x <- readLines(path, encoding = "UTF-16LE", skipNul = TRUE)
-  x[1] <- gsub("\xff\xfe", "", x[1], useBytes = TRUE)
-  x <- gsub("\xb5", "<b5>", x, useBytes = TRUE)
+  x <- read_chemstation_text(path)
 
   sections <- grep("=====================================================================", x)
 
@@ -90,23 +89,18 @@ read_chemstation_report <- function(path,
   if (read_metadata){
     metadata <- x[(sections[1]+1):(sections[2]-1)]
     metadata <- remove_blank_lines(metadata)
-    merge_lines <- function(xx){
-      idx <- grep(":", xx, invert = TRUE)
-      xx[idx - 1] <- paste0(xx[idx - 1], xx[idx])
-      xx <- xx[-idx]
-      xx
-    }
     metadata <- gsub("^\\s+","", metadata)
     metadata <- gsub("\\s+\\:\\s+", " : ", metadata)
-    metadata <- merge_lines(metadata)
+    metadata <- vapply(split(metadata, cumsum(grepl(":", metadata))), paste,
+                       character(1), collapse = "", USE.NAMES = FALSE)
     metadata <- unlist(strsplit(metadata, "(?<!\\s:\\s)\\s{2,}(?!\\s)",
                                 perl = TRUE))
 
-    sample_info <- x[1:(sections[1]-1)]
-    sample_info <- remove_blank_lines(sample_info)
-    sample_info[1] <- gsub("Data File", "Data File:", sample_info[1])
+    sample_info <- trimws(x[seq_len(sections[1] - 1)])
+    sample_info <- sub("^Data File ", "Data File: ", sample_info)
+    sample_info <- grep("^(Data File|Sample Name):", sample_info, value = TRUE)
 
-    metadata <- c(sample_info[1:2], metadata)
+    metadata <- c(sample_info, metadata)
 
     metadata <- strsplit(metadata, " ?: ")
 
@@ -116,6 +110,18 @@ read_chemstation_report <- function(path,
                                   source_file = path,
                                   data_format = peaktable_format,
                                   format_out = "data.frame")
+    if (metadata_format != "raw"){
+      for (i in seq_along(peak_lists)){
+        desc <- sub("^Signal [0-9]+:\\s*", "", names(peak_lists)[i])
+        channel <- chemstation_channel_id(desc)
+        if (!is.null(channel)){
+          attr(peak_lists[[i]], "detector") <- chemstation_detector(channel)
+          attr(peak_lists[[i]], "channel_id") <- channel
+        }
+        attr(peak_lists[[i]], "wavelength") <- chemstation_sig(desc, 1)
+        attr(peak_lists[[i]], "bandwidth") <- chemstation_sig(desc, 2)
+      }
+    }
   }
   peak_lists
 }

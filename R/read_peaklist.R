@@ -107,11 +107,11 @@ read_peaklist <- function(paths, find_files,
     }
     data <- lapply(seq_along(data), function(i){
       if (inherits(data[[i]], "list")){
-        lapply(data[[i]], function(xx){
-          cbind(sample = file_names[i], xx)
-        })
+        transfer_metadata(lapply(data[[i]], function(xx){
+          transfer_metadata(cbind(sample = file_names[i], xx), xx)
+        }), data[[i]])
       } else {
-        cbind(sample = file_names[i], data[[i]])
+        transfer_metadata(cbind(sample = file_names[i], data[[i]]), data[[i]])
       }
     })
     class(data) <- "peak_list"

@@ -347,3 +347,17 @@ test_that("chemstation_sig takes wavelength and bandwidth from a signal descript
   expect_null(chemstation_sig(NA, 1))
   expect_null(chemstation_sig(NULL, 1))
 })
+
+test_that("chemstation_report_method reduces the report's method to its name", {
+  expect_equal(chemstation_report_method(
+    "C:\\CHEM32\\1\\DATA\\DEF_LC 2015-09-22\\ RAYKODTA.M (Sequence Method)"),
+    "RAYKODTA.M")
+  expect_equal(chemstation_report_method("JCMONO1.M"), "JCMONO1.M")
+  expect_null(chemstation_report_method(NULL))
+})
+
+test_that("meta_chemstation prefers the volume actually injected", {
+  vol <- function(meta) meta_chemstation(meta, list())$sample_injection_volume
+  expect_equal(vol(list(InjVolume = "50", ActInjVolume = "17")), "17")
+  expect_equal(vol(list(InjVolume = "50")), "50")
+})
