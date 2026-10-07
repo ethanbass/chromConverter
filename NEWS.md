@@ -23,6 +23,7 @@
 * `subset()` now selects the chromatograms of a `chrom_list` by their metadata, e.g. `subset(chroms, sample_name == "S1")`. See `?subset.chrom_list`.
 * Added `add_metadata` to attach sample metadata from a table to a `chrom_list`, matched by name, for use with `subset()` and `extract_metadata`.
 * `print()` of a `chrom_list` now shows numeric metadata to `getOption("digits")` significant digits, set with a new `digits` argument that `summary()` and `extract_metadata()` also take.
+* `read_asm` now reads mass spectra from ASM GC-MS files, and peak lists and instrument traces (e.g. pump pressure, flow rate, temperature) from any ASM chromatography file, chosen with a new `what` argument. `read_peaklist` accepts `format_in = "asm"`.
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
 * `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.
 * mzML files now record each scan's polarity, and a new `centroided` argument lets profile data be marked as profile. All spectra were previously assumed to be centroided.
@@ -77,6 +78,16 @@
 #### Export
 
 * Exported file names now replace characters that file names cannot hold, such as `"` or `:`, with `_`. Sample names containing them previously failed to export on Windows.
+
+#### Allotrope Simple Model (ASM)
+
+* Files from ASM releases 2024/12 onward, and files converted by 'allotropy' (e.g. 'Chromeleon', 'Empower' and 'OpenLab CDS' exports), now load.
+* A file holding several injections, such as an exported sequence, now returns one sample per injection, named by sample, which `read_chroms` adds to its list of samples.
+* Chromatograms in one file now get distinct names, taken from the file's labels (e.g. `"UV 1_280"`) where their detection types don't tell them apart, in the list and in the `detector` column.
+* `detector_range`, `detector_reference`, `detector_y_unit` and `time_unit` now describe each chromatogram, rather than being copied from the file's other traces. LC-MS files no longer warn that row names were discarded.
+* `detector_model` is now reported, as are the `method` and injection volume of GC files and the sample name and run time of files from the 2022 releases.
+* Measurements listing more than one device no longer fail with a `'names' attribute` error.
+* Raw ASM metadata (`metadata_format = "raw"`) now keep the file's own field names, e.g. `injection time` and `analyst`, and describe each chromatogram rather than the whole file.
 
 #### Other formats
 

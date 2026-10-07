@@ -231,16 +231,15 @@ read_chroms <- function(paths,
       files <- files[-errors]
     }
   }
-  if (format_in == "agilent_rslt"){
-    data <- do.call(`c`, data)
-  } else if (sample_names == "basename"){
-    names(data) <- file_names
-  } else if (sample_names == "sample_name"){
-    names(data) <- name_by_sample_name(data, file_names)
+  multi <- vapply(data, inherits, logical(1), "chrom_list")
+  nms <- file_names
+  if (sample_names == "sample_name" && !all(multi)){
+    nms[!multi] <- name_by_sample_name(data[!multi], file_names[!multi])
   }
-  if (format_in != "agilent_rslt" && length(data) == length(files)){
-    names(data) <- name_traces_in_d(names(data), files)
+  if (!any(multi) && length(data) == length(files)){
+    nms <- name_traces_in_d(nms, files)
   }
+  data <- splice_samples(data, nms)
   if (anyDuplicated(names(data))){
     duplicated_names <- unique(names(data)[duplicated(names(data))])
     warning("The following names are duplicated: ",

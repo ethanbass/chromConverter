@@ -8,7 +8,7 @@ read_peaklist(
   paths,
   find_files,
   format_in = c("chemstation", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
-    "shimadzu_gcd", "chromatotec"),
+    "shimadzu_gcd", "chromatotec", "asm"),
   pattern = NULL,
   peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
@@ -27,7 +27,7 @@ whether every path is a file.}
 
 \item{format_in}{Format of files to be imported/converted. One of
 \code{chemstation} (the default), \code{shimadzu_fid}, \code{shimadzu_dad},
-\code{shimadzu_lcd}, \code{shimadzu_gcd}, or \code{chromatotec}.}
+\code{shimadzu_lcd}, \code{shimadzu_gcd}, \code{chromatotec}, or \code{asm}.}
 
 \item{pattern}{A pattern (e.g. a file extension). Defaults to \code{NULL}, in
 which case the file extension will be deduced from \code{format_in}.}

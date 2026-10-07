@@ -2,12 +2,14 @@
 % Please edit documentation in R/read_asm.R
 \name{read_asm}
 \alias{read_asm}
-\title{Read 'Allotrope Simple Model' (ASM) 2D chromatograms}
+\title{Read 'Allotrope Simple Model' (ASM) files}
 \usage{
 read_asm(
   path,
+  what = c("chroms", "MS1"),
   data_format = c("wide", "long"),
   format_out = c("matrix", "data.frame", "data.table"),
+  peaktable_format = c("chromatographr", "original"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE
@@ -16,10 +18,19 @@ read_asm(
 \arguments{
 \item{path}{Path to ASM \code{.json} file.}
 
+\item{what}{What to read: 2D chromatograms (\code{chroms}), mass spectra
+(\code{MS1}), peak lists (\code{peak_table}) and/or instrument traces (\code{instrument}),
+such as pump pressure, flow rate or temperature. Defaults to \code{chroms} and
+\code{MS1}, dropping whichever the file does not contain.}
+
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
+
+\item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
+format (\code{rt}, \code{start}, \code{end}, \code{area} and \code{height}) or \code{original} format,
+with every field the file records under its ASM name.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
@@ -32,15 +43,36 @@ element. Defaults to \code{TRUE}.}
 \value{
 A 2D chromatogram in the format specified by \code{format_out} and
 \code{data_format}, or a list of them named by detection type if the file holds
-more than one (or \code{collapse = FALSE}). Metadata are attached as
-\link{attributes} if \code{read_metadata} is \code{TRUE}.
+more than one (or \code{collapse = FALSE}). Mass spectra are returned as a
+\code{data.frame} (or \code{data.table}) with columns \code{rt}, \code{mz} and \code{intensity}, and
+peak tables as a \code{data.frame} (or \code{data.table}) per measurement. Instrument
+traces are returned as 2D chromatograms named by trace. Where more
+than one of these is returned, they are combined in a list named by \code{what}.
+A file with several injections returns a \code{chrom_list} with one such
+element per injection. Metadata are attached as \link{attributes} if
+\code{read_metadata} is \code{TRUE}.
 }
 \description{
-Reads \href{https://allotropefoundation.org/our-technology/}{'Allotrope Simple Model'} files into R.
+Reads chromatograms, mass spectra and peak lists from
+\href{https://allotropefoundation.org/our-technology/}{'Allotrope Simple Model'}
+chromatography files into R.
+}
+\details{
+Retention times are returned in the unit the file declares, which is
+recorded in the \code{time_unit} attribute.
+
+A file can hold several injections, such as a sequence exported from a
+chromatography data system. Each injection is then returned as a separate
+sample, named by its sample name, and \link{read_chroms} adds each one to the
+list of samples it returns.
+
+Mass spectra have so far only been tested against the example files
+published by the Allotrope Foundation.
 }
 \examples{
 \dontrun{
 read_asm("path/to/file.json")
+read_asm("path/to/file.json", what = "peak_table")
 }
 }
 \author{

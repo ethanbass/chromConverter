@@ -9,7 +9,7 @@
 #' whether every path is a file.
 #' @param format_in Format of files to be imported/converted. One of
 #' `chemstation` (the default), `shimadzu_fid`, `shimadzu_dad`,
-#' `shimadzu_lcd`, `shimadzu_gcd`, or `chromatotec`.
+#' `shimadzu_lcd`, `shimadzu_gcd`, `chromatotec`, or `asm`.
 #' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
 #' which case the file extension will be deduced from `format_in`.
 #' @param peaktable_format Whether to return peak tables in `chromatographr`
@@ -31,7 +31,7 @@
 read_peaklist <- function(paths, find_files,
                         format_in = c("chemstation", "shimadzu_fid",
                                       "shimadzu_dad", "shimadzu_lcd",
-                                      "shimadzu_gcd", "chromatotec"),
+                                      "shimadzu_gcd", "chromatotec", "asm"),
                         pattern = NULL,
                         peaktable_format = c("chromatographr", "original"),
                         metadata_format = c("chromconverter", "raw"),
@@ -45,7 +45,8 @@ read_peaklist <- function(paths, find_files,
                                 c("chromatographr", "original"))
   format_in <- match.arg(tolower(format_in),
                          c("chemstation", "shimadzu_fid", "shimadzu_dad",
-                           "shimadzu_lcd", "shimadzu_gcd", "chromatotec"))
+                           "shimadzu_lcd", "shimadzu_gcd", "chromatotec",
+                           "asm"))
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
@@ -86,6 +87,13 @@ read_peaklist <- function(paths, find_files,
     parser <- partial(read_chromatotec, what = "peak_table",
                       read_metadata = read_metadata,
                       metadata_format = metadata_format)
+  } else if (format_in == "asm"){
+    pattern <- ifelse(is.null(pattern), "\\.json$", pattern)
+    parser <- partial(read_asm, what = "peak_table",
+                      peaktable_format = peaktable_format,
+                      format_out = "data.frame",
+                      read_metadata = read_metadata,
+                      metadata_format = metadata_format)
   }
   files <- collect_files(paths, pattern, search_dirs = find_files)
   file_names <- extract_filenames(files)
@@ -105,6 +113,8 @@ read_peaklist <- function(paths, find_files,
       data <- data[-errors]
       file_names <- file_names[-errors]
     }
+    data <- splice_samples(data, file_names)
+    file_names <- names(data)
     data <- lapply(seq_along(data), function(i){
       if (inherits(data[[i]], "list")){
         transfer_metadata(lapply(data[[i]], function(xx){

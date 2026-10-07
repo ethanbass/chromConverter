@@ -891,14 +891,6 @@ rb_instrument <- function(meta){
   get_metadata_field(meta, "technique", null_val = instrument)
 }
 
-#' Extract ASM wavelength from metadata list
-#' @author Ethan Bass
-#' @noRd
-get_asm_wavelength <- function(meta, lab = "absorbance_wavelength_setting.value"){
-  wv_idx <- grep(lab, names(meta$`device control aggregate document`))
-  unique(unlist(meta$`device control aggregate document`[wv_idx]))
-}
-
 #' Date-time formats used by 'MassHunter' (`sample_info.xml`)
 #'
 #' Note the literal `Z` rather than `%z`, which does not accept the military

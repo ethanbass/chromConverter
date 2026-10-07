@@ -446,6 +446,23 @@ rename_list <- function(x, new_names){
   x
 }
 
+#' Splice files holding several samples into a list of samples
+#'
+#' A reader returns a `chrom_list` for a file holding several samples (e.g. a
+#' sequence), whose elements replace it in the list.
+#' @param x List with one element per file.
+#' @param names Names of the elements of `x`.
+#' @return A list with one element per sample.
+#' @noRd
+splice_samples <- function(x, names){
+  multi <- vapply(x, inherits, logical(1), "chrom_list")
+  names(x) <- names
+  if (!any(multi)) return(x)
+  do.call(c, lapply(seq_along(x), function(i){
+    if (multi[i]) unclass(x[[i]]) else x[i]
+  }))
+}
+
 #' Collapse list
 #' @noRd
 collapse_list <- function(x){

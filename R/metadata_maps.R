@@ -478,26 +478,34 @@ meta_varian_sms <- function(meta, ctx){
 #' Field map for Allotrope Simple Model (ASM) documents
 #' @noRd
 meta_asm <- function(meta, ctx){
-  list(sample_name = meta$`sample document`$written_name,
-       sample_id = meta$`sample document`$sample_identifier,
+  smp <- meta$`sample document`
+  inj <- meta$`injection document`
+  device_control <- meta$`device control document`
+  volume_fields <- c("autosampler injection volume setting (chromatography)",
+                     "injection volume setting")
+  volume_field <- volume_fields[volume_fields %in% names(inj)][1]
+  list(sample_name = smp$`written name` %||% smp$`sample identifier`,
+       sample_id = smp$`sample identifier`,
        file_version = meta$file_version,
        file_type = NA,
-       instrument = meta$`asset management identifier`,
-       detector_model = meta$detector_model_number,
-       detector_range = get_asm_wavelength(meta),
+       instrument = meta$`device system document`$`asset management identifier`,
+       detector_model = asm_device_field(device_control, "^model number$") %||%
+         meta$`device system document`$`detector model number`,
+       detector_range = asm_device_field(device_control, "wavelength setting$",
+                                         exclude = "reference"),
        detector_y_unit = meta$detector_unit,
-       detector_reference = get_asm_wavelength(meta,
-                                                          lab = "reference_wavelength_setting_value"),
+       detector_reference = asm_device_field(device_control,
+                                             "reference wavelength setting$"),
        software = NA,
        software_version = NA,
        software_revision = NA,
-       method = NA,
+       method = meta$`device method identifier` %||% NA,
        batch = NA,
-       operator = meta$operator,
-       run_datetime = as.POSIXct(strptime(meta$`injection document`$injection_time,
-                                                     format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC")),
-       sample_injection_volume = paste(meta$`injection document`$autosampler_injection_volume_setting_chromatography_value,
-                                                  meta$`injection document`$autosampler_injection_volume_setting_chromatography_unit),
+       operator = meta$analyst,
+       run_datetime = parse_iso8601(inj$`injection time` %||% NA_character_),
+       sample_injection_volume = if (!is.na(volume_field)){
+         paste(inj[[volume_field]], inj[[paste(volume_field, "unit")]])
+       },
        sample_amount = NA,
        time_unit = meta$time_unit,
        intensity_multiplier = NA)
