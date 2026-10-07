@@ -11,7 +11,8 @@ extract_metadata(
   format_out = c("data.frame", "data.table", "tibble"),
   collapse = FALSE,
   expand = FALSE,
-  by = c("sample", "chromatogram")
+  by = c("sample", "chromatogram"),
+  digits = NULL
 )
 }
 \arguments{
@@ -64,6 +65,11 @@ chromatograms agree on, ignoring those that leave it empty, and is \code{NA} whe
 they disagree; with the default \code{what}, fields that are then empty for every
 sample are left out. Fields that belong to each trace, such as \code{detector} or
 \code{source_file}, need \code{by = "chromatogram"}.}
+
+\item{digits}{Number of significant digits for the numbers in a field
+collapsed into a string (see \code{collapse}), or \code{NULL} (the default) to keep
+them in full. Numeric fields spread across columns are returned as numbers
+either way.}
 }
 \value{
 A \code{data.frame}, \code{tibble}, or \code{data.table} (according to the value of

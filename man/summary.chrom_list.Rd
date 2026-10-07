@@ -8,6 +8,7 @@
   object,
   cols = chrom_summary_cols(),
   format_out = c("data.frame", "data.table", "tibble"),
+  digits = NULL,
   ...
 )
 }
@@ -21,6 +22,9 @@ leave empty, is omitted rather than filled with \code{NA}.}
 
 \item{format_out}{Format of object. Either \code{data.frame}, \code{data.table} or
 \code{tibble}.}
+
+\item{digits}{Number of significant digits for the numbers in a field
+collapsed into a string, or \code{NULL} (the default) to keep them in full.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

@@ -6,6 +6,7 @@
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.
+* `extract_metadata` now returns numeric fields, such as `time_range` and `wavelength`, as numbers rather than strings.
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
 * `extract_metadata` now returns one row per sample, retaining the values its chromatograms agree on. The `by = "chromatogram"` argument restores one row per chromatogram (in nested lists).
 
@@ -20,6 +21,7 @@
 * 'Agilent' `.ch` traces and 'ChemStation' peak tables now report `wavelength` and `bandwidth` from their signal descriptor (e.g. `Sig=254,8`); peak tables also report `detector` and `channel_id`.
 * `extract_metadata` now accepts an element of a nested field in `what`, such as `"SampleLabel"` or `"acaml_metadata.SampleLabel"`, and returns that column alone.
 * `subset()` now selects the chromatograms of a `chrom_list` by their metadata, e.g. `subset(chroms, sample_name == "S1")`. See `?subset.chrom_list`.
+* `print()` of a `chrom_list` now shows numeric metadata to `getOption("digits")` significant digits, set with a new `digits` argument that `summary()` and `extract_metadata()` also take.
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
 * `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.
 * mzML files now record each scan's polarity, and a new `centroided` argument lets profile data be marked as profile. All spectra were previously assumed to be centroided.

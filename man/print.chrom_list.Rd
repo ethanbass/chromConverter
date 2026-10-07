@@ -4,7 +4,13 @@
 \alias{print.chrom_list}
 \title{Print a chrom_list object}
 \usage{
-\method{print}{chrom_list}(x, n = 10, cols = chrom_summary_cols(), ...)
+\method{print}{chrom_list}(
+  x,
+  n = 10,
+  cols = chrom_summary_cols(),
+  digits = getOption("digits"),
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{chrom_list} object.}
@@ -14,6 +20,9 @@ Defaults to \code{10}.}
 
 \item{cols}{Character vector of attribute names to report. Defaults to:
 \code{sample_name}, \code{run_datetime}, \code{method}, \code{detector}, \code{wavelength}, \code{detector_range}, \code{scan_type}, \code{polarity}, \code{precursor_mz}, \code{product_mz}, \code{mz_range}.}
+
+\item{digits}{Number of significant digits for numeric metadata. Defaults
+to \code{getOption("digits")}, as for \link{print.data.frame}.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

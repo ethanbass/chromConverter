@@ -308,6 +308,10 @@ read_waters_metadata <- function(file){
 #' transitions) into a single comma-separated string. Defaults to `FALSE`, in
 #' which case such a field is spread across numbered columns
 #' (`time_range1`, `time_range2`).
+#' @param digits Number of significant digits for the numbers in a field
+#' collapsed into a string (see `collapse`), or `NULL` (the default) to keep
+#' them in full. Numeric fields spread across columns are returned as numbers
+#' either way.
 #' @param expand Whether to include the nested metadata fields, whose value is
 #' itself a list or table rather than a single value per chromatogram: the
 #' `ms_params` instrument settings, the `acaml_metadata` injection record that
@@ -346,7 +350,8 @@ extract_metadata <- function(chrom_list,
                                             "tibble"),
                              collapse = FALSE,
                              expand = FALSE,
-                             by = c("sample", "chromatogram")
+                             by = c("sample", "chromatogram"),
+                             digits = NULL
 ){
   by <- match.arg(by)
   defaulted <- identical(what, chrom_metadata_fields())
@@ -410,8 +415,8 @@ extract_metadata <- function(chrom_list,
         # back to `POSIXct` below, which keeps the full precision
         if (inherits(val, "POSIXt")) val <- as.numeric(val)
       }
-      if (!w %in% nested) return(flatten_metadata_field(val, w, collapse))
-      out <- flatten_metadata_field(val, "", collapse)
+      if (!w %in% nested) return(flatten_metadata_field(val, w, collapse, digits))
+      out <- flatten_metadata_field(val, "", collapse, digits)
       # a nested field is nested across the whole list, but an individual
       # chromatogram need not carry it: a UV trace has no `ms_params`
       if (!is.null(picks[[w]])) out <- out[names(out) %in% picks[[w]]]
@@ -444,6 +449,16 @@ extract_metadata <- function(chrom_list,
   if (any(colnames(metadata) == "run_datetime")){
     metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime),
                                         tz = "UTC")
+  }
+  for (w in setdiff(what, c(nested, "run_datetime"))){
+    vals <- lapply(chrom_list, attr, which = w, exact = TRUE)
+    if (!any(vapply(vals, is.numeric, logical(1))) ||
+        !all(vapply(vals, function(v) is.null(v) || is.numeric(v) ||
+                      all(is.na(v)), logical(1)))) next
+    for (col in grep(paste0("^", w, "[0-9]*$"), colnames(metadata), value = TRUE)){
+      num <- suppressWarnings(as.numeric(metadata[[col]]))
+      if (!any(is.na(num) & !is.na(metadata[[col]]))) metadata[[col]] <- num
+    }
   }
   if (by == "sample" && use_names){
     metadata <- collapse_metadata_by_sample(metadata, group,
@@ -511,13 +526,18 @@ collapse_metadata_by_sample <- function(metadata, group, sample_names,
 #' decides between the two with `expand_taken_names`.
 #' @return A named list of atomic values, empty if the field holds nothing.
 #' @noRd
-flatten_metadata_field <- function(val, name, collapse = FALSE){
+flatten_metadata_field <- function(val, name, collapse = FALSE, digits = NULL){
   if (length(val) == 0) return(NULL)
   if (inherits(val, "POSIXt")){
     val <- format(val, "%Y-%m-%d %H:%M:%S", tz = "UTC")
   } else if (inherits(val, "Date")) val <- format(val)
   if (!is.list(val)){
-    if (collapse && length(val) > 1) val <- paste(val, collapse = ", ")
+    if (collapse && length(val) > 1){
+      if (is.numeric(val) && !is.null(digits)){
+        val <- vapply(val, format, character(1), digits = digits)
+      }
+      val <- paste(val, collapse = ", ")
+    }
     return(stats::setNames(list(val), name))
   }
   nms <- names(val)
@@ -525,7 +545,7 @@ flatten_metadata_field <- function(val, name, collapse = FALSE){
   nms[!nzchar(nms)] <- seq_along(val)[!nzchar(nms)]
   if (nzchar(name)) nms <- paste(name, nms, sep = ".")
   unlist(lapply(seq_along(val), function(i){
-    flatten_metadata_field(val[[i]], nms[i], collapse)
+    flatten_metadata_field(val[[i]], nms[i], collapse, digits)
   }), recursive = FALSE)
 }
 

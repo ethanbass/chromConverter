@@ -232,7 +232,7 @@ test_that("a sample-level attribute is not inherited over a differing trace", {
   meta <- suppressWarnings(extract_metadata(
     structure(list(s1 = sample), class = "chrom_list"), "time_range",
     by = "chromatogram"))
-  expect_equal(meta$time_range2, c("10", "20"))
+  expect_equal(meta$time_range2, c(10, 20))
 
   # nor is a nested field inherited over a trace that has one of its own,
   # however far into it the traces differ
@@ -683,4 +683,19 @@ test_that("subset.chrom_list treats an empty metadata field as missing", {
                          list(source_file = attr(x[[1]], "source_file")))
   expect_false("detector_range" %in% names(attributes(y)))
   expect_length(subset(c(x, list(y)), detector_range == "254"), 0)
+})
+
+test_that("numeric metadata stay numbers and print to `digits`", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  x <- structure(list(a = mk(sample_name = "007", time_range = c(1/3, 2/3)),
+                      b = mk(sample_name = "008", time_range = c(0, 1))),
+                 class = "chrom_list")
+  meta <- extract_metadata(x, c("sample_name", "time_range"))
+  expect_type(meta$time_range1, "double")
+  expect_equal(meta$sample_name, c("007", "008"))
+  expect_equal(extract_metadata(x, "time_range", collapse = TRUE,
+                                digits = 3)$time_range[1], "0.333, 0.667")
+  expect_match(paste(utils::capture.output(print(x, cols = "time_range",
+                                                 digits = 3)), collapse = "\n"),
+               "0.333, 0.667", fixed = TRUE)
 })

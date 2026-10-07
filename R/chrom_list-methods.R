@@ -12,6 +12,8 @@
 #' @param n Integer. Maximum number of chromatograms to show in the table.
 #' Defaults to `10`.
 #' @eval cols_doc()
+#' @param digits Number of significant digits for numeric metadata. Defaults
+#' to `getOption("digits")`, as for [print.data.frame].
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return Invisibly returns `x`.
@@ -24,7 +26,8 @@
 #' @seealso [extract_metadata]
 #'
 #' @export
-print.chrom_list <- function(x, n = 10, cols = chrom_summary_cols(), ...) {
+print.chrom_list <- function(x, n = 10, cols = chrom_summary_cols(),
+                             digits = getOption("digits"), ...) {
   n <- max(0L, as.integer(n))
   # A element may itself be a list of chromatograms (e.g. one per detector),
   # so the number of chromatograms is not `length(x)`. Both this method and
@@ -45,7 +48,8 @@ print.chrom_list <- function(x, n = 10, cols = chrom_summary_cols(), ...) {
   if (n_traces == 0) return(invisible(x))
 
   meta <- suppressWarnings(extract_metadata(x, cols, collapse = TRUE,
-                                            by = "chromatogram"))
+                                            by = "chromatogram",
+                                            digits = digits))
   if (!inherits(meta, "data.frame")) {
     # `extract_metadata` returns `NA` when none of `cols` could be found. Say
     # so, but still list the chromatograms: their names are the only thing left
@@ -81,7 +85,7 @@ print.chrom_list <- function(x, n = 10, cols = chrom_summary_cols(), ...) {
   varying_meta  <- meta[, !is_constant, drop = FALSE]
 
   if (ncol(constant_cols) > 0) {
-    cat(format_chrom_header(constant_cols), sep = "\n")
+    cat(format_chrom_header(constant_cols, digits = digits), sep = "\n")
   }
 
   n_show <- min(n, n_traces)
@@ -114,10 +118,11 @@ print.chrom_list <- function(x, n = 10, cols = chrom_summary_cols(), ...) {
       }
       print_grouped_meta(truncate_meta(varying_meta[seq_len(n_show), ,
                                                     drop = FALSE]),
-                         groups[seq_len(n_show)], headers = headers)
+                         groups[seq_len(n_show)], headers = headers,
+                         digits = digits)
     } else {
       print(truncate_meta(varying_meta[seq_len(n_show), , drop = FALSE]),
-            row.names = TRUE)
+            row.names = TRUE, digits = digits)
     }
   }
 
@@ -173,6 +178,8 @@ cols_doc <- function(extra = character()){
 #'   leave empty, is omitted rather than filled with `NA`.")
 #' @param format_out Format of object. Either `data.frame`, `data.table` or
 #' `tibble`.
+#' @param digits Number of significant digits for the numbers in a field
+#' collapsed into a string, or `NULL` (the default) to keep them in full.
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return A `data.frame`, `data.table` or `tibble` (according to the value of
@@ -195,7 +202,8 @@ cols_doc <- function(extra = character()){
 #' @export
 summary.chrom_list <- function(object, cols = chrom_summary_cols(),
                                format_out = c("data.frame", "data.table",
-                                              "tibble"), ...){
+                                              "tibble"),
+                               digits = NULL, ...){
   format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
   # `extract_metadata` flattens with `chrom_list_leaves` too, so its rows line
   # up with `leaves` one for one, as `print.chrom_list` also relies on
@@ -213,7 +221,8 @@ summary.chrom_list <- function(object, cols = chrom_summary_cols(),
 
   if (length(leaves) > 0){
     meta <- suppressWarnings(extract_metadata(object, cols, collapse = TRUE,
-                                            by = "chromatogram"))
+                                            by = "chromatogram",
+                                            digits = digits))
     if (inherits(meta, "data.frame")){
       meta <- meta[, setdiff(names(meta), "name"), drop = FALSE]
       # a field that is empty for every chromatogram says only that the format
@@ -246,12 +255,13 @@ summary.chrom_list <- function(object, cols = chrom_summary_cols(),
 #' @return A character vector of lines, continuations indented by two spaces.
 #' @noRd
 format_chrom_header <- function(cols, width = getOption("width"),
-                                max_field = 60L, prefix = NULL){
+                                max_field = 60L, prefix = NULL,
+                                digits = getOption("digits")){
   # `format` rather than `as.character`, so that a value shown in the header
   # renders as `print.data.frame` would render it in the table below
   # (`as.character` on a POSIXct keeps sub-second digits, `format` does not).
-  vals <- truncate_middle(trimws(unlist(format(cols), use.names = FALSE)),
-                          max_field)
+  vals <- truncate_middle(trimws(unlist(format(cols, digits = digits),
+                                       use.names = FALSE)), max_field)
   # a block header leads with the name of the sample, which is a label rather
   # than a `field: value` pair, but wraps along with them
   fields <- c(prefix, paste(names(cols), vals, sep = ": "))
@@ -326,7 +336,8 @@ constant_within <- function(col, groups){
 #' as a whole, one row per group and named for it, shown alongside the sample's
 #' name at the head of its block.
 #' @noRd
-print_grouped_meta <- function(meta, groups, headers = NULL){
+print_grouped_meta <- function(meta, groups, headers = NULL,
+                               digits = getOption("digits")){
   for (group in unique(groups)){
     # a list mixing flat and nested entries gives the flat ones an empty group;
     # printing it would emit a bare blank line
@@ -334,11 +345,13 @@ print_grouped_meta <- function(meta, groups, headers = NULL){
       fields <- if (is.null(headers)) NULL else
         block_header_fields(headers[group, , drop = FALSE], group)
       if (!is.null(fields) && ncol(fields) > 0){
-        cat(format_chrom_header(fields, prefix = group), sep = "\n")
+        cat(format_chrom_header(fields, prefix = group, digits = digits),
+            sep = "\n")
       } else cat(group, "\n", sep = "")
     }
     block <- meta[groups == group, , drop = FALSE]
-    cat(paste0("  ", utils::capture.output(print(block, row.names = TRUE))),
+    cat(paste0("  ", utils::capture.output(print(block, row.names = TRUE,
+                                                 digits = digits))),
         sep = "\n")
   }
   invisible(NULL)

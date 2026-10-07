@@ -171,7 +171,7 @@ test_that("extract_metadata function works", {
   expect_equal(meta$detector_y_unit, "mAU")
   expect_equal(meta$detector_x_unit, "nm")
   expect_equal(meta$detector, "DAD")
-  expect_equal(meta$detector_range1, "200")
+  expect_equal(meta$detector_range1, 200)
   expect_equal(meta$method, "ETHAN_PA_SHORT8_2_PREP_30UL.M")
   expect_equal(meta$time_unit, "Minutes")
   expect_equal(meta$run_datetime, as.POSIXct(1648668556, tz = "UTC"))
