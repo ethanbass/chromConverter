@@ -292,7 +292,7 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
 })
 
 test_that("`Shimadzu` ASCII parser works", {
-  path <- test_path("testdata/ladder.txt")
+  path <- system.file("extdata/ladder.txt", package = "chromConverter")
 
   x <- read_chroms(path, format_in = "shimadzu_fid", find_files = FALSE,
                    progress_bar = FALSE)[[1]]
@@ -444,7 +444,7 @@ test_that("read_chroms exports CDF files correctly", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")
   tmp <-  tempdir(check = TRUE)
-  file <- test_path("testdata/ladder.txt")
+  file <- system.file("extdata/ladder.txt", package = "chromConverter")
 
   x1 <- read_chroms(paths = file, format_in = "shimadzu_fid",
                     path_out = tmp, export_format = "cdf",
@@ -635,7 +635,7 @@ test_that("read_agilent_d can read a `ChemStation` peak table", {
 })
 
 test_that("read_peaklist can read `Shimadzu` fid files", {
-  path <- test_path("testdata/ladder.txt")
+  path <- system.file("extdata/ladder.txt", package = "chromConverter")
   x <- read_peaklist(path, format_in = "shimadzu_fid", progress_bar = FALSE)
   expect_equal(class(x[[1]]), "data.frame")
   expect_equal(x[[1]][[1,"sample"]], "ladder")

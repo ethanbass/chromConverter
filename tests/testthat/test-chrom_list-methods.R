@@ -625,8 +625,9 @@ test_that("subset.chrom_list selects chromatograms by their metadata", {
 })
 
 test_that("subset.chrom_list compares numbers read from text formats as numbers", {
-  x <- read_chroms(test_path("testdata/ladder.txt"), format_in = "shimadzu_ascii",
-                   find_files = FALSE, progress_bar = FALSE)
+  x <- read_chroms(system.file("extdata/ladder.txt", package = "chromConverter"),
+                   format_in = "shimadzu_ascii", find_files = FALSE,
+                   progress_bar = FALSE)
   expect_type(attr(x[[1]], "time_range"), "double")
   expect_length(subset(x, time_range[2] > 5), 1)
   expect_length(subset(x, sample_injection_volume > 0.5), 1)
@@ -676,8 +677,9 @@ test_that("extract_metadata gives one row per sample by default", {
 })
 
 test_that("subset.chrom_list treats an empty metadata field as missing", {
-  x <- read_chroms(test_path("testdata/ladder.txt"), format_in = "shimadzu_ascii",
-                   find_files = FALSE, progress_bar = FALSE)
+  x <- read_chroms(system.file("extdata/ladder.txt", package = "chromConverter"),
+                   format_in = "shimadzu_ascii", find_files = FALSE,
+                   progress_bar = FALSE)
   y <- finalize_metadata(x[[1]][, 1, drop = FALSE],
                          list(detector_range = character()),
                          list(source_file = attr(x[[1]], "source_file")))

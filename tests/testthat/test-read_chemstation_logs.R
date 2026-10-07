@@ -88,7 +88,8 @@ test_that("read_chemstation_logs returns a data.table on request", {
 })
 
 test_that("read_chemstation_logs rejects files that are not logs", {
-  expect_error(read_chemstation_logs(test_path("testdata/ladder.txt")),
+  path <- system.file("extdata/ladder.txt", package = "chromConverter")
+  expect_error(read_chemstation_logs(path),
                "not a recognised")
 })
 
@@ -103,7 +104,8 @@ test_that("read_chemstation_logs reads the sequence logs in a directory", {
   file.copy(test_path("testdata/chemstation_sequence_ascii.LOG"),
             file.path(root, "seq2", "SEQ2.LOG"))
   file.copy(fixture, file.path(root, "seq2", "1AA-0101.D", "RUN.LOG"))
-  file.copy(test_path("testdata/ladder.txt"), file.path(root, "seq2", "OTHER.LOG"))
+  file.copy(system.file("extdata/ladder.txt", package = "chromConverter"),
+            file.path(root, "seq2", "OTHER.LOG"))
 
   expect_warning(x <- read_chemstation_logs(root, what = "events"), "OTHER.LOG")
   expect_equal(unique(x$folder), c("seq1", "seq2"))
