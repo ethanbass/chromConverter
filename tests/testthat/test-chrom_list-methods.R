@@ -658,6 +658,36 @@ test_that("subset.chrom_list keeps or drops a nested sample as a whole", {
   expect_equal(names(subset(x, detector == "UV")), "s2")
 })
 
+test_that("add_metadata attaches columns by sample name", {
+  mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
+  x <- structure(list(
+    s1 = list(uv = mk(sample_name = "s1"), ms = mk(sample_name = "s1")),
+    s2 = mk(sample_name = "s2"),
+    s3 = mk(sample_name = "s3")),
+    class = "chrom_list")
+  meta <- data.frame(name = c("s2", "s1", "s9"), treatment = factor(c("a", "b", "c")),
+                     dose = c(2, 1, 9))
+
+  expect_warning(y <- add_metadata(x, meta), "s3")
+  expect_s3_class(y, "chrom_list")
+  expect_equal(attr(y$s1$ms, "treatment"), "b")
+  expect_equal(attr(y$s2, "dose"), 2)
+  expect_null(attr(y$s3, "treatment"))
+  expect_equal(attr(y$s1$uv, "added_metadata"), c("treatment", "dose"))
+  z <- suppressWarnings(add_metadata(y, data.frame(name = "s2", dose = 5, site = "x")))
+  expect_equal(attr(z$s2, "added_metadata"), c("treatment", "dose", "site"))
+  expect_equal(names(subset(y, treatment == "b")), "s1")
+  expect_equal(extract_metadata(y, what = "dose")$dose, c(1, 2, NA))
+
+  meta$sample_name <- "new"
+  expect_error(add_metadata(x, meta), "overwrite")
+  expect_equal(attr(suppressWarnings(add_metadata(x, meta, overwrite = TRUE))$s2,
+                    "sample_name"), "new")
+  expect_error(add_metadata(x, data.frame(name = "s1", dim = 1)), "dim")
+  expect_error(add_metadata(x, data.frame(id = c("s1", "s1")), by = "id"), "duplicate")
+  expect_error(add_metadata(x, meta, by = "id"), "could not be found")
+})
+
 test_that("extract_metadata gives one row per sample by default", {
   mk <- function(...) structure(matrix(1:4, nrow = 2), ...)
   x <- structure(list(

@@ -21,6 +21,7 @@
 * 'Agilent' `.ch` traces and 'ChemStation' peak tables now report `wavelength` and `bandwidth` from their signal descriptor (e.g. `Sig=254,8`); peak tables also report `detector` and `channel_id`.
 * `extract_metadata` now accepts an element of a nested field in `what`, such as `"SampleLabel"` or `"acaml_metadata.SampleLabel"`, and returns that column alone.
 * `subset()` now selects the chromatograms of a `chrom_list` by their metadata, e.g. `subset(chroms, sample_name == "S1")`. See `?subset.chrom_list`.
+* Added `add_metadata` to attach sample metadata from a table to a `chrom_list`, matched by name, for use with `subset()` and `extract_metadata`.
 * `print()` of a `chrom_list` now shows numeric metadata to `getOption("digits")` significant digits, set with a new `digits` argument that `summary()` and `extract_metadata()` also take.
 * `read_thermoraw` now accepts `format_out = "data.table"`, like every other parser.
 * `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.

@@ -445,15 +445,18 @@ subset.chrom_list <- function(x, subset, ...){
   if (missing(subset)) return(x)
   cond <- substitute(subset)
   env <- parent.frame()
-  fields <- c(chrom_metadata_fields(), .metadata_extra_fields)
-  keep <- vapply(seq_along(x), function(i){
-    chrom <- x[[i]]
-    meta <- if (is.list(chrom) && !is.data.frame(chrom)){
+  metas <- lapply(x, function(chrom){
+    if (is.list(chrom) && !is.data.frame(chrom)){
       shared_metadata_attrs(chrom)
     } else {
       a <- attributes(chrom)
       a[setdiff(names(a), bookkeeping_attrs())]
     }
+  })
+  fields <- unique(c(chrom_metadata_fields(), .metadata_extra_fields,
+                     unlist(lapply(metas, names))))
+  keep <- vapply(seq_along(x), function(i){
+    meta <- metas[[i]]
     meta[setdiff(fields, names(meta))] <- NA
     meta["name"] <- list(if (is.null(names(x))) NA_character_ else names(x)[i])
     r <- eval(cond, meta, env)
@@ -464,6 +467,97 @@ subset.chrom_list <- function(x, subset, ...){
     isTRUE(r)
   }, logical(1))
   x[keep]
+}
+
+#' Add metadata to a list of chromatograms
+#'
+#' Attaches the columns of a table to the chromatograms of a `chrom_list` as
+#' metadata fields, matching each row to a sample by name. The new fields can
+#' then be used by [subset.chrom_list] and requested from [extract_metadata].
+#' Where an element holds several chromatograms, such as the traces
+#' [read_agilent_d] returns for each `.D` directory, every one of them gets the
+#' sample's values.
+#'
+#' @param chrom_list A `chrom_list` object.
+#' @param metadata A `data.frame`, `tibble` or `data.table` with one row per
+#' sample.
+#' @param by The column of `metadata` holding the sample names, matched to
+#' `names(chrom_list)`. Defaults to `name`, the column [extract_metadata]
+#' identifies samples by.
+#' @param overwrite Whether a column may replace a field that chromConverter
+#' reads from the file, such as `sample_name`. Defaults to `FALSE`, in which
+#' case such a column is an error.
+#' @return `chrom_list` with the columns of `metadata` attached to its
+#' chromatograms, and their names recorded in an `added_metadata` attribute,
+#' from which chromatographR's `get_peaktable` fills its `sample_meta`. A
+#' sample without a row in `metadata` is left unchanged, with a warning.
+#' @examples
+#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' chrom <- read_chroms(path, format_in = "shimadzu_ascii",
+#'                      find_files = FALSE, progress_bar = FALSE)
+#' # three copies stand in for the samples of a sequence
+#' chroms <- c(chrom, chrom, chrom)
+#' names(chroms) <- c("s1", "s2", "s3")
+#' meta <- data.frame(name = c("s1", "s2", "s3"),
+#'                    treatment = c("control", "drought", "drought"))
+#' chroms <- add_metadata(chroms, meta)
+#' extract_metadata(chroms, what = "treatment")
+#' names(subset(chroms, treatment == "drought"))
+#' @seealso [extract_metadata], [subset.chrom_list]
+#' @export
+add_metadata <- function(chrom_list, metadata, by = "name", overwrite = FALSE){
+  metadata <- as.data.frame(metadata)
+  if (!by %in% colnames(metadata)){
+    stop(sprintf("Column %s could not be found in `metadata`.", sQuote(by)),
+         call. = FALSE)
+  }
+  keys <- as.character(metadata[[by]])
+  if (anyDuplicated(keys)){
+    stop(sprintf("Column %s must not contain duplicate sample names.",
+                 sQuote(by)), call. = FALSE)
+  }
+  fields <- setdiff(colnames(metadata), by)
+  reserved <- intersect(fields, c(bookkeeping_attrs(), "name", "added_metadata"))
+  if (length(reserved) > 0){
+    stop(sprintf("Column(s) %s cannot be used as metadata fields.",
+                 paste(sQuote(reserved), collapse = ", ")), call. = FALSE)
+  }
+  taken <- intersect(fields, c(chrom_metadata_fields(), .metadata_extra_fields))
+  if (!overwrite && length(taken) > 0){
+    stop(sprintf(paste("Column(s) %s would replace metadata read from the file.",
+                       "Set `overwrite = TRUE` to replace them."),
+                 paste(sQuote(taken), collapse = ", ")), call. = FALSE)
+  }
+  nms <- names(chrom_list)
+  if (is.null(nms)) nms <- rep("", length(chrom_list))
+  nms[!nzchar(nms)] <- seq_along(chrom_list)[!nzchar(nms)]
+  rows <- match(nms, keys)
+  if (anyNA(rows)){
+    warning(sprintf("`metadata` has no row for %s.",
+                    paste(sQuote(nms[is.na(rows)]), collapse = ", ")),
+            call. = FALSE)
+  }
+  for (i in which(!is.na(rows))){
+    vals <- lapply(metadata[rows[i], fields, drop = FALSE], function(v){
+      if (is.factor(v)) as.character(v) else v
+    })
+    chrom_list[[i]] <- set_leaf_attrs(chrom_list[[i]], vals)
+  }
+  chrom_list
+}
+
+#' Set attributes on every chromatogram in a (possibly nested) list
+#' @noRd
+set_leaf_attrs <- function(x, vals){
+  if (inherits(x, "chromconverter_metadata")) return(x)
+  if (is.list(x) && !inherits(x, c("data.table", "data.frame"))){
+    x[] <- lapply(x, set_leaf_attrs, vals)
+    return(x)
+  }
+  for (nm in names(vals)) attr(x, nm) <- vals[[nm]]
+  attr(x, "added_metadata") <- union(attr(x, "added_metadata", exact = TRUE),
+                                     names(vals))
+  x
 }
 
 #' Combine `chrom_list` objects
