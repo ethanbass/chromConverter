@@ -2,6 +2,7 @@
 
 ### Breaking changes
 
+* `read_chroms` now returns files found in a directory in acquisition order, if every file records its run time, rather than alphabetically. `sort_by = "none"` restores the previous order.
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.
@@ -68,6 +69,7 @@
 * Improved handling of metadata from'ChemStation' report files including additional fields such as `run_datetime`, injection volume, `method`, and the `sample_name`.
 * `extract_metadata` no longer erroneously splits the `source_file` of 'ChemStation' peak lists into one column per sample.
 * 'Agilent' `.ch` and `.uv` traces now report the volume actually injected, which can differ from the volume the sequence requested.
+* Several files read from one `.D` directory now get distinct names, e.g. `RUTIN_2.dad1A`, instead of all sharing the directory or sample name.
 
 #### Export
 

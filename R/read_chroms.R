@@ -60,13 +60,16 @@
 #' @param sample_names Which sample names to use. Options are `basename` to
 #' use the filename (default) or `sample_name` to use the sample
 #' name encoded in the file metadata. A sample with no `sample_name`, or with
-#' conflicting ones, is named for its file with a warning.
-#' @param sort_by How to sort the chromatograms. Either `none` (default), which
-#' keeps them in the order of `paths`, with files found in a directory in
-#' alphabetical order; `acquisition_time`, which sorts by the `run_datetime`
-#' attribute, oldest first, placing chromatograms without one last with a
-#' warning (requires `read_metadata = TRUE`); or `file_time`, which sorts the
-#' files by modification time before reading, oldest first.
+#' conflicting ones, is named for its file with a warning. Several files in one
+#' 'Agilent' `.D` directory that would share a name also get their file name,
+#' e.g. `RUTIN_2.dad1A`.
+#' @param sort_by How to sort the chromatograms: `auto` (default) sorts files
+#' by acquisition time unless `paths` lists the files explicitly or any
+#' acquisition time is missing; `none` keeps files in the order given, or in
+#' alphabetical order if `find_files = TRUE`;
+#' `acquisition_time` sorts by the acquisition time recorded in each file
+#' (`run_datetime`); `file_time` sorts by the time when each file was last
+#' modified.
 #' @param dat Deprecated. Existing list of chromatograms to append results
 #' to. Use `c()` on the returned `chrom_list` objects instead. Defaults to `NULL`.
 #' @param ... Additional arguments to the parser. Where the parser does not
@@ -109,7 +112,8 @@ read_chroms <- function(paths,
                         progress_bar, cl = 1,
                         verbose = getOption("verbose"),
                         sample_names = c("basename", "sample_name"),
-                        sort_by = c("none", "acquisition_time", "file_time"),
+                        sort_by = c("auto", "none", "acquisition_time",
+                                    "file_time"),
                         dat = NULL, ...){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
@@ -118,7 +122,8 @@ read_chroms <- function(paths,
   metadata_format <- match.arg(tolower(metadata_format),
                                c("chromconverter", "raw"))
   sample_names <- match.arg(sample_names, c("basename", "sample_name"))
-  sort_by <- match.arg(sort_by, c("none", "acquisition_time", "file_time"))
+  sort_by <- match.arg(sort_by, c("auto", "none", "acquisition_time",
+                                   "file_time"))
   if (!is.null(dat)){
     warning("The `dat` argument is deprecated and will be removed in a future ",
             "version. Use `c()` on the returned `chrom_list` objects instead, ",
@@ -223,6 +228,7 @@ read_chroms <- function(paths,
               immediate. = TRUE)
       data <- data[-errors]
       file_names <- file_names[-errors]
+      files <- files[-errors]
     }
   }
   if (format_in == "agilent_rslt"){
@@ -231,6 +237,9 @@ read_chroms <- function(paths,
     names(data) <- file_names
   } else if (sample_names == "sample_name"){
     names(data) <- name_by_sample_name(data, file_names)
+  }
+  if (format_in != "agilent_rslt" && length(data) == length(files)){
+    names(data) <- name_traces_in_d(names(data), files)
   }
   if (anyDuplicated(names(data))){
     duplicated_names <- unique(names(data)[duplicated(names(data))])
@@ -245,6 +254,8 @@ read_chroms <- function(paths,
     } else {
       data <- sort_chroms_by_time(data)
     }
+  } else if (sort_by == "auto" && search_dirs && read_metadata){
+    data <- sort_chroms_by_time(data, quiet = TRUE)
   }
   if (export & !(parser %in% c("thermoraw", "openchrom"))){
     writer <- get_exporter(export_format, force = force,
@@ -356,6 +367,21 @@ name_by_sample_name <- function(data, file_names){
   unname(nms)
 }
 
+#' Tell apart the traces of one 'Agilent' `.D` directory
+#'
+#' Files inside a `.D` are named for the directory, or share its sample name,
+#' so where several of them would get the same name, the file stem is appended
+#' (`RUTIN_2.dad1A`). Files in different directories keep their names.
+#' @noRd
+name_traces_in_d <- function(nms, files){
+  in_d <- grepl("\\.[Dd][/\\\\]", files)
+  key <- paste(nms, sub("(\\.[Dd])[/\\\\].*$", "\\1", files))
+  shared <- in_d & key %in% key[in_d][duplicated(key[in_d])]
+  nms[shared] <- paste(nms[shared],
+                       fs::path_ext_remove(basename(files[shared])), sep = ".")
+  nms
+}
+
 #' Sort a list of chromatograms by acquisition time
 #'
 #' A sample may be a single chromatogram or a (possibly nested) list of them,
@@ -365,13 +391,16 @@ name_by_sample_name <- function(data, file_names){
 #' Samples with no usable `run_datetime` keep their relative order and are
 #' placed last, so that one unreadable file does not discard the ordering for a
 #' whole batch. `order` is stable for numeric input.
+#' @param quiet If `TRUE`, as for `sort_by = "auto"`, a list with any sample
+#' missing its `run_datetime` is returned unsorted and without a warning.
 #' @noRd
-sort_chroms_by_time <- function(data){
+sort_chroms_by_time <- function(data, quiet = FALSE){
   vals <- vapply(data, function(x){
     val <- get_sample_attr(x, "run_datetime")
     if (is.null(val)) return(NA_real_)
     suppressWarnings(as.numeric(val)) # non-coercible becomes NA, i.e. missing
   }, numeric(1))
+  if (quiet && anyNA(vals)) return(data)
   if (anyNA(vals)){
     labs <- names(data)
     if (is.null(labs)) labs <- seq_along(data)

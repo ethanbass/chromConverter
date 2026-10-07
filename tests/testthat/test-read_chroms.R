@@ -593,6 +593,31 @@ test_that("deprecated `data_format` argument to peak list readers still works", 
   expect_equal(x, z)
 })
 
+test_that("traces sharing a `.D` directory get distinct names", {
+  path <- extra_test_file("solidago_standards/RUTIN_2.D")
+  expect_silent(x <- read_chroms(path, format_in = "chemstation_ch",
+                                 parser = "chromconverter",
+                                 progress_bar = FALSE))
+  expect_equal(names(x), paste0("RUTIN_2.dad1", LETTERS[1:5]))
+  y <- read_chroms(path, format_in = "chemstation_ch",
+                   parser = "chromconverter", sample_names = "sample_name",
+                   progress_bar = FALSE)
+  expect_equal(names(y), paste0("Rutin_2.dad1", LETTERS[1:5]))
+})
+
+test_that("name_traces_in_d leaves names from different directories alone", {
+  files <- c("seq/A.D/FID1A.ch", "seq/B.D/FID1A.ch", "out/s1.txt",
+             "out/s1_rep.txt")
+  expect_equal(name_traces_in_d(c("A", "B", "s1", "s1"), files),
+               c("A", "B", "s1", "s1"))
+  expect_equal(name_traces_in_d(c("S", "S", "S"),
+                                c("seq/A.D/dad1A.ch", "seq/A.D/dad1B.ch",
+                                  "seq/B.D/dad1A.ch")),
+               c("S.dad1A", "S.dad1B", "S"))
+  expect_equal(name_traces_in_d(c("A", "B"), c("seq/A.D", "seq/B.D")),
+               c("A", "B"))
+})
+
 test_that("read_agilent_d can read a `ChemStation` peak table", {
   x <- read_agilent_d(test_path("testdata/RUTIN2.D/"), what = "peak_table")
   expect_length(x, 5)
@@ -766,6 +791,31 @@ test_that("sort_chroms_by_time is stable for ties and for unknowns", {
                x = list(TIC = fake_chrom()))
   expect_warning(sorted <- sort_chroms_by_time(data), "could not be determined")
   expect_equal(names(sorted), c("b", "a", "y", "x"))
+})
+
+test_that("sort_chroms_by_time(quiet = TRUE) leaves a partly dated list alone", {
+  data <- list(b = list(TIC = fake_chrom("2020-06-01")),
+               x = list(TIC = fake_chrom()),
+               a = list(TIC = fake_chrom("2019-01-01")))
+  expect_silent(sorted <- sort_chroms_by_time(data, quiet = TRUE))
+  expect_equal(names(sorted), c("b", "x", "a"))
+})
+
+test_that("sort_by = 'auto' sorts files found in a directory, not listed ones", {
+  seq_dir <- extra_test_file("solidago_standards")
+  x <- read_chroms(seq_dir, format_in = "chemstation_ch", pattern = "dad1A",
+                   parser = "chromconverter", progress_bar = FALSE)
+  expect_equal(names(x), c("MEOH", "RUTIN_1", "RUTIN_2", "RUTIN_3",
+                           "COUMARIC_AC_1", "CAFFEIC_AC_1", "CAFFEIC_AC_2"))
+  y <- read_chroms(seq_dir, format_in = "chemstation_ch", pattern = "dad1A",
+                   parser = "chromconverter", sort_by = "none",
+                   progress_bar = FALSE)
+  expect_equal(names(y)[1:3], c("CAFFEIC_AC_1", "CAFFEIC_AC_2",
+                                "COUMARIC_AC_1"))
+  files <- file.path(seq_dir, c("RUTIN_3.D", "MEOH.D"), "dad1A.ch")
+  z <- read_chroms(files, format_in = "chemstation_ch",
+                   parser = "chromconverter", progress_bar = FALSE)
+  expect_equal(names(z), c("RUTIN_3", "MEOH"))
 })
 
 test_that("read_chroms sorts and names nested samples correctly", {

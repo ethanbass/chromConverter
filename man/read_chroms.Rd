@@ -21,7 +21,7 @@ read_chroms(
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = c("basename", "sample_name"),
-  sort_by = c("none", "acquisition_time", "file_time"),
+  sort_by = c("auto", "none", "acquisition_time", "file_time"),
   dat = NULL,
   ...
 )
@@ -86,14 +86,17 @@ external parsers, to the R console.}
 \item{sample_names}{Which sample names to use. Options are \code{basename} to
 use the filename (default) or \code{sample_name} to use the sample
 name encoded in the file metadata. A sample with no \code{sample_name}, or with
-conflicting ones, is named for its file with a warning.}
+conflicting ones, is named for its file with a warning. Several files in one
+'Agilent' \code{.D} directory that would share a name also get their file name,
+e.g. \code{RUTIN_2.dad1A}.}
 
-\item{sort_by}{How to sort the chromatograms. Either \code{none} (default), which
-keeps them in the order of \code{paths}, with files found in a directory in
-alphabetical order; \code{acquisition_time}, which sorts by the \code{run_datetime}
-attribute, oldest first, placing chromatograms without one last with a
-warning (requires \code{read_metadata = TRUE}); or \code{file_time}, which sorts the
-files by modification time before reading, oldest first.}
+\item{sort_by}{How to sort the chromatograms: \code{auto} (default) sorts files
+by acquisition time unless \code{paths} lists the files explicitly or any
+acquisition time is missing; \code{none} keeps files in the order given, or in
+alphabetical order if \code{find_files = TRUE};
+\code{acquisition_time} sorts by the acquisition time recorded in each file
+(\code{run_datetime}); \code{file_time} sorts by the time when each file was last
+modified.}
 
 \item{dat}{Deprecated. Existing list of chromatograms to append results
 to. Use \code{c()} on the returned \code{chrom_list} objects instead. Defaults to \code{NULL}.}
