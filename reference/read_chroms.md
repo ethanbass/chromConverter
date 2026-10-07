@@ -28,7 +28,7 @@ read_chroms(
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = c("basename", "sample_name"),
-  sort_by = c("none", "acquisition_time", "file_time"),
+  sort_by = c("auto", "none", "acquisition_time", "file_time"),
   dat = NULL,
   ...
 )
@@ -133,17 +133,18 @@ read_chroms(
   Which sample names to use. Options are `basename` to use the filename
   (default) or `sample_name` to use the sample name encoded in the file
   metadata. A sample with no `sample_name`, or with conflicting ones, is
-  named for its file with a warning.
+  named for its file with a warning. Several files in one 'Agilent' `.D`
+  directory that would share a name also get their file name, e.g.
+  `RUTIN_2.dad1A`.
 
 - sort_by:
 
-  How to sort the chromatograms. Either `none` (default), which keeps
-  them in the order of `paths`, with files found in a directory in
-  alphabetical order; `acquisition_time`, which sorts by the
-  `run_datetime` attribute, oldest first, placing chromatograms without
-  one last with a warning (requires `read_metadata = TRUE`); or
-  `file_time`, which sorts the files by modification time before
-  reading, oldest first.
+  How to sort the chromatograms: `auto` (default) sorts files by
+  acquisition time unless `paths` lists the files explicitly or any
+  acquisition time is missing; `none` keeps files in the order given, or
+  in alphabetical order if `find_files = TRUE`; `acquisition_time` sorts
+  by the acquisition time recorded in each file (`run_datetime`);
+  `file_time` sorts by the time when each file was last modified.
 
 - dat:
 

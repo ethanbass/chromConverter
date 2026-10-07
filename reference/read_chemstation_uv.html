@@ -106,6 +106,12 @@ a <code>matrix</code>, <code>data.frame</code>, or <code>data.table</code>. Meta
 chromatogram as <a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a> if <code>read_metadata</code> is <code>TRUE</code>.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Retention times are read from each spectrum, so they are unevenly spaced
+when the detector did not store every spectrum. Interpolate onto a common
+time axis before comparing runs.</p>
+    </div>
+    <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
     <p>This function was adapted from the parser in the rainbow project
 licensed under GPL 3 by Evan Shi
@@ -119,6 +125,7 @@ licensed under GPL 3 by Evan Shi
 <code><a href="read_agilent_rslt.html">read_agilent_rslt()</a></code>,
 <code><a href="read_chemstation_ch.html">read_chemstation_ch()</a></code>,
 <code><a href="read_chemstation_csv.html">read_chemstation_csv()</a></code>,
+<code><a href="read_chemstation_logs.html">read_chemstation_logs()</a></code>,
 <code><a href="read_chemstation_ms.html">read_chemstation_ms()</a></code>,
 <code><a href="read_chemstation_reports.html">read_chemstation_reports()</a></code></p></div>
     </div>

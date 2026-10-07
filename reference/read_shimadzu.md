@@ -66387,13 +66387,13 @@ read_shimadzu(path)
 #> attr(,"sample_position")
 #> [1] NA
 #> attr(,"sample_injection_volume")
-#> [1] "1"
+#> [1] 1
 #> attr(,"sample_amount")
 #> [1] NA
 #> attr(,"time_range")
-#> [1] "0.000"  "44.170"
+#> [1]  0.00 44.17
 #> attr(,"time_interval")
-#> [1] "40"
+#> [1] 40
 #> attr(,"time_unit")
 #> [1] "Minutes"
 #> attr(,"wavelength")

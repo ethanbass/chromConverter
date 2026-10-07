@@ -63,6 +63,12 @@ attached to the chromatogram as
 [attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
 is `TRUE`.
 
+## Details
+
+Retention times are read from each spectrum, so they are unevenly spaced
+when the detector did not store every spectrum. Interpolate onto a
+common time axis before comparing runs.
+
 ## Note
 
 This function was adapted from the parser in the rainbow project
@@ -77,6 +83,7 @@ Other 'Agilent' parsers:
 [`read_agilent_rslt()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_rslt.md),
 [`read_chemstation_ch()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md),
 [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md),
+[`read_chemstation_logs()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_logs.md),
 [`read_chemstation_ms()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.md),
 [`read_chemstation_reports()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_reports.md)
 

@@ -1,7 +1,7 @@
 # Read files from 'Agilent ChemStation' .D directories
 
-Reads the `.ch`, `.uv` and `Report.TXT` files in an 'Agilent' `.D`
-directory. Other files in the directory are ignored.
+Reads the `.ch`, `.uv`, `Report.TXT` and `LCDIAG.REG` files in an
+'Agilent' `.D` directory. Other files in the directory are ignored.
 
 ## Usage
 
@@ -25,10 +25,12 @@ read_agilent_d(
 
 - what:
 
-  Whether to extract chromatograms (`chroms`), DAD data (`dad`) and/or
-  peak tables (`peak_table`). Accepts multiple arguments, and defaults
-  to all three. Types the directory does not contain are left out, and
-  it is an error if it contains none of them.
+  Whether to extract chromatograms (`chroms`), DAD data (`dad`), peak
+  tables (`peak_table`) and/or instrument traces (`instrument`), such as
+  pump pressure, flow, solvent composition and temperature, read from
+  `LCDIAG.REG`. Accepts multiple arguments, and defaults to `dad`,
+  `chroms` and `peak_table`. Types the directory does not contain are
+  left out, and it is an error if it contains none of them.
 
 - format_out:
 
@@ -66,6 +68,13 @@ whether the chromatogram is returned as a `matrix`, `data.frame` or
 is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by
 that element.
 
+## Details
+
+Instrument traces are named from `LCDIAG.REG`, so the names differ
+between 'ChemStation' revisions and/or instruments (e.g.
+`"PMP1, Pressure"` and `"PMP1, PMP1A, Pressure"`). Parts of the file
+that cannot be read are skipped with a warning.
+
 ## See also
 
 Other 'Agilent' parsers:
@@ -73,6 +82,7 @@ Other 'Agilent' parsers:
 [`read_agilent_rslt()`](https://ethanbass.github.io/chromConverter/reference/read_agilent_rslt.md),
 [`read_chemstation_ch()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md),
 [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md),
+[`read_chemstation_logs()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_logs.md),
 [`read_chemstation_ms()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.md),
 [`read_chemstation_reports()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_reports.md),
 [`read_chemstation_uv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md)

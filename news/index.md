@@ -4,6 +4,9 @@
 
 ### Breaking changes
 
+- `read_chroms` now returns files found in a directory in acquisition
+  order, if every file records its run time, rather than alphabetically.
+  `sort_by = "none"` restores the previous order.
 - Retention times from ‘ANDI MS’ files, and from ‘ANDI chrom’ files
   recorded in seconds, are now 60x smaller. Both formats are now read in
   minutes, peak tables included, matching the package convention. See
@@ -11,12 +14,23 @@
 - Run times of ‘OpenLab’ `.dx` files are now in UTC, read from the
   archive’s `injection.acmd`, so they shift by the site’s offset from
   UTC. They were the local time labelled as UTC.
+- Numeric metadata from text formats, such as `time_range` and
+  `sample_injection_volume` in ‘Shimadzu’ ASCII exports, are now
+  numbers. An injection volume written with its unit, e.g. `17 µl`, is
+  split into the number and `sample_injection_volume_unit`; other values
+  with a unit stay strings.
 - Dropped `what = "chroms"` from `read_varian_sms`, which returned an
   internal table rather than a chromatogram. Use `what = "TIC"` or
   `"BPC"`.
+- `extract_metadata` now returns one row per sample, retaining the
+  values its chromatograms agree on. The `by = "chromatogram"` argument
+  restores one row per chromatogram (in nested lists).
 
 ### New features
 
+- Added `read_chemstation_logs` to read the instrument errors, aborted
+  runs and pump pressures recorded in ‘Agilent ChemStation’ sequence
+  logs, including every log in a folder.
 - Files read with the `rainbow` parser now report most of the metadata
   the parser supplies, including `instrument`, `operator`,
   `detector_model`, `wavelength` and `instrument_modules`.
@@ -24,11 +38,24 @@
   now returned as `POSIXct` in UTC, applying the time-zone offset the
   file records.
 - ‘OpenLab’ `.dx` files now report their injection volume.
+- ‘Agilent ChemStation’ `.D` directories now return pump pressure, flow,
+  solvent composition and temperature traces from `LCDIAG.REG` with
+  `what = "instrument"`. See
+  [`?read_agilent_d`](https://ethanbass.github.io/chromConverter/reference/read_agilent_d.md).
 - ‘Agilent’ `.ch`, `.uv` and `.it` traces now report the channel they
-  were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`).
+  were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`), and its
+  module as `detector` (e.g. `DAD`).
+- ‘Agilent’ `.ch` traces and ‘ChemStation’ peak tables now report
+  `wavelength` and `bandwidth` from their signal descriptor
+  (e.g. `Sig=254,8`); peak tables also report `detector` and
+  `channel_id`.
 - `extract_metadata` now accepts an element of a nested field in `what`,
   such as `"SampleLabel"` or `"acaml_metadata.SampleLabel"`, and returns
   that column alone.
+- [`subset()`](https://rdrr.io/r/base/subset.html) now selects the
+  chromatograms of a `chrom_list` by their metadata,
+  e.g. `subset(chroms, sample_name == "S1")`. See
+  [`?subset.chrom_list`](https://ethanbass.github.io/chromConverter/reference/subset.chrom_list.md).
 - `read_thermoraw` now accepts `format_out = "data.table"`, like every
   other parser.
 - `write_mzml` now writes MS2 spectra, interleaved with MS1 in scan
@@ -119,6 +146,16 @@
   that `format_out` asks for.
 - `read_agilent_dx(what = "instrument")` now gives a clear error for an
   archive without instrument data.
+- Improved handling of metadata from’ChemStation’ report files including
+  additional fields such as `run_datetime`, injection volume, `method`,
+  and the `sample_name`.
+- `extract_metadata` no longer erroneously splits the `source_file` of
+  ‘ChemStation’ peak lists into one column per sample.
+- ‘Agilent’ `.ch` and `.uv` traces now report the volume actually
+  injected, which can differ from the volume the sequence requested.
+- Several files read from one `.D` directory now get distinct names,
+  e.g. `RUTIN_2.dad1A`, instead of all sharing the directory or sample
+  name.
 
 #### Export
 

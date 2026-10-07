@@ -12,7 +12,8 @@ extract_metadata(
   detector = NULL,
   format_out = c("data.frame", "data.table", "tibble"),
   collapse = FALSE,
-  expand = FALSE
+  expand = FALSE,
+  by = c("sample", "chromatogram")
 )
 ```
 
@@ -22,7 +23,6 @@ extract_metadata(
 
   A list of chromatograms with attached metadata (as returned by
   `read_chroms` with `read_metadata = TRUE`), or a single chromatogram.
-  Nested lists are flattened, one row per chromatogram.
 
 - what:
 
@@ -71,13 +71,27 @@ extract_metadata(
   it carries the field it came from (`ms_params.polarity`, since
   `polarity` is a metadata field in its own right).
 
+- by:
+
+  Whether to return one row per `sample` (the default), that is per
+  element of `chrom_list`, or one row per `chromatogram`. The two differ
+  only for nested lists, such as the traces
+  [read_agilent_d](https://ethanbass.github.io/chromConverter/reference/read_agilent_d.md)
+  returns for each `.D` directory. With `by = "sample"`, each field
+  holds the value that a sample's chromatograms agree on, ignoring those
+  that leave it empty, and is `NA` where they disagree; with the default
+  `what`, fields that are then empty for every sample are left out.
+  Fields that belong to each trace, such as `detector` or `source_file`,
+  need `by = "chromatogram"`.
+
 ## Value
 
 A `data.frame`, `tibble`, or `data.table` (according to the value of
-`format_out`), with one row per chromatogram and the specified metadata
-elements as columns, or `NA` if none of the specified elements could be
-found. For a list, the first column, `name`, identifies each
-chromatogram by its path through the list (e.g. `blue.UV`).
+`format_out`), with one row per sample or chromatogram (see `by`) and
+the specified metadata elements as columns, or `NA` if none of the
+specified elements could be found. For a list, the first column, `name`,
+identifies each row: by the sample's name, or with `by = "chromatogram"`
+by the chromatogram's path through the list (e.g. `blue.UV`).
 
 ## Examples
 

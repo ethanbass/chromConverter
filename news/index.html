@@ -39,18 +39,28 @@
 <h2 class="pkg-version" data-toc-text="0.10.1" id="chromconverter-0101">chromConverter 0.10.1<a class="anchor" aria-label="anchor" href="#chromconverter-0101"></a></h2>
 <div class="section level3">
 <h3 id="breaking-changes-0-10-1">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-10-1"></a></h3>
-<ul><li>Retention times from ‘ANDI MS’ files, and from ‘ANDI chrom’ files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See <code><a href="../reference/read_cdf.html">?read_cdf</a></code>.</li>
+<ul><li>
+<code>read_chroms</code> now returns files found in a directory in acquisition order, if every file records its run time, rather than alphabetically. <code>sort_by = "none"</code> restores the previous order.</li>
+<li>Retention times from ‘ANDI MS’ files, and from ‘ANDI chrom’ files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See <code><a href="../reference/read_cdf.html">?read_cdf</a></code>.</li>
 <li>Run times of ‘OpenLab’ <code>.dx</code> files are now in UTC, read from the archive’s <code>injection.acmd</code>, so they shift by the site’s offset from UTC. They were the local time labelled as UTC.</li>
+<li>Numeric metadata from text formats, such as <code>time_range</code> and <code>sample_injection_volume</code> in ‘Shimadzu’ ASCII exports, are now numbers. An injection volume written with its unit, e.g. <code>17 µl</code>, is split into the number and <code>sample_injection_volume_unit</code>; other values with a unit stay strings.</li>
 <li>Dropped <code>what = "chroms"</code> from <code>read_varian_sms</code>, which returned an internal table rather than a chromatogram. Use <code>what = "TIC"</code> or <code>"BPC"</code>.</li>
+<li>
+<code>extract_metadata</code> now returns one row per sample, retaining the values its chromatograms agree on. The <code>by = "chromatogram"</code> argument restores one row per chromatogram (in nested lists).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-0-10-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-10-1"></a></h3>
-<ul><li>Files read with the <code>rainbow</code> parser now report most of the metadata the parser supplies, including <code>instrument</code>, <code>operator</code>, <code>detector_model</code>, <code>wavelength</code> and <code>instrument_modules</code>.</li>
+<ul><li>Added <code>read_chemstation_logs</code> to read the instrument errors, aborted runs and pump pressures recorded in ‘Agilent ChemStation’ sequence logs, including every log in a folder.</li>
+<li>Files read with the <code>rainbow</code> parser now report most of the metadata the parser supplies, including <code>instrument</code>, <code>operator</code>, <code>detector_model</code>, <code>wavelength</code> and <code>instrument_modules</code>.</li>
 <li>Run times of ‘OpenLab’ <code>.dx</code> files read with the <code>rainbow</code> parser are now returned as <code>POSIXct</code> in UTC, applying the time-zone offset the file records.</li>
 <li>‘OpenLab’ <code>.dx</code> files now report their injection volume.</li>
-<li>‘Agilent’ <code>.ch</code>, <code>.uv</code> and <code>.it</code> traces now report the channel they were recorded on as <code>channel_id</code> (e.g. <code>DAD1A</code> or <code>PMP1A</code>).</li>
+<li>‘Agilent ChemStation’ <code>.D</code> directories now return pump pressure, flow, solvent composition and temperature traces from <code>LCDIAG.REG</code> with <code>what = "instrument"</code>. See <code><a href="../reference/read_agilent_d.html">?read_agilent_d</a></code>.</li>
+<li>‘Agilent’ <code>.ch</code>, <code>.uv</code> and <code>.it</code> traces now report the channel they were recorded on as <code>channel_id</code> (e.g. <code>DAD1A</code> or <code>PMP1A</code>), and its module as <code>detector</code> (e.g. <code>DAD</code>).</li>
+<li>‘Agilent’ <code>.ch</code> traces and ‘ChemStation’ peak tables now report <code>wavelength</code> and <code>bandwidth</code> from their signal descriptor (e.g. <code>Sig=254,8</code>); peak tables also report <code>detector</code> and <code>channel_id</code>.</li>
 <li>
 <code>extract_metadata</code> now accepts an element of a nested field in <code>what</code>, such as <code>"SampleLabel"</code> or <code>"acaml_metadata.SampleLabel"</code>, and returns that column alone.</li>
+<li>
+<code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> now selects the chromatograms of a <code>chrom_list</code> by their metadata, e.g. <code>subset(chroms, sample_name == "S1")</code>. See <code><a href="../reference/subset.chrom_list.html">?subset.chrom_list</a></code>.</li>
 <li>
 <code>read_thermoraw</code> now accepts <code>format_out = "data.table"</code>, like every other parser.</li>
 <li>
@@ -103,6 +113,11 @@
 <li>The <code>solvents</code> table from <code>read_agilent_amx</code> now returns the class that <code>format_out</code> asks for.</li>
 <li>
 <code>read_agilent_dx(what = "instrument")</code> now gives a clear error for an archive without instrument data.</li>
+<li>Improved handling of metadata from’ChemStation’ report files including additional fields such as <code>run_datetime</code>, injection volume, <code>method</code>, and the <code>sample_name</code>.</li>
+<li>
+<code>extract_metadata</code> no longer erroneously splits the <code>source_file</code> of ‘ChemStation’ peak lists into one column per sample.</li>
+<li>‘Agilent’ <code>.ch</code> and <code>.uv</code> traces now report the volume actually injected, which can differ from the volume the sequence requested.</li>
+<li>Several files read from one <code>.D</code> directory now get distinct names, e.g. <code>RUTIN_2.dad1A</code>, instead of all sharing the directory or sample name.</li>
 </ul></div>
 <div class="section level4">
 <h4 id="export-0-10-1">Export<a class="anchor" aria-label="anchor" href="#export-0-10-1"></a></h4>

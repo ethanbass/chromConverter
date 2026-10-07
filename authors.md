@@ -13,6 +13,10 @@
   Author and copyright holder of source code adapted from 'rainbow' for
   parsing 'Agilent' UV files.
 
+- **Roderick Bovee**. Contributor, copyright holder.  
+  Author and copyright holder of source code adapted from 'Aston' for
+  parsing 'Agilent ChemStation' register files.
+
 ## Citation
 
 Source:

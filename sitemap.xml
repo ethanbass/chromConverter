@@ -26,7 +26,9 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_cdf.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_logs.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_reg.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_reports.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chromatotec.html</loc></url>
@@ -56,6 +58,7 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/shared_params.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/sp_converter.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/sub-.chrom_list.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/subset.chrom_list.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/summary.chrom_list.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/uv_converter.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.html</loc></url>

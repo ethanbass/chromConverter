@@ -25,6 +25,8 @@
   : Read 'Agilent ChemStation' CH files
 - [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md)
   : Read 'Agilent ChemStation' CSV files
+- [`read_chemstation_logs()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_logs.md)
+  : Read 'Agilent ChemStation' log files
 - [`read_chemstation_ms()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.md)
   : Read 'Agilent ChemStation' MS files
 - [`read_chemstation_reports()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_reports.md)
@@ -103,3 +105,5 @@
   : Print a chrom_list object
 - [`summary(`*`<chrom_list>`*`)`](https://ethanbass.github.io/chromConverter/reference/summary.chrom_list.md)
   : Summarize a chrom_list object
+- [`subset(`*`<chrom_list>`*`)`](https://ethanbass.github.io/chromConverter/reference/subset.chrom_list.md)
+  : Select chromatograms by their metadata
