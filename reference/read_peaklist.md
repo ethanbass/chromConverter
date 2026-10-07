@@ -9,7 +9,7 @@ read_peaklist(
   paths,
   find_files,
   format_in = c("chemstation", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
-    "shimadzu_gcd", "chromatotec"),
+    "shimadzu_gcd", "chromatotec", "asm"),
   pattern = NULL,
   peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
@@ -36,7 +36,7 @@ read_peaklist(
 
   Format of files to be imported/converted. One of `chemstation` (the
   default), `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`,
-  `shimadzu_gcd`, or `chromatotec`.
+  `shimadzu_gcd`, `chromatotec`, or `asm`.
 
 - pattern:
 

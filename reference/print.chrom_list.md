@@ -12,7 +12,13 @@ that block's header rather than repeated down it.
 
 ``` r
 # S3 method for class 'chrom_list'
-print(x, n = 10, cols = chrom_summary_cols(), ...)
+print(
+  x,
+  n = 10,
+  cols = chrom_summary_cols(),
+  digits = getOption("digits"),
+  ...
+)
 ```
 
 ## Arguments
@@ -32,6 +38,12 @@ print(x, n = 10, cols = chrom_summary_cols(), ...)
   `sample_name`, `run_datetime`, `method`, `detector`, `wavelength`,
   `detector_range`, `scan_type`, `polarity`, `precursor_mz`,
   `product_mz`, `mz_range`.
+
+- digits:
+
+  Number of significant digits for numeric metadata. Defaults to
+  `getOption("digits")`, as for
+  [print.data.frame](https://rdrr.io/r/base/print.dataframe.html).
 
 - ...:
 

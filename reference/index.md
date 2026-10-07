@@ -8,6 +8,8 @@
   : Read peak lists
 - [`extract_metadata()`](https://ethanbass.github.io/chromConverter/reference/extract_metadata.md)
   : Extract metadata
+- [`add_metadata()`](https://ethanbass.github.io/chromConverter/reference/add_metadata.md)
+  : Add metadata to a list of chromatograms
 - [`write_chroms()`](https://ethanbass.github.io/chromConverter/reference/write_chroms.md)
   : Write chromatograms
 
@@ -57,7 +59,7 @@
 ## Other miscellaneous parsers
 
 - [`read_asm()`](https://ethanbass.github.io/chromConverter/reference/read_asm.md)
-  : Read 'Allotrope Simple Model' (ASM) 2D chromatograms
+  : Read 'Allotrope Simple Model' (ASM) files
 - [`read_cdf()`](https://ethanbass.github.io/chromConverter/reference/read_cdf.md)
   : Read CDF
 - [`read_chromatotec()`](https://ethanbass.github.io/chromConverter/reference/read_chromatotec.md)

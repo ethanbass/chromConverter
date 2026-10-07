@@ -15,6 +15,7 @@ summary(
   object,
   cols = chrom_summary_cols(),
   format_out = c("data.frame", "data.table", "tibble"),
+  digits = NULL,
   ...
 )
 ```
@@ -36,6 +37,11 @@ summary(
 - format_out:
 
   Format of object. Either `data.frame`, `data.table` or `tibble`.
+
+- digits:
+
+  Number of significant digits for the numbers in a field collapsed into
+  a string, or `NULL` (the default) to keep them in full.
 
 - ...:
 

@@ -44,6 +44,8 @@
 <li>Retention times from ‘ANDI MS’ files, and from ‘ANDI chrom’ files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See <code><a href="../reference/read_cdf.html">?read_cdf</a></code>.</li>
 <li>Run times of ‘OpenLab’ <code>.dx</code> files are now in UTC, read from the archive’s <code>injection.acmd</code>, so they shift by the site’s offset from UTC. They were the local time labelled as UTC.</li>
 <li>Numeric metadata from text formats, such as <code>time_range</code> and <code>sample_injection_volume</code> in ‘Shimadzu’ ASCII exports, are now numbers. An injection volume written with its unit, e.g. <code>17 µl</code>, is split into the number and <code>sample_injection_volume_unit</code>; other values with a unit stay strings.</li>
+<li>
+<code>extract_metadata</code> now returns numeric fields, such as <code>time_range</code> and <code>wavelength</code>, as numbers rather than strings.</li>
 <li>Dropped <code>what = "chroms"</code> from <code>read_varian_sms</code>, which returned an internal table rather than a chromatogram. Use <code>what = "TIC"</code> or <code>"BPC"</code>.</li>
 <li>
 <code>extract_metadata</code> now returns one row per sample, retaining the values its chromatograms agree on. The <code>by = "chromatogram"</code> argument restores one row per chromatogram (in nested lists).</li>
@@ -61,6 +63,11 @@
 <code>extract_metadata</code> now accepts an element of a nested field in <code>what</code>, such as <code>"SampleLabel"</code> or <code>"acaml_metadata.SampleLabel"</code>, and returns that column alone.</li>
 <li>
 <code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> now selects the chromatograms of a <code>chrom_list</code> by their metadata, e.g. <code>subset(chroms, sample_name == "S1")</code>. See <code><a href="../reference/subset.chrom_list.html">?subset.chrom_list</a></code>.</li>
+<li>Added <code>add_metadata</code> to attach sample metadata from a table to a <code>chrom_list</code>, matched by name, for use with <code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> and <code>extract_metadata</code>.</li>
+<li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> of a <code>chrom_list</code> now shows numeric metadata to <code>getOption("digits")</code> significant digits, set with a new <code>digits</code> argument that <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and <code><a href="../reference/extract_metadata.html">extract_metadata()</a></code> also take.</li>
+<li>
+<code>read_asm</code> now reads mass spectra from ASM GC-MS files, and peak lists and instrument traces (e.g. pump pressure, flow rate, temperature) from any ASM chromatography file, chosen with a new <code>what</code> argument. <code>read_peaklist</code> accepts <code>format_in = "asm"</code>.</li>
 <li>
 <code>read_thermoraw</code> now accepts <code>format_out = "data.table"</code>, like every other parser.</li>
 <li>
@@ -122,6 +129,18 @@
 <div class="section level4">
 <h4 id="export-0-10-1">Export<a class="anchor" aria-label="anchor" href="#export-0-10-1"></a></h4>
 <ul><li>Exported file names now replace characters that file names cannot hold, such as <code>"</code> or <code>:</code>, with <code>_</code>. Sample names containing them previously failed to export on Windows.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="allotrope-simple-model-asm-0-10-1">Allotrope Simple Model (ASM)<a class="anchor" aria-label="anchor" href="#allotrope-simple-model-asm-0-10-1"></a></h4>
+<ul><li>Files from ASM releases 2024/12 onward, and files converted by ‘allotropy’ (e.g. ‘Chromeleon’, ‘Empower’ and ‘OpenLab CDS’ exports), now load.</li>
+<li>A file holding several injections, such as an exported sequence, now returns one sample per injection, named by sample, which <code>read_chroms</code> adds to its list of samples.</li>
+<li>Chromatograms in one file now get distinct names, taken from the file’s labels (e.g. <code>"UV 1_280"</code>) where their detection types don’t tell them apart, in the list and in the <code>detector</code> column.</li>
+<li>
+<code>detector_range</code>, <code>detector_reference</code>, <code>detector_y_unit</code> and <code>time_unit</code> now describe each chromatogram, rather than being copied from the file’s other traces. LC-MS files no longer warn that row names were discarded.</li>
+<li>
+<code>detector_model</code> is now reported, as are the <code>method</code> and injection volume of GC files and the sample name and run time of files from the 2022 releases.</li>
+<li>Measurements listing more than one device no longer fail with a <code>'names' attribute</code> error.</li>
+<li>Raw ASM metadata (<code>metadata_format = "raw"</code>) now keep the file’s own field names, e.g. <code>injection time</code> and <code>analyst</code>, and describe each chromatogram rather than the whole file.</li>
 </ul></div>
 <div class="section level4">
 <h4 id="other-formats-0-10-1">Other formats<a class="anchor" aria-label="anchor" href="#other-formats-0-10-1"></a></h4>

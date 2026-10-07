@@ -61,7 +61,13 @@ than repeated down it.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'chrom_list'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, n <span class="op">=</span> <span class="fl">10</span>, cols <span class="op">=</span> <span class="fu">chrom_summary_cols</span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  n <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  cols <span class="op">=</span> <span class="fu">chrom_summary_cols</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"digits"</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -80,6 +86,11 @@ Defaults to <code>10</code>.</p></dd>
 <dt id="arg-cols">cols<a class="anchor" aria-label="anchor" href="#arg-cols"></a></dt>
 <dd><p>Character vector of attribute names to report. Defaults to:
 <code>sample_name</code>, <code>run_datetime</code>, <code>method</code>, <code>detector</code>, <code>wavelength</code>, <code>detector_range</code>, <code>scan_type</code>, <code>polarity</code>, <code>precursor_mz</code>, <code>product_mz</code>, <code>mz_range</code>.</p></dd>
+
+
+<dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
+<dd><p>Number of significant digits for numeric metadata. Defaults
+to <code>getOption("digits")</code>, as for <a href="https://rdrr.io/r/base/print.dataframe.html" class="external-link">print.data.frame</a>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

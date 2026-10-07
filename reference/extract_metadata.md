@@ -13,7 +13,8 @@ extract_metadata(
   format_out = c("data.frame", "data.table", "tibble"),
   collapse = FALSE,
   expand = FALSE,
-  by = c("sample", "chromatogram")
+  by = c("sample", "chromatogram"),
+  digits = NULL
 )
 ```
 
@@ -83,6 +84,13 @@ extract_metadata(
   `what`, fields that are then empty for every sample are left out.
   Fields that belong to each trace, such as `detector` or `source_file`,
   need `by = "chromatogram"`.
+
+- digits:
+
+  Number of significant digits for the numbers in a field collapsed into
+  a string (see `collapse`), or `NULL` (the default) to keep them in
+  full. Numeric fields spread across columns are returned as numbers
+  either way.
 
 ## Value
 

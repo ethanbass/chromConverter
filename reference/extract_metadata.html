@@ -52,7 +52,8 @@ chromatograms.</p>
 <span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data.frame"</span>, <span class="st">"data.table"</span>, <span class="st">"tibble"</span><span class="op">)</span>,</span>
 <span>  collapse <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  expand <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample"</span>, <span class="st">"chromatogram"</span><span class="op">)</span></span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample"</span>, <span class="st">"chromatogram"</span><span class="op">)</span>,</span>
+<span>  digits <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -122,6 +123,13 @@ chromatograms agree on, ignoring those that leave it empty, and is <code>NA</cod
 they disagree; with the default <code>what</code>, fields that are then empty for every
 sample are left out. Fields that belong to each trace, such as <code>detector</code> or
 <code>source_file</code>, need <code>by = "chromatogram"</code>.</p></dd>
+
+
+<dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
+<dd><p>Number of significant digits for the numbers in a field
+collapsed into a string (see <code>collapse</code>), or <code>NULL</code> (the default) to keep
+them in full. Numeric fields spread across columns are returned as numbers
+either way.</p></dd>
 
 </dl></div>
     <div class="section level2">
