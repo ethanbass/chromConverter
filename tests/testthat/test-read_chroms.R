@@ -822,6 +822,21 @@ test_that("sort_by = 'auto' sorts files found in a directory, not listed ones", 
   expect_equal(names(z), c("BENZOS_4PPM", "MEOH"))
 })
 
+test_that("read_peaklist sorts reports found in a directory by acquisition time", {
+  seq_dir <- system.file("extdata", "benzoxazinoid_standards",
+                         package = "chromConverter")
+  x <- read_peaklist(seq_dir, progress_bar = FALSE)
+  expect_s3_class(x, "peak_list")
+  expect_equal(attr(x, "fit"), "chemstation")
+  expect_equal(names(x)[1:3], c("MEOH", "BENZOS_1000PPM", "BENZOS_500PPM"))
+  y <- read_peaklist(seq_dir, sort_by = "none", progress_bar = FALSE)
+  expect_equal(names(y)[1:3], c("BENZOS_1000PPM", "BENZOS_125PPM",
+                                "BENZOS_16PPM"))
+  files <- file.path(seq_dir, c("BENZOS_4PPM.D", "MEOH.D"), "Report.TXT")
+  z <- read_peaklist(files, progress_bar = FALSE)
+  expect_equal(names(z), c("BENZOS_4PPM", "MEOH"))
+})
+
 test_that("read_chroms sorts and names nested samples correctly", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

@@ -409,5 +409,8 @@ sort_chroms_by_time <- function(data, quiet = FALSE){
             immediate. = TRUE)
   }
   if (all(is.na(vals))) return(data)
-  data[order(vals, na.last = TRUE)]
+  out <- data[order(vals, na.last = TRUE)]
+  keep <- setdiff(names(attributes(data)), "names")
+  attributes(out)[keep] <- attributes(data)[keep]
+  out
 }

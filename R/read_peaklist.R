@@ -14,6 +14,12 @@
 #' which case the file extension will be deduced from `format_in`.
 #' @param peaktable_format Whether to return peak tables in `chromatographr`
 #' or `original` format.
+#' @param sort_by How to sort the samples: `auto` (default) sorts files by
+#' acquisition time unless `paths` lists the files explicitly or any
+#' acquisition time is missing; `none` keeps files in the order given, or in
+#' alphabetical order if `find_files = TRUE`; `acquisition_time` sorts by the
+#' acquisition time recorded in each file (`run_datetime`); `file_time` sorts
+#' by the time when each file was last modified.
 #' @param data_format Deprecated. Use `peaktable_format` instead.
 #' @return A `peak_list`: a list with one element per sample, holding its peak
 #' table, or a list of peak tables named by signal where the file records more
@@ -21,10 +27,12 @@
 #' @import reticulate
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial
-#' @examplesIf interactive()
-#' path <- "tests/testthat/testdata/RUTIN2.D"
-#' peak_list <- read_peaklist(path)
-#' peak_list[["RUTIN2"]][["254"]]
+#' @examples
+#' path <- system.file("extdata", "benzoxazinoid_standards",
+#'                     package = "chromConverter")
+#' peak_list <- read_peaklist(path, progress_bar = FALSE)
+#' names(peak_list)
+#' peak_list[["BENZOS_250PPM"]][["254"]]
 #' @author Ethan Bass
 #' @export
 
@@ -36,6 +44,8 @@ read_peaklist <- function(paths, find_files,
                         peaktable_format = c("chromatographr", "original"),
                         metadata_format = c("chromconverter", "raw"),
                         read_metadata = TRUE, progress_bar, cl = 1,
+                        sort_by = c("auto", "none", "acquisition_time",
+                                    "file_time"),
                         data_format = NULL){
   if (!is.null(data_format)){
     warn_renamed_arg("data_format", "peaktable_format")
@@ -47,6 +57,8 @@ read_peaklist <- function(paths, find_files,
                          c("chemstation", "shimadzu_fid", "shimadzu_dad",
                            "shimadzu_lcd", "shimadzu_gcd", "chromatotec",
                            "asm"))
+  sort_by <- match.arg(sort_by, c("auto", "none", "acquisition_time",
+                                   "file_time"))
   if (missing(progress_bar)){
     progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
@@ -96,6 +108,9 @@ read_peaklist <- function(paths, find_files,
                       metadata_format = metadata_format)
   }
   files <- collect_files(paths, pattern, search_dirs = find_files)
+  if (sort_by == "file_time"){
+    files <- files[order(fs::file_info(files)$modification_time)]
+  }
   file_names <- extract_filenames(files)
   if (format_in == "chemstation"){
     data <- parser(files)
@@ -126,6 +141,16 @@ read_peaklist <- function(paths, find_files,
     })
     class(data) <- "peak_list"
     names(data) <- file_names
+  }
+  if (sort_by == "acquisition_time"){
+    if (!read_metadata){
+      warning("`sort_by = \"acquisition_time\"` requires `read_metadata = TRUE`; skipping sort.",
+              immediate. = TRUE)
+    } else {
+      data <- sort_chroms_by_time(data)
+    }
+  } else if (sort_by == "auto" && find_files && read_metadata){
+    data <- sort_chroms_by_time(data, quiet = TRUE)
   }
   data
 }

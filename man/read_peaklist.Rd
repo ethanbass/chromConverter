@@ -15,6 +15,7 @@ read_peaklist(
   read_metadata = TRUE,
   progress_bar,
   cl = 1,
+  sort_by = c("auto", "none", "acquisition_time", "file_time"),
   data_format = NULL
 )
 }
@@ -49,6 +50,13 @@ parallel workers to use or a cluster object created by
 Defaults to \code{1}.}
 
 \item{data_format}{Deprecated. Use \code{peaktable_format} instead.}
+\item{sort_by}{How to sort the samples: \code{auto} (default) sorts files by
+acquisition time unless \code{paths} lists the files explicitly or any
+acquisition time is missing; \code{none} keeps files in the order given, or in
+alphabetical order if \code{find_files = TRUE}; \code{acquisition_time} sorts by the
+acquisition time recorded in each file (\code{run_datetime}); \code{file_time} sorts
+by the time when each file was last modified.}
+
 }
 \value{
 A \code{peak_list}: a list with one element per sample, holding its peak
@@ -59,11 +67,11 @@ than one. Each row is a peak.
 Reads peak lists from specified folders or vector of paths.
 }
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-path <- "tests/testthat/testdata/RUTIN2.D"
-peak_list <- read_peaklist(path)
-peak_list[["RUTIN2"]][["254"]]
-\dontshow{\}) # examplesIf}
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+peak_list <- read_peaklist(path, progress_bar = FALSE)
+names(peak_list)
+peak_list[["BENZOS_250PPM"]][["254"]]
 }
 \author{
 Ethan Bass
