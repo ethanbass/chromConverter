@@ -110,7 +110,8 @@ test_that("Shimadzu Anthocyanin peak tables match", {
                      progress_bar = FALSE)[[1]]
 
   x1 <- read_shimadzu_lcd(path_lcd, what="peak_table")
-  x1 <- read_peaklist(path_lcd, format_in = "shimadzu_lcd", progress_bar=FALSE)[[1]]
+  x1 <- read_peaklist(path_lcd, format_in = "shimadzu_lcd",
+                      peaktable_format = "original", progress_bar=FALSE)[[1]]
 
   expect_equal(x[[1]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[1]][,-1],
                tolerance = .001, ignore_attr = TRUE)
@@ -458,7 +459,7 @@ test_that("Shimadzu multichannel peak tables match", {
                      progress_bar = FALSE)[[1]]
 
   x1 <- read_peaklist(path_lcd, format_in = "shimadzu_lcd",
-                      progress_bar=FALSE)[[1]]
+                      peaktable_format = "original", progress_bar=FALSE)[[1]]
 
 
   expect_equal(x[[1]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[1]][,-1],
@@ -523,10 +524,22 @@ test_that("Shimadzu FID peak tables match", {
                      peaktable_format = "original",
                      progress_bar = FALSE)[[1]]
 
-  x1 <- read_peaklist(path_gcd, format_in = "shimadzu_gcd", progress_bar=FALSE)
+  x1 <- read_peaklist(path_gcd, format_in = "shimadzu_gcd",
+                      peaktable_format = "original", progress_bar=FALSE)
 
   expect_equal(x[,c(3,6:7,4:5,8:9,11,13:18,21:22)], x1[[1]][,-1], tolerance=.001,
                ignore_attr = TRUE)
+})
+
+test_that("read_peaklist returns Shimadzu GCD peak tables in chromatographr format", {
+  path_asc <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
+  path_gcd <- extra_test_file("FS19_214.gcd")
+  x <- read_peaklist(path_asc, format_in = "shimadzu_fid",
+                     progress_bar = FALSE)[[1]]
+  x1 <- read_peaklist(path_gcd, format_in = "shimadzu_gcd",
+                      progress_bar = FALSE)[[1]]
+  expect_named(x1, c("sample", "rt", "start", "end", "area", "height"))
+  expect_equal(x1[, -1], x[, -1], tolerance = .001, ignore_attr = TRUE)
 })
 
 

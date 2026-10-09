@@ -3,6 +3,7 @@
 ### Breaking changes
 
 * `read_chroms` and `read_peaklist` now return files found in a directory in acquisition order, if every file records its run time, rather than alphabetically. `sort_by = "none"` restores the previous order.
+* `read_peaklist` now returns 'Shimadzu' `.lcd` and `.gcd` peak tables in the default `chromatographr` format, like the other formats. `peaktable_format = "original"` restores the vendor columns.
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.

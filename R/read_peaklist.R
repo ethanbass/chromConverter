@@ -13,7 +13,8 @@
 #' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
 #' which case the file extension will be deduced from `format_in`.
 #' @param peaktable_format Whether to return peak tables in `chromatographr`
-#' or `original` format.
+#' or `original` format. 'Chromatotec' peak tables are always returned in their
+#' original format.
 #' @param sort_by How to sort the samples: `auto` (default) sorts files by
 #' acquisition time unless `paths` lists the files explicitly or any
 #' acquisition time is missing; `none` keeps files in the order given, or in
@@ -107,6 +108,11 @@ read_peaklist <- function(paths, find_files,
                       read_metadata = read_metadata,
                       metadata_format = metadata_format)
   }
+  if (peaktable_format == "chromatographr" &&
+      format_in %in% c("shimadzu_lcd", "shimadzu_gcd")){
+    read <- parser
+    parser <- function(...) sz_peaktable_chromatographr(read(...))
+  }
   files <- collect_files(paths, pattern, search_dirs = find_files)
   if (sort_by == "file_time"){
     files <- files[order(fs::file_info(files)$modification_time)]
@@ -153,4 +159,19 @@ read_peaklist <- function(paths, find_files,
     data <- sort_chroms_by_time(data, quiet = TRUE)
   }
   data
+}
+
+#' Convert 'Shimadzu' peak tables to the `chromatographr` format
+#' @noRd
+sz_peaktable_chromatographr <- function(x){
+  if (is.data.frame(x)){
+    cols <- match(c("r.time", "i.time", "f.time", "area", "height"),
+                  tolower(names(x)))
+    if (anyNA(cols)) return(x)
+    out <- as.data.frame(x)[cols]
+    names(out) <- c("rt", "start", "end", "area", "height")
+    transfer_metadata(out, x)
+  } else if (is.list(x)){
+    transfer_metadata(lapply(x, sz_peaktable_chromatographr), x)
+  } else x
 }

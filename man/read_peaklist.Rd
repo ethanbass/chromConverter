@@ -34,7 +34,8 @@ whether every path is a file.}
 which case the file extension will be deduced from \code{format_in}.}
 
 \item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
-or \code{original} format.}
+or \code{original} format. 'Chromatotec' peak tables are always returned in their
+original format.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 (standardized field names) or \code{raw} (vendor field names, unmapped).}
