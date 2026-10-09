@@ -10,7 +10,7 @@ read_chemstation_reg(path)
 \item{path}{Path to a \code{.REG} file.}
 }
 \value{
-A list of two data frames:
+A list of:
 \itemize{
 \item \code{traces}: one row per point of each instrument trace, with columns
 \code{trace} (its title, e.g. \code{"PMP1, Pressure"}), \code{unit}, \code{time} (in minutes)
@@ -23,17 +23,22 @@ the run, such as \code{StartPressure} and \code{StopPressure} for the pump or
 \code{ActInjVolume} for the autosampler. Every object records the start of the
 run as \code{DateTime}, and the object of a solvent trace gives the solvent's
 name, where one was entered, as \code{Description}.
+\item \code{tables}: a list of data frames, one per table, named by the key holding
+it, such as \code{TIMETABLE} for a pump's timetable.
 }
 }
 \description{
-Reads the instrument traces, and the keys and values describing each module,
-from 'Agilent ChemStation' register (\code{.REG}) files. Users reach it through \link{read_agilent_d} with
-\code{what = "instrument"}; this page documents the file format.
+Reads the instrument traces, the keys and values describing each module, and
+the tables, such as a pump's timetable, from 'Agilent ChemStation' register
+(\code{.REG}) files. Users reach it through \link{read_agilent_d} with
+\code{what = "instrument"} and through \link{read_chemstation_method}; this page
+documents the file format.
 }
 \details{
-Objects that cannot be parsed are skipped with a warning, and tables inside
-register files are not returned. Tested on \code{LCDIAG.REG} files from
-revisions A.10.02, B.01.03, B.04.02, B.04.03, C.01.03, C.01.07 and C.01.10.
+Objects that cannot be parsed are skipped with a warning. Tested on
+\code{LCDIAG.REG} files from revisions A.10.02, B.01.03, B.04.02, B.04.03,
+C.01.03, C.01.07 and C.01.10, and on method register files from four
+revision B and C instruments and two revision A instruments.
 }
 \note{
 The reader for revision A files was adapted from \code{read_reg_file} in
@@ -66,7 +71,9 @@ when large) followed by that many objects.
 \item \code{CHPNdrDouble}, \code{CHPNdrString} and \code{CHPNdrObject}: a key, 6 bytes, then a
 float64, a string or a flag byte and object. Strings are a u16 length
 followed by UTF-16LE; a length of \code{C000} is instead followed by a u16 id
-naming a standard key (0 \code{ObjClass}, 1 \code{Title}).
+naming a standard key (0 \code{ObjClass}, 1 \code{Title}), and \code{8000} by a u16
+index, counted from 0, into the non-empty keys and table column names
+already read in the object. String values are not counted.
 \item \code{CHPDatLongSliced} and \code{CHPDatDoubleSliced}: 6 bytes, then the y row and
 the x row.
 \item \code{CHPDatLongRow} and \code{CHPDatDoubleRow}: 14 bytes, the unit string, u16 \code{7},
@@ -75,7 +82,17 @@ implicit, n int32 (\code{Long}) or float64 (\code{Double}) values follow. Then u
 float64 first value, u8, u32 flag marking scaled values, float64 scale and
 float64 offset. Values are raw x scale + offset if scaled and raw
 otherwise; an implicit row is first + i x scale.
-\item \code{CHPAnnText} and \code{CHPTable} are read past but not returned.
+\item \code{CHPTable}: a header holding a u16 row size at byte 2, a u16 row count n
+at byte 4, and the u16 counts of data and extra columns at bytes 20 and 22
+(16 and 18 for schema \code{11}). Then an 18-byte descriptor per column (u16
+offset in the row, u16 size, u16 type and u16 flags, then 10 bytes);
+(n + 1) x row size - 4 bytes holding a default row, less its first 4
+bytes, then the n rows, followed by the value of each extra column with
+flag \code{40}; and each column's name, a string whose length
+counts a terminator. A data column of type 3 with flag \code{40} is followed by
+its default and n strings. Type 4 is float32, with -10000 for an empty
+cell, and type 5 int32. The extra columns are not returned.
+\item \code{CHPAnnText} is read past but not returned.
 }
 
 In \code{LCDIAG.REG} each trace is an object whose \code{Title} names it. Revision
@@ -91,7 +108,13 @@ headers (u16, u16 type, u32 size, u32, u32 id), 4n further bytes, then the
 data of each record in turn. Records refer to one another by id. Types
 \code{8001} and \code{8003} are Latin-1 strings and \code{8006} a string after 2 bytes;
 \code{8002} holds a numeric array; \code{0602} (43 bytes) a key at byte 14 and float64
-at byte 35; \code{0601} a key and the u32 id of its value at byte 35. Types
+at byte 35; \code{0601} a key and the u32 id of its value at byte 35; \code{0603} the
+key of a table and the u32 id of its \code{0701} record at byte 35. A \code{0701}
+record holds a u16 row size at byte 2, a u16 row count n at byte 4, the u32
+offset of its rows at byte 6 and a u16 count of data columns at byte 16,
+then a 30-byte descriptor per column: a 16-byte name, then the u16 offset
+in the row, size, type and flags, as in revision B and C. The rows are
+(n + 1) x row size bytes, the first a default row. Types
 \code{0501} and \code{0503} (161 bytes) describe a trace: u32 point count at byte 9,
 then the u32 ids of the x unit and data and the x scale at bytes 27, 31 and
 61, and those of y at bytes 94, 98 and 128. An array id with no record

@@ -22,6 +22,7 @@ export(read_cdf)
 export(read_chemstation_ch)
 export(read_chemstation_csv)
 export(read_chemstation_logs)
+export(read_chemstation_method)
 export(read_chemstation_ms)
 export(read_chemstation_reports)
 export(read_chemstation_uv)
@@ -61,7 +62,10 @@ importFrom(data.table,
 )
 importFrom(purrr,partial)
 importFrom(readxl,read_xls)
-importFrom(stats,setNames)
+importFrom(stats,
+  approx,
+  setNames
+)
 importFrom(stringr,str_split_fixed)
 importFrom(utils,
   file_test,

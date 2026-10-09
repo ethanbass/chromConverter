@@ -70,6 +70,7 @@ Other 'Agilent' parsers:
 \code{\link[=read_chemstation_ch]{read_chemstation_ch()}},
 \code{\link[=read_chemstation_csv]{read_chemstation_csv()}},
 \code{\link[=read_chemstation_logs]{read_chemstation_logs()}},
+\code{\link[=read_chemstation_method]{read_chemstation_method()}},
 \code{\link[=read_chemstation_ms]{read_chemstation_ms()}},
 \code{\link[=read_chemstation_reports]{read_chemstation_reports()}}
 }

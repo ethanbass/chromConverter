@@ -39,7 +39,7 @@ test_that("read_chemstation_reg reads start/stop conditions", {
 
 test_that("read_chemstation_reg reads a ChemStation B.04 LCDIAG.REG", {
   x <- read_chemstation_reg(extra_test_file("chemstation_B0402_LCDIAG.REG"))
-  expect_named(x, c("traces", "conditions"))
+  expect_named(x, c("traces", "conditions", "tables"))
 
   # this revision writes "PMP1 , Pressure"; the space is dropped
   expect_setequal(unique(x$traces$trace),
