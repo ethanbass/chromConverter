@@ -52,7 +52,7 @@ attribute will be used if it exists.
 
 \examples{
 \dontshow{if (requireNamespace("ncdf4", quietly = TRUE)) withAutoprint(\{ # examplesIf}
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
+path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 chrom <- read_shimadzu(path, what = "chroms")
 # the file is named for the `sample_name` attribute unless one is supplied
 write_andi_chrom(chrom, path_out = tempdir(), force = TRUE)

@@ -292,7 +292,7 @@ test_that("entab parser can read `Agilent Chemstation` 131 files", {
 })
 
 test_that("`Shimadzu` ASCII parser works", {
-  path <- system.file("extdata/ladder.txt", package = "chromConverter")
+  path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 
   x <- read_chroms(path, format_in = "shimadzu_fid", find_files = FALSE,
                    progress_bar = FALSE)[[1]]
@@ -444,7 +444,7 @@ test_that("read_chroms exports CDF files correctly", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")
   tmp <-  tempdir(check = TRUE)
-  file <- system.file("extdata/ladder.txt", package = "chromConverter")
+  file <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 
   x1 <- read_chroms(paths = file, format_in = "shimadzu_fid",
                     path_out = tmp, export_format = "cdf",
@@ -594,15 +594,16 @@ test_that("deprecated `data_format` argument to peak list readers still works", 
 })
 
 test_that("traces sharing a `.D` directory get distinct names", {
-  path <- extra_test_file("solidago_standards/RUTIN_2.D")
+  path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+                      package = "chromConverter")
   expect_silent(x <- read_chroms(path, format_in = "chemstation_ch",
                                  parser = "chromconverter",
                                  progress_bar = FALSE))
-  expect_equal(names(x), paste0("RUTIN_2.dad1", LETTERS[1:5]))
+  expect_equal(names(x), paste0("BENZOS_250PPM.dad1", LETTERS[1:5]))
   y <- read_chroms(path, format_in = "chemstation_ch",
                    parser = "chromconverter", sample_names = "sample_name",
                    progress_bar = FALSE)
-  expect_equal(names(y), paste0("Rutin_2.dad1", LETTERS[1:5]))
+  expect_equal(names(y), paste0("benzos_250ppm.dad1", LETTERS[1:5]))
 })
 
 test_that("name_traces_in_d leaves names from different directories alone", {
@@ -635,18 +636,18 @@ test_that("read_agilent_d can read a `ChemStation` peak table", {
 })
 
 test_that("read_peaklist can read `Shimadzu` fid files", {
-  path <- system.file("extdata/ladder.txt", package = "chromConverter")
+  path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
   x <- read_peaklist(path, format_in = "shimadzu_fid", progress_bar = FALSE)
   expect_equal(class(x[[1]]), "data.frame")
-  expect_equal(x[[1]][[1,"sample"]], "ladder")
+  expect_equal(x[[1]][[1,"sample"]], "alkane_ladder")
   expect_equal(colnames(x[[1]]),
                c("sample", "rt", "start", "end", "area", "height"))
 
   x <- read_peaklist(path, format_in = "shimadzu_fid",
                      peaktable_format = "original", progress_bar = FALSE)
   expect_equal(class(x[[1]]), "data.frame")
-  expect_equal(x[[1]][[1,"sample"]], "ladder")
-  expect_equal(x[[1]][[1,"sample"]], "ladder")
+  expect_equal(x[[1]][[1,"sample"]], "alkane_ladder")
+  expect_equal(x[[1]][[1,"sample"]], "alkane_ladder")
   expect_equal(colnames(x[[1]]),
                c("sample", "Peak#", "R.Time", "I.Time", "F.Time", "Area",
                  "Height", "A/H", "Conc.", "Mark", "ID#", "Name", "k'",
@@ -802,20 +803,23 @@ test_that("sort_chroms_by_time(quiet = TRUE) leaves a partly dated list alone", 
 })
 
 test_that("sort_by = 'auto' sorts files found in a directory, not listed ones", {
-  seq_dir <- extra_test_file("solidago_standards")
+  seq_dir <- system.file("extdata", "benzoxazinoid_standards",
+                         package = "chromConverter")
   x <- read_chroms(seq_dir, format_in = "chemstation_ch", pattern = "dad1A",
                    parser = "chromconverter", progress_bar = FALSE)
-  expect_equal(names(x), c("MEOH", "RUTIN_1", "RUTIN_2", "RUTIN_3",
-                           "COUMARIC_AC_1", "CAFFEIC_AC_1", "CAFFEIC_AC_2"))
+  expect_equal(names(x), c("MEOH", "BENZOS_1000PPM", "BENZOS_500PPM",
+                           "BENZOS_250PPM", "BENZOS_125PPM", "BENZOS_62,5PPM",
+                           "BENZOS_31,25PPM", "BENZOS_16PPM", "BENZOS_8PPM",
+                           "BENZOS_4PPM"))
   y <- read_chroms(seq_dir, format_in = "chemstation_ch", pattern = "dad1A",
                    parser = "chromconverter", sort_by = "none",
                    progress_bar = FALSE)
-  expect_equal(names(y)[1:3], c("CAFFEIC_AC_1", "CAFFEIC_AC_2",
-                                "COUMARIC_AC_1"))
-  files <- file.path(seq_dir, c("RUTIN_3.D", "MEOH.D"), "dad1A.ch")
+  expect_equal(names(y)[1:3], c("BENZOS_1000PPM", "BENZOS_125PPM",
+                                "BENZOS_16PPM"))
+  files <- file.path(seq_dir, c("BENZOS_4PPM.D", "MEOH.D"), "dad1A.ch")
   z <- read_chroms(files, format_in = "chemstation_ch",
                    parser = "chromconverter", progress_bar = FALSE)
-  expect_equal(names(z), c("RUTIN_3", "MEOH"))
+  expect_equal(names(z), c("BENZOS_4PPM", "MEOH"))
 })
 
 test_that("read_chroms sorts and names nested samples correctly", {

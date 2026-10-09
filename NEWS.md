@@ -9,6 +9,7 @@
 * `extract_metadata` now returns numeric fields, such as `time_range` and `wavelength`, as numbers rather than strings.
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
 * `extract_metadata` now returns one row per sample, retaining the values its chromatograms agree on. The `by = "chromatogram"` argument restores one row per chromatogram (in nested lists).
+* The example file `extdata/ladder.txt` is now `extdata/alkane_ladder.txt`, documented at `?alkane_ladder`. Update the path in `system.file` calls.
 
 ### New features
 

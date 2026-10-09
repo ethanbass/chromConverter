@@ -56,7 +56,7 @@ test_that("read_chemstation_reg reads a ChemStation B.04 LCDIAG.REG", {
 })
 
 test_that("read_chemstation_reg rejects files that are not register files", {
-  path <- system.file("extdata/ladder.txt", package = "chromConverter")
+  path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
   expect_error(read_chemstation_reg(path),
                "not a 'ChemStation' register file")
 })

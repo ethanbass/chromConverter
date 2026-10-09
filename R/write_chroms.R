@@ -23,7 +23,7 @@
 #' directory specified by `path_out`.
 #' @author Ethan Bass
 #' @examples
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 #' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
 #'                       find_files = FALSE, progress_bar = FALSE)
 #' write_chroms(chroms, path_out = tempdir(), export_format = "csv",
@@ -114,7 +114,7 @@ get_exporter <- function(export_format, force = FALSE, show_progress = TRUE,
 #' of `sample_name`. If no `sample_name` is provided, the `sample_name`
 #' attribute will be used if it exists.
 #' @examplesIf requireNamespace("ncdf4", quietly = TRUE)
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 #' chrom <- read_shimadzu(path, what = "chroms")
 #' # the file is named for the `sample_name` attribute unless one is supplied
 #' write_andi_chrom(chrom, path_out = tempdir(), force = TRUE)

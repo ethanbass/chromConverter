@@ -66,7 +66,7 @@ Reads 'Shimadzu' ASCII (\code{.txt}) files. These files can be exported from
 selecting \verb{File Conversion:Convert to ASCII}.
 }
 \examples{
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
+path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 read_shimadzu(path)
 }
 \seealso{

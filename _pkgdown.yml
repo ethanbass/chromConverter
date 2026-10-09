@@ -49,3 +49,7 @@ reference:
   - print.chrom_list
   - summary.chrom_list
   - subset.chrom_list
+- title: "Example data"
+  contents:
+  - benzoxazinoid_standards
+  - alkane_ladder

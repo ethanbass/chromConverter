@@ -89,7 +89,7 @@
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial
 #' @examples
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 #' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
 #'                       find_files = FALSE, progress_bar = FALSE)
 #' @author Ethan Bass

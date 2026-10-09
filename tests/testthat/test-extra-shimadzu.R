@@ -483,7 +483,7 @@ test_that("Shimadzu GCD parser works", {
 
   expect_equal(class(x)[1], "matrix")
 
-  path_ascii <- system.file("extdata/ladder.txt", package = "chromConverter")
+  path_ascii <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 
   txt <- read_chroms(path_ascii, format_in = "shimadzu_fid", find_files = FALSE,
                      progress_bar = FALSE)[[1]]
@@ -514,7 +514,7 @@ test_that("Shimadzu FID peak tables match", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
-  path_asc <- system.file("extdata/ladder.txt", package = "chromConverter")
+  path_asc <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 
   path_gcd <- system.file("FS19_214.gcd", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path_gcd))

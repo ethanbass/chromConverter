@@ -63,7 +63,7 @@ test_that("write_chroms forwards `...` to `write_andi_chrom`", {
   dir.create(tmp)
   on.exit(unlink(tmp, recursive = TRUE))
 
-  path <- system.file("extdata/ladder.txt", package = "chromConverter")
+  path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
   x <- read_chroms(path, format_in = "shimadzu_ascii", find_files = FALSE,
                    progress_bar = FALSE)
   # `lambda` selects the column to export; a one-column chromatogram only has

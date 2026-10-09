@@ -25,7 +25,7 @@
 #' within each type of chromatogram. Chromatograms are returned in the format specified by
 #' `format_out` and `data_format`.
 #' @examples
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
+#' path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 #' read_shimadzu(path)
 #' @author Ethan Bass
 #' @family 'Shimadzu' parsers
