@@ -449,7 +449,7 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
     }
     if (data_format == "long"){
       dat <- data.frame(rt = times, intensity = dat$int, detector = DI$DETN,
-                   channel = DI$DSCN, lambda = DI$ADN,
+                   channel = DI$DSCN, lambda = sz_nm(DI$ADN),
                    unit = DI$detector.unit)
     }
     dat <- convert_chrom_format(dat, format_out = format_out,
@@ -471,10 +471,10 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
       if (length(det) != 1 || is.na(det)){
         return(NA_character_)
       }
-      if (length(wv) != 1 || is.na(wv) || !nzchar(wv)){
+      if (length(wv) != 1 || is.na(wv)){
         det
       } else{
-        paste(det, wv, sep = ", ")
+        paste0(det, ", ", wv, "nm")
       }
     }, FUN.VALUE = character(1))
   } else{

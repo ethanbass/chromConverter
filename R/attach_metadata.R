@@ -801,15 +801,20 @@ transfer_metadata <- function (new_object, old_object,
 #' @noRd
 get_sz_wv <- function(meta){
   if ("WVB" %in% names(meta)){
-    c(get_metadata_field(meta, "WVB"),
-      get_metadata_field(meta, "WVE"))
+    sz_nm(c(get_metadata_field(meta, "WVB"),
+            get_metadata_field(meta, "WVE")))
   } else{
-    # a detector with no wavelength to report -- a refractive index or
-    # conductivity channel -- leaves the channel description empty, and an
-    # empty string prints as a blank cell rather than as a missing value
-    wv <- get_metadata_field(meta, "ADN")
-    if (is.character(wv) && !nzchar(trimws(wv))) NA_character_ else wv
+    sz_nm(get_metadata_field(meta, "ADN"))
   }
+}
+
+#' Read a 'Shimadzu' wavelength as a number
+#'
+#' From text such as `"260nm"` or `"524"`. Text with no number, as a channel
+#' without a wavelength records (`""` or `"nm"`), gives `NA`.
+#' @noRd
+sz_nm <- function(x){
+  suppressWarnings(as.numeric(sub("^\\s*([0-9.]+).*$", "\\1", x)))
 }
 
 #' Get 'Shimadzu' instrument name

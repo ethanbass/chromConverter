@@ -428,17 +428,17 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
   # expect_s3_class(x3, "data.frame")
 
   expect_equal(nrow(x2), sum(sapply(x, nrow)))
-  expect_equal(x2[x2$lambda == "260nm", "intensity"], x[["A, 260nm"]],
+  expect_equal(x2[which(x2$lambda == 260), "intensity"], x[["A, 260nm"]],
                ignore_attr = TRUE)
-  expect_equal(x2[x2$lambda == "260nm", "rt"],
+  expect_equal(x2[which(x2$lambda == 260), "rt"],
                as.numeric(rownames(x[["A, 260nm"]])))
 
-  expect_equal(x2[x2$lambda == "210nm", "intensity"], x[["A, 210nm"]],
+  expect_equal(x2[which(x2$lambda == 210), "intensity"], x[["A, 210nm"]],
                ignore_attr = TRUE)
-  expect_equal(x2[x2$lambda == "210nm", "rt"],
+  expect_equal(x2[which(x2$lambda == 210), "rt"],
                as.numeric(rownames(x[["A, 210nm"]])))
 
-  expect_equal(x2[x2$lambda == "", "intensity"], x[["B"]], ignore_attr = TRUE)
+  expect_equal(x2[is.na(x2$lambda), "intensity"], x[["B"]], ignore_attr = TRUE)
 })
 
 test_that("Shimadzu multichannel peak tables match", {
