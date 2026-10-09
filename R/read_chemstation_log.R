@@ -34,7 +34,9 @@
 #'   records it only once the run's data are analyzed, so an aborted injection
 #'   has none, and its case can differ from the folder on disk.
 #' * `sample`: the sample, as the log names it.
-#' * `start`: `POSIXct`, UTC.
+#' * `start`: `POSIXct`, UTC. The `run_datetime` of the traces and reports in a
+#'   `.D` folder is instead the instrument's local time labeled as UTC, so match
+#'   injections to them by `data_file` rather than by time.
 #' * `minutes`: from the injection's first event to its last.
 #' * `status`: `completed`, `aborted`, `stopped by user` or `incomplete`.
 #' * `pressure_start`, `pressure_end`: the first and last reading of pump 1, in

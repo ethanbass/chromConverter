@@ -36,7 +36,9 @@ folder holding its \code{.D} folder.
 records it only once the run's data are analyzed, so an aborted injection
 has none, and its case can differ from the folder on disk.
 \item \code{sample}: the sample, as the log names it.
-\item \code{start}: \code{POSIXct}, UTC.
+\item \code{start}: \code{POSIXct}, UTC. The \code{run_datetime} of the traces and reports in a
+\code{.D} folder is instead the instrument's local time labeled as UTC, so match
+injections to them by \code{data_file} rather than by time.
 \item \code{minutes}: from the injection's first event to its last.
 \item \code{status}: \code{completed}, \code{aborted}, \verb{stopped by user} or \code{incomplete}.
 \item \code{pressure_start}, \code{pressure_end}: the first and last reading of pump 1, in
