@@ -969,3 +969,11 @@ test_that("V0 'Shimadzu' peak tables are read with the record length of the stre
   expect_error(read_stream(sz_v0_stream(200, rt_ms)),
                "Unrecognized V0 record length")
 })
+
+test_that("each ChemStation peak table carries the report's metadata", {
+  path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+                      package = "chromConverter")
+  x <- read_agilent_d(path, what = "peak_table")
+  expect_equal(attr(x[[1]], "sample_name"), "benzos_250ppm")
+  expect_equal(attr(x[[1]], "wavelength"), 254)
+})

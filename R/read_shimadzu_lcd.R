@@ -234,6 +234,10 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
   }
   if (any(what == "peak_table")){
     peak_table <- read_sz_tables(path, format_out = format_out)
+    if (read_metadata){
+      peak_table <- attach_sz_table_metadata(peak_table, path, metadata_format,
+                                             "shimadzu_lcd", data_format)
+    }
   }
   dat <- list()
   if (any(what == "DAD")) dat$DAD <- pda

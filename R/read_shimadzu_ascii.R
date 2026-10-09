@@ -128,6 +128,20 @@ read_shimadzu <- function(path, what = "chroms",
                               format_out = peaktable_format)
     })
     names(peak_table) <- gsub("\\[|\\]","", x[peaktab.idx])
+    peak_table <- Map(function(tab, nm){
+      if (!is.data.frame(tab)) return(tab)
+      met <- sz_ascii_section_header(x, nm, sep)
+      if (read_metadata){
+        attach_metadata(tab, read_shimadzu_metadata(x, met = met, sep = sep),
+                        format_in = metadata_format, source_file = path,
+                        source_file_format = "shimadzu_ascii",
+                        format_out = "data.frame", data_format = "wide",
+                        parser = "chromconverter")
+      } else {
+        attr(tab, "wavelength") <- sz_nm(met[met[, 1] == "Wavelength(nm)", 2][1])
+        tab
+      }
+    }, peak_table, names(peak_table))
   }
 
   ### extract MS spectra ###
@@ -293,6 +307,29 @@ read_shimadzu_dad <- function(path, x, chrom.idx, sep, data_format,
                           parser = "chromconverter")
   }
   xx
+}
+
+#' The header of the chromatogram section a 'Shimadzu' ASCII peak table
+#' belongs to
+#'
+#' Found from the peak table's name: `Peak Table(PDA-Ch1)` belongs to
+#' `[PDA Multi Chromatogram(Ch1)]` and `Peak Table(Detector A-Ch1)` to
+#' `[LC Chromatogram(Detector A-Ch1)]`. `NULL` if there is no such section.
+#' @noRd
+sz_ascii_section_header <- function(x, table_name, sep){
+  ch <- sub(".*\\((.*)\\).*", "\\1", table_name)
+  section <- if (startsWith(ch, "PDA-")){
+    paste0("[PDA Multi Chromatogram(", sub("^PDA-", "", ch), ")]")
+  } else paste0("Chromatogram(", ch, ")]")
+  start <- grep(section, x, fixed = TRUE)[1]
+  if (is.na(start)) return(NULL)
+  header <- try(extract_shimadzu_header(x = x, chrom.idx = start, sep = sep),
+                silent = TRUE)
+  if (inherits(header, "try-error")) return(NULL)
+  met <- header[[1]]
+  num <- grep("Time|Intensity Multiplier", met[, 1])
+  met[num, 2] <- gsub(",", ".", met[num, 2])
+  met
 }
 
 #' Read Shimadzu Peak Table

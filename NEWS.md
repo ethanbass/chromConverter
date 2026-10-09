@@ -66,6 +66,7 @@
 * 'Shimadzu' `.qgd` scans whose intensities are more than 4 bytes wide can now be read. They are read with a warning, since the decoding of values this wide has not been checked against a 'LabSolutions' export.
 * 'Shimadzu' `.lcd` peak tables stored as `Peak Table-100` and similar now read correctly; every peak after the first was misread.
 * 'Shimadzu' `.lcd` peak tables no longer include mass spectrometry tables (`Mass Peak Table`, `Compound Peak Table`), which were misread.
+* 'Shimadzu' ASCII, `.lcd` and `.gcd` peak tables now carry the file's metadata, such as `sample_name`, `instrument` and `run_datetime`, and their channel's `wavelength` (and `bandwidth`, for channels extracted from PDA data), as the chromatograms do.
 
 #### 'Agilent'
 
@@ -74,6 +75,7 @@
 * `read_agilent_dx(what = "instrument")` now gives a clear error for an archive without instrument data.
 * Improved handling of metadata from'ChemStation' report files including additional fields such as `run_datetime`, injection volume, `method`, and the `sample_name`.
 * `extract_metadata` no longer erroneously splits the `source_file` of 'ChemStation' peak lists into one column per sample.
+* Each 'ChemStation' peak table now carries the report's metadata, such as `sample_name` and `run_datetime`, as the chromatograms do.
 * 'Agilent' `.ch` and `.uv` traces now report the volume actually injected, which can differ from the volume the sequence requested.
 * Several files read from one `.D` directory now get distinct names, e.g. `RUTIN_2.dad1A`, instead of all sharing the directory or sample name.
 

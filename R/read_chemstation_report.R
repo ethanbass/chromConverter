@@ -110,6 +110,9 @@ read_chemstation_report <- function(path,
                                   source_file = path,
                                   data_format = peaktable_format,
                                   format_out = "data.frame")
+    peak_lists[] <- lapply(peak_lists, function(tab){
+      transfer_metadata(tab, peak_lists)
+    })
     if (metadata_format != "raw"){
       for (i in seq_along(peak_lists)){
         desc <- sub("^Signal [0-9]+:\\s*", "", names(peak_lists)[i])

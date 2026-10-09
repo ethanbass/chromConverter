@@ -127,6 +127,66 @@ read_sz_tables <- function(path, format_out = "data.frame"){
   pktab
 }
 
+#' Attach a file's metadata to each of its peak tables
+#' @noRd
+attach_sz_table_metadata <- function(tables, path, metadata_format,
+                                     source_file_format, data_format){
+  meta <- read_sz_file_properties(path)
+  channels <- read_sz_channel_wavelengths(path)
+  Map(function(tab, nm){
+    if (!is.data.frame(tab)) return(tab)
+    id <- sub("^PT-", "", nm)
+    meta <- c(meta, list(DSID = id), if (id %in% names(channels$wavelength)){
+      list(ADN = channels$wavelength[[id]],
+           pda_bandwidth = channels$bandwidth[id][[1]])
+    })
+    attach_metadata(tab, meta, format_in = metadata_format, source_file = path,
+                    source_file_format = source_file_format,
+                    data_format = data_format,
+                    format_out = if (data.table::is.data.table(tab)){
+                      "data.table"
+                    } else "data.frame")
+  }, tables, names(tables))
+}
+
+#' Read the wavelength of each channel of a 'Shimadzu' file
+#'
+#' Named by the channel's stream ID (`DSID`). A 2D channel's wavelength is its
+#' `ADN` in the `2D Data Item` of the processed data (e.g. `"260nm"`). The
+#' channels extracted from PDA data (`PDA.1.1.PDA.1.k`) are not listed there;
+#' their wavelengths are in the `Multi Chromato Table`, one 32-byte record per
+#' channel `k`, holding the wavelength x 100 as an int32 at byte 16 and the
+#' bandwidth at byte 28.
+#' @return A list of `wavelength` and, for PDA channels, `bandwidth`.
+#' @noRd
+read_sz_channel_wavelengths <- function(path){
+  out <- list(wavelength = list(), bandwidth = list())
+  stream <- c("LSS Data Processing", "2D Data Item")
+  if (check_stream(path, stream, min_size = 0)){
+    p <- export_stream(path, stream)
+    on.exit(unlink_stream(p), add = TRUE)
+    txt <- iconv(rawToChar(readBin(p, "raw", file.info(p)$size)),
+                 from = "ISO-8859-1", to = "UTF-8")
+    doc <- xml2::read_xml(paste0("<root>", txt, "</root>"))
+    items <- xml2::xml_find_all(doc, ".//GUD[@Type='2DDataItem']/*[DSID]")
+    out$wavelength <- as.list(setNames(
+      xml2::xml_text(xml2::xml_find_first(items, "ADN")),
+      xml2::xml_text(xml2::xml_find_first(items, "DSID"))))
+  }
+  stream <- c("LSS Data Processing", "Multi Chromato Table")
+  if (check_stream(path, stream, min_size = 0)){
+    p <- export_stream(path, stream)
+    on.exit(unlink_stream(p), add = TRUE)
+    v <- readBin(p, "integer", n = file.info(p)$size %/% 4, size = 4,
+                 endian = "little")
+    k <- seq_len(length(v) %/% 8) - 1
+    ids <- paste0("PDA.1.1.PDA.1.", k)
+    out$wavelength[ids] <- as.list(v[8 * k + 5] / 100)
+    out$bandwidth[ids] <- as.list(v[8 * k + 8])
+  }
+  out
+}
+
 #' Read Shimadzu Peak Table
 #'
 #' There are at least two Shimadzu peak table formats. The first (`V0`),

@@ -1628,3 +1628,11 @@ test_that("read_qgd_ms_scan decodes intensities wider than 4 bytes", {
   expect_equal(x[, "mz"], c(50, 51))
   expect_equal(attr(x, "unvalidated_width"), 5)
 })
+
+test_that("Shimadzu GCD and LCD peak tables carry the file's metadata", {
+  g <- read_shimadzu_gcd(extra_test_file("FS19_214.gcd"), what = "peak_table")
+  expect_equal(attr(g, "sample_name"), "FS19_214")
+  expect_equal(attr(g, "instrument"), "GC-2014")
+  l <- read_shimadzu_lcd(extra_test_file("Anthocyanin.lcd"), what = "peak_table")
+  expect_equal(attr(l[[1]], "sample_name"), "Anthocyanin_2_MeOH")
+})

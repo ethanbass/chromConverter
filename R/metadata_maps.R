@@ -199,7 +199,7 @@ meta_shimadzu_chrom <- function(meta, ctx){
        time_unit = get_time_unit(
                 grep("Start Time", names(meta), value=TRUE)[1],
                                           format_in = "shimadzu"),
-       wavelength = get_metadata_field(meta, "Wavelength(nm)"),
+       wavelength = sz_nm(get_metadata_field(meta, "Wavelength(nm)")),
        bandwidth = get_metadata_field(meta, "Bandwidth(nm)"),
        detector_y_unit = get_metadata_field(meta, "Intensity Units"),
        intensity_multiplier = as.numeric(get_metadata_field(meta, "Intensity Multiplier")),
@@ -238,6 +238,7 @@ meta_shimadzu_lcd <- function(meta, ctx){
        time_unit = get_metadata_field(meta, "time.unit"),
        time_multiplier = get_metadata_field(meta, "time.vf"),
        wavelength = get_sz_wv(meta),
+       bandwidth = get_metadata_field(meta, "pda_bandwidth", null_val = NULL),
        detector_y_unit = get_metadata_field(meta, "detector.unit"),
        intensity_multiplier = get_metadata_field(meta, "detector.vf"),
        # Only mass spectrometry data fills these in, and a `NULL` is dropped by

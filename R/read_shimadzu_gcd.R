@@ -82,10 +82,8 @@ read_shimadzu_gcd <- function(path, what = "chroms",
   if (any(what == "peak_table")){
     peak_table <- read_sz_tables(path, format_out = format_out)
     if (read_metadata){
-      peak_table <- attach_metadata(peak_table, meta, format_in = metadata_format,
-                           source_file = path, source_file_format = "shimadzu_gcd",
-                             data_format = data_format,
-                           format_out = "data.frame")
+      peak_table <- attach_sz_table_metadata(peak_table, path, metadata_format,
+                                             "shimadzu_gcd", data_format)
     }
   }
   dat <- mget(what, ifnotfound = NA)
