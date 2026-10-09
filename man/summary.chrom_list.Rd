@@ -47,9 +47,10 @@ or truncated to the first few rows, so the result can be filtered and
 joined against.
 }
 \examples{
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-                      find_files = FALSE, progress_bar = FALSE)
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
 summary(chroms)
 }
 \seealso{

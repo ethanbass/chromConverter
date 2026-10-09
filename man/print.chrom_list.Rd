@@ -39,9 +39,10 @@ and any attribute they all share is shown in that block's header rather
 than repeated down it.
 }
 \examples{
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-                      find_files = FALSE, progress_bar = FALSE)
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
 print(chroms)
 }
 \seealso{

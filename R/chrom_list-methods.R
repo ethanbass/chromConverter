@@ -19,9 +19,10 @@
 #' @return Invisibly returns `x`.
 #'
 #' @examples
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
-#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-#'                       find_files = FALSE, progress_bar = FALSE)
+#' path <- system.file("extdata", "benzoxazinoid_standards",
+#'                     package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+#'                       parser = "chromconverter", progress_bar = FALSE)
 #' print(chroms)
 #' @seealso [extract_metadata]
 #'
@@ -193,9 +194,10 @@ cols_doc <- function(extra = character()){
 #' collapsed to a comma-separated string so that it occupies one column.
 #'
 #' @examples
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
-#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-#'                       find_files = FALSE, progress_bar = FALSE)
+#' path <- system.file("extdata", "benzoxazinoid_standards",
+#'                     package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+#'                       parser = "chromconverter", progress_bar = FALSE)
 #' summary(chroms)
 #' @seealso [extract_metadata], [print.chrom_list]
 #'
@@ -434,11 +436,12 @@ shared_metadata_attrs <- function(x){
 #' @param ... Ignored.
 #' @return A `chrom_list` containing the selected chromatograms.
 #' @examples
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
-#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-#'                       find_files = FALSE, progress_bar = FALSE)
-#' subset(chroms, sample_name == "FS19_214")
-#' subset(chroms, grepl("ladder", source_file))
+#' path <- system.file("extdata", "benzoxazinoid_standards",
+#'                     package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+#'                       parser = "chromconverter", progress_bar = FALSE)
+#' subset(chroms, sample_name != "MEOH")
+#' subset(chroms, run_datetime < as.POSIXct("2023-06-21", tz = "UTC"))
 #' @seealso [extract_metadata]
 #' @export
 subset.chrom_list <- function(x, subset, ...){
@@ -492,17 +495,18 @@ subset.chrom_list <- function(x, subset, ...){
 #' from which chromatographR's `get_peaktable` fills its `sample_meta`. A
 #' sample without a row in `metadata` is left unchanged, with a warning.
 #' @examples
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
-#' chrom <- read_chroms(path, format_in = "shimadzu_ascii",
-#'                      find_files = FALSE, progress_bar = FALSE)
-#' # three copies stand in for the samples of a sequence
-#' chroms <- c(chrom, chrom, chrom)
-#' names(chroms) <- c("s1", "s2", "s3")
-#' meta <- data.frame(name = c("s1", "s2", "s3"),
-#'                    treatment = c("control", "drought", "drought"))
+#' path <- system.file("extdata", "benzoxazinoid_standards",
+#'                     package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+#'                       parser = "chromconverter", progress_bar = FALSE)
+#' meta <- data.frame(name = c("MEOH", "BENZOS_1000PPM", "BENZOS_500PPM",
+#'                             "BENZOS_250PPM", "BENZOS_125PPM",
+#'                             "BENZOS_62,5PPM", "BENZOS_31,25PPM",
+#'                             "BENZOS_16PPM", "BENZOS_8PPM", "BENZOS_4PPM"),
+#'                    ppm = c(0, 1000 / 2^(0:8)))
 #' chroms <- add_metadata(chroms, meta)
-#' extract_metadata(chroms, what = "treatment")
-#' names(subset(chroms, treatment == "drought"))
+#' extract_metadata(chroms, what = "ppm")
+#' names(subset(chroms, ppm >= 250))
 #' @seealso [extract_metadata], [subset.chrom_list]
 #' @export
 add_metadata <- function(chrom_list, metadata, by = "name", overwrite = FALSE){

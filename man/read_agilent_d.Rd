@@ -60,9 +60,12 @@ Instrument traces are named from \code{LCDIAG.REG}, so the names differ between
 with a warning.
 }
 \examples{
-\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-read_agilent_d("tests/testthat/testdata/RUTIN2.D")
-\dontshow{\}) # examplesIf}
+path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+                    package = "chromConverter")
+run <- read_agilent_d(path)
+names(run$chroms)
+pump <- read_agilent_d(path, what = "instrument")
+names(pump)
 }
 \seealso{
 Other 'Agilent' parsers:

@@ -36,11 +36,12 @@ returns for each \code{.D} directory, it is kept or dropped as a whole, and
 leave a field empty; a field they disagree on is \code{NA}.
 }
 \examples{
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-                      find_files = FALSE, progress_bar = FALSE)
-subset(chroms, sample_name == "FS19_214")
-subset(chroms, grepl("ladder", source_file))
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
+subset(chroms, sample_name != "MEOH")
+subset(chroms, run_datetime < as.POSIXct("2023-06-21", tz = "UTC"))
 }
 \seealso{
 \link{extract_metadata}

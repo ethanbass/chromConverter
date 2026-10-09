@@ -35,17 +35,18 @@ Where an element holds several chromatograms, such as the traces
 sample's values.
 }
 \examples{
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chrom <- read_chroms(path, format_in = "shimadzu_ascii",
-                     find_files = FALSE, progress_bar = FALSE)
-# three copies stand in for the samples of a sequence
-chroms <- c(chrom, chrom, chrom)
-names(chroms) <- c("s1", "s2", "s3")
-meta <- data.frame(name = c("s1", "s2", "s3"),
-                   treatment = c("control", "drought", "drought"))
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
+meta <- data.frame(name = c("MEOH", "BENZOS_1000PPM", "BENZOS_500PPM",
+                            "BENZOS_250PPM", "BENZOS_125PPM",
+                            "BENZOS_62,5PPM", "BENZOS_31,25PPM",
+                            "BENZOS_16PPM", "BENZOS_8PPM", "BENZOS_4PPM"),
+                   ppm = c(0, 1000 / 2^(0:8)))
 chroms <- add_metadata(chroms, meta)
-extract_metadata(chroms, what = "treatment")
-names(subset(chroms, treatment == "drought"))
+extract_metadata(chroms, what = "ppm")
+names(subset(chroms, ppm >= 250))
 }
 \seealso{
 \link{extract_metadata}, \link{subset.chrom_list}

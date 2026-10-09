@@ -26,8 +26,13 @@
 #' chromatogram is returned as a `matrix`, `data.frame` or `data.table`.
 #' Metadata are attached as [attributes] if `read_metadata` is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by that
 #' element.
-#' @examplesIf interactive()
-#' read_agilent_d("tests/testthat/testdata/RUTIN2.D")
+#' @examples
+#' path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+#'                     package = "chromConverter")
+#' run <- read_agilent_d(path)
+#' names(run$chroms)
+#' pump <- read_agilent_d(path, what = "instrument")
+#' names(pump)
 #' @author Ethan Bass
 #' @family 'Agilent' parsers
 #' @export

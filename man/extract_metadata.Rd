@@ -84,8 +84,9 @@ Extract metadata as a \code{data.frame}, \code{data.table} or \code{tibble} from
 chromatograms.
 }
 \examples{
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-                      find_files = FALSE, progress_bar = FALSE)
-extract_metadata(chroms, what = c("sample_name", "instrument", "run_datetime"))
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
+extract_metadata(chroms, what = c("sample_name", "run_datetime", "time_range"))
 }

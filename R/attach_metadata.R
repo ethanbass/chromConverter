@@ -338,10 +338,11 @@ read_waters_metadata <- function(file){
 #' each row: by the sample's name, or with `by = "chromatogram"` by the
 #' chromatogram's path through the list (e.g. `blue.UV`).
 #' @examples
-#' path <- system.file("extdata/ladder.txt", package = "chromConverter")
-#' chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-#'                       find_files = FALSE, progress_bar = FALSE)
-#' extract_metadata(chroms, what = c("sample_name", "instrument", "run_datetime"))
+#' path <- system.file("extdata", "benzoxazinoid_standards",
+#'                     package = "chromConverter")
+#' chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+#'                       parser = "chromconverter", progress_bar = FALSE)
+#' extract_metadata(chroms, what = c("sample_name", "run_datetime", "time_range"))
 #' @export
 extract_metadata <- function(chrom_list,
                              what = chrom_metadata_fields(),
