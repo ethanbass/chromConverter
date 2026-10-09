@@ -23,8 +23,13 @@
 #' by the time when each file was last modified.
 #' @param data_format Deprecated. Use `peaktable_format` instead.
 #' @return A `peak_list`: a list with one element per sample, holding its peak
-#' table, or a list of peak tables named by signal where the file records more
-#' than one. Each row is a peak.
+#' table, or a list of peak tables where the file records more than one. The
+#' tables are named by wavelength (e.g. `"254"`) where the file records one,
+#' and otherwise by the file's own name for the signal; a table identical to
+#' another at the same wavelength is a copy and is left out. Each row is a
+#' peak. Every table starts with a `sample` column and
+#' a `lambda` column giving the signal's wavelength, which is `NA` for a
+#' detector without one or a file that does not record it.
 #' @import reticulate
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial
@@ -139,15 +144,22 @@ read_peaklist <- function(paths, find_files,
     data <- lapply(seq_along(data), function(i){
       if (inherits(data[[i]], "list")){
         transfer_metadata(lapply(data[[i]], function(xx){
-          transfer_metadata(cbind(sample = file_names[i], xx), xx)
+          transfer_metadata(cbind(sample = file_names[i],
+                                  lambda = peak_table_lambda(xx), xx), xx)
         }), data[[i]])
       } else {
-        transfer_metadata(cbind(sample = file_names[i], data[[i]]), data[[i]])
+        transfer_metadata(cbind(sample = file_names[i],
+                                lambda = peak_table_lambda(data[[i]]),
+                                data[[i]]), data[[i]])
       }
     })
     class(data) <- "peak_list"
     names(data) <- file_names
   }
+  data[] <- lapply(data, function(x){
+    if (is.data.frame(x)) x else transfer_metadata(name_peak_tables(x), x)
+  })
+  if (!is.null(attr(data, "lambdas"))) attr(data, "lambdas") <- names(data[[1]])
   if (sort_by == "acquisition_time"){
     if (!read_metadata){
       warning("`sort_by = \"acquisition_time\"` requires `read_metadata = TRUE`; skipping sort.",
@@ -174,4 +186,37 @@ sz_peaktable_chromatographr <- function(x){
   } else if (is.list(x)){
     transfer_metadata(lapply(x, sz_peaktable_chromatographr), x)
   } else x
+}
+
+#' The wavelength of a peak table
+#'
+#' Read from its `wavelength` attribute, or `NA` for a detector with none.
+#' @noRd
+peak_table_lambda <- function(x){
+  w <- suppressWarnings(as.numeric(attr(x, "wavelength")[1]))
+  if (length(w) == 1) w else NA_real_
+}
+
+#' Name a sample's peak tables by wavelength
+#'
+#' A table whose `lambda` is known is named for it (`"254"`); one without keeps
+#' its name. A table identical to an earlier one at the same wavelength is a
+#' copy and is dropped, and any other tables sharing a name are told apart as
+#' `"254"`, `"254_1"`.
+#' @noRd
+name_peak_tables <- function(tabs){
+  lam <- vapply(tabs, function(t){
+    if ("lambda" %in% names(t)) suppressWarnings(as.numeric(t$lambda[1])) else NA_real_
+  }, numeric(1))
+  nms <- ifelse(is.na(lam), names(tabs), as.character(lam))
+  copy <- vapply(seq_along(tabs), function(i){
+    any(vapply(seq_len(i - 1), function(j){
+      nms[j] == nms[i] &&
+        isTRUE(all.equal(as.data.frame(tabs[[i]]), as.data.frame(tabs[[j]]),
+                         check.attributes = FALSE))
+    }, logical(1)))
+  }, logical(1))
+  tabs <- tabs[!copy]
+  names(tabs) <- make.unique(nms[!copy], sep = "_")
+  tabs
 }

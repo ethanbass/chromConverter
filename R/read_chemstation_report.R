@@ -36,7 +36,8 @@ read_chemstation_reports <- function(paths,
     xx <- read_chemstation_report(paths[[i]], peaktable_format = peaktable_format,
                                   metadata_format = metadata_format)
     dat <- lapply(seq_along(xx), function(ii){
-      lambda <- sub(".*Sig=([0-9]+).*", "\\1", names(xx)[ii])
+      lambda <- suppressWarnings(as.numeric(sub(".*Sig=([0-9]+).*", "\\1",
+                                                names(xx)[ii])))
       transfer_metadata(cbind(sample = names(paths)[i], lambda = lambda,
                               xx[[ii]]), xx[[ii]])
     })

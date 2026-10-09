@@ -268,7 +268,17 @@ test_that("read_peaklist can read ASM peak lists", {
 
   x <- read_peaklist(path, format_in = "asm", progress_bar = FALSE)
   expect_s3_class(x, "peak_list")
-  expect_equal(names(x[[1]]), c("sample", "rt", "start", "end", "area", "height"))
+  expect_equal(names(x[[1]]), c("sample", "lambda", "rt", "start", "end", "area",
+                               "height"))
   expect_equal(nrow(x[[1]]), 4)
   expect_equal(x[[1]]$rt[1], 39.80021, tolerance = 1e-6)
+})
+
+test_that("ASM chromatograms and peak tables report their wavelength", {
+  path <- extra_test_file("ASM-openlab-sequence.json")
+  x <- read_peaklist(path, format_in = "asm", progress_bar = FALSE)
+  expect_equal(vapply(x[[2]], function(t) t$lambda[1], numeric(1)),
+               c(210, 228), ignore_attr = TRUE)
+  y <- read_chroms(path, format_in = "asm", progress_bar = FALSE)
+  expect_equal(attr(y[[2]][[2]], "wavelength"), 228)
 })

@@ -479,7 +479,7 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(class(x[[1]][[1]]), "data.frame")
   expect_equal(names(x[[1]]), c("254", "320", "360", "210", "230"))
   expect_equal(x[[1]][[1]][[1, "sample"]], "RUTIN2")
-  expect_equal(x[[1]][[1]][[1, "lambda"]], "254")
+  expect_equal(x[[1]][[1]][[1, "lambda"]], 254)
   expect_equal(colnames(x[[1]][[1]]),
                c("sample", "lambda", "rt", "width", "area", "height", "type"))
   expect_equal(attr(x, "fit"), "chemstation")
@@ -509,7 +509,7 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(class(x[[1]][[1]]), "data.frame")
   expect_equal(names(x[[1]]), c("254", "320", "360", "210", "230"))
   expect_equal(x[[1]][[1]][[1,"sample"]], "RUTIN2")
-  expect_equal(x[[1]][[1]][[1,"lambda"]], "254")
+  expect_equal(x[[1]][[1]][[1,"lambda"]], 254)
   expect_equal(colnames(x[[1]][[1]]),
                c("sample", "lambda", "Peak #", "RetTime [min]", "Width [min]",
                  "Area [mAU*s]", "Height [mAU]", "Area %", "Type"))
@@ -641,7 +641,7 @@ test_that("read_peaklist can read `Shimadzu` fid files", {
   expect_equal(class(x[[1]]), "data.frame")
   expect_equal(x[[1]][[1,"sample"]], "alkane_ladder")
   expect_equal(colnames(x[[1]]),
-               c("sample", "rt", "start", "end", "area", "height"))
+               c("sample", "lambda", "rt", "start", "end", "area", "height"))
 
   x <- read_peaklist(path, format_in = "shimadzu_fid",
                      peaktable_format = "original", progress_bar = FALSE)
@@ -649,7 +649,7 @@ test_that("read_peaklist can read `Shimadzu` fid files", {
   expect_equal(x[[1]][[1,"sample"]], "alkane_ladder")
   expect_equal(x[[1]][[1,"sample"]], "alkane_ladder")
   expect_equal(colnames(x[[1]]),
-               c("sample", "Peak#", "R.Time", "I.Time", "F.Time", "Area",
+               c("sample", "lambda", "Peak#", "R.Time", "I.Time", "F.Time", "Area",
                  "Height", "A/H", "Conc.", "Mark", "ID#", "Name", "k'",
                  "Plate #", "Plate Ht.", "Tailing", "Resolution", "Sep.Factor",
                  "Area Ratio", "Height Ratio", "Conc. %", "Norm Conc."))
@@ -976,4 +976,14 @@ test_that("each ChemStation peak table carries the report's metadata", {
   x <- read_agilent_d(path, what = "peak_table")
   expect_equal(attr(x[[1]], "sample_name"), "benzos_250ppm")
   expect_equal(attr(x[[1]], "wavelength"), 254)
+})
+
+test_that("name_peak_tables names tables by wavelength and drops copies", {
+  tab <- function(lambda, area) data.frame(sample = "s", lambda = lambda, rt = 1,
+                                           area = area)
+  x <- list(a = tab(254, 10), b = tab(254, 10), c = tab(254, 20),
+            d = tab(NA, 5))
+  y <- name_peak_tables(x)
+  expect_equal(names(y), c("254", "254_1", "d"))
+  expect_equal(y[["254_1"]]$area, 20)
 })

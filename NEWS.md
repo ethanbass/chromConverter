@@ -5,6 +5,8 @@
 * `read_chroms` and `read_peaklist` now return files found in a directory in acquisition order, if every file records its run time, rather than alphabetically. `sort_by = "none"` restores the previous order.
 * `read_peaklist` now returns 'Shimadzu' `.lcd` and `.gcd` peak tables in the default `chromatographr` format, like the other formats. `peaktable_format = "original"` restores the vendor columns.
 * `detector_range` now holds only a numeric wavelength range, as for 'ChemStation' since 0.10.0. Channel descriptions and single wavelengths that 'Waters' `.arw`, ANDI, 'Lumex' MDF and ASM files put there are now `signal_descriptor` or `wavelength`.
+* `read_peaklist` tables from every format now have a numeric `lambda` column after `sample`, giving the signal's wavelength (`NA` where none is recorded).
+* `read_peaklist` now names each peak table by its wavelength (e.g. `"254"`) wherever the file records one, as it already did for 'ChemStation' reports. Tables without a wavelength keep their names.
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. So are the wavelengths of 'Shimadzu' `.lcd` traces, previously text such as `"260nm"`, including the `lambda` column of long-format chromatograms. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.
@@ -67,6 +69,7 @@
 * 'Shimadzu' `.qgd` scans whose intensities are more than 4 bytes wide can now be read. They are read with a warning, since the decoding of values this wide has not been checked against a 'LabSolutions' export.
 * 'Shimadzu' `.lcd` peak tables stored as `Peak Table-100` and similar now read correctly; every peak after the first was misread.
 * 'Shimadzu' `.lcd` peak tables no longer include mass spectrometry tables (`Mass Peak Table`, `Compound Peak Table`), which were misread.
+* `read_peaklist` no longer returns the peak table of a PDA channel twice for 'Shimadzu' `.lcd` files.
 * 'Shimadzu' ASCII, `.lcd` and `.gcd` peak tables now carry the file's metadata, such as `sample_name`, `instrument` and `run_datetime`, and their channel's `wavelength` (and `bandwidth`, for channels extracted from PDA data), as the chromatograms do.
 
 #### 'Agilent'

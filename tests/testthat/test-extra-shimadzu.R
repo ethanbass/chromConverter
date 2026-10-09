@@ -14,8 +14,8 @@ test_that("read_peaklist can read `Shimadzu` ASCII (PDA) files", {
   expect_type(x, "list")
   expect_equal(length(x), 5)
   expect_s3_class(x[[1]], "data.frame")
-  expect_equal(dim(x[[1]]), c(133, 6))
-  expect_equal(colnames(x[[1]]), c("sample", "rt", "start",
+  expect_equal(dim(x[[1]]), c(133, 7))
+  expect_equal(colnames(x[[1]]), c("sample", "lambda", "rt", "start",
                                    "end", "area", "height"))
 })
 
@@ -113,16 +113,13 @@ test_that("Shimadzu Anthocyanin peak tables match", {
   x1 <- read_peaklist(path_lcd, format_in = "shimadzu_lcd",
                       peaktable_format = "original", progress_bar=FALSE)[[1]]
 
-  expect_equal(x[[1]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[1]][,-1],
+  expect_equal(x[[1]][,c(4,7:8,5:6,9:10,12,14:19,22:23)],x1[[1]][,-(1:2)],
                tolerance = .001, ignore_attr = TRUE)
-  expect_equal(x[[2]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[3]][,-1],
-               tolerance = .001, ignore_attr = TRUE)
-  expect_equal(x[[3]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[4]][,-1],
-               tolerance = .001, ignore_attr = TRUE)
-  expect_equal(x[[4]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[5]][,-1],
-               tolerance = .001, ignore_attr = TRUE)
-  expect_equal(x[[5]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[6]][,-1],
-               tolerance = .001, ignore_attr = TRUE)
+  # both formats name the PDA channels by their wavelength
+  for (wl in c("524", "214", "280", "520")){
+    expect_equal(x[[wl]][,c(4,7:8,5:6,9:10,12,14:19,22:23)], x1[[wl]][,-(1:2)],
+                 tolerance = .001, ignore_attr = TRUE)
+  }
 })
 
 
@@ -462,11 +459,11 @@ test_that("Shimadzu multichannel peak tables match", {
                       peaktable_format = "original", progress_bar=FALSE)[[1]]
 
 
-  expect_equal(x[[1]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[1]][,-1],
+  expect_equal(x[[1]][,c(4,7:8,5:6,9:10,12,14:19,22:23)],x1[[1]][,-(1:2)],
                tolerance=.01, ignore_attr = TRUE)
-  expect_equal(x[[2]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[2]][,-1],
+  expect_equal(x[[2]][,c(4,7:8,5:6,9:10,12,14:19,22:23)],x1[[2]][,-(1:2)],
                tolerance = .001, ignore_attr = TRUE)
-  expect_equal(x[[3]][,c(3,6:7,4:5,8:9,11,13:18,21:22)],x1[[3]][,-1],
+  expect_equal(x[[3]][,c(4,7:8,5:6,9:10,12,14:19,22:23)],x1[[3]][,-(1:2)],
                tolerance = .001, ignore_attr = TRUE)
 })
 
@@ -527,7 +524,7 @@ test_that("Shimadzu FID peak tables match", {
   x1 <- read_peaklist(path_gcd, format_in = "shimadzu_gcd",
                       peaktable_format = "original", progress_bar=FALSE)
 
-  expect_equal(x[,c(3,6:7,4:5,8:9,11,13:18,21:22)], x1[[1]][,-1], tolerance=.001,
+  expect_equal(x[,c(4,7:8,5:6,9:10,12,14:19,22:23)], x1[[1]][,-(1:2)], tolerance=.001,
                ignore_attr = TRUE)
 })
 
@@ -538,7 +535,8 @@ test_that("read_peaklist returns Shimadzu GCD peak tables in chromatographr form
                      progress_bar = FALSE)[[1]]
   x1 <- read_peaklist(path_gcd, format_in = "shimadzu_gcd",
                       progress_bar = FALSE)[[1]]
-  expect_named(x1, c("sample", "rt", "start", "end", "area", "height"))
+  expect_named(x1, c("sample", "lambda", "rt", "start", "end", "area",
+                     "height"))
   expect_equal(x1[, -1], x[, -1], tolerance = .001, ignore_attr = TRUE)
 })
 
@@ -1635,4 +1633,23 @@ test_that("Shimadzu GCD and LCD peak tables carry the file's metadata", {
   expect_equal(attr(g, "instrument"), "GC-2014")
   l <- read_shimadzu_lcd(extra_test_file("Anthocyanin.lcd"), what = "peak_table")
   expect_equal(attr(l[[1]], "sample_name"), "Anthocyanin_2_MeOH")
+})
+
+test_that("read_peaklist reports the wavelength of Shimadzu peak tables", {
+  x <- read_peaklist(extra_test_file("shimadzuDAD_Anthocyanin.txt"),
+                     format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
+  # [PDA Multi Chromatogram(Ch1..Ch3)] record 524, 214 and 280 nm; AD2 none
+  expect_equal(vapply(x[1:4], function(t) t$lambda[1], numeric(1)),
+               c(NA, 524, 214, 280), ignore_attr = TRUE)
+  expect_equal(attr(x[[2]], "sample_name"), "Anthocyanin_2_MeOH")
+  y <- read_peaklist(extra_test_file("multichannel_chrom.lcd"),
+                     format_in = "shimadzu_lcd", progress_bar = FALSE)[[1]]
+  expect_equal(vapply(y, function(t) t$lambda[1], numeric(1)),
+               c(260, 210, NA), ignore_attr = TRUE)
+  expect_equal(attr(y[[1]], "channel_id"), "LC.1.1.DET.1.CH#1")
+  # channels extracted from PDA data match the ASCII export of the same run
+  z <- read_peaklist(extra_test_file("Anthocyanin.lcd"),
+                     format_in = "shimadzu_lcd", progress_bar = FALSE)[[1]]
+  expect_equal(names(z), c("PT-LC.1.1.AD.2.CH#1", "524", "214", "280", "520"))
+  expect_equal(attr(z[["524"]], "bandwidth"), 4)
 })

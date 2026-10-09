@@ -50,7 +50,6 @@ parallel workers to use or a cluster object created by
 \link[parallel:makeCluster]{makeCluster} (a set of parallel R worker processes).
 Defaults to \code{1}.}
 
-\item{data_format}{Deprecated. Use \code{peaktable_format} instead.}
 \item{sort_by}{How to sort the samples: \code{auto} (default) sorts files by
 acquisition time unless \code{paths} lists the files explicitly or any
 acquisition time is missing; \code{none} keeps files in the order given, or in
@@ -58,11 +57,17 @@ alphabetical order if \code{find_files = TRUE}; \code{acquisition_time} sorts by
 acquisition time recorded in each file (\code{run_datetime}); \code{file_time} sorts
 by the time when each file was last modified.}
 
+\item{data_format}{Deprecated. Use \code{peaktable_format} instead.}
 }
 \value{
 A \code{peak_list}: a list with one element per sample, holding its peak
-table, or a list of peak tables named by signal where the file records more
-than one. Each row is a peak.
+table, or a list of peak tables where the file records more than one. The
+tables are named by wavelength (e.g. \code{"254"}) where the file records one,
+and otherwise by the file's own name for the signal; a table identical to
+another at the same wavelength is a copy and is left out. Each row is a
+peak. Every table starts with a \code{sample} column and
+a \code{lambda} column giving the signal's wavelength, which is \code{NA} for a
+detector without one or a file that does not record it.
 }
 \description{
 Reads peak lists from specified folders or vector of paths.
