@@ -808,6 +808,25 @@ get_sz_wv <- function(meta){
   }
 }
 
+#' Find a wavelength or a wavelength range in text
+#'
+#' `"2998 (210-800)nm"` gives the range `c(210, 800)`, and `"254nm"` or
+#' `"UV 254 nm"` the wavelength `254`. Text with neither, such as
+#' `"2475ChA ex280/em350"`, gives `NA` for both.
+#' @noRd
+parse_nm <- function(x){
+  out <- list(wavelength = NA_real_, range = NA_real_)
+  if (length(x) != 1 || is.na(x)) return(out)
+  r <- regmatches(x, regexec("([0-9.]+)\\s*-\\s*([0-9.]+)\\)?\\s*nm", x))[[1]]
+  if (length(r)){
+    out$range <- as.numeric(r[2:3])
+    return(out)
+  }
+  w <- regmatches(x, regexec("([0-9.]+)\\s*nm", x))[[1]]
+  if (length(w)) out$wavelength <- as.numeric(w[2])
+  out
+}
+
 #' Read a 'Shimadzu' wavelength as a number
 #'
 #' From text such as `"260nm"` or `"524"`. Text with no number, as a channel

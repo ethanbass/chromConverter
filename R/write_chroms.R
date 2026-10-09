@@ -143,7 +143,14 @@ write_andi_chrom <- function(x, path_out, sample_name = NULL,
   lambda <- ifelse(is.null(lambda), 1, lambda)
   if (attr(x, "data_format") == "wide"){
     x1 <- data.frame(RT = as.numeric(rownames(x)), Intensity = x[, lambda])
+    exported <- if (ncol(x) > 1){
+      suppressWarnings(as.numeric(if (is.numeric(lambda)) colnames(x)[lambda] else lambda))
+    }
     x <- transfer_metadata(x1, x)
+    if (length(exported) == 1 && !is.na(exported)){
+      attr(x, "wavelength") <- exported
+      attr(x, "detector_range") <- NA
+    }
   }
 
   file_out <- get_filepath(path_out = path_out, sample_name = sample_name,
@@ -358,6 +365,21 @@ nc_add_global_attributes <- function(nc, meta, sample_name){
   }
 }
 
+#' Describe a chromatogram's detector for an ANDI chrom file
+#'
+#' Its wavelength (`"254nm"`), else its wavelength range (`"190-600nm"`), else
+#' its signal descriptor, which `read_cdf` reads back from
+#' `detector_method_comments`.
+#' @noRd
+andi_detector_comment <- function(x){
+  wl <- suppressWarnings(as.numeric(attr(x, "wavelength")))
+  if (length(wl) == 1 && !is.na(wl)) return(paste0(wl, "nm"))
+  rng <- suppressWarnings(as.numeric(attr(x, "detector_range")))
+  if (length(rng) == 2 && !anyNA(rng)) return(paste0(rng[1], "-", rng[2], "nm"))
+  desc <- attr(x, "signal_descriptor")
+  if (length(desc) == 1 && !is.na(desc)) as.character(desc) else ""
+}
+
 #' Format metadata for CDF
 #' @author Ethan Bass
 #' @noRd
@@ -398,7 +420,7 @@ format_metadata_for_cdf <- function(x){
              sample_id_comments = "",
              detector = attr(x, "detector"),
              detector_name = attr(x, "detector_model"),
-             detector_method_comments = as.character(attr(x, "detector_range")),
+             detector_method_comments = andi_detector_comment(x),
              # experiment_title = "",
              sample_amount = as.numeric(attr(x, "sample_amount")),
              sample_injection_volume = as.numeric(attr(x, "sample_injection_volume")),

@@ -118,3 +118,11 @@ test_that("a second pass of metadata does not overwrite the first with `NA`", {
                        names(meta_thermoraw(sidecar, ctx)))
   expect_gt(length(overlap), 1)
 })
+
+test_that("parse_nm finds a wavelength or a wavelength range in text", {
+  expect_equal(parse_nm("2998 (210-800)nm"),
+               list(wavelength = NA_real_, range = c(210, 800)))
+  expect_equal(parse_nm("UV 254 nm"), list(wavelength = 254, range = NA_real_))
+  expect_equal(parse_nm("2475ChA ex280/em350"),
+               list(wavelength = NA_real_, range = NA_real_))
+})

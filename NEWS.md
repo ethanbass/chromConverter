@@ -4,6 +4,7 @@
 
 * `read_chroms` and `read_peaklist` now return files found in a directory in acquisition order, if every file records its run time, rather than alphabetically. `sort_by = "none"` restores the previous order.
 * `read_peaklist` now returns 'Shimadzu' `.lcd` and `.gcd` peak tables in the default `chromatographr` format, like the other formats. `peaktable_format = "original"` restores the vendor columns.
+* `detector_range` now holds only a numeric wavelength range, as for 'ChemStation' since 0.10.0. Channel descriptions and single wavelengths that 'Waters' `.arw`, ANDI, 'Lumex' MDF and ASM files put there are now `signal_descriptor` or `wavelength`.
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. So are the wavelengths of 'Shimadzu' `.lcd` traces, previously text such as `"260nm"`, including the `lambda` column of long-format chromatograms. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.
@@ -38,7 +39,7 @@
 * Retention times from evenly sampled 'ANDI chrom' files are now reconstructed accurately. Previously, the run length was treated as the time of the last point, which resulted in slight stretching of the time axis.
 * Unevenly sampled 'ANDI chrom' data now keep their original retention times on import and on export with `write_andi_chrom`.
 * 'ANDI chrom' peak tables now include text columns such as `peak_name`, which were previously dropped.
-* Files written by `write_andi_chrom` now record the correct time unit, run length and detector range.
+* Files written by `write_andi_chrom` now record the correct time unit, run length and detector range, and the exported signal's wavelength, which `read_cdf` reads back.
 * 'ANDI MS' files with flagged peaks no longer fail to read or return the flags as extra data points.
 * 'ANDI MS' files without scan times, such as spectral libraries, can now be read. Retention times are `NA` and no TIC is returned.
 * 'ANDI MS' files now report their intensity unit in `detector_y_unit`, which was always empty, and files from other software also report their mass unit in `detector_x_unit`.
@@ -88,8 +89,9 @@
 * Files from ASM releases 2024/12 onward, and files converted by 'allotropy' (e.g. 'Chromeleon', 'Empower' and 'OpenLab CDS' exports), now load.
 * A file holding several injections, such as an exported sequence, now returns one sample per injection, named by sample, which `read_chroms` adds to its list of samples.
 * Chromatograms in one file now get distinct names, taken from the file's labels (e.g. `"UV 1_280"`) where their detection types don't tell them apart, in the list and in the `detector` column.
-* `detector_range`, `detector_reference`, `detector_y_unit` and `time_unit` now describe each chromatogram, rather than being copied from the file's other traces. LC-MS files no longer warn that row names were discarded.
+* `detector_reference`, `detector_y_unit` and `time_unit` now describe each chromatogram, rather than being copied from the file's other traces. LC-MS files no longer warn that row names were discarded.
 * `detector_model` is now reported, as are the `method` and injection volume of GC files and the sample name and run time of files from the 2022 releases.
+* Chromatograms and peak tables now report the detector's `wavelength` setting.
 * Measurements listing more than one device no longer fail with a `'names' attribute` error.
 * Raw ASM metadata (`metadata_format = "raw"`) now keep the file's own field names, e.g. `injection time` and `analyst`, and describe each chromatogram rather than the whole file.
 

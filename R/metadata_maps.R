@@ -258,6 +258,12 @@ meta_shimadzu_lcd <- function(meta, ctx){
 #' Field map for 'Waters' ASCII (`.arw`) files
 #' @noRd
 meta_waters_arw <- function(meta, ctx){
+  # an `.arw` names the channel one way or the other depending on how it was
+  # exported
+  channel <- if ("Channel Description" %in% names(meta)){
+    get_metadata_field(meta, "Channel Description")
+  } else get_metadata_field(meta, "Channel")
+  channel_nm <- parse_nm(channel)
   list(instrument = NA,
        detector = get_metadata_field(meta, "Channel Type"),
        software = get_metadata_field(meta, "Source S/W Info"),
@@ -272,11 +278,9 @@ meta_waters_arw <- function(meta, ctx){
                       get_metadata_field(meta, "Data End")),
        time_interval = NA,
        time_unit = NA,
-       # an `.arw` names the channel one way or the other depending on how it
-       # was exported
-       detector_range = if ("Channel Description" %in% names(meta))
-         get_metadata_field(meta, "Channel Description") else
-         get_metadata_field(meta, "Channel"),
+       detector_range = channel_nm$range,
+       wavelength = channel_nm$wavelength,
+       signal_descriptor = channel,
        detector_y_unit = get_metadata_field(meta, "Det. Units"),
        parser = "chromconverter")
 }
@@ -426,7 +430,8 @@ meta_mdf <- function(meta, ctx){
                                      meta$Property == "Step", "Value"],
        time_unit = meta[meta$Group == "Interval Time" &
                                  meta$Property == "Units", "Value"],
-       detector_range = meta[meta$Property == "Wave", "Value"],
+       detector_range = NA,
+       wavelength = as.numeric(meta[meta$Property == "Wave", "Value"]),
        detector_y_unit = meta[meta$Group == "Array photometric" &
                                      meta$Property == "Units", "Value"],
        parser = "chromconverter")
@@ -492,8 +497,9 @@ meta_asm <- function(meta, ctx){
        instrument = meta$`device system document`$`asset management identifier`,
        detector_model = asm_device_field(device_control, "^model number$") %||%
          meta$`device system document`$`detector model number`,
-       detector_range = asm_device_field(device_control, "wavelength setting$",
-                                         exclude = "reference"),
+       detector_range = NA,
+       wavelength = asm_device_field(device_control, "wavelength setting$",
+                                     exclude = "reference"),
        detector_y_unit = meta$detector_unit,
        detector_reference = asm_device_field(device_control,
                                              "reference wavelength setting$"),
@@ -515,6 +521,10 @@ meta_asm <- function(meta, ctx){
 #' Field map for ANDI chromatography netCDF files
 #' @noRd
 meta_andi_chrom <- function(meta, ctx){
+  # `write_andi_chrom` records the wavelength or range here (`"254nm"`); other
+  # software may record anything
+  comments <- get_metadata_field(meta, "detector_method_comments", null_val = NULL)
+  comment_nm <- parse_nm(comments)
   list(instrument = NA,
        detector = get_metadata_field(meta, "detector"),
        detector_model = get_metadata_field(meta, "detector_name"),
@@ -533,7 +543,9 @@ meta_andi_chrom <- function(meta, ctx){
        time_range = NA,
        time_interval = NA,
        time_unit = get_metadata_field(meta, "retention_unit"),
-       detector_range = get_metadata_field(meta, "detector_method_comments"),
+       detector_range = comment_nm$range,
+       wavelength = comment_nm$wavelength,
+       signal_descriptor = if (all(is.na(unlist(comment_nm)))) comments,
        detector_y_unit = get_metadata_field(meta, "detector_unit"),
        detector_x_unit = NA,
        parser = "chromconverter")

@@ -16,7 +16,7 @@ test_that("read_chroms can read ASM LC format", {
   expect_s3_class(x[[1]], c("data.table","data.frame"))
   expect_equal(attr(x[[1]], "sample_name"), "Sample 1")
   expect_equal(attr(x[[1]], "instrument"), "LC344")
-  expect_equal(attr(x[[1]], "detector_range"), 210)
+  expect_equal(attr(x[[1]], "wavelength"), 210)
   expect_equal(attr(x[[1]], "detector_y_unit"), "mAU")
   expect_equal(attr(x[[1]], "run_datetime"), as.POSIXct("2016-10-20 06:33:54",
                                                         tz = "UTC"))
@@ -193,7 +193,7 @@ test_that("read_chroms splits ASM sequences into samples", {
   expect_equal(attr(y[[2]][[1]], "run_datetime"),
                as.POSIXct("2023-09-01 11:52:56", tz = "UTC"))
   expect_equal(attr(y[[2]][[1]], "detector_model"), "G7117C")
-  expect_equal(attr(y[[2]][[1]], "detector_range"), 210)
+  expect_equal(attr(y[[2]][[1]], "wavelength"), 210)
 })
 
 test_that("read_chroms can read ASM instrument traces", {

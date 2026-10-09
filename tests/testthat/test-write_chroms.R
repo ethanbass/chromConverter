@@ -246,3 +246,16 @@ test_that("read_andi_chrom converts the times to minutes", {
   )
   expect_equal(as.numeric(rownames(z)), as.numeric(rownames(x)) / 60)
 })
+
+test_that("write_andi_chrom records the wavelength, which read_cdf reads back", {
+  skip_if_not_installed("ncdf4")
+  path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+                      "dad1A.ch", package = "chromConverter")
+  x <- read_chroms(path, format_in = "chemstation_ch", parser = "chromconverter",
+                   find_files = FALSE, progress_bar = FALSE)[[1]]
+  out <- withr::local_tempdir()
+  write_andi_chrom(x, path_out = out, force = TRUE)
+  y <- read_cdf(list.files(out, full.names = TRUE)[1])
+  expect_equal(attr(y, "wavelength"), 254)
+  expect_true(is.na(attr(y, "detector_range")))
+})
