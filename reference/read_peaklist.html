@@ -53,6 +53,7 @@
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">progress_bar</span>,</span>
 <span>  cl <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  sort_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"none"</span>, <span class="st">"acquisition_time"</span>, <span class="st">"file_time"</span><span class="op">)</span>,</span>
 <span>  data_format <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -84,7 +85,8 @@ which case the file extension will be deduced from <code>format_in</code>.</p></
 
 <dt id="arg-peaktable-format">peaktable_format<a class="anchor" aria-label="anchor" href="#arg-peaktable-format"></a></dt>
 <dd><p>Whether to return peak tables in <code>chromatographr</code>
-or <code>original</code> format.</p></dd>
+or <code>original</code> format. 'Chromatotec' peak tables are always returned in their
+original format.</p></dd>
 
 
 <dt id="arg-metadata-format">metadata_format<a class="anchor" aria-label="anchor" href="#arg-metadata-format"></a></dt>
@@ -108,6 +110,15 @@ parallel workers to use or a cluster object created by
 Defaults to <code>1</code>.</p></dd>
 
 
+<dt id="arg-sort-by">sort_by<a class="anchor" aria-label="anchor" href="#arg-sort-by"></a></dt>
+<dd><p>How to sort the samples: <code>auto</code> (default) sorts files by
+acquisition time unless <code>paths</code> lists the files explicitly or any
+acquisition time is missing; <code>none</code> keeps files in the order given, or in
+alphabetical order if <code>find_files = TRUE</code>; <code>acquisition_time</code> sorts by the
+acquisition time recorded in each file (<code>run_datetime</code>); <code>file_time</code> sorts
+by the time when each file was last modified.</p></dd>
+
+
 <dt id="arg-data-format">data_format<a class="anchor" aria-label="anchor" href="#arg-data-format"></a></dt>
 <dd><p>Deprecated. Use <code>peaktable_format</code> instead.</p></dd>
 
@@ -115,8 +126,13 @@ Defaults to <code>1</code>.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>peak_list</code>: a list with one element per sample, holding its peak
-table, or a list of peak tables named by signal where the file records more
-than one. Each row is a peak.</p>
+table, or a list of peak tables where the file records more than one. The
+tables are named by wavelength (e.g. <code>"254"</code>) where the file records one,
+and otherwise by the file's own name for the signal; a table identical to
+another at the same wavelength is a copy and is left out. Each row is a
+peak. Every table starts with a <code>sample</code> column and
+a <code>lambda</code> column giving the signal's wavelength, which is <code>NA</code> for a
+detector without one or a file that does not record it.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -125,11 +141,35 @@ than one. Each row is a peak.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span></span>
-<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="st">"tests/testthat/testdata/RUTIN2.D"</span></span></span>
-<span class="r-in"><span><span class="va">peak_list</span> <span class="op">&lt;-</span> <span class="fu">read_peaklist</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">peak_list</span><span class="op">[[</span><span class="st">"RUTIN2"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"254"</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"benzoxazinoid_standards"</span>,</span></span>
+<span class="r-in"><span>                    package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">peak_list</span> <span class="op">&lt;-</span> <span class="fu">read_peaklist</span><span class="op">(</span><span class="va">path</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">peak_list</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "MEOH"            "BENZOS_1000PPM"  "BENZOS_500PPM"   "BENZOS_250PPM"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "BENZOS_125PPM"   "BENZOS_62,5PPM"  "BENZOS_31,25PPM" "BENZOS_16PPM"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "BENZOS_8PPM"     "BENZOS_4PPM"    </span>
+<span class="r-in"><span><span class="va">peak_list</span><span class="op">[[</span><span class="st">"BENZOS_250PPM"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"254"</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           sample lambda     rt  width        area    height type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  BENZOS_250PPM    254  1.948 0.2483   140.95924   7.07890   BB</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  BENZOS_250PPM    254  2.373 0.1433   161.74519  14.59622   BV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  BENZOS_250PPM    254  2.517 0.0912   108.11900  16.77651   VV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  BENZOS_250PPM    254  2.669 0.0752   102.54382  21.65732   VV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  BENZOS_250PPM    254  2.769 0.1612   389.25211  31.26716   VB</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  BENZOS_250PPM    254  3.898 0.7973  1211.76770  18.42384   BV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  BENZOS_250PPM    254  5.063 0.4211   382.35251  11.64398   VV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  BENZOS_250PPM    254  5.319 0.2244   160.09975  10.35239   VV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  BENZOS_250PPM    254  5.615 0.2633   192.40610   9.96399   VV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 BENZOS_250PPM    254  6.108 0.4398   335.43140   9.27820   VV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 BENZOS_250PPM    254  6.621 0.4360   283.18048   7.90439   VB</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 BENZOS_250PPM    254  7.223 0.3060   158.82758   6.81299   BV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 BENZOS_250PPM    254  7.916 0.7946   356.50873   5.75635   VV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 BENZOS_250PPM    254 12.541 0.3142  7078.15283 349.55142   VB</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 BENZOS_250PPM    254 14.203 0.6119   136.62770   2.82697   BV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 BENZOS_250PPM    254 17.754 0.4023    78.47887   2.87611   BV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17 BENZOS_250PPM    254 19.068 0.3721 10954.20000 456.22156   VB</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18 BENZOS_250PPM    254 20.979 0.3652  1806.64539  76.05057   BB</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19 BENZOS_250PPM    254 28.225 0.3587   637.83038  27.49332   BB</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20 BENZOS_250PPM    254 36.643 0.5246    61.25155   1.62191   BB</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

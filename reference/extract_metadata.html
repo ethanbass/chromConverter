@@ -103,14 +103,14 @@ which case such a field is spread across numbered columns
 <dt id="arg-expand">expand<a class="anchor" aria-label="anchor" href="#arg-expand"></a></dt>
 <dd><p>Whether to include the nested metadata fields, whose value is
 itself a list or table rather than a single value per chromatogram: the
-<code>ms_params</code> instrument settings, the <code>acaml_metadata</code> injection record that
-<code>read_agilent_rslt</code> reads from the <code>.acaml</code> file, or the whole vendor list
-that <code>metadata_format = "raw"</code> passes through. Either <code>TRUE</code>, to include
-every nested field the chromatograms carry, a character vector naming the
-ones to include, or <code>FALSE</code> (the default) to include none. Each element
-becomes a column of its own, named for itself (<code>SampleName</code>) unless that
-name is already taken, in which case it carries the field it came from
-(<code>ms_params.polarity</code>, since <code>polarity</code> is a metadata field in its own
+<code>ms_params</code> and <code>method_params</code> instrument settings, the <code>acaml_metadata</code>
+injection record that <code>read_agilent_rslt</code> reads from the <code>.acaml</code> file, or
+the whole vendor list that <code>metadata_format = "raw"</code> passes through. Either
+<code>TRUE</code>, to include every nested field the chromatograms carry, a character
+vector naming the ones to include, or <code>FALSE</code> (the default) to include none.
+Each element becomes a column of its own, named for itself (<code>SampleName</code>)
+unless that name is already taken, in which case it carries the field it came
+from (<code>ms_params.polarity</code>, since <code>polarity</code> is a metadata field in its own
 right).</p></dd>
 
 
@@ -144,12 +144,22 @@ chromatogram's path through the list (e.g. <code>blue.UV</code>).</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ladder.txt"</span>, package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"shimadzu_ascii"</span>,</span></span>
-<span class="r-in"><span>                      find_files <span class="op">=</span> <span class="cn">FALSE</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">extract_metadata</span><span class="op">(</span><span class="va">chroms</span>, what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample_name"</span>, <span class="st">"instrument"</span>, <span class="st">"run_datetime"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     name sample_name instrument        run_datetime</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 ladder    FS19_214    GC-2014 2019-07-18 19:45:56</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"benzoxazinoid_standards"</span>,</span></span>
+<span class="r-in"><span>                    package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"chemstation_ch"</span>, pattern <span class="op">=</span> <span class="st">"dad1A"</span>,</span></span>
+<span class="r-in"><span>                      parser <span class="op">=</span> <span class="st">"chromconverter"</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">extract_metadata</span><span class="op">(</span><span class="va">chroms</span>, what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sample_name"</span>, <span class="st">"run_datetime"</span>, <span class="st">"time_range"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               name     sample_name        run_datetime time_range1 time_range2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1             MEOH            MEOH 2023-06-15 16:46:23 -0.03716667    59.95617</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   BENZOS_1000PPM  benzos_1000ppm 2023-06-20 19:29:41 -0.04333333    59.95667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    BENZOS_500PPM   benzos_500ppm 2023-06-21 15:23:43 -0.04233333    59.95767</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    BENZOS_250PPM   benzos_250ppm 2023-06-21 16:46:40 -0.03783333    59.95550</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    BENZOS_125PPM   benzos_125ppm 2023-06-21 18:02:48 -0.04166667    59.95833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   BENZOS_62,5PPM  benzos_62,5ppm 2023-06-21 19:19:00 -0.04016667    59.95983</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  BENZOS_31,25PPM benzos_31,25ppm 2023-06-21 20:35:12 -0.03716667    59.95617</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     BENZOS_16PPM    benzos_16ppm 2023-06-21 21:51:21 -0.03933333    59.96067</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9      BENZOS_8PPM     benzos_8ppm 2023-06-21 23:07:28 -0.04050000    59.95950</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     BENZOS_4PPM     benzos_4ppm 2023-06-22 00:23:39 -0.03933333    59.96067</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

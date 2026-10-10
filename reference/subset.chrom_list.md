@@ -54,15 +54,27 @@ leave a field empty; a field they disagree on is `NA`.
 ## Examples
 
 ``` r
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-                      find_files = FALSE, progress_bar = FALSE)
-subset(chroms, sample_name == "FS19_214")
-#> A chrom_list with 1 chromatogram
-#> name: ladder  |  sample_name: FS19_214  |  run_datetime: 2019-07-18 19:45:56
-#>   method: C:\LabSolutions\Data\A Legan\Method files\SPME_sample_1.gcm
-subset(chroms, grepl("ladder", source_file))
-#> A chrom_list with 1 chromatogram
-#> name: ladder  |  sample_name: FS19_214  |  run_datetime: 2019-07-18 19:45:56
-#>   method: C:\LabSolutions\Data\A Legan\Method files\SPME_sample_1.gcm
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
+subset(chroms, sample_name != "MEOH")
+#> A chrom_list with 9 chromatograms
+#> method: ETHAN_DT_MEOH_L16-6.M  |  detector: DAD  |  wavelength: 254
+#>              name     sample_name        run_datetime
+#> 1  BENZOS_1000PPM  benzos_1000ppm 2023-06-20 19:29:41
+#> 2   BENZOS_500PPM   benzos_500ppm 2023-06-21 15:23:43
+#> 3   BENZOS_250PPM   benzos_250ppm 2023-06-21 16:46:40
+#> 4   BENZOS_125PPM   benzos_125ppm 2023-06-21 18:02:48
+#> 5  BENZOS_62,5PPM  benzos_62,5ppm 2023-06-21 19:19:00
+#> 6 BENZOS_31,25PPM benzos_31,25ppm 2023-06-21 20:35:12
+#> 7    BENZOS_16PPM    benzos_16ppm 2023-06-21 21:51:21
+#> 8     BENZOS_8PPM     benzos_8ppm 2023-06-21 23:07:28
+#> 9     BENZOS_4PPM     benzos_4ppm 2023-06-22 00:23:39
+subset(chroms, run_datetime < as.POSIXct("2023-06-21", tz = "UTC"))
+#> A chrom_list with 2 chromatograms
+#> method: ETHAN_DT_MEOH_L16-6.M  |  detector: DAD  |  wavelength: 254
+#>             name    sample_name        run_datetime
+#> 1           MEOH           MEOH 2023-06-15 16:46:23
+#> 2 BENZOS_1000PPM benzos_1000ppm 2023-06-20 19:29:41
 ```

@@ -56,20 +56,28 @@ with a warning.
 ## Examples
 
 ``` r
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chrom <- read_chroms(path, format_in = "shimadzu_ascii",
-                     find_files = FALSE, progress_bar = FALSE)
-# three copies stand in for the samples of a sequence
-chroms <- c(chrom, chrom, chrom)
-names(chroms) <- c("s1", "s2", "s3")
-meta <- data.frame(name = c("s1", "s2", "s3"),
-                   treatment = c("control", "drought", "drought"))
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
+meta <- data.frame(name = c("MEOH", "BENZOS_1000PPM", "BENZOS_500PPM",
+                            "BENZOS_250PPM", "BENZOS_125PPM",
+                            "BENZOS_62,5PPM", "BENZOS_31,25PPM",
+                            "BENZOS_16PPM", "BENZOS_8PPM", "BENZOS_4PPM"),
+                   ppm = c(0, 1000 / 2^(0:8)))
 chroms <- add_metadata(chroms, meta)
-extract_metadata(chroms, what = "treatment")
-#>   name treatment
-#> 1   s1   control
-#> 2   s2   drought
-#> 3   s3   drought
-names(subset(chroms, treatment == "drought"))
-#> [1] "s2" "s3"
+extract_metadata(chroms, what = "ppm")
+#>               name        ppm
+#> 1             MEOH    0.00000
+#> 2   BENZOS_1000PPM 1000.00000
+#> 3    BENZOS_500PPM  500.00000
+#> 4    BENZOS_250PPM  250.00000
+#> 5    BENZOS_125PPM  125.00000
+#> 6   BENZOS_62,5PPM   62.50000
+#> 7  BENZOS_31,25PPM   31.25000
+#> 8     BENZOS_16PPM   15.62500
+#> 9      BENZOS_8PPM    7.81250
+#> 10     BENZOS_4PPM    3.90625
+names(subset(chroms, ppm >= 250))
+#> [1] "BENZOS_1000PPM" "BENZOS_500PPM"  "BENZOS_250PPM" 
 ```

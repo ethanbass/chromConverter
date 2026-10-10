@@ -1,10 +1,12 @@
 # Read 'Agilent ChemStation' register files
 
-Reads the instrument traces, and the keys and values describing each
-module, from 'Agilent ChemStation' register (`.REG`) files. Users reach
-it through
+Reads the instrument traces, the keys and values describing each module,
+and the tables, such as a pump's timetable, from 'Agilent ChemStation'
+register (`.REG`) files. Users reach it through
 [read_agilent_d](https://ethanbass.github.io/chromConverter/reference/read_agilent_d.md)
-with `what = "instrument"`; this page documents the file format.
+with `what = "instrument"` and through
+[read_chemstation_method](https://ethanbass.github.io/chromConverter/reference/read_chemstation_method.md);
+this page documents the file format.
 
 ## Usage
 
@@ -20,7 +22,7 @@ read_chemstation_reg(path)
 
 ## Value
 
-A list of two data frames:
+A list of:
 
 - `traces`: one row per point of each instrument trace, with columns
   `trace` (its title, e.g. `"PMP1, Pressure"`), `unit`, `time` (in
@@ -35,12 +37,15 @@ A list of two data frames:
   start of the run as `DateTime`, and the object of a solvent trace
   gives the solvent's name, where one was entered, as `Description`.
 
+- `tables`: a list of data frames, one per table, named by the key
+  holding it, such as `TIMETABLE` for a pump's timetable.
+
 ## Details
 
-Objects that cannot be parsed are skipped with a warning, and tables
-inside register files are not returned. Tested on `LCDIAG.REG` files
-from revisions A.10.02, B.01.03, B.04.02, B.04.03, C.01.03, C.01.07 and
-C.01.10.
+Objects that cannot be parsed are skipped with a warning. Tested on
+`LCDIAG.REG` files from revisions A.10.02, B.01.03, B.04.02, B.04.03,
+C.01.03, C.01.07 and C.01.10, and on method register files from four
+revision B and C instruments and two revision A instruments.
 
 ## Note
 
@@ -76,7 +81,10 @@ indices restart in every object. The classes are:
 - `CHPNdrDouble`, `CHPNdrString` and `CHPNdrObject`: a key, 6 bytes,
   then a float64, a string or a flag byte and object. Strings are a u16
   length followed by UTF-16LE; a length of `C000` is instead followed by
-  a u16 id naming a standard key (0 `ObjClass`, 1 `Title`).
+  a u16 id naming a standard key (0 `ObjClass`, 1 `Title`), and `8000`
+  by a u16 index, counted from 0, into the non-empty keys and table
+  column names already read in the object. String values are not
+  counted.
 
 - `CHPDatLongSliced` and `CHPDatDoubleSliced`: 6 bytes, then the y row
   and the x row.
@@ -88,7 +96,19 @@ indices restart in every object. The classes are:
   float64 scale and float64 offset. Values are raw x scale + offset if
   scaled and raw otherwise; an implicit row is first + i x scale.
 
-- `CHPAnnText` and `CHPTable` are read past but not returned.
+- `CHPTable`: a header holding a u16 row size at byte 2, a u16 row count
+  n at byte 4, and the u16 counts of data and extra columns at bytes 20
+  and 22 (16 and 18 for schema `11`). Then an 18-byte descriptor per
+  column (u16 offset in the row, u16 size, u16 type and u16 flags, then
+  10 bytes); (n + 1) x row size - 4 bytes holding a default row, less
+  its first 4 bytes, then the n rows, followed by the value of each
+  extra column with flag `40`; and each column's name, a string whose
+  length counts a terminator. A data column of type 3 with flag `40` is
+  followed by its default and n strings. Type 4 is float32, with -10000
+  for an empty cell, and type 5 int32. The extra columns are not
+  returned.
+
+- `CHPAnnText` is read past but not returned.
 
 In `LCDIAG.REG` each trace is an object whose `Title` names it. Revision
 B.01 stores traces as `CHPLCObject` with `CHPDatLong` rows and an
@@ -104,10 +124,16 @@ the data of each record in turn. Records refer to one another by id.
 Types `8001` and `8003` are Latin-1 strings and `8006` a string after 2
 bytes; `8002` holds a numeric array; `0602` (43 bytes) a key at byte 14
 and float64 at byte 35; `0601` a key and the u32 id of its value at byte
-35. Types `0501` and `0503` (161 bytes) describe a trace: u32 point
-count at byte 9, then the u32 ids of the x unit and data and the x scale
-at bytes 27, 31 and 61, and those of y at bytes 94, 98 and 128. An array
-id with no record denotes an implicit axis of i x scale.
+35; `0603` the key of a table and the u32 id of its `0701` record at
+byte 35. A `0701` record holds a u16 row size at byte 2, a u16 row count
+n at byte 4, the u32 offset of its rows at byte 6 and a u16 count of
+data columns at byte 16, then a 30-byte descriptor per column: a 16-byte
+name, then the u16 offset in the row, size, type and flags, as in
+revision B and C. The rows are (n + 1) x row size bytes, the first a
+default row. Types `0501` and `0503` (161 bytes) describe a trace: u32
+point count at byte 9, then the u32 ids of the x unit and data and the x
+scale at bytes 27, 31 and 61, and those of y at bytes 94, 98 and 128. An
+array id with no record denotes an implicit axis of i x scale.
 
 Not known: the meaning of the skipped bytes, and whether the scale or
 the offset comes first in a row (every file seen has an offset of 0).

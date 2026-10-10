@@ -67,12 +67,31 @@ collapsed to a comma-separated string so that it occupies one column.
 ## Examples
 
 ``` r
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-                      find_files = FALSE, progress_bar = FALSE)
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
 summary(chroms)
-#>   sample n_rows n_cols sample_name        run_datetime
-#> 1 ladder  66255      1    FS19_214 2019-07-18 19:45:56
-#>                                                             method
-#> 1 C:\\LabSolutions\\Data\\A Legan\\Method files\\SPME_sample_1.gcm
+#>             sample n_rows n_cols     sample_name        run_datetime
+#> 1             MEOH   9000      1            MEOH 2023-06-15 16:46:23
+#> 2   BENZOS_1000PPM   9001      1  benzos_1000ppm 2023-06-20 19:29:41
+#> 3    BENZOS_500PPM   9001      1   benzos_500ppm 2023-06-21 15:23:43
+#> 4    BENZOS_250PPM   9000      1   benzos_250ppm 2023-06-21 16:46:40
+#> 5    BENZOS_125PPM   9001      1   benzos_125ppm 2023-06-21 18:02:48
+#> 6   BENZOS_62,5PPM   9001      1  benzos_62,5ppm 2023-06-21 19:19:00
+#> 7  BENZOS_31,25PPM   9000      1 benzos_31,25ppm 2023-06-21 20:35:12
+#> 8     BENZOS_16PPM   9001      1    benzos_16ppm 2023-06-21 21:51:21
+#> 9      BENZOS_8PPM   9001      1     benzos_8ppm 2023-06-21 23:07:28
+#> 10     BENZOS_4PPM   9001      1     benzos_4ppm 2023-06-22 00:23:39
+#>                   method detector wavelength
+#> 1  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 2  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 3  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 4  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 5  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 6  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 7  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 8  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 9  ETHAN_DT_MEOH_L16-6.M      DAD        254
+#> 10 ETHAN_DT_MEOH_L16-6.M      DAD        254
 ```

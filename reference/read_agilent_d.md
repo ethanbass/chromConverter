@@ -83,6 +83,7 @@ Other 'Agilent' parsers:
 [`read_chemstation_ch()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md),
 [`read_chemstation_csv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_csv.md),
 [`read_chemstation_logs()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_logs.md),
+[`read_chemstation_method()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_method.md),
 [`read_chemstation_ms()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.md),
 [`read_chemstation_reports()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_reports.md),
 [`read_chemstation_uv()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md)
@@ -94,7 +95,13 @@ Ethan Bass
 ## Examples
 
 ``` r
-if (FALSE) { # interactive()
-read_agilent_d("tests/testthat/testdata/RUTIN2.D")
-}
+path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+                    package = "chromConverter")
+run <- read_agilent_d(path)
+names(run$chroms)
+#> [1] "dad1A" "dad1B" "dad1C" "dad1D" "dad1E"
+pump <- read_agilent_d(path, what = "instrument")
+names(pump)
+#> [1] "PMP1, Pressure"  "PMP1, Flow"      "PMP1, Solvent A" "PMP1, Solvent B"
+#> [5] "PMP1, Solvent C" "PMP1, Solvent D"
 ```

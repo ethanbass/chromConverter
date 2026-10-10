@@ -112,14 +112,33 @@ collapsed to a comma-separated string so that it occupies one column.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ladder.txt"</span>, package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"shimadzu_ascii"</span>,</span></span>
-<span class="r-in"><span>                      find_files <span class="op">=</span> <span class="cn">FALSE</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"benzoxazinoid_standards"</span>,</span></span>
+<span class="r-in"><span>                    package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"chemstation_ch"</span>, pattern <span class="op">=</span> <span class="st">"dad1A"</span>,</span></span>
+<span class="r-in"><span>                      parser <span class="op">=</span> <span class="st">"chromconverter"</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">chroms</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   sample n_rows n_cols sample_name        run_datetime</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 ladder  66255      1    FS19_214 2019-07-18 19:45:56</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                             method</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 C:\\LabSolutions\\Data\\A Legan\\Method files\\SPME_sample_1.gcm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             sample n_rows n_cols     sample_name        run_datetime</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1             MEOH   9000      1            MEOH 2023-06-15 16:46:23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   BENZOS_1000PPM   9001      1  benzos_1000ppm 2023-06-20 19:29:41</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    BENZOS_500PPM   9001      1   benzos_500ppm 2023-06-21 15:23:43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    BENZOS_250PPM   9000      1   benzos_250ppm 2023-06-21 16:46:40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    BENZOS_125PPM   9001      1   benzos_125ppm 2023-06-21 18:02:48</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   BENZOS_62,5PPM   9001      1  benzos_62,5ppm 2023-06-21 19:19:00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  BENZOS_31,25PPM   9000      1 benzos_31,25ppm 2023-06-21 20:35:12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     BENZOS_16PPM   9001      1    benzos_16ppm 2023-06-21 21:51:21</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9      BENZOS_8PPM   9001      1     benzos_8ppm 2023-06-21 23:07:28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     BENZOS_4PPM   9001      1     benzos_4ppm 2023-06-22 00:23:39</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   method detector wavelength</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 ETHAN_DT_MEOH_L16-6.M      DAD        254</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -138,6 +138,7 @@ within each type of chromatogram. Chromatograms are returned in the format speci
     <div class="dont-index"><p>Other 'Shimadzu' parsers:
 <code><a href="read_shimadzu_gcd.html">read_shimadzu_gcd()</a></code>,
 <code><a href="read_shimadzu_lcd.html">read_shimadzu_lcd()</a></code>,
+<code><a href="read_shimadzu_method.html">read_shimadzu_method()</a></code>,
 <code><a href="read_shimadzu_qgd.html">read_shimadzu_qgd()</a></code>,
 <code><a href="read_sz_lcd_2d.html">read_sz_lcd_2d()</a></code>,
 <code><a href="read_sz_lcd_3d.html">read_sz_lcd_3d()</a></code>,
@@ -150,7 +151,7 @@ within each type of chromatogram. Chromatograms are returned in the format speci
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ladder.txt"</span>, package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/alkane_ladder.txt"</span>, package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">read_shimadzu</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          intensity</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 0.00033       -362</span>
@@ -66451,7 +66452,7 @@ within each type of chromatogram. Chromatograms are returned in the format speci
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"parser")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "chromconverter"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"source_file")</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/home/runner/work/_temp/Library/chromConverter/extdata/ladder.txt"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/home/runner/work/_temp/Library/chromConverter/extdata/alkane_ladder.txt"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"source_file_format")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "shimadzu_ascii"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"source_sha1")</span>

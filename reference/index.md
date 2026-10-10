@@ -29,6 +29,8 @@
   : Read 'Agilent ChemStation' CSV files
 - [`read_chemstation_logs()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_logs.md)
   : Read 'Agilent ChemStation' log files
+- [`read_chemstation_method()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_method.md)
+  : Read an 'Agilent ChemStation' method
 - [`read_chemstation_ms()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ms.md)
   : Read 'Agilent ChemStation' MS files
 - [`read_chemstation_reports()`](https://ethanbass.github.io/chromConverter/reference/read_chemstation_reports.md)
@@ -46,6 +48,8 @@
   : Read 'Shimadzu' GCD
 - [`read_shimadzu_lcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md)
   : Read 'Shimadzu' LCD
+- [`read_shimadzu_method()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_method.md)
+  : Read a 'Shimadzu' method
 - [`read_shimadzu_qgd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.md)
   : Read 'Shimadzu' QGD files
 
@@ -109,3 +113,10 @@
   : Summarize a chrom_list object
 - [`subset(`*`<chrom_list>`*`)`](https://ethanbass.github.io/chromConverter/reference/subset.chrom_list.md)
   : Select chromatograms by their metadata
+
+## Example data
+
+- [`benzoxazinoid_standards`](https://ethanbass.github.io/chromConverter/reference/benzoxazinoid_standards.md)
+  : Benzoxazinoid standards
+- [`alkane_ladder`](https://ethanbass.github.io/chromConverter/reference/alkane_ladder.md)
+  : Shimadzu GC-FID alkane ladder

@@ -80,7 +80,7 @@ Ethan Bass
 ## Examples
 
 ``` r
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
+path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 chroms <- read_chroms(path, format_in = "shimadzu_ascii",
                       find_files = FALSE, progress_bar = FALSE)
 write_chroms(chroms, path_out = tempdir(), export_format = "csv",

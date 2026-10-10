@@ -4,9 +4,23 @@
 
 ### Breaking changes
 
-- `read_chroms` now returns files found in a directory in acquisition
-  order, if every file records its run time, rather than alphabetically.
-  `sort_by = "none"` restores the previous order.
+- `read_chroms` and `read_peaklist` now return files found in a
+  directory in acquisition order, if every file records its run time,
+  rather than alphabetically. `sort_by = "none"` restores the previous
+  order.
+- `read_peaklist` now returns ‘Shimadzu’ `.lcd` and `.gcd` peak tables
+  in the default `chromatographr` format, like the other formats.
+  `peaktable_format = "original"` restores the vendor columns.
+- `detector_range` now holds only a numeric wavelength range, as for
+  ‘ChemStation’ since 0.10.0. Channel descriptions and single
+  wavelengths that ‘Waters’ `.arw`, ANDI, ‘Lumex’ MDF and ASM files put
+  there are now `signal_descriptor` or `wavelength`.
+- `read_peaklist` tables from every format now have a numeric `lambda`
+  column after `sample`, giving the signal’s wavelength (`NA` where none
+  is recorded).
+- `read_peaklist` now names each peak table by its wavelength
+  (e.g. `"254"`) wherever the file records one, as it already did for
+  ‘ChemStation’ reports. Tables without a wavelength keep their names.
 - Retention times from ‘ANDI MS’ files, and from ‘ANDI chrom’ files
   recorded in seconds, are now 60x smaller. Both formats are now read in
   minutes, peak tables included, matching the package convention. See
@@ -16,9 +30,11 @@
   UTC. They were the local time labelled as UTC.
 - Numeric metadata from text formats, such as `time_range` and
   `sample_injection_volume` in ‘Shimadzu’ ASCII exports, are now
-  numbers. An injection volume written with its unit, e.g. `17 µl`, is
-  split into the number and `sample_injection_volume_unit`; other values
-  with a unit stay strings.
+  numbers. So are the wavelengths of ‘Shimadzu’ `.lcd` traces,
+  previously text such as `"260nm"`, including the `lambda` column of
+  long-format chromatograms. An injection volume written with its unit,
+  e.g. `17 µl`, is split into the number and
+  `sample_injection_volume_unit`; other values with a unit stay strings.
 - `extract_metadata` now returns numeric fields, such as `time_range`
   and `wavelength`, as numbers rather than strings.
 - Dropped `what = "chroms"` from `read_varian_sms`, which returned an
@@ -27,12 +43,22 @@
 - `extract_metadata` now returns one row per sample, retaining the
   values its chromatograms agree on. The `by = "chromatogram"` argument
   restores one row per chromatogram (in nested lists).
+- The example file `extdata/ladder.txt` is now
+  `extdata/alkane_ladder.txt`, documented at
+  [`?alkane_ladder`](https://ethanbass.github.io/chromConverter/reference/alkane_ladder.md).
+  Update the path in `system.file` calls.
 
 ### New features
 
 - Added `read_chemstation_logs` to read the instrument errors, aborted
   runs and pump pressures recorded in ‘Agilent ChemStation’ sequence
   logs, including every log in a folder.
+- Added `read_chemstation_method` to read the gradient, solvents and
+  other instrument settings from ‘Agilent ChemStation’ methods,
+  including the copy a `.D` directory may hold.
+- Added `read_shimadzu_method` to read the oven program, gradient and
+  other instrument settings stored in ‘Shimadzu’ GC (`.gcd`), LC
+  (`.lcd`) and GC-MS (`.qgd`) files.
 - Files read with the `rainbow` parser now report most of the metadata
   the parser supplies, including `instrument`, `operator`,
   `detector_model`, `wavelength` and `instrument_modules`.
@@ -97,7 +123,8 @@
 - ‘ANDI chrom’ peak tables now include text columns such as `peak_name`,
   which were previously dropped.
 - Files written by `write_andi_chrom` now record the correct time unit,
-  run length and detector range.
+  run length and detector range, and the exported signal’s wavelength,
+  which `read_cdf` reads back.
 - ‘ANDI MS’ files with flagged peaks no longer fail to read or return
   the flags as extra data points.
 - ‘ANDI MS’ files without scan times, such as spectral libraries, can
@@ -148,10 +175,20 @@
 - ‘Shimadzu’ `.qgd` scans whose intensities are more than 4 bytes wide
   can now be read. They are read with a warning, since the decoding of
   values this wide has not been checked against a ‘LabSolutions’ export.
+- ‘Shimadzu’ `.gcd`, `.lcd` and `.qgd` files now report their method’s
+  settings as `method_params`, and the acquisition window of GC-MS runs
+  as `ms_params`. See
+  [`?read_shimadzu_method`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_method.md).
 - ‘Shimadzu’ `.lcd` peak tables stored as `Peak Table-100` and similar
   now read correctly; every peak after the first was misread.
 - ‘Shimadzu’ `.lcd` peak tables no longer include mass spectrometry
   tables (`Mass Peak Table`, `Compound Peak Table`), which were misread.
+- `read_peaklist` no longer returns the peak table of a PDA channel
+  twice for ‘Shimadzu’ `.lcd` files.
+- ‘Shimadzu’ ASCII, `.lcd` and `.gcd` peak tables now carry the file’s
+  metadata, such as `sample_name`, `instrument` and `run_datetime`, and
+  their channel’s `wavelength` (and `bandwidth`, for channels extracted
+  from PDA data), as the chromatograms do.
 
 #### ‘Agilent’
 
@@ -167,6 +204,8 @@
   and the `sample_name`.
 - `extract_metadata` no longer erroneously splits the `source_file` of
   ‘ChemStation’ peak lists into one column per sample.
+- Each ‘ChemStation’ peak table now carries the report’s metadata, such
+  as `sample_name` and `run_datetime`, as the chromatograms do.
 - ‘Agilent’ `.ch` and `.uv` traces now report the volume actually
   injected, which can differ from the volume the sequence requested.
 - Several files read from one `.D` directory now get distinct names,
@@ -190,13 +229,14 @@
 - Chromatograms in one file now get distinct names, taken from the
   file’s labels (e.g. `"UV 1_280"`) where their detection types don’t
   tell them apart, in the list and in the `detector` column.
-- `detector_range`, `detector_reference`, `detector_y_unit` and
-  `time_unit` now describe each chromatogram, rather than being copied
-  from the file’s other traces. LC-MS files no longer warn that row
-  names were discarded.
+- `detector_reference`, `detector_y_unit` and `time_unit` now describe
+  each chromatogram, rather than being copied from the file’s other
+  traces. LC-MS files no longer warn that row names were discarded.
 - `detector_model` is now reported, as are the `method` and injection
   volume of GC files and the sample name and run time of files from the
   2022 releases.
+- Chromatograms and peak tables now report the detector’s `wavelength`
+  setting.
 - Measurements listing more than one device no longer fail with a
   `'names' attribute` error.
 - Raw ASM metadata (`metadata_format = "raw"`) now keep the file’s own

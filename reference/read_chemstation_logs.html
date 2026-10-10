@@ -92,7 +92,9 @@ folder holding its <code>.D</code> folder.</p></li>
 records it only once the run's data are analyzed, so an aborted injection
 has none, and its case can differ from the folder on disk.</p></li>
 <li><p><code>sample</code>: the sample, as the log names it.</p></li>
-<li><p><code>start</code>: <code>POSIXct</code>, UTC.</p></li>
+<li><p><code>start</code>: <code>POSIXct</code>, UTC. The <code>run_datetime</code> of the traces and reports in a
+<code>.D</code> folder is instead the instrument's local time labeled as UTC, so match
+injections to them by <code>data_file</code> rather than by time.</p></li>
 <li><p><code>minutes</code>: from the injection's first event to its last.</p></li>
 <li><p><code>status</code>: <code>completed</code>, <code>aborted</code>, <code>stopped by user</code> or <code>incomplete</code>.</p></li>
 <li><p><code>pressure_start</code>, <code>pressure_end</code>: the first and last reading of pump 1, in
@@ -139,6 +141,7 @@ that is not a 'ChemStation' log is skipped with a warning; a file named in
 <code><a href="read_agilent_rslt.html">read_agilent_rslt()</a></code>,
 <code><a href="read_chemstation_ch.html">read_chemstation_ch()</a></code>,
 <code><a href="read_chemstation_csv.html">read_chemstation_csv()</a></code>,
+<code><a href="read_chemstation_method.html">read_chemstation_method()</a></code>,
 <code><a href="read_chemstation_ms.html">read_chemstation_ms()</a></code>,
 <code><a href="read_chemstation_reports.html">read_chemstation_reports()</a></code>,
 <code><a href="read_chemstation_uv.html">read_chemstation_uv()</a></code></p></div>

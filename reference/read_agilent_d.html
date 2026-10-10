@@ -124,6 +124,7 @@ with a warning.</p>
 <code><a href="read_chemstation_ch.html">read_chemstation_ch()</a></code>,
 <code><a href="read_chemstation_csv.html">read_chemstation_csv()</a></code>,
 <code><a href="read_chemstation_logs.html">read_chemstation_logs()</a></code>,
+<code><a href="read_chemstation_method.html">read_chemstation_method()</a></code>,
 <code><a href="read_chemstation_ms.html">read_chemstation_ms()</a></code>,
 <code><a href="read_chemstation_reports.html">read_chemstation_reports()</a></code>,
 <code><a href="read_chemstation_uv.html">read_chemstation_uv()</a></code></p></div>
@@ -135,9 +136,15 @@ with a warning.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span></span>
-<span class="r-in"><span><span class="fu">read_agilent_d</span><span class="op">(</span><span class="st">"tests/testthat/testdata/RUTIN2.D"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"benzoxazinoid_standards"</span>, <span class="st">"BENZOS_250PPM.D"</span>,</span></span>
+<span class="r-in"><span>                    package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">run</span> <span class="op">&lt;-</span> <span class="fu">read_agilent_d</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">run</span><span class="op">$</span><span class="va">chroms</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "dad1A" "dad1B" "dad1C" "dad1D" "dad1E"</span>
+<span class="r-in"><span><span class="va">pump</span> <span class="op">&lt;-</span> <span class="fu">read_agilent_d</span><span class="op">(</span><span class="va">path</span>, what <span class="op">=</span> <span class="st">"instrument"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pump</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "PMP1, Pressure"  "PMP1, Flow"      "PMP1, Solvent A" "PMP1, Solvent B"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5] "PMP1, Solvent C" "PMP1, Solvent D"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

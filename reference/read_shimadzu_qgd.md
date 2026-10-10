@@ -100,6 +100,7 @@ Other 'Shimadzu' parsers:
 [`read_shimadzu()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu.md),
 [`read_shimadzu_gcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_gcd.md),
 [`read_shimadzu_lcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md),
+[`read_shimadzu_method()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_method.md),
 [`read_sz_lcd_2d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.md),
 [`read_sz_lcd_3d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.md),
 [`read_sz_tables()`](https://ethanbass.github.io/chromConverter/reference/read_sz_tables.md)

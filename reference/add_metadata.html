@@ -99,22 +99,30 @@ sample without a row in <code>metadata</code> is left unchanged, with a warning.
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/ladder.txt"</span>, package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">chrom</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"shimadzu_ascii"</span>,</span></span>
-<span class="r-in"><span>                     find_files <span class="op">=</span> <span class="cn">FALSE</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># three copies stand in for the samples of a sequence</span></span></span>
-<span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">chrom</span>, <span class="va">chrom</span>, <span class="va">chrom</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">chroms</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"s1"</span>, <span class="st">"s2"</span>, <span class="st">"s3"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"s1"</span>, <span class="st">"s2"</span>, <span class="st">"s3"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                   treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="st">"drought"</span>, <span class="st">"drought"</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"benzoxazinoid_standards"</span>,</span></span>
+<span class="r-in"><span>                    package <span class="op">=</span> <span class="st">"chromConverter"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="va">path</span>, format_in <span class="op">=</span> <span class="st">"chemstation_ch"</span>, pattern <span class="op">=</span> <span class="st">"dad1A"</span>,</span></span>
+<span class="r-in"><span>                      parser <span class="op">=</span> <span class="st">"chromconverter"</span>, progress_bar <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"MEOH"</span>, <span class="st">"BENZOS_1000PPM"</span>, <span class="st">"BENZOS_500PPM"</span>,</span></span>
+<span class="r-in"><span>                            <span class="st">"BENZOS_250PPM"</span>, <span class="st">"BENZOS_125PPM"</span>,</span></span>
+<span class="r-in"><span>                            <span class="st">"BENZOS_62,5PPM"</span>, <span class="st">"BENZOS_31,25PPM"</span>,</span></span>
+<span class="r-in"><span>                            <span class="st">"BENZOS_16PPM"</span>, <span class="st">"BENZOS_8PPM"</span>, <span class="st">"BENZOS_4PPM"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                   ppm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1000</span> <span class="op">/</span> <span class="fl">2</span><span class="op">^</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">chroms</span> <span class="op">&lt;-</span> <span class="fu">add_metadata</span><span class="op">(</span><span class="va">chroms</span>, <span class="va">meta</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="extract_metadata.html">extract_metadata</a></span><span class="op">(</span><span class="va">chroms</span>, what <span class="op">=</span> <span class="st">"treatment"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name treatment</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1   s1   control</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   s2   drought</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3   s3   drought</span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">chroms</span>, <span class="va">treatment</span> <span class="op">==</span> <span class="st">"drought"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "s2" "s3"</span>
+<span class="r-in"><span><span class="fu"><a href="extract_metadata.html">extract_metadata</a></span><span class="op">(</span><span class="va">chroms</span>, what <span class="op">=</span> <span class="st">"ppm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               name        ppm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1             MEOH    0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   BENZOS_1000PPM 1000.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    BENZOS_500PPM  500.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    BENZOS_250PPM  250.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    BENZOS_125PPM  125.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   BENZOS_62,5PPM   62.50000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  BENZOS_31,25PPM   31.25000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8     BENZOS_16PPM   15.62500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9      BENZOS_8PPM    7.81250</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     BENZOS_4PPM    3.90625</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">chroms</span>, <span class="va">ppm</span> <span class="op">&gt;=</span> <span class="fl">250</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "BENZOS_1000PPM" "BENZOS_500PPM"  "BENZOS_250PPM" </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

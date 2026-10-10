@@ -94,6 +94,7 @@ format specified by `format_out` and `data_format`.
 Other 'Shimadzu' parsers:
 [`read_shimadzu_gcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_gcd.md),
 [`read_shimadzu_lcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md),
+[`read_shimadzu_method()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_method.md),
 [`read_shimadzu_qgd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.md),
 [`read_sz_lcd_2d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.md),
 [`read_sz_lcd_3d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.md),
@@ -106,7 +107,7 @@ Ethan Bass
 ## Examples
 
 ``` r
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
+path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 read_shimadzu(path)
 #>          intensity
 #> 0.00033       -362
@@ -66407,7 +66408,7 @@ read_shimadzu(path)
 #> attr(,"parser")
 #> [1] "chromconverter"
 #> attr(,"source_file")
-#> [1] "/home/runner/work/_temp/Library/chromConverter/extdata/ladder.txt"
+#> [1] "/home/runner/work/_temp/Library/chromConverter/extdata/alkane_ladder.txt"
 #> attr(,"source_file_format")
 #> [1] "shimadzu_ascii"
 #> attr(,"source_sha1")

@@ -95,6 +95,7 @@ interval.
 Other 'Shimadzu' parsers:
 [`read_shimadzu()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu.md),
 [`read_shimadzu_lcd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md),
+[`read_shimadzu_method()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_method.md),
 [`read_shimadzu_qgd()`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.md),
 [`read_sz_lcd_2d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_2d.md),
 [`read_sz_lcd_3d()`](https://ethanbass.github.io/chromConverter/reference/read_sz_lcd_3d.md),

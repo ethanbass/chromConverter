@@ -77,7 +77,7 @@ Ethan Bass
 ## Examples
 
 ``` r
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
+path <- system.file("extdata/alkane_ladder.txt", package = "chromConverter")
 chrom <- read_shimadzu(path, what = "chroms")
 # the file is named for the `sample_name` attribute unless one is supplied
 write_andi_chrom(chrom, path_out = tempdir(), force = TRUE)

@@ -62,15 +62,16 @@ extract_metadata(
 
   Whether to include the nested metadata fields, whose value is itself a
   list or table rather than a single value per chromatogram: the
-  `ms_params` instrument settings, the `acaml_metadata` injection record
-  that `read_agilent_rslt` reads from the `.acaml` file, or the whole
-  vendor list that `metadata_format = "raw"` passes through. Either
-  `TRUE`, to include every nested field the chromatograms carry, a
-  character vector naming the ones to include, or `FALSE` (the default)
-  to include none. Each element becomes a column of its own, named for
-  itself (`SampleName`) unless that name is already taken, in which case
-  it carries the field it came from (`ms_params.polarity`, since
-  `polarity` is a metadata field in its own right).
+  `ms_params` and `method_params` instrument settings, the
+  `acaml_metadata` injection record that `read_agilent_rslt` reads from
+  the `.acaml` file, or the whole vendor list that
+  `metadata_format = "raw"` passes through. Either `TRUE`, to include
+  every nested field the chromatograms carry, a character vector naming
+  the ones to include, or `FALSE` (the default) to include none. Each
+  element becomes a column of its own, named for itself (`SampleName`)
+  unless that name is already taken, in which case it carries the field
+  it came from (`ms_params.polarity`, since `polarity` is a metadata
+  field in its own right).
 
 - by:
 
@@ -104,10 +105,20 @@ by the chromatogram's path through the list (e.g. `blue.UV`).
 ## Examples
 
 ``` r
-path <- system.file("extdata/ladder.txt", package = "chromConverter")
-chroms <- read_chroms(path, format_in = "shimadzu_ascii",
-                      find_files = FALSE, progress_bar = FALSE)
-extract_metadata(chroms, what = c("sample_name", "instrument", "run_datetime"))
-#>     name sample_name instrument        run_datetime
-#> 1 ladder    FS19_214    GC-2014 2019-07-18 19:45:56
+path <- system.file("extdata", "benzoxazinoid_standards",
+                    package = "chromConverter")
+chroms <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
+extract_metadata(chroms, what = c("sample_name", "run_datetime", "time_range"))
+#>               name     sample_name        run_datetime time_range1 time_range2
+#> 1             MEOH            MEOH 2023-06-15 16:46:23 -0.03716667    59.95617
+#> 2   BENZOS_1000PPM  benzos_1000ppm 2023-06-20 19:29:41 -0.04333333    59.95667
+#> 3    BENZOS_500PPM   benzos_500ppm 2023-06-21 15:23:43 -0.04233333    59.95767
+#> 4    BENZOS_250PPM   benzos_250ppm 2023-06-21 16:46:40 -0.03783333    59.95550
+#> 5    BENZOS_125PPM   benzos_125ppm 2023-06-21 18:02:48 -0.04166667    59.95833
+#> 6   BENZOS_62,5PPM  benzos_62,5ppm 2023-06-21 19:19:00 -0.04016667    59.95983
+#> 7  BENZOS_31,25PPM benzos_31,25ppm 2023-06-21 20:35:12 -0.03716667    59.95617
+#> 8     BENZOS_16PPM    benzos_16ppm 2023-06-21 21:51:21 -0.03933333    59.96067
+#> 9      BENZOS_8PPM     benzos_8ppm 2023-06-21 23:07:28 -0.04050000    59.95950
+#> 10     BENZOS_4PPM     benzos_4ppm 2023-06-22 00:23:39 -0.03933333    59.96067
 ```
