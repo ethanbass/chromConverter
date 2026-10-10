@@ -591,41 +591,6 @@ read_sz_chrom <- function(path, stream){
   dat
 }
 
-#' Read 'Shimadzu' "Method" stream
-#' This function is called internally by `read_shimadzu_lcd`.
-#' @author Ethan Bass
-#' @noRd
-read_sz_method <- function(path, stream = c("GUMM_Information", "ShimadzuPDA.1",
-                                            "PDA.1.METHOD")){
-  method_path <- export_stream(path, stream = stream,
-                                   remove_null_bytes = TRUE)
-  on.exit(unlink_stream(method_path), add = TRUE)
-  if (is.na(method_path)){
-    warning("Method stream could not be found --- unable to infer retention times.")
-    return(NA)
-  } else{
-    method_stream <- xml2::read_xml(method_path)
-
-    sz_extract_upd_elements <- function(method_stream, xpath,
-                                        data_format = c("list", "data.frame")){
-      data_format <- match.arg(data_format, c("list", "data.frame"))
-      upd_elements <- xml2::xml_find_all(method_stream, xpath)
-
-      vals <- suppressWarnings(as.numeric(xml2::xml_text(
-        xml2::xml_find_first(upd_elements, ".//Val"))))
-      data <- as.list(vals)
-      names(data) <- xml2::xml_attr(upd_elements, "ID")
-
-      if (data_format == "data.frame"){
-        data <- as.data.frame(do.call(rbind, data))
-        colnames(data) <- "Val"
-      }
-      data
-    }
-    sz_extract_upd_elements(method_stream, xpath = "/GUD/UP/UPD")
-  }
-}
-
 #' Infer times from 'Shimadzu' Method stream
 #' This function is called internally by `read_shimadzu_lcd`.
 #' @note This function is no longer needed because the times can be inferred
@@ -889,7 +854,7 @@ read_sz_file_properties <- function(path){
   # the instrument the file was acquired on describes the whole file rather
   # than one of its traces, so it is read here, once per read, rather than in
   # the field map, which runs once per trace
-  c(meta, read_sz_system_info(path))
+  c(meta, read_sz_system_info(path), sz_method_metadata(path))
 }
 
 #' Read Shimadzu File Properties RAW

@@ -250,6 +250,9 @@ meta_shimadzu_lcd <- function(meta, ctx){
        precursor_mz = get_metadata_field(meta, "precursor_mz", null_val = NULL),
        product_mz = get_metadata_field(meta, "product_mz", null_val = NULL),
        mz_range = get_metadata_field(meta, "mz_range", null_val = NULL),
+       ms_params = get_metadata_field(meta, "ms_params", null_val = NULL),
+       method_params = get_metadata_field(meta, "method_params",
+                                          null_val = NULL),
        parser = "chromconverter")
 }
 

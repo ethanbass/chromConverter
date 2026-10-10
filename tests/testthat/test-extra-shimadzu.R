@@ -1635,6 +1635,112 @@ test_that("Shimadzu GCD and LCD peak tables carry the file's metadata", {
   expect_equal(attr(l[[1]], "sample_name"), "Anthocyanin_2_MeOH")
 })
 
+test_that("read_shimadzu_method reads a GC method", {
+  path <- extra_test_file("FS19_214.gcd")
+  x <- read_shimadzu_method(path)
+  ov <- x$oven
+  expect_equal(ov$program, data.frame(rate_C_min = c(30, 5, 3),
+                                      temperature_C = c(220, 290, 320),
+                                      hold_min = c(0, 0, 12.5)))
+  chrom <- read_shimadzu_gcd(path)
+  # the oven program ends where the chromatogram does
+  temps <- c(ov$initial_temperature_C, ov$program$temperature_C)
+  run <- ov$initial_hold_min +
+    sum(diff(temps) / ov$program$rate_C_min + ov$program$hold_min)
+  expect_equal(run, attr(chrom, "time_range")[2], tolerance = 1e-3)
+  # a split injector's total flow is the column flow times (1 + split ratio)
+  # plus the purge flow
+  inj <- x$injector
+  expect_equal(inj$total_flow_mL_min,
+               inj$column_flow_mL_min * (1 + inj$split_ratio) +
+                 inj$purge_flow_mL_min, tolerance = 1e-3)
+  expect_equal(x$detector$sampling_rate_ms / 60000,
+               as.numeric(attr(chrom, "time_interval")), tolerance = 1e-6)
+  expect_equal(x$autosampler$injection_volume_uL,
+               as.numeric(attr(chrom, "sample_injection_volume")))
+  expect_equal(x$column[c("name", "length_m", "diameter_mm",
+                          "film_thickness_um")],
+               list(name = "DB-5", length_m = 30, diameter_mm = 0.25,
+                    film_thickness_um = 0.25))
+})
+
+test_that("read_shimadzu_method reads an LC method", {
+  path <- extra_test_file("Anthocyanin.lcd")
+  x <- read_shimadzu_method(path)
+  expect_named(x, c("pump", "column", "dad"))
+  expect_equal(x$pump$mode, "LPGE")
+  expect_equal(x$pump$flow_mL_min, 1)
+  expect_equal(x$column$temperature_C, 40)
+  expect_equal(x$pump$gradient,
+               data.frame(time_min = c(0.01, 20, 30, 37, 42, 45, 50),
+                          pct_B = c(2, 30, 70, 98, 98, 2, 2)))
+  # the controller stops where the chromatogram ends
+  dad <- read_shimadzu_lcd(path, what = "DAD")
+  expect_equal(x$pump$stop_time_min, attr(dad, "time_range")[2],
+               tolerance = 1e-3)
+  # the PDA settings agree with the PDA data
+  pda <- x$dad
+  dad <- read_shimadzu_lcd(path, what = "DAD")
+  wl <- as.numeric(colnames(dad))
+  rt <- as.numeric(rownames(dad))
+  expect_equal(c(pda$start_wavelength_nm, pda$end_wavelength_nm), range(wl),
+               tolerance = 0.01)
+  expect_equal(pda$sampling_interval_ms, median(diff(rt)) * 60000,
+               tolerance = 1e-3)
+  expect_equal(pda$end_time_min, max(rt), tolerance = 1e-3)
+  expect_equal(pda$channels$wavelength_nm, c(520, 254, 280, 250))
+  # a program that starts later begins from the pump's initial concentration
+  y <- read_shimadzu_method(extra_test_file("shimadzu_qtof.lcd"), what = "pump")
+  expect_equal(y$pump$mode, "BGE")
+  expect_equal(head(y$pump$gradient, 2),
+               data.frame(time_min = c(0, 1), pct_B = c(5, 5)))
+})
+
+test_that("read_shimadzu_method reads the GC method of a GC-MS run", {
+  path <- extra_test_file("B4NF.7_C23.qgd")
+  x <- read_shimadzu_method(path)
+  expect_named(x, c("oven", "injector", "column", "ms"))
+  ov <- x$oven
+  expect_equal(ov$program, data.frame(rate_C_min = c(30, 5),
+                                      temperature_C = c(150, 300),
+                                      hold_min = c(0, 28)))
+  # the mass spectrometer acquires within the oven program, and the TIC spans
+  # its acquisition window
+  temps <- c(ov$initial_temperature_C, ov$program$temperature_C)
+  run <- ov$initial_hold_min +
+    sum(diff(temps) / ov$program$rate_C_min + ov$program$hold_min)
+  expect_gte(run, x$ms$end_time_min)
+  rt <- as.numeric(rownames(read_shimadzu_qgd(path, what = "TIC")))
+  expect_equal(range(rt), c(x$ms$start_time_min, x$ms$end_time_min),
+               tolerance = 1e-3)
+  inj <- x$injector
+  expect_equal(inj$total_flow_mL_min,
+               inj$column_flow_mL_min * (1 + inj$split_ratio) +
+                 inj$purge_flow_mL_min, tolerance = 0.01)
+  expect_equal(x$column[c("name", "length_m")],
+               list(name = "SGE BPX-5", length_m = 31))
+  expect_equal(inj$temperature_C, 300)
+})
+
+test_that("read_shimadzu_method rejects a file that is not a Shimadzu file", {
+  expect_error(read_shimadzu_method(extra_test_file("VARIAN1.CDF")),
+               "not a 'Shimadzu' data file")
+})
+
+test_that("Shimadzu chromatograms carry their method's settings", {
+  gcd <- read_shimadzu_gcd(extra_test_file("FS19_214.gcd"))
+  expect_equal(attr(gcd, "method_params")$column$name, "DB-5")
+  expect_null(attr(gcd, "method_params")$oven$program)
+  lcd <- read_shimadzu_lcd(extra_test_file("Anthocyanin.lcd"), what = "DAD")
+  expect_equal(attr(lcd, "method_params")$pump$mode, "LPGE")
+  qgd <- read_shimadzu_qgd(extra_test_file("B4NF.7_C23.qgd"), what = "TIC")
+  expect_equal(attr(qgd, "ms_params"),
+               list(start_time_min = 4, end_time_min = 60))
+  x <- read_chroms(extra_test_file("FS19_214.gcd"), format_in = "shimadzu_gcd",
+                   progress_bar = FALSE)
+  expect_equal(extract_metadata(x, "method_params.column.name")[[2]], "DB-5")
+})
+
 test_that("read_peaklist reports the wavelength of Shimadzu peak tables", {
   x <- read_peaklist(extra_test_file("shimadzuDAD_Anthocyanin.txt"),
                      format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]

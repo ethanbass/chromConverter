@@ -73,6 +73,7 @@ read_shimadzu(path)
 Other 'Shimadzu' parsers:
 \code{\link[=read_shimadzu_gcd]{read_shimadzu_gcd()}},
 \code{\link[=read_shimadzu_lcd]{read_shimadzu_lcd()}},
+\code{\link[=read_shimadzu_method]{read_shimadzu_method()}},
 \code{\link[=read_shimadzu_qgd]{read_shimadzu_qgd()}},
 \code{\link[=read_sz_lcd_2d]{read_sz_lcd_2d()}},
 \code{\link[=read_sz_lcd_3d]{read_sz_lcd_3d()}},

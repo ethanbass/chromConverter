@@ -47,14 +47,14 @@ which case such a field is spread across numbered columns
 
 \item{expand}{Whether to include the nested metadata fields, whose value is
 itself a list or table rather than a single value per chromatogram: the
-\code{ms_params} instrument settings, the \code{acaml_metadata} injection record that
-\code{read_agilent_rslt} reads from the \code{.acaml} file, or the whole vendor list
-that \code{metadata_format = "raw"} passes through. Either \code{TRUE}, to include
-every nested field the chromatograms carry, a character vector naming the
-ones to include, or \code{FALSE} (the default) to include none. Each element
-becomes a column of its own, named for itself (\code{SampleName}) unless that
-name is already taken, in which case it carries the field it came from
-(\code{ms_params.polarity}, since \code{polarity} is a metadata field in its own
+\code{ms_params} and \code{method_params} instrument settings, the \code{acaml_metadata}
+injection record that \code{read_agilent_rslt} reads from the \code{.acaml} file, or
+the whole vendor list that \code{metadata_format = "raw"} passes through. Either
+\code{TRUE}, to include every nested field the chromatograms carry, a character
+vector naming the ones to include, or \code{FALSE} (the default) to include none.
+Each element becomes a column of its own, named for itself (\code{SampleName})
+unless that name is already taken, in which case it carries the field it came
+from (\code{ms_params.polarity}, since \code{polarity} is a metadata field in its own
 right).}
 
 \item{by}{Whether to return one row per \code{sample} (the default), that is per

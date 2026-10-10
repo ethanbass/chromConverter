@@ -70,6 +70,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
   if (read_metadata){
     meta <- try(read_qgd_fp(path))
     meta$time.unit <- "Minutes"
+    meta <- c(meta, sz_method_metadata(path))
     dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = metadata_format,
                       source_file = path, source_file_format = "shimadzu_qgd",

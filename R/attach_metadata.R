@@ -314,14 +314,14 @@ read_waters_metadata <- function(file){
 #' either way.
 #' @param expand Whether to include the nested metadata fields, whose value is
 #' itself a list or table rather than a single value per chromatogram: the
-#' `ms_params` instrument settings, the `acaml_metadata` injection record that
-#' `read_agilent_rslt` reads from the `.acaml` file, or the whole vendor list
-#' that `metadata_format = "raw"` passes through. Either `TRUE`, to include
-#' every nested field the chromatograms carry, a character vector naming the
-#' ones to include, or `FALSE` (the default) to include none. Each element
-#' becomes a column of its own, named for itself (`SampleName`) unless that
-#' name is already taken, in which case it carries the field it came from
-#' (`ms_params.polarity`, since `polarity` is a metadata field in its own
+#' `ms_params` and `method_params` instrument settings, the `acaml_metadata`
+#' injection record that `read_agilent_rslt` reads from the `.acaml` file, or
+#' the whole vendor list that `metadata_format = "raw"` passes through. Either
+#' `TRUE`, to include every nested field the chromatograms carry, a character
+#' vector naming the ones to include, or `FALSE` (the default) to include none.
+#' Each element becomes a column of its own, named for itself (`SampleName`)
+#' unless that name is already taken, in which case it carries the field it came
+#' from (`ms_params.polarity`, since `polarity` is a metadata field in its own
 #' right).
 #' @param by Whether to return one row per `sample` (the default), that is per
 #' element of `chrom_list`, or one row per `chromatogram`. The two differ only
@@ -658,11 +658,12 @@ chrom_list_leaves <- function(x, path = character()){
 
 #' Nested metadata attributes of a chromatogram or a list of them
 #'
-#' A field whose value is itself a list or table, rather than a single value
-#' per chromatogram: the `ms_params` instrument settings, the `acaml_metadata`
-#' injection record, or the whole vendor list that `metadata_format = "raw"`
-#' passes through. [extract_metadata] reaches these through its `expand`
-#' argument, which spreads each of their elements over a column of its own.
+#' A field whose value is itself a list or table, rather than a single value per
+#' chromatogram: the `ms_params` and `method_params` instrument settings, the
+#' `acaml_metadata` injection record, or the whole vendor list that
+#' `metadata_format = "raw"` passes through. [extract_metadata] reaches these
+#' through its `expand` argument, which spreads each of their elements over a
+#' column of its own.
 #' @noRd
 nested_metadata_attrs <- function(x){
   a <- attributes(x)

@@ -71,10 +71,6 @@ read_shimadzu_gcd <- function(path, what = "chroms",
       }
       x
     })
-    # infer times from "PDA.1.Method" stream:
-    # method_metadata <- read_sz_method(path,
-    #                                   stream = c("GUMM_Information",
-                                          # "ShimadzuGC.1","GUC.1.METHOD"))
     if (length(chroms) == 1){
       chroms <- chroms[[1]]
     }

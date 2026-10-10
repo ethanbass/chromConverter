@@ -19,6 +19,7 @@
 
 * Added `read_chemstation_logs` to read the instrument errors, aborted runs and pump pressures recorded in 'Agilent ChemStation' sequence logs, including every log in a folder.
 * Added `read_chemstation_method` to read the gradient, solvents and other instrument settings from 'Agilent ChemStation' methods, including the copy a `.D` directory may hold.
+* Added `read_shimadzu_method` to read the oven program, gradient and other instrument settings stored in 'Shimadzu' GC (`.gcd`), LC (`.lcd`) and GC-MS (`.qgd`) files.
 * Files read with the `rainbow` parser now report most of the metadata the parser supplies, including `instrument`, `operator`, `detector_model`, `wavelength` and `instrument_modules`.
 * Run times of 'OpenLab' `.dx` files read with the `rainbow` parser are now returned as `POSIXct` in UTC, applying the time-zone offset the file records.
 * 'OpenLab' `.dx` files now report their injection volume.
@@ -68,6 +69,7 @@
 * Raw 'Shimadzu' `.lcd` chromatograms (`scale = FALSE`) now report `detector_y_unit` as `NA` where the channel's calibration factor is not 1, since those values are not in a defined unit.
 * QTOF mass spectra from `.lcd` files now carry the `scaled` attribute.
 * 'Shimadzu' `.qgd` scans whose intensities are more than 4 bytes wide can now be read. They are read with a warning, since the decoding of values this wide has not been checked against a 'LabSolutions' export.
+* 'Shimadzu' `.gcd`, `.lcd` and `.qgd` files now report their method's settings as `method_params`, and the acquisition window of GC-MS runs as `ms_params`. See `?read_shimadzu_method`.
 * 'Shimadzu' `.lcd` peak tables stored as `Peak Table-100` and similar now read correctly; every peak after the first was misread.
 * 'Shimadzu' `.lcd` peak tables no longer include mass spectrometry tables (`Mass Peak Table`, `Compound Peak Table`), which were misread.
 * `read_peaklist` no longer returns the peak table of a PDA channel twice for 'Shimadzu' `.lcd` files.
