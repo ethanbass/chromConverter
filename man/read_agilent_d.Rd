@@ -46,6 +46,8 @@ returned with retention times as rows and columns containing signal intensity
 for each signal. If \code{long} format is requested, retention times will be
 in the first column. The \code{format_out} argument determines whether the
 chromatogram is returned as a \code{matrix}, \code{data.frame} or \code{data.table}.
+Peak tables are named by wavelength (e.g. \code{"254"}), as in \link{read_peaklist},
+and keep the report's name for the signal as \code{signal_descriptor}.
 Metadata are attached as \link{attributes} if \code{read_metadata} is \code{TRUE}. With \code{collapse = TRUE}, a list of one element is replaced by that
 element.
 }

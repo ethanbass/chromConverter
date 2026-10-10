@@ -6,7 +6,7 @@
 * `read_peaklist` now returns 'Shimadzu' `.lcd` and `.gcd` peak tables in the default `chromatographr` format, like the other formats. `peaktable_format = "original"` restores the vendor columns.
 * `detector_range` now holds only a numeric wavelength range, as for 'ChemStation' since 0.10.0. Channel descriptions and single wavelengths that 'Waters' `.arw`, ANDI, 'Lumex' MDF and ASM files put there are now `signal_descriptor` or `wavelength`.
 * `read_peaklist` tables from every format now have a numeric `lambda` column after `sample`, giving the signal's wavelength (`NA` where none is recorded).
-* `read_peaklist` now names each peak table by its wavelength (e.g. `"254"`) wherever the file records one, as it already did for 'ChemStation' reports. Tables without a wavelength keep their names.
+* Peak tables are now named by their wavelength (e.g. `"254"`) wherever the file records one, both in `read_peaklist` and in 'ChemStation' `.D` directories. Tables without a wavelength keep their names.
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. So are the wavelengths of 'Shimadzu' `.lcd` traces, previously text such as `"260nm"`, including the `lambda` column of long-format chromatograms. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.
@@ -26,7 +26,7 @@
 * 'OpenLab' `.dx` files now report their injection volume.
 * 'Agilent ChemStation' `.D` directories now return pump pressure, flow, solvent composition and temperature traces from `LCDIAG.REG` with `what = "instrument"`. See `?read_agilent_d`.
 * 'Agilent' `.ch`, `.uv` and `.it` traces now report the channel they were recorded on as `channel_id` (e.g. `DAD1A` or `PMP1A`), and its module as `detector` (e.g. `DAD`).
-* 'Agilent' `.ch` traces and 'ChemStation' peak tables now report `wavelength` and `bandwidth` from their signal descriptor (e.g. `Sig=254,8`); peak tables also report `detector` and `channel_id`.
+* 'Agilent' `.ch` traces and 'ChemStation' peak tables now report `wavelength` and `bandwidth` from their signal descriptor (e.g. `Sig=254,8`); peak tables also report `detector`, `channel_id` and the descriptor itself as `signal_descriptor`.
 * `extract_metadata` now accepts an element of a nested field in `what`, such as `"SampleLabel"` or `"acaml_metadata.SampleLabel"`, and returns that column alone.
 * `subset()` now selects the chromatograms of a `chrom_list` by their metadata, e.g. `subset(chroms, sample_name == "S1")`. See `?subset.chrom_list`.
 * Added `add_metadata` to attach sample metadata from a table to a `chrom_list`, matched by name, for use with `subset()` and `extract_metadata`.

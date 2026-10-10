@@ -622,9 +622,8 @@ test_that("name_traces_in_d leaves names from different directories alone", {
 test_that("read_agilent_d can read a `ChemStation` peak table", {
   x <- read_agilent_d(test_path("testdata/RUTIN2.D/"), what = "peak_table")
   expect_length(x, 5)
-  # unlike `read_chemstation_reports`, the full signal descriptors are retained
-  expect_equal(sub(".*Sig=([0-9]+).*", "\\1", names(x)),
-               c("254", "320", "360", "210", "230"))
+  expect_equal(names(x), c("254", "320", "360", "210", "230"))
+  expect_equal(attr(x[[1]], "signal_descriptor"), "DAD1 A, Sig=254,8 Ref=off")
   expect_s3_class(x[[1]], "data.frame")
   expect_equal(colnames(x[[1]]),
                c("rt", "width", "area", "height", "type"))

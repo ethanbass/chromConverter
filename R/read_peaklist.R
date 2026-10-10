@@ -199,14 +199,16 @@ peak_table_lambda <- function(x){
 
 #' Name a sample's peak tables by wavelength
 #'
-#' A table whose `lambda` is known is named for it (`"254"`); one without keeps
-#' its name. A table identical to an earlier one at the same wavelength is a
+#' A table whose wavelength is known, from its `lambda` column or else its
+#' `wavelength` attribute, is named for it (`"254"`); one without keeps its
+#' name. A table identical to an earlier one at the same wavelength is a
 #' copy and is dropped, and any other tables sharing a name are told apart as
 #' `"254"`, `"254_1"`.
 #' @noRd
 name_peak_tables <- function(tabs){
   lam <- vapply(tabs, function(t){
-    if ("lambda" %in% names(t)) suppressWarnings(as.numeric(t$lambda[1])) else NA_real_
+    if ("lambda" %in% names(t)) suppressWarnings(as.numeric(t$lambda[1])) else
+      peak_table_lambda(t)
   }, numeric(1))
   nms <- ifelse(is.na(lam), names(tabs), as.character(lam))
   copy <- vapply(seq_along(tabs), function(i){

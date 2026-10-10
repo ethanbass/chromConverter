@@ -124,6 +124,7 @@ read_chemstation_report <- function(path,
         }
         attr(peak_lists[[i]], "wavelength") <- chemstation_sig(desc, 1)
         attr(peak_lists[[i]], "bandwidth") <- chemstation_sig(desc, 2)
+        attr(peak_lists[[i]], "signal_descriptor") <- desc
       }
     }
   }
