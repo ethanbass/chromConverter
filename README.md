@@ -18,7 +18,7 @@
 - [File formats](#formats)
 - [Usage](#usage)
 - [Additional dependencies](#optional-dependencies)
-- [Further analysis](#further-analysis)
+- [See also](#see-also)
 - [Contributing](#contributing)
 - [Citation](#citation)
 
@@ -62,26 +62,29 @@ library(chromConverter)
 dat <- read_chroms("path/to/files", format_in = "chemstation_uv")
 ```
 
+For a full example workflow, see the [Getting started](https://ethanbass.github.io/chromConverter/articles/chromConverter.html) vignette (`vignette("chromConverter")`).
+
 ### Formats
 
 ##### ChromConverter (internal parsers)
-- 'Agilent ChemStation' & 'OpenLab' `.uv` files (versions 131, 31)
-- 'Agilent ChemStation' & 'OpenLab' `.ch` files (versions 30, 130, 8, 81, 179, 181)
-- 'Agilent ChemStation' `.ms` and `.csv` files
-- 'Agilent OpenLab' `.dx`, `.acaml`, `.amx`, and `.D` directories
-- 'Agilent OpenLab' `.rslt` sequence directories
-- Allotrope® Simple Model (ASM) 2D chromatograms (`.json`)
+- Agilent ChemStation & OpenLab `.uv` files (versions 131, 31)
+- Agilent ChemStation & OpenLab `.ch` files (versions 30, 130, 8, 81, 179, 181)
+- Agilent ChemStation `.ms` and `.csv` files
+- Agilent ChemStation sequence logs (`.LOG`), instrument traces (`LCDIAG.REG`) and methods (`.M`)
+- Agilent OpenLab `.dx`, `.acaml`, `.amx`, and `.D` directories
+- Agilent OpenLab `.rslt` sequence directories
+- Allotrope® Simple Model (ASM) chromatograms, GC-MS spectra, peak lists and instrument traces (`.json`)
 - ANDI (Analytical Data Interchange) Chromatography & MS formats (`.cdf`)
 - mzML (`.mzml`) & mzXML (`.mzxml`) (via *RaMS*)
-- 'Shimadzu LabSolutions' ascii (`.txt`)
-- 'Shimadzu GCsolution' data files (`.gcd`)
-- 'Shimadzu GCMSsolution' data files (`.qgd`) 
-- 'Shimadzu LabSolutions' `.lcd` (PDA, QTOF, TLM (triple quadrupole MS), TIC, chromatogram, and peak table streams)
-- 'Lumex' `.mdf` files
-- 'Thermo Scientific Chromeleon' ascii (`.txt`)
-- 'Varian Workstation' (`.SMS`)
-- 'Waters Empower' ascii (`.arw`)
-- 'Waters MassLynx' `.raw` directories (2D chromatograms only)
+- Shimadzu LabSolutions ascii (`.txt`)
+- Shimadzu GCsolution data files (`.gcd`)
+- Shimadzu GCMSsolution data files (`.qgd`) 
+- Shimadzu LabSolutions `.lcd` (PDA, QTOF, TLM (triple quadrupole MS), TIC, chromatogram, and peak table streams)
+- Lumex `.mdf` files
+- Thermo Scientific Chromeleon ascii (`.txt`)
+- Varian Workstation (`.SMS`)
+- Waters Empower ascii (`.arw`)
+- Waters MassLynx `.raw` directories (2D chromatograms only)
 - Chromatotec `.Chrom` files.
 
 ##### External Libraries
@@ -123,19 +126,40 @@ dat <- read_chroms(path, find_files = FALSE, path_out = "temp",
 
 ###### Choosing between multiple parsers
 
-For formats where multiple parsers are available, you can choose between them using the `parser` argument. For example, 'Agilent' files can be read by parsers from several external libraries, including Entab and rainbow. Some of these parsers must be installed manually as described in the [installation instructions](#optional-dependencies).
+For formats where multiple parsers are available, you can choose between them using the `parser` argument. For example, Agilent files can be read by parsers from several external libraries, including Entab and rainbow. Some of these parsers must be installed manually as described in the [installation instructions](#optional-dependencies).
 
-###### Extracting metadata
+###### Working with the results
 
-chromConverter can extract metadata from the files it reads. If `read_metadata = TRUE`, metadata will be extracted and stored as [attributes](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) of the associated object. The metadata can then be accessed using the `attributes` or `attr` functions on individual chromatograms, or extracted into a data.frame or tibble from a list of chromatograms using the `extract_metadata` function. 
+`read_chroms` returns a `chrom_list`, with files found in a directory sorted by acquisition time (see `sort_by`). Metadata are read by default and stored as [attributes](https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html) of each chromatogram. Printing a `chrom_list` shows the metadata rather than the data, and `summary` returns the same fields as a data frame along with each chromatogram's dimensions. `subset` selects chromatograms by their metadata, `attr` returns a single field, and `extract_metadata` collects every standard field into a data.frame or tibble:
+
+```r
+dat
+summary(dat)
+subset(dat, sample_name != "blank")
+attr(dat[[1]], "run_datetime")
+extract_metadata(dat)
+```
+
+`add_metadata(dat, sample_sheet)` attaches your own columns, such as treatment or dry weight, matched by sample name, so `subset` and `extract_metadata` can use them; [chromatographR](https://ethanbass.github.io/chromatographR/) carries them into `get_peaktable`.
 
 ##### Importing peak lists
 
-The `read_peaklist` function imports peak lists from 'Agilent ChemStation' REPORT files, 'Shimadzu' ascii, `.lcd` and `.gcd` files, and 'Chromatotec' `.Chrom` files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
+The `read_peaklist` function imports peak lists from Agilent ChemStation REPORT files, Shimadzu ascii, `.lcd` and `.gcd` files, Chromatotec `.Chrom` files, and Allotrope Simple Model (ASM) files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
 
 ```r
 pks <- read_peaklist(<path_to_directory>, format_in = "chemstation")
 ```
+
+##### Reading instrument methods
+
+`read_chemstation_method` reads the gradient, solvents and other instrument settings from Agilent ChemStation `.M` methods, including the copy a `.D` directory may hold. `read_shimadzu_method` reads the method stored in Shimadzu `.gcd`, `.lcd` and `.qgd` files, and `read_agilent_amx` reads Agilent OpenLab `.amx` methods.
+
+```r
+method <- read_chemstation_method("path/to/METHOD.M")
+method$pump$gradient
+```
+
+The Shimadzu readers also attach the method's settings to each chromatogram as `method_params`, so `extract_metadata` can compare them across a sequence, e.g. `extract_metadata(dat, "method_params.column.name")`.
 
 ### Optional dependencies
 
@@ -163,9 +187,12 @@ Thermo RAW files can be converted by calling the [ThermoRawFileParser](https://g
 3) Call `read_chroms` with `parser = "openchrom"`. The first time you call the parser, you may be asked to provide the path to your local installation of OpenChrom. The path will then be saved for future use. If the command-line interface is disabled, you will be given the option to automatically activate the command-line.  Alternatively, the command-line option can be activated from R by calling `configure_openchrom(cli = "true")` or following the [instructions](https://github.com/OpenChrom/openchrom/wiki/CLI) to manually activate the CLI. This process can be reversed using the same function: e.g. `configure_openchrom(cli = "false")`. To specify an OpenChrom executable in a non-standard location, call `configure_openchrom` with the `path` argument, e.g. `configure_openchrom(cli = "true", path = "path_to_openchrom_executable")`.
 4) Specify the detector category with `format_in`, since the OpenChrom parsers are organized by detector type rather than by file format: `csd` for current selective detectors (e.g. FID, ECD, NPD), `msd` for mass selective detectors, or `wsd` for wavelength selective detectors (e.g. DAD, UV/VIS).
 
-### Further analysis
+### See also
 
-For downstream analyses of chromatographic data, see [chromatographR](https://ethanbass.github.io/chromatographR/). For interactive visualization of chromatograms, see [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release). There is also a vignette providing an introduction to some basic syntax for [plotting mass spectrometry data](https://ethanbass.github.io/chromConverter/articles/plot_ms.html) returned by chromConverter in various R dialects (e.g., base R, tidyverse, and data.table).
+- The [Getting started](https://ethanbass.github.io/chromConverter/articles/chromConverter.html) vignette shows how to read a sequence of standards from ChemStation, use the metadata to view and select runs, and fit a calibration curve to the peak tables.
+- [Plotting mass spectrometry data](https://ethanbass.github.io/chromConverter/articles/plot_ms.html) introduces basic syntax for plotting MS data returned by chromConverter in base R, tidyverse and data.table.
+- [chromatographR](https://ethanbass.github.io/chromatographR/) provides downstream analysis of chromatographic data.
+- [ShinyChromViewer](https://github.com/ethanbass/ShinyChromViewer) (alpha release) provides interactive visualization of chromatograms.
 
 ### Contributing
 

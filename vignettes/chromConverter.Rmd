@@ -1,0 +1,254 @@
+---
+title: "Getting started with chromConverter"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with chromConverter}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, prompt = TRUE, highlight = FALSE,
+                      comment = NA, dpi = 200, fig.width = 6,
+                      out.width = "100%")
+```
+
+```{css, echo = FALSE}
+img { box-sizing: border-box; margin: 0; }
+```
+
+Chromatography software saves runs in proprietary formats that R can't read
+directly. `read_chroms()` reads them into a `chrom_list`, a list of
+chromatograms that keep the file's metadata with them. This vignette shows
+how to read a sequence of standards from ChemStation, use the metadata to view
+and select runs, and fit a calibration curve to the peak tables.
+
+```{r setup}
+library(chromConverter)
+```
+
+## Reading a sequence
+
+The example is a calibration series of benzoxazinoid standards, run on an
+Agilent 1100 series diode array detector: nine dilutions of a mixed standard of
+DIBOA, DIMBOA, BOA and MBOA ranging from 1000 to 4 ppm, and a methanol blank run
+with the same method five days earlier.
+
+```{r files}
+seq_dir <- system.file("extdata", "benzoxazinoid_standards",
+                       package = "chromConverter")
+list.files(seq_dir)
+```
+
+`read_chroms()` searches the directory for files in the format given by
+`format_in`. Each `.D` holds a trace per wavelength, and `pattern` picks out
+`dad1A`, the 254 nm trace, from every run.
+
+```{r read}
+chroms <- read_chroms(seq_dir, format_in = "chemstation_ch",
+                      pattern = "dad1A", parser = "chromconverter",
+                      progress_bar = FALSE)
+```
+
+Files found in a directory come back in the order they were injected, not
+alphabetically; `sort_by` changes this. `parser = "chromconverter"` picks
+chromConverter's own reader, which extracts the wavelength as a metadata field.
+
+## Viewing sequence metadata
+
+Printing a `chrom_list` shows its metadata rather than its data, since even
+this short sequence holds ten traces each containing 9000 rows of data. To see
+the raw data, pull out a single chromatogram (see [Working with a single
+chromatogram](#working-with-a-single-chromatogram)).
+
+```{r print}
+chroms
+```
+
+Fields that are the same for every run, here the method, detector and
+wavelength, are collapsed into the header, and the fields that differ between
+samples are printed in a table with a column for each field.
+
+`summary()` puts the same fields in a data frame with one row per
+chromatogram, and also adds the number of rows and columns in each chromatogram.
+Its `cols` argument picks the fields:
+
+```{r summary}
+summary(chroms, cols = c("run_datetime", "wavelength"))
+```
+
+`extract_metadata()` returns any field as a column, including ones that
+`summary()` leaves out, such as each run's time range.
+
+```{r extract}
+extract_metadata(chroms, "time_range")
+```
+
+Without `what`, `extract_metadata()` returns all the standard fields. To keep
+the vendor's own field names instead, pass `metadata_format = "raw"` to
+`read_chroms`.
+
+## Selecting and annotating chromatograms
+
+`subset()` keeps the chromatograms whose metadata match a condition, using the
+field names that `summary()` and `extract_metadata()` report. To set the blank
+aside:
+
+```{r subset}
+subset(chroms, sample_name != "MEOH")
+```
+
+Indexing with `[` also returns a `chrom_list`, and `c()` combines them.
+
+```{r index}
+c(chroms["MEOH"], chroms["BENZOS_4PPM"])
+```
+
+`add_metadata()` attaches the columns of your own table as new fields, matching
+its rows to the samples by name, so `subset()` and `extract_metadata()` can use
+them. chromatographR's `get_peaktable()` carries them into its peak table.
+
+```{r add-metadata}
+sheet <- data.frame(name = c("MEOH", "BENZOS_1000PPM", "BENZOS_500PPM",
+                             "BENZOS_250PPM", "BENZOS_125PPM",
+                             "BENZOS_62,5PPM", "BENZOS_31,25PPM",
+                             "BENZOS_16PPM", "BENZOS_8PPM", "BENZOS_4PPM"),
+                    ppm = c(0, 1000, 500, 250, 125, 62.5, 31.25, 15.625,
+                            7.8125, 3.90625))
+annotated <- add_metadata(chroms, sheet)
+subset(annotated, ppm < 20)
+```
+
+The blank is kept as well, since its concentration is 0.
+
+## Working with a single chromatogram
+
+Where `[` returns a smaller `chrom_list`, `$` or `[[` pulls out a single
+chromatogram.
+
+```{r one-chrom}
+x <- chroms$BENZOS_4PPM
+head(x)
+```
+
+By default, a single-wavelength trace is returned as a matrix with retention
+times as row names and one column of intensities; DAD data have a column per
+wavelength. The `format_out` and `data_format` arguments in `read_chroms()`
+can be used to return a `data.frame` or `data.table`, or long rather than wide
+data.
+
+A chromatogram keeps its metadata as attributes, even outside the `chrom_list`:
+
+```{r attr}
+attr(x, "run_datetime")
+attr(x, "detector_model")
+```
+
+## Working with nested samples
+
+So far each sample has held a single chromatogram. However, the `.D` directory
+holds several data types that can all be extracted with `read_chroms`. The `what`
+argument can be used to specify which data to extract. Here it is used to
+request three data types: the chromatographic traces at all five wavelengths
+(`chroms`), the peak report containing ChemStation integration results
+(`peak_table`), and the pump's record of pressure, flow and solvent composition
+(`instrument`).
+
+```{r read-d}
+run <- read_chroms(file.path(seq_dir, "BENZOS_250PPM.D"),
+                   format_in = "agilent_d",
+                   what = c("chroms", "peak_table", "instrument"),
+                   progress_bar = FALSE)
+print(run, cols = "wavelength")
+```
+
+All 16 elements are listed under their one sample, `BENZOS_250PPM`. `summary()`
+gives each a row, with a `trace` column holding its path within the sample,
+such as `chroms.dad1A` or `instrument.PMP1, Pressure`.
+
+```{r summary-d}
+summary(run)[c("sample", "trace", "wavelength")]
+```
+
+`subset()` keeps or drops a nested sample as a whole (see `?subset.chrom_list`),
+so it can't pick out traces within one. Index the nested lists with `$` or `[[`
+instead. Each peak table is a data frame of retention time, width, area, height
+and peak type; the first is the 254 nm signal, recorded as `dad1A`.
+
+```{r peaks}
+peaks <- run$BENZOS_250PPM$peak_table[[1]]
+head(peaks)
+```
+
+ChemStation also integrated the disturbance at the solvent front and baseline
+noise as peaks; only the four standards stand out from it: DIBOA, DIMBOA, BOA
+and MBOA, in order of elution.
+
+```{r plot-peaks, fig.height = 4, fig.alt = "The 254 nm trace of the 250 ppm standard, with the four peaks in the ChemStation report that stand out from the noise labelled DIBOA, DIMBOA, BOA and MBOA, near 12.5, 19, 21 and 28 minutes."}
+real <- subset(peaks, rt > 10 & height > 5)
+trace <- run$BENZOS_250PPM$chroms$dad1A
+plot(as.numeric(rownames(trace)), trace[, 1], type = "l", ylim = c(-20, 500),
+     xlab = "Time (min)", ylab = "Absorbance (mAU)")
+text(real$rt, real$height, c("DIBOA", "DIMBOA", "BOA", "MBOA"),
+     adj = c(0, -0.5), cex = 0.8)
+```
+
+The `instrument` list holds one trace per quantity the pump recorded, under the
+names given by ChemStation. Plotting the pressure under the chromatogram puts
+both on the same time axis, so a disturbance in one can be matched to the
+other.
+
+```{r pressure, fig.height = 5, fig.show = "hold", fig.alt = "Two stacked panels sharing a 0 to 60 minute time axis. Top: the 254 nm trace of the 250 ppm standard. Bottom: pump pressure, rising from about 160 to 215 bar between 5 and 40 minutes, then falling to about 95 bar by 54 minutes and holding."}
+names(run$BENZOS_250PPM$instrument)
+pressure <- run$BENZOS_250PPM$instrument[["PMP1, Pressure"]]
+op <- par(mfrow = c(2, 1), mar = c(0.5, 4, 1, 1), oma = c(4, 0, 0, 0))
+plot(as.numeric(rownames(trace)), trace[, 1], type = "l", xaxt = "n",
+     xlab = "", ylab = "Absorbance (mAU)")
+par(mar = c(0, 4, 0.5, 1))
+plot(as.numeric(rownames(pressure)), pressure[, 1], type = "l",
+     xlab = "", ylab = "Pressure (bar)")
+mtext("Time (min)", side = 1, line = 2.5, outer = TRUE)
+par(op)
+```
+
+## Reading peak tables from a sequence
+
+`read_chroms()` can return peak tables along with the traces, as above.
+Alternatively, `read_peaklist()` reads only the peak tables, labelling each by
+sample and wavelength so that tables from different runs stack directly:
+
+```{r peaklist}
+peak_list <- read_peaklist(seq_dir, format_in = "chemstation",
+                           progress_bar = FALSE)
+names(peak_list$BENZOS_250PPM)
+```
+
+Combining the 254 nm tables gives one data frame for the whole sequence.
+DIMBOA is the only peak between 18.5 and 20.3 minutes in every run, so you can
+select it by retention time, then merge in the concentrations from earlier:
+
+```{r dimboa}
+at254 <- do.call(rbind, lapply(peak_list, `[[`, "254"))
+dimboa <- subset(at254, rt > 18.5 & rt < 20.3)
+dimboa <- merge(dimboa, extract_metadata(annotated, "ppm"),
+                by.x = "sample", by.y = "name")
+dimboa[c("sample", "rt", "area", "ppm")]
+```
+
+Each standard now has one row, holding its DIMBOA peak area and concentration.
+A linear fit of area against concentration gives the calibration curve:
+
+```{r calibration, fig.alt = "DIMBOA peak area against concentration for the nine standards, from 4 to 1000 ppm, lying close to a fitted straight line with an R-squared of 0.999.", fig.height = 4.5}
+fit <- lm(area ~ ppm, data = dimboa)
+plot(area ~ ppm, data = dimboa, xlab = "DIMBOA (ppm)",
+     ylab = "Peak area (mAU s)", pch = 20)
+abline(fit, col = "gray20")
+legend("topleft", sprintf("R² = %.4f", summary(fit)$r.squared), bty = "n")
+```
+
+## See also
+
+- [chromatographR](https://ethanbass.github.io/chromatographR/) aligns,
+  integrates and compares chromatograms read with chromConverter.
+- [Plotting mass spectrometry data](https://ethanbass.github.io/chromConverter/articles/plot_ms.html)
+  covers the long-format data returned for MS files.

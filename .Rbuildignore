@@ -14,8 +14,11 @@
 ^docs$
 ^pkgdown$
 ^vignettes/articles$
-^vignettes$
+^doc$
+^Meta$
 ^\.positai$
 ^\.claude$
 ^dev$
 ^logo_fonts\.png$
+^tests/testthat/_problems$
+^tests/testthat/testthat-problems\.rds$
