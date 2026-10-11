@@ -300,9 +300,6 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
 #' or `raw`.
 #' @param scale This argument currently has no effect. PDA data is returned as
 #' it is encoded in the file; see the note in [read_shimadzu_lcd()].
-#' @examples \dontrun{
-#' read_sz_lcd_3d("path/to/file.lcd")
-#' }
 #' @author Ethan Bass
 #' @return A 3D chromatogram from the PDA stream in `matrix`, `data.frame`, or
 #' `data.table` format, according to the value of `format_out`.
@@ -398,9 +395,6 @@ read_sz_lcd_3d <- function(path, format_out = "matrix",
 #' @param scale Whether to scale the data by the calibration factor and the
 #' value factor, converting the encoded integers into the unit reported by
 #' 'LabSolutions' (e.g. `mV`).
-#' @examples \dontrun{
-#' read_sz_lcd_2d("path/to/file.lcd")
-#' }
 #' @author Ethan Bass
 #' @return One or more 2D chromatograms from the chromatogram streams in
 #' `matrix` or `data.frame` format, according to the value of `format_out`. If
