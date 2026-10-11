@@ -57,10 +57,14 @@ test_that("read_cdf function can read peak tables", {
   skip_if_not(file.exists(path))
 
   x <- read_cdf(path, what = "peak_table")
-  # what about chromatograms
   expect_s3_class(x, "data.frame")
-  expect_equal(dim(x), c(8,6))
-  expect_true("peak_name" %in% names(x))
+  expect_equal(names(x), c("rt", "start", "end", "area", "height", "FWHM"))
+  expect_equal(nrow(x), 8)
+  y <- read_cdf(path, what = "peak_table", peaktable_format = "original")
+  expect_equal(dim(y), c(8, 6))
+  expect_true("peak_name" %in% names(y))
+  expect_equal(x$rt, y$peak_retention_time)
+  expect_equal(x$area, y$peak_area)
 })
 
 test_that("read_chroms can read ANDI MS files", {

@@ -33,9 +33,12 @@ whether every path is a file.}
 \item{pattern}{A pattern (e.g. a file extension). Defaults to \code{NULL}, in
 which case the file extension will be deduced from \code{format_in}.}
 
-\item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
-or \code{original} format. 'Chromatotec' peak tables are always returned in their
-original format.}
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (the default) or with all the columns the file
+provides (\code{original}). A \code{chromatographr} table has the columns \code{rt}, \code{start},
+\code{end}, \code{area}, \code{height} and \code{FWHM} (the full width at half maximum), with
+times in the same unit as the format's chromatograms and \code{NA} where the file
+does not record a value.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 (standardized field names) or \code{raw} (vendor field names, unmapped).}
@@ -67,7 +70,8 @@ and otherwise by the file's own name for the signal; a table identical to
 another at the same wavelength is a copy and is left out. Each row is a
 peak. Every table starts with a \code{sample} column and
 a \code{lambda} column giving the signal's wavelength, which is \code{NA} for a
-detector without one or a file that does not record it.
+detector without one or a file that does not record it, followed by the
+columns of \code{peaktable_format}.
 }
 \description{
 Reads peak lists from specified folders or vector of paths.

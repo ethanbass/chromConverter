@@ -242,7 +242,8 @@ test_that("read_chroms can read ASM peak lists", {
   x <- read_chroms(path, format_in = "asm", what = "peak_table",
                    format_out = "data.frame", progress_bar = FALSE)[[1]]
   expect_equal(names(x), c("single channel", "UV spectrum"))
-  expect_equal(names(x[[1]]), c("rt", "start", "end", "area", "height"))
+  expect_equal(names(x[[1]]), c("rt", "start", "end", "area", "height",
+                                  "FWHM"))
   expect_equal(x[[1]]$rt, c(367.2145, 372.7502, 374.4260), tolerance = 1e-6)
   expect_equal(x[[1]]$area, c(53118.3728, 1004.5008, 408.5294),
                tolerance = 1e-6)
@@ -269,7 +270,7 @@ test_that("read_peaklist can read ASM peak lists", {
   x <- read_peaklist(path, format_in = "asm", progress_bar = FALSE)
   expect_s3_class(x, "peak_list")
   expect_equal(names(x[[1]]), c("sample", "lambda", "rt", "start", "end", "area",
-                               "height"))
+                               "height", "FWHM"))
   expect_equal(nrow(x[[1]]), 4)
   expect_equal(x[[1]]$rt[1], 39.80021, tolerance = 1e-6)
 })

@@ -12,6 +12,7 @@ read_cdf(
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
+  peaktable_format = c("chromatographr", "original"),
   ...
 )
 }
@@ -36,6 +37,13 @@ files, MS1 scans (\code{MS1}) and/or the total ion chromatogram (\code{TIC}).}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
+
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (the default) or with all the columns the file
+provides (\code{original}). A \code{chromatographr} table has the columns \code{rt}, \code{start},
+\code{end}, \code{area}, \code{height} and \code{FWHM} (the full width at half maximum), with
+times in the same unit as the format's chromatograms and \code{NA} where the file
+does not record a value.}
 
 \item{...}{Additional arguments to the parser. For ANDI MS files, pass
 \code{ms_format} to return the mass spectra as a \code{data.frame} (the default) or a

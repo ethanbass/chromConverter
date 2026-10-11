@@ -21,9 +21,9 @@
 #' (`MS1`), peak lists (`peak_table`) and/or instrument traces (`instrument`),
 #' such as pump pressure, flow rate or temperature. Defaults to `chroms` and
 #' `MS1`, dropping whichever the file does not contain.
-#' @param peaktable_format Whether to return peak tables in `chromatographr`
-#' format (`rt`, `start`, `end`, `area` and `height`) or `original` format,
-#' with every field the file records under its ASM name.
+#' @param peaktable_format Whether to return peak tables in the standard
+#' `chromatographr` layout (`rt`, `start`, `end`, `area`, `height` and `FWHM`)
+#' or `original` format, with every field the file records under its ASM name.
 #' @return A 2D chromatogram in the format specified by `format_out` and
 #' `data_format`, or a list of them named by detection type if the file holds
 #' more than one (or `collapse = FALSE`). Mass spectra are returned as a
@@ -368,14 +368,10 @@ asm_peak_table <- function(peaks, peaktable_format = "chromatographr"){
   tab <- as.data.frame(cols, check.names = FALSE)
   rt_field <- intersect(c("retention time", "retention volume"), fields)[1]
   if (peaktable_format == "chromatographr"){
-    get_col <- function(field){
-      if (!is.na(field) && field %in% fields) tab[[field]] else NA_real_
-    }
-    tab <- data.frame(rt = get_col(rt_field),
-                      start = get_col("peak start"),
-                      end = get_col("peak end"),
-                      area = get_col("peak area"),
-                      height = get_col("peak height"))
+    tab <- chromatographr_peak_table(tab, list(
+      rt = rt_field, start = "peak start", end = "peak end",
+      area = "peak area", height = "peak height",
+      FWHM = "peak width at half height"))
   }
   attr(tab, "units") <- list(time = unname(units[rt_field]),
                              y = unname(units["peak height"]))

@@ -140,10 +140,14 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
                                 scale = TRUE, sparse = TRUE,
-                                collapse = TRUE){
+                                collapse = TRUE,
+                                peaktable_format = c("chromatographr",
+                                                     "original")){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
+  peaktable_format <- match.arg(peaktable_format, c("chromatographr",
+                                                    "original"))
 
   ms_format <- NULL
   if (missing(what)){
@@ -237,6 +241,9 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
     if (read_metadata){
       peak_table <- attach_sz_table_metadata(peak_table, path, metadata_format,
                                              "shimadzu_lcd", data_format)
+    }
+    if (peaktable_format == "chromatographr"){
+      peak_table <- sz_peaktable_chromatographr(peak_table)
     }
   }
   dat <- list()

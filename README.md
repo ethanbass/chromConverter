@@ -144,7 +144,7 @@ extract_metadata(dat)
 
 ##### Importing peak lists
 
-The `read_peaklist` function imports peak lists from Agilent ChemStation REPORT files, Shimadzu ascii, `.lcd` and `.gcd` files, Chromatotec `.Chrom` files, and Allotrope Simple Model (ASM) files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
+The `read_peaklist` function imports peak lists from Agilent ChemStation REPORT (or `Result.xml`) files, Shimadzu ascii, `.lcd` and `.gcd` files, Chromatotec `.Chrom` files, and Allotrope Simple Model (ASM) files. The syntax is similar to `read_chroms`. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (`format_in`), e.g.
 
 ```r
 pks <- read_peaklist(<path_to_directory>, format_in = "chemstation")

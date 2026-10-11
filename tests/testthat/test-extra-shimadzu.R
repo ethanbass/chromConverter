@@ -14,9 +14,9 @@ test_that("read_peaklist can read `Shimadzu` ASCII (PDA) files", {
   expect_type(x, "list")
   expect_equal(length(x), 5)
   expect_s3_class(x[[1]], "data.frame")
-  expect_equal(dim(x[[1]]), c(133, 7))
+  expect_equal(dim(x[[1]]), c(133, 8))
   expect_equal(colnames(x[[1]]), c("sample", "lambda", "rt", "start",
-                                   "end", "area", "height"))
+                                   "end", "area", "height", "FWHM"))
 })
 
 test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
@@ -536,7 +536,7 @@ test_that("read_peaklist returns Shimadzu GCD peak tables in chromatographr form
   x1 <- read_peaklist(path_gcd, format_in = "shimadzu_gcd",
                       progress_bar = FALSE)[[1]]
   expect_named(x1, c("sample", "lambda", "rt", "start", "end", "area",
-                     "height"))
+                     "height", "FWHM"))
   expect_equal(x1[, -1], x[, -1], tolerance = .001, ignore_attr = TRUE)
 })
 

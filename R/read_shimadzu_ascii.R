@@ -14,8 +14,6 @@
 #' @param include Which chromatograms to include: any of `fid`, `lc`, `dad`,
 #' `uv`, `tic`, and `status`. Defaults to all but `status`.
 #' @param format_in This argument is deprecated and is no longer required.
-#' @param peaktable_format Whether to return peak tables in `chromatographr`
-#' or `original` format.
 #' @param ms_format Whether to return mass spectral data as a (long)
 #' `data.frame` or a `list`.
 #' @return A nested list of elements from the specified file, where the top
@@ -348,11 +346,13 @@ read_shimadzu_peaktable <- function(path, x, idx, sep, format_in, format_out){
     peak_tab <- read.csv(path, skip = (table_start-1), sep = sep, nrows = nrows,
                          dec = decimal_separator, check.names = FALSE)
     if (format_out == "chromatographr"){
-      column_names <- switch(format_in, "MC" = c("Ret.Time", "Proc.From",
-                                                 "Proc.To", "Area", "Height"),
-                             c("R.Time", "I.Time", "F.Time", "Area", "Height"))
-      peak_tab <- peak_tab[, column_names]
-      colnames(peak_tab) <- c("rt", "start", "end", "area", "height")
+      cols <- switch(format_in,
+                     "MC" = list(rt = "Ret.Time", start = "Proc.From",
+                                 end = "Proc.To", area = "Area",
+                                 height = "Height"),
+                     list(rt = "R.Time", start = "I.Time", end = "F.Time",
+                          area = "Area", height = "Height"))
+      peak_tab <- chromatographr_peak_table(peak_tab, cols)
     }
     peak_tab
   } else {

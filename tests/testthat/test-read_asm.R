@@ -11,7 +11,7 @@ test_that("asm_peak_table handles plain values, quantities and missing fields", 
          `peak height` = list(unit = "pA", value = 7))
   )
   x <- asm_peak_table(peaks)
-  expect_equal(names(x), c("rt", "start", "end", "area", "height"))
+  expect_equal(names(x), c("rt", "start", "end", "area", "height", "FWHM"))
   expect_equal(x$rt, c(10, 20))
   expect_equal(x$start, c(9, NA))
   expect_equal(x$end, c(NA_real_, NA_real_))

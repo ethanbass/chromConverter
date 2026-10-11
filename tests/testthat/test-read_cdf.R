@@ -154,11 +154,17 @@ test_that("read_cdf converts the ANDI chrom peak table to minutes and keeps its
   on.exit(unlink(tmp, recursive = TRUE))
 
   path <- write_andi_chrom_fixture(tmp)
-  pt <- read_cdf(path, what = "peak_table")
+  pt <- read_cdf(path, what = "peak_table", peaktable_format = "original")
   expect_setequal(names(pt), c("peak_retention_time", "peak_area", "peak_name"))
   expect_equal(pt$peak_retention_time, c(0.5, 2), tolerance = 1e-6)
   expect_equal(pt$peak_name, c("peak A", "peak B"))
   expect_equal(pt$peak_area, c(10, 20), tolerance = 1e-6)
+
+  std <- read_cdf(path, what = "peak_table")
+  expect_equal(names(std), c("rt", "start", "end", "area", "height", "FWHM"))
+  expect_equal(std$rt, c(0.5, 2), tolerance = 1e-6)
+  expect_equal(std$area, c(10, 20), tolerance = 1e-6)
+  expect_true(all(is.na(std$start)))
 })
 
 test_that("write_andi_chrom round-trips unevenly spaced retention times", {

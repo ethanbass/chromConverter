@@ -11,7 +11,8 @@ read_chromatotec(
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  collapse = TRUE
+  collapse = TRUE,
+  peaktable_format = c("chromatographr", "original")
 )
 }
 \arguments{
@@ -32,11 +33,24 @@ data. Accepts multiple arguments, and defaults to both.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
+
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (the default) or with all the columns the file
+provides (\code{original}). A \code{chromatographr} table has the columns \code{rt}, \code{start},
+\code{end}, \code{area}, \code{height} and \code{FWHM} (the full width at half maximum), with
+times in the same unit as the format's chromatograms and \code{NA} where the file
+does not record a value.}
 }
 \value{
 A chromatogram and/or peak table from the specified \code{path}, according
-to the value of \code{what}. Chromatograms are returned in the format specified by
-\code{format_out}.
+to the value of \code{what}, with times in minutes. Chromatograms are returned in
+the format specified by \code{format_out}. The rows of the peak table that
+report a total over most of the run rather than a peak, such as
+\code{NMTHC-EqC6} and \code{THC_PAMS}, are only kept with
+\code{peaktable_format = "original"}. In the original table, \code{Start} and \code{End}
+are where integration of the peak starts and ends, and \code{SubstanceIndex}
+appears to be the position of its substance in the run's substance table
+(\code{0} for an unnamed peak); \code{U1}, \code{U3} and \code{U4} have not been identified.
 }
 \description{
 Reads 'Chromatotec' \code{.Chrom} files.

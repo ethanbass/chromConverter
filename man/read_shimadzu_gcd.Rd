@@ -11,7 +11,8 @@ read_shimadzu_gcd(
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  collapse = TRUE
+  collapse = TRUE,
+  peaktable_format = c("chromatographr", "original")
 )
 }
 \arguments{
@@ -33,6 +34,13 @@ is not specified, the function will default to \code{chroms}.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
+
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (the default) or with all the columns the file
+provides (\code{original}). A \code{chromatographr} table has the columns \code{rt}, \code{start},
+\code{end}, \code{area}, \code{height} and \code{FWHM} (the full width at half maximum), with
+times in the same unit as the format's chromatograms and \code{NA} where the file
+does not record a value.}
 }
 \value{
 A 2D chromatogram in the format specified by \code{data_format} and

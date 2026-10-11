@@ -28,9 +28,9 @@ such as pump pressure, flow rate or temperature. Defaults to \code{chroms} and
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
 
-\item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
-format (\code{rt}, \code{start}, \code{end}, \code{area} and \code{height}) or \code{original} format,
-with every field the file records under its ASM name.}
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (\code{rt}, \code{start}, \code{end}, \code{area}, \code{height} and \code{FWHM})
+or \code{original} format, with every field the file records under its ASM name.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 

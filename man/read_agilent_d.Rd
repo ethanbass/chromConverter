@@ -46,14 +46,18 @@ returned with retention times as rows and columns containing signal intensity
 for each signal. If \code{long} format is requested, retention times will be
 in the first column. The \code{format_out} argument determines whether the
 chromatogram is returned as a \code{matrix}, \code{data.frame} or \code{data.table}.
-Peak tables are named by wavelength (e.g. \code{"254"}), as in \link{read_peaklist},
-and keep the report's name for the signal as \code{signal_descriptor}.
+Peak tables are returned in the \code{chromatographr} layout described in
+\link{read_peaklist}, named by wavelength (e.g. \code{"254"}), and keep the report's
+name for the signal as \code{signal_descriptor}. They are read from \code{Result.xml}
+where the directory has one, since unlike \code{Report.TXT} it records where each
+peak starts and ends.
 Metadata are attached as \link{attributes} if \code{read_metadata} is \code{TRUE}. With \code{collapse = TRUE}, a list of one element is replaced by that
 element.
 }
 \description{
-Reads the \code{.ch}, \code{.uv}, \code{Report.TXT} and \code{LCDIAG.REG} files in an 'Agilent'
-\code{.D} directory. Other files in the directory are ignored.
+Reads the \code{.ch}, \code{.uv}, \code{Report.TXT} (or \code{Result.xml}) and \code{LCDIAG.REG}
+files in an 'Agilent' \code{.D} directory. Other files in the directory are
+ignored.
 }
 \details{
 Instrument traces are named from \code{LCDIAG.REG}, so the names differ between

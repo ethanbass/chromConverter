@@ -27,6 +27,13 @@ element. Defaults to \code{TRUE}.}
 
 \item{scale}{Whether to scale the data by the scaling factor present in the
 file. Defaults to \code{TRUE}.}
+
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (the default) or with all the columns the file
+provides (\code{original}). A \code{chromatographr} table has the columns \code{rt}, \code{start},
+\code{end}, \code{area}, \code{height} and \code{FWHM} (the full width at half maximum), with
+times in the same unit as the format's chromatograms and \code{NA} where the file
+does not record a value.}
 }
 \value{
 A chromatogram in the format specified by the \code{format_out} and

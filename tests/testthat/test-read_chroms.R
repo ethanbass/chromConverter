@@ -481,7 +481,8 @@ test_that("read_peaklist can read `ChemStation` report files", {
   expect_equal(x[[1]][[1]][[1, "sample"]], "RUTIN2")
   expect_equal(x[[1]][[1]][[1, "lambda"]], 254)
   expect_equal(colnames(x[[1]][[1]]),
-               c("sample", "lambda", "rt", "width", "area", "height", "type"))
+               c("sample", "lambda", "rt", "start", "end", "area", "height",
+                 "FWHM"))
   expect_equal(attr(x, "fit"), "chemstation")
   expect_equal(attr(x, "class"), "peak_list")
 
@@ -619,6 +620,31 @@ test_that("name_traces_in_d leaves names from different directories alone", {
                c("A", "B"))
 })
 
+test_that("read_agilent_d reads every trace, peak table and pump trace in a `.D`", {
+  path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+                      package = "chromConverter")
+  x <- read_agilent_d(path, what = c("chroms", "peak_table", "instrument"))
+  expect_equal(names(x), c("chroms", "peak_table", "instrument"))
+
+  expect_equal(names(x$chroms), paste0("dad1", LETTERS[1:5]))
+  expect_equal(unname(sapply(x$chroms, attr, "wavelength")),
+               c(254, 230, 320, 360, 210))
+  expect_equal(dim(x$chroms$dad1A), c(9000, 1))
+  expect_equal(attr(x$chroms$dad1A, "file_version"), "130")
+  expect_equal(unique(sapply(x$chroms, attr, "sample_name")), "benzos_250ppm")
+
+  expect_equal(names(x$peak_table), c("254", "320", "360", "210", "230"))
+  pt <- x$peak_table[["254"]]
+  expect_equal(names(pt), c("rt", "start", "end", "area", "height", "FWHM"))
+  expect_true(all(is.na(pt$start) & is.na(pt$end)))
+  expect_false(anyNA(pt$FWHM))
+
+  expect_equal(names(x$instrument),
+               c("PMP1, Pressure", "PMP1, Flow", paste("PMP1, Solvent",
+                                                       LETTERS[1:4])))
+  expect_equal(dim(x$instrument[["PMP1, Pressure"]]), c(12000, 1))
+})
+
 test_that("read_agilent_d can read a `ChemStation` peak table", {
   x <- read_agilent_d(test_path("testdata/RUTIN2.D/"), what = "peak_table")
   expect_length(x, 5)
@@ -626,7 +652,7 @@ test_that("read_agilent_d can read a `ChemStation` peak table", {
   expect_equal(attr(x[[1]], "signal_descriptor"), "DAD1 A, Sig=254,8 Ref=off")
   expect_s3_class(x[[1]], "data.frame")
   expect_equal(colnames(x[[1]]),
-               c("rt", "width", "area", "height", "type"))
+               c("rt", "start", "end", "area", "height", "FWHM"))
   expect_equal(attr(x, "data_format"), "chromatographr")
   expect_equal(unname(sapply(x, attr, "wavelength")),
                c(254, 320, 360, 210, 230))
@@ -640,7 +666,8 @@ test_that("read_peaklist can read `Shimadzu` fid files", {
   expect_equal(class(x[[1]]), "data.frame")
   expect_equal(x[[1]][[1,"sample"]], "alkane_ladder")
   expect_equal(colnames(x[[1]]),
-               c("sample", "lambda", "rt", "start", "end", "area", "height"))
+               c("sample", "lambda", "rt", "start", "end", "area", "height",
+                 "FWHM"))
 
   x <- read_peaklist(path, format_in = "shimadzu_fid",
                      peaktable_format = "original", progress_bar = FALSE)
@@ -985,4 +1012,18 @@ test_that("name_peak_tables names tables by wavelength and drops copies", {
   y <- name_peak_tables(x)
   expect_equal(names(y), c("254", "254_1", "d"))
   expect_equal(y[["254_1"]]$area, 20)
+})
+
+test_that("Chromatotec peak tables drop whole-run totals in the chromatographr layout", {
+  x <- data.frame(U1 = 1, Start = c(0.1, 0.5, 0.004, 0),
+                  U3 = 1, Rt = c(0.2, 0.6, 0.004, 0), U4 = 1,
+                  End = c(0.3, 0.7, 38.65, 0), Area = c(10, 20, 30, 0),
+                  SubstanceIndex = 0L, Result = 1,
+                  Substance = c("", "BENZENE", "NMTHC-EqC6", "THC_PAMS"),
+                  Unit = "ppb(v)")
+  y <- chromatotec_chromatographr(x)
+  expect_equal(names(y), c("rt", "start", "end", "area", "height", "FWHM"))
+  expect_equal(y$rt, c(0.2, 0.6))
+  expect_equal(y$area, c(10, 20))
+  expect_true(all(is.na(y$height)))
 })

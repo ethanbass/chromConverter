@@ -35,8 +35,12 @@ and/or \code{ms_spectra}. Accepts multiple arguments.}
 
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
-\item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
-or \code{original} format.}
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (the default) or with all the columns the file
+provides (\code{original}). A \code{chromatographr} table has the columns \code{rt}, \code{start},
+\code{end}, \code{area}, \code{height} and \code{FWHM} (the full width at half maximum), with
+times in the same unit as the format's chromatograms and \code{NA} where the file
+does not record a value.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 

@@ -172,8 +172,10 @@ summary(run)[c("sample", "trace", "wavelength")]
 
 `subset()` keeps or drops a nested sample as a whole (see `?subset.chrom_list`),
 so it can't pick out traces within one. Index the nested lists with `$` or `[[`
-instead. Each peak table is a data frame of retention time, width, area, height
-and peak type, named by the wavelength of its signal.
+instead. Each peak table is named by the wavelength of its signal and has the
+columns `rt`, `start`, `end`, `area`, `height` and `FWHM` (full width at half
+maximum). ChemStation reports don't record where peaks start and end, so those
+columns are `NA` here.
 
 ```{r peaks}
 peaks <- run$BENZOS_250PPM$peak_table[["254"]]

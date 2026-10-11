@@ -13,7 +13,8 @@ read_shimadzu_lcd(
   metadata_format = c("chromconverter", "raw"),
   scale = TRUE,
   sparse = TRUE,
-  collapse = TRUE
+  collapse = TRUE,
+  peaktable_format = c("chromatographr", "original")
 )
 }
 \arguments{
@@ -56,6 +57,13 @@ empty; ignored for every other stream.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
+
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (the default) or with all the columns the file
+provides (\code{original}). A \code{chromatographr} table has the columns \code{rt}, \code{start},
+\code{end}, \code{area}, \code{height} and \code{FWHM} (the full width at half maximum), with
+times in the same unit as the format's chromatograms and \code{NA} where the file
+does not record a value.}
 }
 \value{
 A named list with one element per stream requested, or the element

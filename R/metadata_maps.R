@@ -402,9 +402,9 @@ meta_chromatotec <- function(meta, ctx){
        run_datetime = NA,
        sample_injection_volume = NA,
        sample_amount = NA,
-       time_range = c(0, meta$Sampling_duration),
-       time_interval = (1/meta$Sampling_rate),
-       time_unit = "Seconds",
+       time_range = c(0, meta$Sampling_duration) / 60,
+       time_interval = 1 / meta$Sampling_rate / 60,
+       time_unit = "Minutes",
        intensity_multiplier = NA)
 }
 

@@ -40,11 +40,14 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                      data_format = c("wide", "long"),
                      what = NULL, read_metadata = TRUE,
                      metadata_format = c("chromconverter", "raw"),
-                     collapse = TRUE, ...){
+                     collapse = TRUE,
+                     peaktable_format = c("chromatographr", "original"), ...){
   check_for_pkg("ncdf4")
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  peaktable_format <- match.arg(peaktable_format, c("chromatographr",
+                                                    "original"))
   nc <- ncdf4::nc_open(path)
   on.exit(ncdf4::nc_close(nc))
   if ("ordinate_values" %in% names(nc$var)){
@@ -59,9 +62,12 @@ read_cdf <- function(path, format_out = c("matrix", "data.frame", "data.table"),
                unknown = function(...){
                  stop("The format of the provided cdf file could not be recognized.")
                })
-  fn(path = path, nc = nc, data_format = data_format, format_out = format_out,
-     what = what, read_metadata = read_metadata,
-     metadata_format = metadata_format, collapse = collapse, ...)
+  args <- list(path = path, nc = nc, data_format = data_format,
+               format_out = format_out, what = what,
+               read_metadata = read_metadata,
+               metadata_format = metadata_format, collapse = collapse)
+  if (format == "chrom") args$peaktable_format <- peaktable_format
+  do.call(fn, c(args, list(...)))
 }
 
 #' Minutes per unit of an ANDI time unit attribute
@@ -130,7 +136,8 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
                             data_format = c("wide", "long"),
                             what = "chroms", read_metadata = TRUE,
                             metadata_format = "chromconverter",
-                            collapse = TRUE, nc = NULL){
+                            collapse = TRUE, nc = NULL,
+                            peaktable_format = "chromatographr"){
   metadata_format <- check_metadata_format(metadata_format, "andi_chrom")
   what <- if(is.null(what)) "chroms" else what
   if (any(what == "chromatogram")){
@@ -171,6 +178,11 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
       peak_table <- as.data.frame(peak_table)
       time_cols <- intersect(names(peak_table), andi_chrom_peak_time_vars)
       peak_table[time_cols] <- peak_table[time_cols] / rt_divisor
+      if (peaktable_format == "chromatographr"){
+        peak_table <- chromatographr_peak_table(peak_table, list(
+          rt = "peak_retention_time", start = "peak_start_time",
+          end = "peak_end_time", area = "peak_area", height = "peak_height"))
+      }
     } else {
       warning("No peak table found in this file.", call. = FALSE)
       what <- setdiff(what, "peak_table")

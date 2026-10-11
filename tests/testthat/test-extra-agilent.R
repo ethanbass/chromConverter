@@ -611,7 +611,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, format_in = "agilent_d", progress_bar = FALSE)[[1]]
+  x <- read_chroms(path, format_in = "agilent_d", what = "chroms",
+                   progress_bar = FALSE)[[1]]
 
   expect_type(x, "list")
   expect_equal(class(x[[1]]), c("matrix","array"))
@@ -640,7 +641,8 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
   expect_equal(attr(x[[2]], "time_unit"), "Minutes")
 
   # long format
-  x1 <- read_chroms(path, format_in="agilent_d", data_format = "long",
+  x1 <- read_chroms(path, format_in="agilent_d", what = "chroms",
+                    data_format = "long",
                     format_out = "data.table",
                     progress_bar = FALSE)[[1]]
   expect_type(x1,"list")
@@ -683,6 +685,37 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
     c(19.6981823774593, 19.701515147063, 19.7048479166667))
 })
 
+
+test_that("read_agilent_d reads the peak table in a `Result.xml` file", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("chemstation_181.D",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_agilent_d(path, what = "peak_table")
+  expect_s3_class(x, "data.frame")
+  expect_equal(names(x), c("rt", "start", "end", "area", "height", "FWHM"))
+  expect_equal(nrow(x), 36)
+  expect_equal(x$rt[1], 0.167537)
+  expect_equal(x$start[1], 0.128731)
+  expect_equal(x$end[1], 0.194599)
+  expect_equal(x$FWHM[1], 0.036698)
+  expect_true(all(x$start <= x$rt & x$rt <= x$end))
+  expect_equal(attr(x, "sample_name"), "140+H")
+  expect_equal(attr(x, "method"), "DET3300.M")
+  expect_equal(attr(x, "detector"), "FID")
+  expect_equal(attr(x, "run_datetime"),
+               as.POSIXct("2022-08-23 12:48:20", tz = "UTC"))
+
+  y <- read_peaklist(path, format_in = "chemstation",
+                     peaktable_format = "original", progress_bar = FALSE)
+  y <- y[[1]][[1]]
+  expect_true(all(c("TimeStart", "TimeEnd", "Symmetry", "PeakType") %in%
+                    names(y)))
+  expect_equal(y$PeakType[1], "BV")
+})
 test_that("read_chroms can read 'Agilent' .dx files with OL179", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

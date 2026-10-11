@@ -1,7 +1,8 @@
 #' Read files from 'Agilent ChemStation' .D directories
 #'
-#' Reads the `.ch`, `.uv`, `Report.TXT` and `LCDIAG.REG` files in an 'Agilent'
-#' `.D` directory. Other files in the directory are ignored.
+#' Reads the `.ch`, `.uv`, `Report.TXT` (or `Result.xml`) and `LCDIAG.REG`
+#' files in an 'Agilent' `.D` directory. Other files in the directory are
+#' ignored.
 #'
 #' Instrument traces are named from `LCDIAG.REG`, so the names differ between
 #' 'ChemStation' revisions and/or instruments (e.g. `"PMP1, Pressure"` and
@@ -24,8 +25,11 @@
 #' for each signal. If `long` format is requested, retention times will be
 #' in the first column. The `format_out` argument determines whether the
 #' chromatogram is returned as a `matrix`, `data.frame` or `data.table`.
-#' Peak tables are named by wavelength (e.g. `"254"`), as in [read_peaklist],
-#' and keep the report's name for the signal as `signal_descriptor`.
+#' Peak tables are returned in the `chromatographr` layout described in
+#' [read_peaklist], named by wavelength (e.g. `"254"`), and keep the report's
+#' name for the signal as `signal_descriptor`. They are read from `Result.xml`
+#' where the directory has one, since unlike `Report.TXT` it records where each
+#' peak starts and ends.
 #' Metadata are attached as [attributes] if `read_metadata` is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by that
 #' element.
 #' @examples
@@ -47,7 +51,8 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table"),
                            collapse = TRUE){
   what <- match.arg(tolower(what), c("dad", "chroms", "peak_table", "instrument"),
                     several.ok = TRUE)
-  exts <- c(chroms = "\\.ch$", dad = "\\.uv$", peak_table = "Report.TXT",
+  exts <- c(chroms = "\\.ch$", dad = "\\.uv$",
+            peak_table = "^(Report\\.TXT|Result\\.xml)$",
             instrument = "^LCDIAG\\.REG$")
   exts <- exts[what]
   files <- lapply(exts, function(ext){
@@ -88,8 +93,10 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table"),
   }
   if (any(what == "peak_table")){
     if (length(files$peak_table) > 0){
-    peak_table <- read_chemstation_report(files$peak_table,
-                                          peaktable_format = "chromatographr")
+    xml <- grepl("\\.xml$", files$peak_table, ignore.case = TRUE)
+    peak_table <- if (any(xml)){
+      read_chemstation_xml(files$peak_table[xml][1])
+    } else read_chemstation_report(files$peak_table[1])
     peak_table <- transfer_metadata(name_peak_tables(peak_table), peak_table)
     } else{
       stop("Peak table data could not be found.")

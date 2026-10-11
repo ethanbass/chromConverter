@@ -12,10 +12,14 @@ read_chemstation_reports(
 )
 }
 \arguments{
-\item{paths}{Paths to 'ChemStation' report files.}
+\item{paths}{Paths to 'ChemStation' \code{Report.TXT} or \code{Result.xml} files.}
 
-\item{peaktable_format}{Whether to return peak tables in \code{chromatographr}
-or \code{original} format.}
+\item{peaktable_format}{Whether to return peak tables in the standard
+\code{chromatographr} layout (the default) or with all the columns the file
+provides (\code{original}). A \code{chromatographr} table has the columns \code{rt}, \code{start},
+\code{end}, \code{area}, \code{height} and \code{FWHM} (the full width at half maximum), with
+times in the same unit as the format's chromatograms and \code{NA} where the file
+does not record a value.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter} or
 \code{raw}.}
@@ -28,7 +32,10 @@ A \code{peak_list}: a list with one element per report, named by its
 wavelength.
 }
 \description{
-Reads peak tables from 'Agilent ChemStation' \code{Report.TXT} files.
+Reads peak tables from 'Agilent ChemStation' \code{Report.TXT} files, or from the
+\code{Result.xml} files 'ChemStation' writes when set up to export its results.
+Only \code{Result.xml} records where each peak starts and ends, so it is read in
+preference to a \code{Report.TXT} in the same directory.
 }
 \examples{
 \dontrun{

@@ -108,7 +108,9 @@ take \code{...}, arguments it does not accept are dropped with a warning.}
 A \code{chrom_list} of chromatograms in \code{matrix}, \code{data.frame}, or
 \code{data.table} format, according to the value of \code{format_out}. Chromatograms
 may be returned in either \code{wide} or \code{long} format according to the value of
-\code{data_format}.
+\code{data_format}. Peak tables are returned in the \code{chromatographr} layout
+described in \link{read_peaklist}, which can also return all the columns the
+file provides.
 }
 \description{
 Reads chromatograms from specified folders or vector of paths using either an

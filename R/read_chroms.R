@@ -77,7 +77,9 @@
 #' @return A `chrom_list` of chromatograms in `matrix`, `data.frame`, or
 #' `data.table` format, according to the value of `format_out`. Chromatograms
 #' may be returned in either `wide` or `long` format according to the value of
-#' `data_format`.
+#' `data_format`. Peak tables are returned in the `chromatographr` layout
+#' described in [read_peaklist], which can also return all the columns the
+#' file provides.
 #' @section Side effects: If `export_format` is provided, chromatograms are
 #' written to the folder given by `path_out` in that format. The options are
 #' `csv`, `chemstation_csv`, `cdf`, `mzml` and `arw`, as well as `animl`

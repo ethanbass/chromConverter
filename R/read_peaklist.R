@@ -12,9 +12,6 @@
 #' `shimadzu_lcd`, `shimadzu_gcd`, `chromatotec`, or `asm`.
 #' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
 #' which case the file extension will be deduced from `format_in`.
-#' @param peaktable_format Whether to return peak tables in `chromatographr`
-#' or `original` format. 'Chromatotec' peak tables are always returned in their
-#' original format.
 #' @param sort_by How to sort the samples: `auto` (default) sorts files by
 #' acquisition time unless `paths` lists the files explicitly or any
 #' acquisition time is missing; `none` keeps files in the order given, or in
@@ -29,7 +26,8 @@
 #' another at the same wavelength is a copy and is left out. Each row is a
 #' peak. Every table starts with a `sample` column and
 #' a `lambda` column giving the signal's wavelength, which is `NA` for a
-#' detector without one or a file that does not record it.
+#' detector without one or a file that does not record it, followed by the
+#' columns of `peaktable_format`.
 #' @import reticulate
 #' @importFrom utils write.csv file_test
 #' @importFrom purrr partial
@@ -82,7 +80,7 @@ read_peaklist <- function(paths, find_files,
   }
   # choose parser
   if (format_in == "chemstation"){
-    pattern <- ifelse(is.null(pattern), "report.txt", pattern)
+    pattern <- ifelse(is.null(pattern), "(report\\.txt|result\\.xml)$", pattern)
     parser <- purrr::partial(read_chemstation_reports,
                              peaktable_format = peaktable_format,
                              metadata_format = metadata_format)
@@ -95,16 +93,19 @@ read_peaklist <- function(paths, find_files,
   } else if (format_in == "shimadzu_lcd"){
     pattern <- ifelse(is.null(pattern), "\\.lcd$", pattern)
     parser <- partial(read_shimadzu_lcd, what = "peak_table",
-                      data_format = "wide", read_metadata = read_metadata)
+                      data_format = "wide", read_metadata = read_metadata,
+                      peaktable_format = peaktable_format)
   } else if (format_in == "shimadzu_gcd"){
     pattern <- ifelse(is.null(pattern), "\\.gcd$", pattern)
     parser <- partial(read_shimadzu_gcd, what = "peak_table",
-                      data_format = "wide", read_metadata = read_metadata)
+                      data_format = "wide", read_metadata = read_metadata,
+                      peaktable_format = peaktable_format)
   } else if (format_in == "chromatotec"){
     pattern <- ifelse(is.null(pattern), "\\.Chrom$", pattern)
     parser <- partial(read_chromatotec, what = "peak_table",
                       read_metadata = read_metadata,
-                      metadata_format = metadata_format)
+                      metadata_format = metadata_format,
+                      peaktable_format = peaktable_format)
   } else if (format_in == "asm"){
     pattern <- ifelse(is.null(pattern), "\\.json$", pattern)
     parser <- partial(read_asm, what = "peak_table",
@@ -112,11 +113,6 @@ read_peaklist <- function(paths, find_files,
                       format_out = "data.frame",
                       read_metadata = read_metadata,
                       metadata_format = metadata_format)
-  }
-  if (peaktable_format == "chromatographr" &&
-      format_in %in% c("shimadzu_lcd", "shimadzu_gcd")){
-    read <- parser
-    parser <- function(...) sz_peaktable_chromatographr(read(...))
   }
   files <- collect_files(paths, pattern, search_dirs = find_files)
   if (sort_by == "file_time"){
@@ -173,16 +169,37 @@ read_peaklist <- function(paths, find_files,
   data
 }
 
+#' Reshape a peak table to the `chromatographr` layout
+#'
+#' `cols` names the column of `x` holding each standard column. One with no
+#' entry, or whose column `x` lacks, is `NA`. The table keeps the class and
+#' metadata of `x`.
+#' @noRd
+chromatographr_peak_table <- function(x, cols){
+  std <- c("rt", "start", "end", "area", "height", "FWHM")
+  out <- lapply(std, function(s){
+    col <- cols[[s]]
+    if (!is.null(col) && !is.na(col) && col %in% names(x)){
+      suppressWarnings(as.numeric(x[[col]]))
+    } else rep(NA_real_, NROW(x))
+  })
+  names(out) <- std
+  out <- as.data.frame(out)
+  if (inherits(x, "data.table")) out <- data.table::as.data.table(out)
+  transfer_metadata(out, x)
+}
+
 #' Convert 'Shimadzu' peak tables to the `chromatographr` format
 #' @noRd
 sz_peaktable_chromatographr <- function(x){
   if (is.data.frame(x)){
-    cols <- match(c("r.time", "i.time", "f.time", "area", "height"),
-                  tolower(names(x)))
-    if (anyNA(cols)) return(x)
-    out <- as.data.frame(x)[cols]
-    names(out) <- c("rt", "start", "end", "area", "height")
-    transfer_metadata(out, x)
+    nms <- names(x)
+    find <- function(col) nms[match(col, tolower(nms))]
+    chromatographr_peak_table(x, list(rt = find("r.time"),
+                                      start = find("i.time"),
+                                      end = find("f.time"),
+                                      area = find("area"),
+                                      height = find("height")))
   } else if (is.list(x)){
     transfer_metadata(lapply(x, sz_peaktable_chromatographr), x)
   } else x

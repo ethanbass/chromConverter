@@ -3,7 +3,7 @@
 ### Breaking changes
 
 * `read_chroms` and `read_peaklist` now return files found in a directory in acquisition order, if every file records its run time, rather than alphabetically. `sort_by = "none"` restores the previous order.
-* `read_peaklist` now returns 'Shimadzu' `.lcd` and `.gcd` peak tables in the default `chromatographr` format, like the other formats. `peaktable_format = "original"` restores the vendor columns.
+* Peak tables from every format now share one layout, `rt`, `start`, `end`, `area`, `height` and `FWHM` (`NA` where the file records none), in both `read_chroms` and `read_peaklist`. 'ChemStation' `width` is now `FWHM`. Use `peaktable_format = "original"` to return all the columns read by the parser.
 * `detector_range` now holds only a numeric wavelength range, as for 'ChemStation' since 0.10.0. Channel descriptions and single wavelengths that 'Waters' `.arw`, ANDI, 'Lumex' MDF and ASM files put there are now `signal_descriptor` or `wavelength`.
 * `read_peaklist` tables from every format now have a numeric `lambda` column after `sample`, giving the signal's wavelength (`NA` where none is recorded).
 * Peak tables are now named by their wavelength (e.g. `"254"`) wherever the file records one, both in `read_peaklist` and in 'ChemStation' `.D` directories. Tables without a wavelength keep their names.
@@ -14,6 +14,7 @@
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
 * `extract_metadata` now returns one row per sample, retaining the values its chromatograms agree on. The `by = "chromatogram"` argument restores one row per chromatogram (in nested lists).
 * The example file `extdata/ladder.txt` is now `extdata/alkane_ladder.txt`, documented at `?alkane_ladder`. Update the path in `system.file` calls.
+* 'Chromatotec' times are now in minutes, and original peak tables name `U2`, `U5` and `U6` as `Start`, `End` and `SubstanceIndex`.
 
 ### New features
 
@@ -21,6 +22,7 @@
 * Added `read_chemstation_logs` to read the instrument errors, aborted runs and pump pressures recorded in 'Agilent ChemStation' sequence logs, including every log in a folder.
 * Added `read_chemstation_method` to read the gradient, solvents and other instrument settings from 'Agilent ChemStation' methods, including the copy a `.D` directory may hold.
 * Added `read_shimadzu_method` to read the oven program, gradient and other instrument settings stored in 'Shimadzu' GC (`.gcd`), LC (`.lcd`) and GC-MS (`.qgd`) files.
+* `read_agilent_d` and `read_peaklist` now read 'ChemStation' `Result.xml` files where present, which unlike `Report.TXT` record where each peak starts and ends.
 * Files read with the `rainbow` parser now report most of the metadata the parser supplies, including `instrument`, `operator`, `detector_model`, `wavelength` and `instrument_modules`.
 * Run times of 'OpenLab' `.dx` files read with the `rainbow` parser are now returned as `POSIXct` in UTC, applying the time-zone offset the file records.
 * 'OpenLab' `.dx` files now report their injection volume.
@@ -43,7 +45,7 @@
 
 * Retention times from evenly sampled 'ANDI chrom' files are now reconstructed accurately. Previously, the run length was treated as the time of the last point, which resulted in slight stretching of the time axis.
 * Unevenly sampled 'ANDI chrom' data now keep their original retention times on import and on export with `write_andi_chrom`.
-* 'ANDI chrom' peak tables now include text columns such as `peak_name`, which were previously dropped.
+* `read_cdf(peaktable_format = "original")` now keeps the text columns of 'ANDI chrom' peak tables, such as `peak_name`, which were previously dropped.
 * Files written by `write_andi_chrom` now record the correct time unit, run length and detector range, and the exported signal's wavelength, which `read_cdf` reads back.
 * 'ANDI MS' files with flagged peaks no longer fail to read or return the flags as extra data points.
 * 'ANDI MS' files without scan times, such as spectral libraries, can now be read. Retention times are `NA` and no TIC is returned.
