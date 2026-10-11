@@ -611,78 +611,65 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_chroms(path, format_in = "agilent_d", what = "chroms",
-                   progress_bar = FALSE)[[1]]
+  xs <- read_chroms(path, format_in = "agilent_d", what = "chroms",
+                    progress_bar = FALSE)
+  x <- xs[[1]]
 
-  expect_type(x, "list")
-  expect_equal(class(x[[1]]), c("matrix","array"))
-  expect_equal(dim(x[[2]]), c(5914, 1))
-  expect_equal(head(get_times(x$FID1A), 1), -.00181875, tolerance = .00001)
-  expect_equal(tail(get_times(x$FID1A), 1), 19.7048479166667, tolerance = .00001)
-  expect_equal(head(get_times(x$V181), 1), -.00126875, tolerance = .00001)
-  expect_equal(tail(get_times(x$V181), 1), 19.7053979166667, tolerance = .00001)
+  expect_equal(class(x), c("matrix", "array"))
+  expect_equal(dim(x), c(5914, 1))
+  expect_equal(head(get_times(x), 1), -.00126875, tolerance = .00001)
+  expect_equal(tail(get_times(x), 1), 19.7053979166667, tolerance = .00001)
 
   # check metadata
-  expect_equal(attr(x[[1]], "sample_name"), "blanc421")
-  expect_equal(attr(x[[1]], "file_version"), "181")
-  expect_equal(attr(x[[1]], "detector_y_unit"), "pA")
-  expect_equal(attr(x[[1]], "method"), "DET3300.M")
-  expect_equal(attr(x[[1]], "run_datetime"),
-               as.POSIXct("2022-8-23 12:16:25", tz = "UTC"))
-  expect_equal(attr(x[[1]], "time_unit"), "Minutes")
-  expect_equal(attr(x[[1]], "data_format"), "wide")
-
-  expect_equal(attr(x[[2]], "sample_name"), "140+H")
-  expect_equal(attr(x[[2]], "file_version"), "181")
-  expect_equal(attr(x[[2]], "detector_y_unit"), "pA")
-  expect_equal(attr(x[[2]], "method"), "DET3300.M")
-  expect_equal(attr(x[[2]], "run_datetime"),
+  expect_equal(attr(x, "sample_name"), "140+H")
+  expect_equal(attr(x, "file_version"), "181")
+  expect_equal(attr(x, "detector_y_unit"), "pA")
+  expect_equal(attr(x, "method"), "DET3300.M")
+  expect_equal(attr(x, "run_datetime"),
                as.POSIXct("2022-8-23 12:48:20", tz = "UTC"))
-  expect_equal(attr(x[[2]], "time_unit"), "Minutes")
+  expect_equal(attr(x, "time_unit"), "Minutes")
+  expect_equal(attr(x, "data_format"), "wide")
+
+  # the trace and the run's `Result.xml` describe the same injection
+  pt <- read_agilent_d(path, what = "peak_table")
+  expect_equal(pt$rt[which.max(pt$height)], get_times(x)[which.max(x[, 1])],
+               tolerance = 0.005)
 
   # long format
-  x1 <- read_chroms(path, format_in="agilent_d", what = "chroms",
-                    data_format = "long",
-                    format_out = "data.table",
-                    progress_bar = FALSE)[[1]]
-  expect_type(x1,"list")
-  expect_s3_class(x1[[1]],"data.table")
-  expect_equal(x[[1]][,1], x1[[1]][[2]], ignore_attr=TRUE)
-  expect_equal(as.numeric(rownames(x[[1]])), x1[[1]][[1]])
-  expect_equal(x[[2]][,1], x1[[2]][[2]], ignore_attr=TRUE)
-  expect_equal(colnames(x1[[1]]), c("rt","intensity"))
-  expect_equal(head(x1$FID1A$rt, 1), -.00181875, tolerance = .00001)
-  expect_equal(tail(x1$FID1A$rt, 1), 19.7048479166667, tolerance = .00001)
+  x1s <- read_chroms(path, format_in = "agilent_d", what = "chroms",
+                     data_format = "long", format_out = "data.table",
+                     progress_bar = FALSE)
+  x1 <- x1s[[1]]
+  expect_s3_class(x1, "data.table")
+  expect_equal(x[, 1], x1[[2]], ignore_attr = TRUE)
+  expect_equal(as.numeric(rownames(x)), x1[[1]])
+  expect_equal(colnames(x1), c("rt", "intensity"))
 
-  expect_equal(extract_metadata(x)[,c(1:8)], extract_metadata(x1)[,c(1:8)])
-  expect_equal(attr(x1[[1]], "data_format"), "long")
+  expect_equal(extract_metadata(xs)[, c(1:8)], extract_metadata(x1s)[, c(1:8)])
+  expect_equal(attr(x1, "data_format"), "long")
 
   expect_warning(read_chroms(path, format_in = "agilent_d", what = "dad",
                              progress_bar = FALSE))
   expect_error(read_agilent_d(path, what = "dad"))
 
 
-  expect_equal(sum(x$FID1A),
-    92783.4559895832)
-  expect_equal(range(x$FID1A),
-    c(2.13880208333333, 263.427213541667))
-  expect_equal(which.max(x$FID1A),
-    51L)
-  expect_equal(unname(head(x$FID1A[, 1], 5)),
-    c(2.14322916666667, 2.144140625, 2.13971354166667, 2.13880208333333,
-    2.1390625))
-  expect_equal(unname(tail(x$FID1A[, 1], 5)),
-    c(20.1201822916667, 20.1235677083333, 20.1274739583333, 20.1287760416667,
-    20.1287760416667))
-  expect_equal(unname(x$FID1A[round(seq(1, nrow(x$FID1A), length.out = 15)), 1]),
-    c(2.14322916666667, 4.44778645833333, 8.048828125, 13.4111979166667,
-    19.693359375, 7.922265625, 7.55260416666667, 18.4865885416667,
-    20.0388020833333, 20.247265625, 20.2434895833333, 20.2096354166667,
-    20.1368489583333, 20.1915364583333, 20.1287760416667))
-  expect_equal(head(as.numeric(rownames(x$FID1A)), 3),
-    c(-0.00181875, 0.00151401960369807, 0.00484678920739613))
-  expect_equal(tail(as.numeric(rownames(x$FID1A)), 3),
-    c(19.6981823774593, 19.701515147063, 19.7048479166667))
+  expect_equal(sum(x), 5867156.68567706)
+  expect_equal(range(x), c(2.08841145833333, 59055.89453125))
+  expect_equal(unname(which.max(x[, 1])), 121L)
+  expect_equal(unname(head(x[, 1], 5)),
+    c(2.10104166666667, 2.10247395833333, 2.10598958333333, 2.11015625,
+    2.11080729166667))
+  expect_equal(unname(tail(x[, 1], 5)),
+    c(20.49375, 20.5, 20.4990885416667, 20.5024739583333, 20.5024739583333))
+  expect_equal(unname(x[round(seq(1, nrow(x), length.out = 15)), 1]),
+    c(2.10104166666667, 2542.62018229167, 1516.16822916667, 402.08515625,
+    82.1053385416667, 24.098828125, 15.4834635416667, 22.480078125,
+    21.8817708333333, 21.4076822916667, 21.121484375, 20.8856770833333,
+    20.7341145833333, 20.635546875, 20.5024739583333))
+  expect_equal(head(as.numeric(rownames(x)), 3),
+    c(-0.00126875, 0.00206401960369807, 0.00539678920739613))
+  expect_equal(tail(as.numeric(rownames(x)), 3),
+    c(19.6987323774593, 19.702065147063, 19.7053979166667))
 })
 
 
@@ -1287,8 +1274,8 @@ test_that("'rainbow' metadata is mapped onto chromConverter's fields", {
                       package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- suppressWarnings(call_rainbow(path, format_in = "agilent_d"))$FID$FID1A.ch
-  expect_equal(attr(x, "sample_name"), "blanc421")
+  x <- suppressWarnings(call_rainbow(path, format_in = "agilent_d"))$FID
+  expect_equal(attr(x, "sample_name"), "140+H")
   expect_equal(attr(x, "operator"), "IFP1\\R0521_gen")
   expect_equal(attr(x, "method"), "DET3300.M")
   # the chassis module, not the `instrument` 'rainbow' reports, which for this
@@ -1298,7 +1285,7 @@ test_that("'rainbow' metadata is mapped onto chromConverter's fields", {
                list(name = "6890", model = "GC"))
   expect_equal(attr(x, "sample_dilution"), 1L)
   expect_equal(attr(x, "run_datetime"),
-               as.POSIXct("2022-8-23 12:16:25", tz = "UTC"))
+               as.POSIXct("2022-8-23 12:48:20", tz = "UTC"))
 
   path_dx <- system.file("MeOH1.dx", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path_dx))
@@ -1329,7 +1316,7 @@ test_that("a short 'rainbow' time axis is rebuilt rather than dropped", {
   # container, since it takes the count from the file size
   w <- capture_warnings(x <- call_rainbow(path, format_in = "agilent_d"))
   expect_match(w, "5913 retention times for 5914 rows", all = TRUE)
-  x <- x$FID$FID1A.ch
+  x <- x$FID
   y <- read_chemstation_ch(file.path(path, "FID1A.ch"))
   expect_equal(nrow(x), nrow(y))
   expect_equal(get_times(x), get_times(y))
