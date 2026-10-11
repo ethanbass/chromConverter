@@ -81,6 +81,7 @@
 #### 'Agilent'
 
 * `read_agilent_amx` now warns when a method doesn't contain a requested module, such as a DAD on an instrument that has none, and returns the others. Asking for that module alone now gives a clear error.
+* Version 179 'ChemStation' `.ch` files written by 'Asterix ChemStation' are now decoded as 8-byte doubles. They were incorrectly read as 4-byte floats, which compressed the signal into tiny values near 0.001.
 * The `solvents` table from `read_agilent_amx` now returns the class that `format_out` asks for.
 * `read_agilent_dx(what = "instrument")` now gives a clear error for an archive without instrument data.
 * Improved handling of metadata from'ChemStation' report files including additional fields such as `run_datetime`, injection volume, `method`, and the `sample_name`.

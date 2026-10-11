@@ -68,7 +68,7 @@ get_agilent_offsets <- function(version){
                     end_time = 286 #big-endian, 4 bytes
                     # scaling_factor = 318,
     )
-  } else if (version %in% c("179","179_4b", "179_8b", "181")){
+  } else if (version %in% c("179", "181")){
     offsets <- list(
       version = 326,
       file_type = 347, #0x15B

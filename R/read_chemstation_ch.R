@@ -46,19 +46,6 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
   version <- match.arg(version,
                        choices = c("8", "81", "30", "130", "179", "181"))
   offsets <- get_agilent_offsets(version)
-  if (version == "179"){
-    seek(f, 347)
-    filetype <- substr(read_cs_string(f, type = 2), 1, 2)
-    if (filetype == "OL"){
-      bytes = "8b"
-    } else if (filetype == "GC"){
-      seek(f, offsets$software)
-      soft <- read_cs_string(f, type = 2)
-      chemstation_version <- strsplit(soft, " ")[[1]][1]
-      bytes <- ifelse(chemstation_version == "Mustang", "8b", "4b")
-    }
-    version <- paste(version, bytes, sep = "_")
-  }
 
   decoder <- switch(version,
                     "8" = decode_delta,
@@ -66,8 +53,7 @@ read_chemstation_ch <- function(path, format_out = c("matrix", "data.frame",
                     "30" = decode_delta,
                     "130" = decode_delta,
                     "181" = decode_double_delta,
-                    "179_4b" = decode_double_array_4byte,
-                    "179_8b" = decode_double_array_8byte)
+                    "179" = decode_double_array_8byte)
 
   seek(f, 264, "start")
   offset <- (readBin(f, "integer", n = 1, endian = "big", size = 4) - 1) * 512
@@ -168,20 +154,6 @@ decode_double_delta <- function(file, offset){
 #' @note This function was adapted from the
 #' \href{https://github.com/chemplexity/chromatography}{Chromatography Toolbox}
 #' ((c) James Dillon 2014).
-#' @noRd
-decode_double_array_4byte <- function(file, offset){
-  seek(file, 0, 'end')
-  fsize <- seek(file, NA, "current")
-  offset <- 6144
-  # Read data
-  seek(file, offset, "start")
-  signal <- readBin(file, what = "double", size = 4, endian = "little",
-                    n = (fsize - offset) %/% 4L)
-  signal <- signal[seq(2, length(signal), 2)]
-  return(signal)
-}
-
-#' Decode double array
 #' @noRd
 decode_double_array_8byte <- function(file, offset){
   seek(file, 0, 'end')

@@ -498,7 +498,7 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 files (8-byte format)"
     70139.7626666667))
 })
 
-test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
+test_that("read_chroms can read 'Agilent ChemStation' 179 files from 'Asterix'", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
@@ -521,24 +521,19 @@ test_that("read_chroms can read 'Agilent ChemStation' 179 (4-byte format)", {
   expect_equal(attr(x, "method"), "Sine14.M")
   expect_equal(attr(x, "time_unit"), "Minutes")
 
-  expect_equal(sum(x),
-    19.8259068687756)
-  expect_equal(range(x),
-    c(0.000862646102905273, 0.000896255175272624))
-  expect_equal(which.max(x),
-    21781L)
+  expect_equal(sum(x), 65975.3162760415)
+  expect_equal(range(x), c(2.6671875, 3.76848958333333))
+  expect_equal(which.max(x), 21781L)
   expect_equal(unname(head(x[, 1], 5)),
-    c(0.000863722960154216, 0.000863691171010335, 0.00086359977722168,
-    0.000863456726074219, 0.000863293806711833))
+    c(2.70247395833333, 2.70143229166667, 2.6984375, 2.69375, 2.68841145833333))
   expect_equal(unname(tail(x[, 1], 5)),
-    c(0.000896100203196208, 0.000896108150482178, 0.000896060466766357,
-    0.000895984967549642, 0.000895949204762777))
+    c(3.76341145833333, 3.763671875, 3.762109375, 3.75963541666667,
+    3.75846354166667))
   expect_equal(unname(x[round(seq(1, nrow(x), length.out = 15)), 1]),
-    c(0.000863722960154216, 0.000863738854726156, 0.000863226254781087,
-    0.000863413016001383, 0.0008636474609375, 0.000863635540008545,
-    0.000864279270172119, 0.000865034262339274, 0.000865697860717773,
-    0.000867696603139242, 0.000871018568674723, 0.000873978932698568,
-    0.000875476996103922, 0.000891304016113281, 0.000895949204762777))
+    c(2.70247395833333, 2.70299479166667, 2.68619791666667, 2.69231770833333,
+    2.7, 2.699609375, 2.720703125, 2.74544270833333, 2.7671875,
+    2.83268229166667, 2.94153645833333, 3.03854166666667, 3.08763020833333,
+    3.60625, 3.75846354166667))
   expect_equal(head(as.numeric(rownames(x)), 3),
     c(0.00083331667582194, 0.0016666500098859, 0.00249998334394986))
   expect_equal(tail(as.numeric(rownames(x)), 3),
@@ -672,6 +667,37 @@ test_that("read_chroms can read 'Agilent ChemStation' version 181 files", {
     c(19.6987323774593, 19.702065147063, 19.7053979166667))
 })
 
+
+test_that("read_agilent_d reads every signal of a multi-channel `Result.xml`", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("chemstation_three_channels.D",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  x <- read_agilent_d(path, what = c("chroms", "peak_table"))
+  expect_equal(names(x$chroms), c("FID1A", "TCD2B", "TCD3C"))
+  expect_equal(names(x$peak_table), c("FID1 A, Front Signal",
+                                      "TCD2 B, Back Signal",
+                                      "TCD3 C, Aux Signal"))
+  expect_equal(unname(sapply(x$peak_table, nrow)), c(75L, 12L, 8L))
+  expect_equal(unname(sapply(x$peak_table, attr, "detector")),
+               c("FID", "TCD", "TCD"))
+  expect_equal(unique(sapply(x$peak_table, attr, "sample_name")), "U187")
+
+  # the version 179 traces agree with the heights 'ChemStation' integrated
+  res <- read_chemstation_xml(file.path(path, "Result.xml"),
+                              peaktable_format = "original")
+  for (i in seq_along(res)){
+    top <- which.max(res[[i]]$Height)
+    trace <- x$chroms[[i]]
+    near <- abs(get_times(trace) - res[[i]]$RetTime[top]) < 0.01
+    expect_equal(max(trace[near, 1]),
+                 res[[i]]$Height[top] + res[[i]]$Baseline[top],
+                 tolerance = 0.01)
+  }
+})
 
 test_that("read_agilent_d reads the peak table in a `Result.xml` file", {
   skip_on_cran()
@@ -907,7 +933,7 @@ test_that("read_chroms can read 'Agilent' .sirslt directories", {
   expect_equal(colnames(s$chroms[[1]]), "intensity")
   expect_equal(attr(s$chroms[[1]], "parser"), "chromconverter")
   expect_equal(attr(s$chroms[[1]], "data_format"), "wide")
-  expect_equal(attr(s$chroms[[1]], "source_file_format"), "chemstation_179_8b")
+  expect_equal(attr(s$chroms[[1]], "source_file_format"), "chemstation_179")
   expect_equal(attr(s$dad, "source_file_format"), "chemstation_131_OL")
 
   expect_equal(head(get_times(s$chroms[[1]]), 1), 0.0054167, tolerance = .00001)
