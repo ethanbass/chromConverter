@@ -15,7 +15,8 @@ read_shimadzu_method(
 
 \item{what}{One or more modules to read. For GC runs, any of \code{"oven"},
 \code{"injector"}, \code{"detector"}, \code{"autosampler"} and \code{"column"}; for GC-MS runs,
-\code{"oven"}, \code{"injector"}, \code{"column"} and \code{"ms"}; for LC runs, \code{"pump"},
+\code{"oven"}, \code{"injector"}, \code{"autosampler"}, \code{"column"} and \code{"ms"}; for LC
+runs, \code{"pump"},
 \code{"column"} and, with a PDA detector, \code{"dad"}. Defaults to all the modules
 the run has.}
 
@@ -46,18 +47,17 @@ the temperature ramps with columns \code{rate_C_min}, \code{temperature_C} and
 \code{diameter_mm}, \code{film_thickness_um}, \code{max_temperature_C} and
 \code{serial_number}.
 
-For GC-MS runs, \code{oven} and \code{column} as for GC runs but without
-\code{equilibration_time_min}, \code{diameter_mm} and \code{film_thickness_um}; \code{injector}
-with \code{temperature_C}, \code{split_ratio}, \code{column_flow_mL_min},
-\code{linear_velocity_cm_s}, \code{total_flow_mL_min} and \code{purge_flow_mL_min}; and
-\strong{\code{ms}}, a list with scalar elements \code{start_time_min} and \code{end_time_min},
-the window in which the mass spectrometer acquires. A split ratio of -1
+For GC-MS runs, \code{oven}, \code{injector}, \code{autosampler} and \code{column} as for GC
+runs, and \strong{\code{ms}}, a list with scalar elements \code{start_time_min} and
+\code{end_time_min} (the window in which the mass spectrometer acquires),
+\code{ion_source_temperature_C}, \code{interface_temperature_C} and \code{event_time_s}.
+Files without the labelled method (e.g. from a GC-2010) record no
+\code{equilibration_time_min}, injector \code{name} or \code{pressure_kPa},
+\code{injection_volume_uL}, column \code{diameter_mm} or \code{film_thickness_um}, or
+\code{interface_temperature_C}, which are then \code{NA}. A split ratio of -1
 appears to mean the split is off. The injector settings are the values at
 the start of the run; a method may program the pressure or purge flow to
 change later, so a purge flow of 0 can be the start of a purge program.
-Unlike the other settings, \code{temperature_C} could not be checked against
-other values: it is identified by its position, which matches the order of
-the labelled settings in \code{.gcd} files.
 
 For LC runs:
 
@@ -99,10 +99,14 @@ GC-MS run is attached as \code{ms_params}.
 labelled XML, in the \code{GUC.1.METHOD} and \code{GUC.1.CONFIG} streams, and the PDA
 settings in \code{PDA.1.METHOD}.
 
-\code{.qgd} files store the method as unlabelled binary records, one stream per
-module, at fixed byte offsets. Values are little-endian float32 unless marked
-otherwise, and bytes not listed are not read. The same streams are found in
-files from 'GCMS-QP2010' and 'QP2020 NX' instruments:
+\code{.qgd} files from a GC-2030 (e.g. with a 'GCMS-QP2020 NX') also hold the GC
+method and configuration as labelled XML, in \verb{GCMS Configuration/GUC_GC2},
+and their oven, injector, autosampler and column settings are read from it
+as for \code{.gcd} files. Every \code{.qgd} file stores the method as unlabelled binary
+records, one stream per module, at fixed byte offsets, which are read for the
+other settings and for files without the XML. Values are little-endian
+float32 unless marked otherwise, and bytes not listed are not read. The same
+streams are found in files from 'GCMS-QP2010' and 'QP2020 NX' instruments:
 \itemize{
 \item \verb{GC-2010 Instrument Parameters/Column Oven Parameter}, 260 bytes:
 \itemize{
@@ -127,9 +131,19 @@ to 64 bytes.
 }
 \item \verb{QP5K Instrument Parameters/MS Parameter}, 600 or 664 bytes:
 \itemize{
+\item 20: the ion source temperature in tenths of a degree (int32).
 \item 44, 48: the start and end of acquisition in milliseconds (int32).
+\item 52: the event time in milliseconds (int32).
 }
 }
+
+The interface temperature is only read from the XML, as the additional
+heater the configuration names \code{MS}. Method heaters are numbered by their
+position in the configuration's list of heaters, which starts at 2, so the
+\code{MS} heater is method heater 4 in every file seen.
+
+The settings were checked against the 'GCMSsolution' method printouts
+published with three 'QP2020 NX' runs.
 }
 
 \examples{

@@ -1699,7 +1699,11 @@ test_that("read_shimadzu_method reads an LC method", {
 test_that("read_shimadzu_method reads the GC method of a GC-MS run", {
   path <- extra_test_file("B4NF.7_C23.qgd")
   x <- read_shimadzu_method(path)
-  expect_named(x, c("oven", "injector", "column", "ms"))
+  expect_named(x, c("oven", "injector", "autosampler", "column", "ms"))
+  # a GC-2010 file has no labelled method, so the settings only that records
+  # are `NA`
+  expect_equal(x$injector$pressure_kPa, NA_real_)
+  expect_equal(x$column$diameter_mm, NA_real_)
   ov <- x$oven
   expect_equal(ov$program, data.frame(rate_C_min = c(30, 5),
                                       temperature_C = c(150, 300),
@@ -1722,6 +1726,39 @@ test_that("read_shimadzu_method reads the GC method of a GC-MS run", {
   expect_equal(inj$temperature_C, 300)
 })
 
+test_that("read_shimadzu_method reads the labelled method of a GC-2030 run", {
+  gz <- extra_test_file("n_Alkane_01072024_method_only.qgd.gz")
+  path <- file.path(withr::local_tempdir(), "n_Alkane_01072024.qgd")
+  con <- gzfile(gz, "rb")
+  writeBin(readBin(con, "raw", 1e7), path)
+  close(con)
+  # expected values are from the method printout published with the run, to
+  # the precision it prints
+  x <- read_shimadzu_method(path)
+  expect_named(x, c("oven", "injector", "autosampler", "column", "ms"))
+  expect_equal(x$oven$equilibration_time_min, 0.5)
+  expect_equal(x$oven$initial_temperature_C, 40)
+  expect_equal(x$oven$program,
+               data.frame(rate_C_min = c(8, 15), temperature_C = c(150, 240),
+                          hold_min = c(0, 1.25)))
+  inj <- x$injector
+  expect_equal(inj$temperature_C, 150)
+  expect_equal(inj$split_ratio, -1)
+  expect_equal(round(inj$pressure_kPa, 1), 49.5)
+  expect_equal(inj$total_flow_mL_min, 6)
+  expect_equal(round(inj$column_flow_mL_min, 2), 1)
+  expect_equal(round(inj$linear_velocity_cm_s, 1), 36.1)
+  expect_equal(inj$purge_flow_mL_min, 3)
+  expect_equal(x$column[c("name", "length_m", "diameter_mm",
+                          "film_thickness_um")],
+               list(name = "SH-RTX-5Sil-MS", length_m = 30, diameter_mm = 0.25,
+                    film_thickness_um = 0.25))
+  expect_equal(x$ms,
+               list(start_time_min = 3, end_time_min = 21,
+                    ion_source_temperature_C = 230,
+                    interface_temperature_C = 150, event_time_s = 0.3))
+})
+
 test_that("read_shimadzu_method rejects a file that is not a Shimadzu file", {
   expect_error(read_shimadzu_method(extra_test_file("VARIAN1.CDF")),
                "not a 'Shimadzu' data file")
@@ -1735,7 +1772,9 @@ test_that("Shimadzu chromatograms carry their method's settings", {
   expect_equal(attr(lcd, "method_params")$pump$mode, "LPGE")
   qgd <- read_shimadzu_qgd(extra_test_file("B4NF.7_C23.qgd"), what = "TIC")
   expect_equal(attr(qgd, "ms_params"),
-               list(start_time_min = 4, end_time_min = 60))
+               list(start_time_min = 4, end_time_min = 60,
+                    ion_source_temperature_C = 200,
+                    interface_temperature_C = NA_real_, event_time_s = 0.2))
   x <- read_chroms(extra_test_file("FS19_214.gcd"), format_in = "shimadzu_gcd",
                    progress_bar = FALSE)
   expect_equal(extract_metadata(x, "method_params.column.name")[[2]], "DB-5")

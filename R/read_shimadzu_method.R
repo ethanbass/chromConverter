@@ -15,10 +15,14 @@
 #' labelled XML, in the `GUC.1.METHOD` and `GUC.1.CONFIG` streams, and the PDA
 #' settings in `PDA.1.METHOD`.
 #'
-#' `.qgd` files store the method as unlabelled binary records, one stream per
-#' module, at fixed byte offsets. Values are little-endian float32 unless marked
-#' otherwise, and bytes not listed are not read. The same streams are found in
-#' files from 'GCMS-QP2010' and 'QP2020 NX' instruments:
+#' `.qgd` files from a GC-2030 (e.g. with a 'GCMS-QP2020 NX') also hold the GC
+#' method and configuration as labelled XML, in `GCMS Configuration/GUC_GC2`,
+#' and their oven, injector, autosampler and column settings are read from it
+#' as for `.gcd` files. Every `.qgd` file stores the method as unlabelled binary
+#' records, one stream per module, at fixed byte offsets, which are read for the
+#' other settings and for files without the XML. Values are little-endian
+#' float32 unless marked otherwise, and bytes not listed are not read. The same
+#' streams are found in files from 'GCMS-QP2010' and 'QP2020 NX' instruments:
 #' * `GC-2010 Instrument Parameters/Column Oven Parameter`, 260 bytes:
 #'   * 8: the number of ramps, n (int32).
 #'   * 12, 16: the initial temperature and hold.
@@ -35,12 +39,23 @@
 #'   * 132: the length in tenths of a metre (int32).
 #'   * 140: the maximum temperature (int32).
 #' * `QP5K Instrument Parameters/MS Parameter`, 600 or 664 bytes:
+#'   * 20: the ion source temperature in tenths of a degree (int32).
 #'   * 44, 48: the start and end of acquisition in milliseconds (int32).
+#'   * 52: the event time in milliseconds (int32).
+#'
+#' The interface temperature is only read from the XML, as the additional
+#' heater the configuration names `MS`. Method heaters are numbered by their
+#' position in the configuration's list of heaters, which starts at 2, so the
+#' `MS` heater is method heater 4 in every file seen.
+#'
+#' The settings were checked against the 'GCMSsolution' method printouts
+#' published with three 'QP2020 NX' runs.
 #'
 #' @param path Path to a `.gcd`, `.lcd` or `.qgd` file.
 #' @param what One or more modules to read. For GC runs, any of `"oven"`,
 #'   `"injector"`, `"detector"`, `"autosampler"` and `"column"`; for GC-MS runs,
-#'   `"oven"`, `"injector"`, `"column"` and `"ms"`; for LC runs, `"pump"`,
+#'   `"oven"`, `"injector"`, `"autosampler"`, `"column"` and `"ms"`; for LC
+#'   runs, `"pump"`,
 #'   `"column"` and, with a PDA detector, `"dad"`. Defaults to all the modules
 #'   the run has.
 #' @param format_out Class of the tables returned: `"data.frame"`, `"tibble"`
@@ -68,18 +83,17 @@
 #'   `diameter_mm`, `film_thickness_um`, `max_temperature_C` and
 #'   `serial_number`.
 #'
-#'   For GC-MS runs, `oven` and `column` as for GC runs but without
-#'   `equilibration_time_min`, `diameter_mm` and `film_thickness_um`; `injector`
-#'   with `temperature_C`, `split_ratio`, `column_flow_mL_min`,
-#'   `linear_velocity_cm_s`, `total_flow_mL_min` and `purge_flow_mL_min`; and
-#'   **`ms`**, a list with scalar elements `start_time_min` and `end_time_min`,
-#'   the window in which the mass spectrometer acquires. A split ratio of -1
+#'   For GC-MS runs, `oven`, `injector`, `autosampler` and `column` as for GC
+#'   runs, and **`ms`**, a list with scalar elements `start_time_min` and
+#'   `end_time_min` (the window in which the mass spectrometer acquires),
+#'   `ion_source_temperature_C`, `interface_temperature_C` and `event_time_s`.
+#'   Files without the labelled method (e.g. from a GC-2010) record no
+#'   `equilibration_time_min`, injector `name` or `pressure_kPa`,
+#'   `injection_volume_uL`, column `diameter_mm` or `film_thickness_um`, or
+#'   `interface_temperature_C`, which are then `NA`. A split ratio of -1
 #'   appears to mean the split is off. The injector settings are the values at
 #'   the start of the run; a method may program the pressure or purge flow to
 #'   change later, so a purge flow of 0 can be the start of a purge program.
-#'   Unlike the other settings, `temperature_C` could not be checked against
-#'   other values: it is identified by its position, which matches the order of
-#'   the labelled settings in `.gcd` files.
 #'
 #'   For LC runs:
 #'
@@ -136,7 +150,8 @@ read_shimadzu_method <- function(path, what = NULL,
   modules <- switch(type,
                     GC = c("oven", "injector", "detector", "autosampler",
                            "column"),
-                    GCMS = c("oven", "injector", "column", "ms"),
+                    GCMS = c("oven", "injector", "autosampler", "column",
+                             "ms"),
                     LC = c("pump", "column",
                            if (check_stream(path, c("GUMM_Information",
                                                     "ShimadzuPDA.1",
@@ -264,6 +279,9 @@ sz_method_metadata <- function(path){
 #' file seen.
 #' @noRd
 sz_qgd_method <- function(path, what, format_out){
+  guc <- c("GCMS Configuration", "GUC_GC2", "ShimadzuGC.1")
+  method <- sz_method_xml(path, c(guc, "GUC.1.METHOD"))
+  config <- if (!is.null(method)) sz_method_xml(path, c(guc, "GUC.1.CONFIG"))
   olefile <- py_import("olefile")
   ole <- olefile$OleFileIO(path)
   on.exit(ole$close(), add = TRUE)
@@ -290,11 +308,27 @@ sz_qgd_method <- function(path, what, format_out){
   inj <- read(paste0(gc, "Injection Parameter-1"))
   col <- read("GCMS Configuration/Column-1")
   ms <- read("QP5K Instrument Parameters/MS Parameter")
+  interface <- NA_real_
+  if (!is.null(method)){
+    heaters <- xml2::xml_find_all(config, "/GUD/UP[@Name='ADDHEATER']")
+    names <- vapply(heaters, function(h){
+      xml2::xml_text(xml2::xml_find_first(h, "UPD[@ID='Name']/Val"))
+    }, "")
+    slot <- match("MS", names)
+    if (!is.na(slot)){
+      interface <- sz_param(method, "ADDHEATER", "AddHeatPgIniTemp",
+                            as.character(slot))
+    }
+  }
   out <- lapply(what, function(module){
+    if (!is.null(method) && module != "ms"){
+      return(sz_gc_method(method, config, module, format_out)[[1]])
+    }
     switch(module,
       oven = {
         n <- i32(oven, 8)
-        list(initial_temperature_C = f32(oven, 12),
+        list(equilibration_time_min = NA_real_,
+             initial_temperature_C = f32(oven, 12),
              initial_hold_min = f32(oven, 16),
              program = convert_format_out(
                data.frame(rate_C_min = f32(oven, 20, n),
@@ -302,18 +336,26 @@ sz_qgd_method <- function(path, what, format_out){
                           hold_min = f32(oven, 180, n)),
                format_out = format_out))
       },
-      injector = list(temperature_C = f32(inj, 28),
+      injector = list(name = NA_character_,
+                      temperature_C = f32(inj, 28),
                       split_ratio = f32(inj, 20),
                       column_flow_mL_min = f32(inj, 12),
                       linear_velocity_cm_s = f32(inj, 16),
+                      pressure_kPa = NA_real_,
                       total_flow_mL_min = f32(inj, 124),
                       purge_flow_mL_min = f32(inj, 316)),
+      autosampler = list(injection_volume_uL = NA_real_),
       column = list(name = str(col, 0),
                     length_m = i32(col, 132) / 10,
+                    diameter_mm = NA_real_,
+                    film_thickness_um = NA_real_,
                     max_temperature_C = i32(col, 140),
                     serial_number = str(col, 64)),
       ms = list(start_time_min = i32(ms, 44) / 60000,
-                end_time_min = i32(ms, 48) / 60000))
+                end_time_min = i32(ms, 48) / 60000,
+                ion_source_temperature_C = i32(ms, 20) / 10,
+                interface_temperature_C = interface,
+                event_time_s = i32(ms, 52) / 1000))
   })
   names(out) <- what
   out
