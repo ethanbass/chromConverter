@@ -44,7 +44,7 @@
 #'       flow in mL/min.}
 #'   }
 #'
-#'   **`dad`** — a list with scalar elements `peakwidth_nm`, `slitwidth_nm`,
+#'   **`dad`** — a list with scalar elements `peakwidth_code`, `slitwidth_nm`,
 #'   `uv_lamp_required`, `vis_lamp_required`, `spectra_from_nm`,
 #'   `spectra_to_nm`, `spectra_step_nm`, plus:
 #'   \describe{
@@ -52,6 +52,10 @@
 #'       `wavelength_nm`, `bandwidth_nm`, `reference_nm` and
 #'       `reference_bandwidth_nm` (`NA` without a reference).}
 #'   }
+#'   `peakwidth_code` is the stored code for the detector's peak width
+#'   setting, which sets its data rate and response time; for example, `4` is
+#'   "> 0.1 min". It is not decoded, since detector models offer different
+#'   settings.
 #'
 #'   **`column`** — a list with scalar element `post_time_min`, plus:
 #'   \describe{
@@ -285,8 +289,8 @@ parse_dad_method <- function(file_path, format_out = "data.frame") {
   signals <- signals[signals$in_use, setdiff(names(signals), "in_use")]
   signals <- convert_format_out(signals, format_out = format_out)
   list(
-    peakwidth_nm      = get_amx_num(doc, ".//Peakwidth"),
-    slitwidth_nm      = get_amx_num(doc, ".//Slitwidth"),
+    peakwidth_code    = get_amx_num(doc, ".//Peakwidth"),
+    slitwidth_nm      = 2^get_amx_num(doc, ".//Slitwidth"),
     uv_lamp_required  = get_amx_bool(doc, ".//UVLampRequired"),
     vis_lamp_required = get_amx_bool(doc, ".//VISLampRequired"),
     spectra_from_nm   = get_amx_num(doc, ".//SpectraRangeFrom"),

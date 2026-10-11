@@ -44,12 +44,16 @@ channel holds the flow in mL/min. An empty timetable gives the starting
 composition at time 0.
 }
 
-\strong{\code{dad}}: a list with scalar elements \code{peakwidth_nm}, \code{slitwidth_nm},
+\strong{\code{dad}}: a list with scalar elements \code{peakwidth_code}, \code{slitwidth_nm},
 \code{uv_lamp_required}, \code{vis_lamp_required}, \code{spectra_from_nm},
 \code{spectra_to_nm} and \code{spectra_step_nm}, plus
 \code{signals}, a table of the stored signals with columns \code{id},
 \code{wavelength_nm}, \code{bandwidth_nm}, \code{reference_nm} and
 \code{reference_bandwidth_nm} (\code{NA} without a reference).
+\code{peakwidth_code} is the stored code for the detector's peak width
+setting, which sets its data rate and response time; for example, \code{4} is
+"> 0.1 min". It is not decoded, since detector models offer different
+settings.
 
 \strong{\code{autosampler}}: a list with scalar elements \code{thermostat_installed},
 \code{draw_speed_uL_min}, \code{eject_speed_uL_min}, \code{wait_after_draw_min},

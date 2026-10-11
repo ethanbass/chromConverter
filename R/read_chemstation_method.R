@@ -43,12 +43,16 @@
 #'     channel holds the flow in mL/min. An empty timetable gives the starting
 #'     composition at time 0.
 #'
-#'   **`dad`**: a list with scalar elements `peakwidth_nm`, `slitwidth_nm`,
+#'   **`dad`**: a list with scalar elements `peakwidth_code`, `slitwidth_nm`,
 #'   `uv_lamp_required`, `vis_lamp_required`, `spectra_from_nm`,
 #'   `spectra_to_nm` and `spectra_step_nm`, plus
 #'   `signals`, a table of the stored signals with columns `id`,
 #'   `wavelength_nm`, `bandwidth_nm`, `reference_nm` and
 #'   `reference_bandwidth_nm` (`NA` without a reference).
+#'   `peakwidth_code` is the stored code for the detector's peak width
+#'   setting, which sets its data rate and response time; for example, `4` is
+#'   "> 0.1 min". It is not decoded, since detector models offer different
+#'   settings.
 #'
 #'   **`autosampler`**: a list with scalar elements `thermostat_installed`,
 #'   `draw_speed_uL_min`, `eject_speed_uL_min`, `wait_after_draw_min`,
@@ -249,8 +253,8 @@ method_dad <- function(reg, format_out){
     reference_bandwidth_nm = ifelse(ref, method_num(reg, sprintf("Reference%sBw",
                                                                  ids)),
                                     NA_real_))
-  list(peakwidth_nm = method_num(reg, "Peakwidth"),
-       slitwidth_nm = method_num(reg, "Slit"),
+  list(peakwidth_code = method_num(reg, "Peakwidth"),
+       slitwidth_nm = 2^method_num(reg, "Slit"),
        uv_lamp_required = method_num(reg, "UVLamp") %in% 1,
        vis_lamp_required = method_num(reg, "VisLamp") %in% 1,
        spectra_from_nm = method_num(reg, "RangeFrom"),

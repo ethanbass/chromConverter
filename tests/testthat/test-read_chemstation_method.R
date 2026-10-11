@@ -22,6 +22,9 @@ test_that("read_chemstation_method reads a binary pump method", {
                data.frame(id = "A", wavelength_nm = 210, bandwidth_nm = 8,
                           reference_nm = 360, reference_bandwidth_nm = 100))
   expect_equal(c(x$dad$spectra_from_nm, x$dad$spectra_to_nm), c(190, 400))
+  # "Peakwidth: > 0.1 min", "Slit: 4 nm"
+  expect_equal(x$dad$peakwidth_code, 4)
+  expect_equal(x$dad$slitwidth_nm, 4)
   # "Right temperature: Same as left"
   expect_equal(x$column$temp_controls$temperature_C, c(45, 45))
   # "Enable analysis: When Temp. is within setpoint +/- 0.8°C"
@@ -103,6 +106,9 @@ test_that("read_chemstation_method reads RapidControl XML methods", {
                data.frame(id = c("A", "B", "C"),
                           wavelength_nm = c(210, 230, 250), bandwidth_nm = 4,
                           reference_nm = 425, reference_bandwidth_nm = 50))
+  # the run's acq.txt: "Peakwidth: > 0.013 min", "Slit: 4 nm"
+  expect_equal(x$dad$peakwidth_code, 1)
+  expect_equal(x$dad$slitwidth_nm, 4)
   expect_equal(x$column$temp_controls$temperature_C, c(25, 25))
 })
 

@@ -58,7 +58,7 @@ and it is an error if none of the requested modules has one. The \code{comp} mod
 flow in mL/min.}
 }
 
-\strong{\code{dad}} — a list with scalar elements \code{peakwidth_nm}, \code{slitwidth_nm},
+\strong{\code{dad}} — a list with scalar elements \code{peakwidth_code}, \code{slitwidth_nm},
 \code{uv_lamp_required}, \code{vis_lamp_required}, \code{spectra_from_nm},
 \code{spectra_to_nm}, \code{spectra_step_nm}, plus:
 \describe{
@@ -66,6 +66,10 @@ flow in mL/min.}
 \code{wavelength_nm}, \code{bandwidth_nm}, \code{reference_nm} and
 \code{reference_bandwidth_nm} (\code{NA} without a reference).}
 }
+\code{peakwidth_code} is the stored code for the detector's peak width
+setting, which sets its data rate and response time; for example, \code{4} is
+"> 0.1 min". It is not decoded, since detector models offer different
+settings.
 
 \strong{\code{column}} — a list with scalar element \code{post_time_min}, plus:
 \describe{

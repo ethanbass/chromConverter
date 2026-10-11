@@ -1155,7 +1155,8 @@ test_that("read_agilent_amx works correctly, part 1", {
                c("method_name", "version", "status", "created", "created_by",
                  "modified", "modified_by")
   )
-  expect_equal(method1$dad$peakwidth_nm, 4)
+  expect_equal(method1$dad$peakwidth_code, 4)
+  expect_equal(method1$dad$slitwidth_nm, 4)
   expect_equal(nrow(method1$pump$gradient), 0)
   expect_equal(as.numeric(method1$metadata$created), 1767977263.0)
 })
@@ -1173,7 +1174,8 @@ test_that("read_agilent_amx works correctly, part 2", {
                c("method_name", "version", "status", "created", "created_by",
                  "modified", "modified_by")
   )
-  expect_equal(method2$dad$peakwidth_nm, 4)
+  expect_equal(method2$dad$peakwidth_code, 4)
+  expect_equal(method2$dad$slitwidth_nm, 4)
   expect_equal(c(method2$dad$spectra_from_nm, method2$dad$spectra_to_nm),
                c(190,400))
   expect_shape(method2$pump$gradient, dim = c(9,3))
@@ -1211,7 +1213,8 @@ test_that("read_agilent_amx works correctly, part 3", {
                c("method_name", "version", "status", "created", "created_by",
                  "modified", "modified_by")
   )
-  expect_equal(method3$dad$peakwidth_nm, 4)
+  expect_equal(method3$dad$peakwidth_code, 4)
+  expect_equal(method3$dad$slitwidth_nm, 4)
   expect_equal(c(method3$dad$spectra_from_nm, method3$dad$spectra_to_nm),
                c(190,400))
   expect_shape(method3$pump$gradient, dim = c(10,4))
