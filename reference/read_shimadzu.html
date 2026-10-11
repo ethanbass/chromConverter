@@ -11,7 +11,7 @@ selecting File Conversion:Convert to ASCII."><meta property="og:image" content="
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,8 @@ selecting File Conversion:Convert to ASCII."><meta property="og:image" content="
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/chromConverter.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
@@ -96,8 +97,12 @@ and/or <code>ms_spectra</code>. Accepts multiple arguments.</p></dd>
 
 
 <dt id="arg-peaktable-format">peaktable_format<a class="anchor" aria-label="anchor" href="#arg-peaktable-format"></a></dt>
-<dd><p>Whether to return peak tables in <code>chromatographr</code>
-or <code>original</code> format.</p></dd>
+<dd><p>Whether to return peak tables in the standard
+<code>chromatographr</code> layout (the default) or with all the columns the file
+provides (<code>original</code>). A <code>chromatographr</code> table has the columns <code>rt</code>, <code>start</code>,
+<code>end</code>, <code>area</code>, <code>height</code> and <code>FWHM</code> (the full width at half maximum), with
+times in the same unit as the format's chromatograms and <code>NA</code> where the file
+does not record a value.</p></dd>
 
 
 <dt id="arg-read-metadata">read_metadata<a class="anchor" aria-label="anchor" href="#arg-read-metadata"></a></dt>

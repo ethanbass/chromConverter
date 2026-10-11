@@ -42,9 +42,9 @@ read_asm(
 
 - peaktable_format:
 
-  Whether to return peak tables in `chromatographr` format (`rt`,
-  `start`, `end`, `area` and `height`) or `original` format, with every
-  field the file records under its ASM name.
+  Whether to return peak tables in the standard `chromatographr` layout
+  (`rt`, `start`, `end`, `area`, `height` and `FWHM`) or `original`
+  format, with every field the file records under its ASM name.
 
 - read_metadata:
 
@@ -76,8 +76,9 @@ as [attributes](https://rdrr.io/r/base/attributes.html) if
 
 ## Details
 
-Retention times are returned in the unit the file declares, which is
-recorded in the `time_unit` attribute.
+Retention times in seconds are converted to minutes. Other units, such
+as retention volumes (mL), are returned as the file declares them. The
+unit is recorded in the `time_unit` attribute.
 
 A file can hold several injections, such as a sequence exported from a
 chromatography data system. Each injection is then returned as a

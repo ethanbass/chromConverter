@@ -1,7 +1,8 @@
 # Read files from 'Agilent ChemStation' .D directories
 
-Reads the `.ch`, `.uv`, `Report.TXT` and `LCDIAG.REG` files in an
-'Agilent' `.D` directory. Other files in the directory are ignored.
+Reads the `.ch`, `.uv`, `Report.TXT` (or `Result.xml`) and `LCDIAG.REG`
+files in an 'Agilent' `.D` directory. Other files in the directory are
+ignored.
 
 ## Usage
 
@@ -63,7 +64,13 @@ returned with retention times as rows and columns containing signal
 intensity for each signal. If `long` format is requested, retention
 times will be in the first column. The `format_out` argument determines
 whether the chromatogram is returned as a `matrix`, `data.frame` or
-`data.table`. Metadata are attached as
+`data.table`. Peak tables are returned in the `chromatographr` layout
+described in
+[read_peaklist](https://ethanbass.github.io/chromConverter/reference/read_peaklist.md),
+named by wavelength (e.g. `"254"`), and keep the report's name for the
+signal as `signal_descriptor`. They are read from `Result.xml` where the
+directory has one, since unlike `Report.TXT` it records where each peak
+starts and ends. Metadata are attached as
 [attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
 is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by
 that element.

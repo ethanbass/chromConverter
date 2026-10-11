@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/chromConverter.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
@@ -49,7 +50,8 @@
 <span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span><span class="op">)</span>,</span>
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
-<span>  collapse <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  collapse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  peaktable_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromatographr"</span>, <span class="st">"original"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -88,12 +90,27 @@ data. Accepts multiple arguments, and defaults to both.</p></dd>
 <dd><p>Logical. Whether to collapse lists that only contain a single
 element. Defaults to <code>TRUE</code>.</p></dd>
 
+
+<dt id="arg-peaktable-format">peaktable_format<a class="anchor" aria-label="anchor" href="#arg-peaktable-format"></a></dt>
+<dd><p>Whether to return peak tables in the standard
+<code>chromatographr</code> layout (the default) or with all the columns the file
+provides (<code>original</code>). A <code>chromatographr</code> table has the columns <code>rt</code>, <code>start</code>,
+<code>end</code>, <code>area</code>, <code>height</code> and <code>FWHM</code> (the full width at half maximum), with
+times in the same unit as the format's chromatograms and <code>NA</code> where the file
+does not record a value.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A chromatogram and/or peak table from the specified <code>path</code>, according
-to the value of <code>what</code>. Chromatograms are returned in the format specified by
-<code>format_out</code>.</p>
+to the value of <code>what</code>, with times in minutes. Chromatograms are returned in
+the format specified by <code>format_out</code>. The rows of the peak table that
+report a total over most of the run rather than a peak, such as
+<code>NMTHC-EqC6</code> and <code>THC_PAMS</code>, are only kept with
+<code>peaktable_format = "original"</code>. In the original table, <code>Start</code> and <code>End</code>
+are where integration of the peak starts and ends, and <code>SubstanceIndex</code>
+appears to be the position of its substance in the run's substance table
+(<code>0</code> for an unnamed peak); <code>U1</code>, <code>U3</code> and <code>U4</code> have not been identified.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

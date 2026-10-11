@@ -11,7 +11,7 @@ flows and column."><meta property="og:image" content="https://ethanbass.github.i
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,8 @@ flows and column."><meta property="og:image" content="https://ethanbass.github.i
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/chromConverter.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
@@ -66,9 +67,10 @@ flows and column.</p>
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>One or more modules to read. For GC runs, any of <code>"oven"</code>,
 <code>"injector"</code>, <code>"detector"</code>, <code>"autosampler"</code> and <code>"column"</code>; for GC-MS runs,
-<code>"oven"</code>, <code>"injector"</code>, <code>"column"</code> and <code>"ms"</code>; for LC runs, <code>"pump"</code>,
-<code>"column"</code> and, with a PDA detector, <code>"dad"</code>. Defaults to all the modules
-the run has.</p></dd>
+<code>"oven"</code>, <code>"injector"</code>, <code>"autosampler"</code>, <code>"column"</code> and <code>"ms"</code>; for LC
+runs, <code>"pump"</code>, <code>"column"</code> and, with a PDA detector, <code>"dad"</code>, and with a
+single or triple quadrupole mass spectrometer, <code>"ms"</code>. Defaults to all the
+modules the run has.</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
@@ -94,28 +96,34 @@ the temperature ramps with columns <code>rate_C_min</code>, <code>temperature_C<
 <p><strong><code>column</code></strong>: a list with scalar elements <code>name</code>, <code>length_m</code>,
 <code>diameter_mm</code>, <code>film_thickness_um</code>, <code>max_temperature_C</code> and
 <code>serial_number</code>.</p>
-<p>For GC-MS runs, <code>oven</code> and <code>column</code> as for GC runs but without
-<code>equilibration_time_min</code>, <code>diameter_mm</code> and <code>film_thickness_um</code>; <code>injector</code>
-with <code>temperature_C</code>, <code>split_ratio</code>, <code>column_flow_mL_min</code>,
-<code>linear_velocity_cm_s</code>, <code>total_flow_mL_min</code> and <code>purge_flow_mL_min</code>; and
-<strong><code>ms</code></strong>, a list with scalar elements <code>start_time_min</code> and <code>end_time_min</code>,
-the window in which the mass spectrometer acquires. A split ratio of -1
+<p>For GC-MS runs, <code>oven</code>, <code>injector</code>, <code>autosampler</code> and <code>column</code> as for GC
+runs, and <strong><code>ms</code></strong>, a list with scalar elements <code>start_time_min</code> and
+<code>end_time_min</code> (the window in which the mass spectrometer acquires),
+<code>ion_source_temperature_C</code>, <code>interface_temperature_C</code> and <code>event_time_s</code>.
+Files without the labeled method (e.g. from a GC-2010) record no
+<code>equilibration_time_min</code>, injector <code>name</code> or <code>pressure_kPa</code>,
+<code>injection_volume_uL</code>, column <code>diameter_mm</code> or <code>film_thickness_um</code>, or
+<code>interface_temperature_C</code>, which are then <code>NA</code>. A split ratio of -1
 appears to mean the split is off. The injector settings are the values at
 the start of the run; a method may program the pressure or purge flow to
-change later, so a purge flow of 0 can be the start of a purge program.
-Unlike the other settings, <code>temperature_C</code> could not be checked against
-other values: it is identified by its position, which matches the order of
-the labelled settings in <code>.gcd</code> files.</p>
+change later, so a purge flow of 0 can be the start of a purge program.</p>
 <p>For LC runs:</p>
 <p><strong><code>pump</code></strong>: a list with scalar elements <code>mode</code>, the abbreviation
 'LabSolutions' stores for the pump mode (e.g. <code>ISO</code>, <code>BGE</code> or <code>LPGE</code>),
 <code>flow_mL_min</code> and <code>stop_time_min</code>, plus <code>gradient</code>, a table with columns
-<code>time_min</code> and <code>pct_B</code>. The gradient starts from the pump's initial
+<code>time_min</code> and <code>pct_B</code>, and <code>solvents</code>, a table of the mobile phase names
+entered in the method, with columns <code>pump</code>, <code>line</code> and <code>solvent</code>, or
+<code>NULL</code> if none were entered. The gradient starts from the pump's initial
 concentration of B at time 0 and changes linearly between the times
 listed. It is <code>NULL</code> for an isocratic run whose time program sets no
-concentration, as is <code>flow_mL_min</code>.</p>
+concentration. <code>flow_mL_min</code> is <code>NA</code> if the method sets no flow.</p>
 <p><strong><code>column</code></strong>: a list with scalar element <code>temperature_C</code>, the temperature
 of the column oven, which is <code>NA</code> if the oven is not in use.</p>
+<p><strong><code>ms</code></strong>: the ion source interface of a single or triple quadrupole mass
+spectrometer, a list with scalar elements <code>dl_temperature_C</code>, the
+temperature of the desolvation line (CDL on single quadrupole
+instruments), and <code>heat_block_temperature_C</code>. It is attached to the
+chromatograms as <code>ms_params</code>.</p>
 <p><strong><code>dad</code></strong>: the PDA detector, a list with scalar elements
 <code>start_wavelength_nm</code>, <code>end_wavelength_nm</code>, <code>sampling_interval_ms</code>,
 <code>end_time_min</code> and <code>cell_temperature_C</code> (<code>NA</code> if the cell is not
@@ -127,23 +135,33 @@ processed channels.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Method parameters are also attached automatically to every chromatogram and
+    <p>Method parameters are attached automatically to every chromatogram and
 peak table read from these files, in the <code>method_params</code> metadata field.
-This includes all scalar values but leaves out the oven program and gradient
-tables, which are only returned by this function. The <code>ms</code> module of a
-GC-MS run is attached as <code>ms_params</code>.</p>
+This includes all scalar values but leaves out the oven program, gradient
+and other tables, which are only returned by this function. The <code>ms</code> module
+of a GC-MS or LC-MS run is attached as <code>ms_params</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="file-format">File format<a class="anchor" aria-label="anchor" href="#file-format"></a></h2>
 
 
 <p><code>.gcd</code> and <code>.lcd</code> files store the method and instrument configuration as
-labelled XML, in the <code>GUC.1.METHOD</code> and <code>GUC.1.CONFIG</code> streams, and the PDA
-settings in <code>PDA.1.METHOD</code>.</p>
-<p><code>.qgd</code> files store the method as unlabelled binary records, one stream per
-module, at fixed byte offsets. Values are little-endian float32 unless marked
-otherwise, and bytes not listed are not read. The same streams are found in
-files from 'GCMS-QP2010' and 'QP2020 NX' instruments:</p><ul><li><p><code>GC-2010 Instrument Parameters/Column Oven Parameter</code>, 260 bytes:</p><ul><li><p>8: the number of ramps, n (int32).</p></li>
+labeled XML, in the <code>GUC.1.METHOD</code> and <code>GUC.1.CONFIG</code> streams, and the PDA
+settings in <code>PDA.1.METHOD</code>. The settings of a single or triple quadrupole
+mass spectrometer are records stored as hex in the same XML, in the
+<code>LCMS</code> unit of its own <code>GUC.1.METHOD</code> or <code>GUM.METHOD</code> stream; of these,
+only the interface record (<code>Ifs</code>) is read, whose DL and heat block
+temperatures are uint16 in hundredths of a degree at bytes 70 and 74.
+They were checked against a method printout for an 'LCMS-2020' and the
+published method of an 'LCMS-8040'.</p>
+<p><code>.qgd</code> files from a GC-2030 (e.g. with a 'GCMS-QP2020 NX') also hold the GC
+method and configuration as labeled XML, in <code>GCMS Configuration/GUC_GC2</code>,
+and their oven, injector, autosampler and column settings are read from it
+as for <code>.gcd</code> files. Every <code>.qgd</code> file stores the method as unlabeled binary
+records, one stream per module, at fixed byte offsets, which are read for the
+other settings and for files without the XML. Values are little-endian
+float32 unless marked otherwise, and bytes not listed are not read. The same
+streams are found in files from 'GCMS-QP2010' and 'QP2020 NX' instruments:</p><ul><li><p><code>GC-2010 Instrument Parameters/Column Oven Parameter</code>, 260 bytes:</p><ul><li><p>8: the number of ramps, n (int32).</p></li>
 <li><p>12, 16: the initial temperature and hold.</p></li>
 <li><p>20, 100, 180: the rates, target temperatures and holds, each an array of
 20 slots, of which those past n are zero.</p></li>
@@ -158,9 +176,17 @@ to 64 bytes.</p></li>
 <li><p>132: the length in tenths of a metre (int32).</p></li>
 <li><p>140: the maximum temperature (int32).</p></li>
 </ul></li>
-<li><p><code>QP5K Instrument Parameters/MS Parameter</code>, 600 or 664 bytes:</p><ul><li><p>44, 48: the start and end of acquisition in milliseconds (int32).</p></li>
+<li><p><code>QP5K Instrument Parameters/MS Parameter</code>, 600 or 664 bytes:</p><ul><li><p>20: the ion source temperature in tenths of a degree (int32).</p></li>
+<li><p>44, 48: the start and end of acquisition in milliseconds (int32).</p></li>
+<li><p>52: the event time in milliseconds (int32).</p></li>
 </ul></li>
-</ul></div>
+</ul><p>The interface temperature is only read from the XML, as the additional
+heater the configuration names <code>MS</code>. Method heaters are numbered by their
+position in the configuration's list of heaters, which starts at 2, so the
+<code>MS</code> heater is method heater 4 in every file seen.</p>
+<p>The settings were checked against the 'GCMSsolution' method printouts
+published with three 'QP2020 NX' runs.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><a href="read_chemstation_method.html">read_chemstation_method</a> and <a href="read_agilent_amx.html">read_agilent_amx</a> for 'Agilent'

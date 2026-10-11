@@ -19,7 +19,7 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,7 +27,8 @@ rainbow."><meta property="og:image" content="https://ethanbass.github.io/chromCo
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/chromConverter.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
@@ -207,7 +208,9 @@ take <code>...</code>, arguments it does not accept are dropped with a warning.<
     <p>A <code>chrom_list</code> of chromatograms in <code>matrix</code>, <code>data.frame</code>, or
 <code>data.table</code> format, according to the value of <code>format_out</code>. Chromatograms
 may be returned in either <code>wide</code> or <code>long</code> format according to the value of
-<code>data_format</code>.</p>
+<code>data_format</code>. Peak tables are returned in the <code>chromatographr</code> layout
+described in <a href="read_peaklist.html">read_peaklist</a>, which can also return all the columns the
+file provides.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

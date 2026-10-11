@@ -9,7 +9,7 @@ read_peaklist(
   paths,
   find_files,
   format_in = c("chemstation", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
-    "shimadzu_gcd", "chromatotec", "asm"),
+    "shimadzu_gcd", "chromatotec", "asm", "cdf"),
   pattern = NULL,
   peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
@@ -37,7 +37,7 @@ read_peaklist(
 
   Format of files to be imported/converted. One of `chemstation` (the
   default), `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`,
-  `shimadzu_gcd`, `chromatotec`, or `asm`.
+  `shimadzu_gcd`, `chromatotec`, `asm` or `cdf` (ANDI chrom).
 
 - pattern:
 
@@ -46,9 +46,12 @@ read_peaklist(
 
 - peaktable_format:
 
-  Whether to return peak tables in `chromatographr` or `original`
-  format. 'Chromatotec' peak tables are always returned in their
-  original format.
+  Whether to return peak tables in the standard `chromatographr` layout
+  (the default) or with all the columns the file provides (`original`).
+  A `chromatographr` table has the columns `rt`, `start`, `end`, `area`,
+  `height` and `FWHM` (the full width at half maximum), with times in
+  the same unit as the format's chromatograms and `NA` where the file
+  does not record a value.
 
 - metadata_format:
 
@@ -94,7 +97,8 @@ one, and otherwise by the file's own name for the signal; a table
 identical to another at the same wavelength is a copy and is left out.
 Each row is a peak. Every table starts with a `sample` column and a
 `lambda` column giving the signal's wavelength, which is `NA` for a
-detector without one or a file that does not record it.
+detector without one or a file that does not record it, followed by the
+columns of `peaktable_format`.
 
 ## Author
 
@@ -111,25 +115,25 @@ names(peak_list)
 #>  [5] "BENZOS_125PPM"   "BENZOS_62,5PPM"  "BENZOS_31,25PPM" "BENZOS_16PPM"   
 #>  [9] "BENZOS_8PPM"     "BENZOS_4PPM"    
 peak_list[["BENZOS_250PPM"]][["254"]]
-#>           sample lambda     rt  width        area    height type
-#> 1  BENZOS_250PPM    254  1.948 0.2483   140.95924   7.07890   BB
-#> 2  BENZOS_250PPM    254  2.373 0.1433   161.74519  14.59622   BV
-#> 3  BENZOS_250PPM    254  2.517 0.0912   108.11900  16.77651   VV
-#> 4  BENZOS_250PPM    254  2.669 0.0752   102.54382  21.65732   VV
-#> 5  BENZOS_250PPM    254  2.769 0.1612   389.25211  31.26716   VB
-#> 6  BENZOS_250PPM    254  3.898 0.7973  1211.76770  18.42384   BV
-#> 7  BENZOS_250PPM    254  5.063 0.4211   382.35251  11.64398   VV
-#> 8  BENZOS_250PPM    254  5.319 0.2244   160.09975  10.35239   VV
-#> 9  BENZOS_250PPM    254  5.615 0.2633   192.40610   9.96399   VV
-#> 10 BENZOS_250PPM    254  6.108 0.4398   335.43140   9.27820   VV
-#> 11 BENZOS_250PPM    254  6.621 0.4360   283.18048   7.90439   VB
-#> 12 BENZOS_250PPM    254  7.223 0.3060   158.82758   6.81299   BV
-#> 13 BENZOS_250PPM    254  7.916 0.7946   356.50873   5.75635   VV
-#> 14 BENZOS_250PPM    254 12.541 0.3142  7078.15283 349.55142   VB
-#> 15 BENZOS_250PPM    254 14.203 0.6119   136.62770   2.82697   BV
-#> 16 BENZOS_250PPM    254 17.754 0.4023    78.47887   2.87611   BV
-#> 17 BENZOS_250PPM    254 19.068 0.3721 10954.20000 456.22156   VB
-#> 18 BENZOS_250PPM    254 20.979 0.3652  1806.64539  76.05057   BB
-#> 19 BENZOS_250PPM    254 28.225 0.3587   637.83038  27.49332   BB
-#> 20 BENZOS_250PPM    254 36.643 0.5246    61.25155   1.62191   BB
+#>           sample lambda     rt start end        area    height   FWHM
+#> 1  BENZOS_250PPM    254  1.948    NA  NA   140.95924   7.07890 0.2483
+#> 2  BENZOS_250PPM    254  2.373    NA  NA   161.74519  14.59622 0.1433
+#> 3  BENZOS_250PPM    254  2.517    NA  NA   108.11900  16.77651 0.0912
+#> 4  BENZOS_250PPM    254  2.669    NA  NA   102.54382  21.65732 0.0752
+#> 5  BENZOS_250PPM    254  2.769    NA  NA   389.25211  31.26716 0.1612
+#> 6  BENZOS_250PPM    254  3.898    NA  NA  1211.76770  18.42384 0.7973
+#> 7  BENZOS_250PPM    254  5.063    NA  NA   382.35251  11.64398 0.4211
+#> 8  BENZOS_250PPM    254  5.319    NA  NA   160.09975  10.35239 0.2244
+#> 9  BENZOS_250PPM    254  5.615    NA  NA   192.40610   9.96399 0.2633
+#> 10 BENZOS_250PPM    254  6.108    NA  NA   335.43140   9.27820 0.4398
+#> 11 BENZOS_250PPM    254  6.621    NA  NA   283.18048   7.90439 0.4360
+#> 12 BENZOS_250PPM    254  7.223    NA  NA   158.82758   6.81299 0.3060
+#> 13 BENZOS_250PPM    254  7.916    NA  NA   356.50873   5.75635 0.7946
+#> 14 BENZOS_250PPM    254 12.541    NA  NA  7078.15283 349.55142 0.3142
+#> 15 BENZOS_250PPM    254 14.203    NA  NA   136.62770   2.82697 0.6119
+#> 16 BENZOS_250PPM    254 17.754    NA  NA    78.47887   2.87611 0.4023
+#> 17 BENZOS_250PPM    254 19.068    NA  NA 10954.20000 456.22156 0.3721
+#> 18 BENZOS_250PPM    254 20.979    NA  NA  1806.64539  76.05057 0.3652
+#> 19 BENZOS_250PPM    254 28.225    NA  NA   637.83038  27.49332 0.3587
+#> 20 BENZOS_250PPM    254 36.643    NA  NA    61.25155   1.62191 0.5246
 ```

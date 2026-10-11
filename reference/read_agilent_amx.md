@@ -84,8 +84,8 @@ for the structure of each.
 
 - `solvents`:
 
-  A table of active solvent channels: `channel`, `percentage`,
-  `solvent`.
+  A table of active solvent channels: `channel` (e.g. `"A"`),
+  `percentage` and `solvent` (its name, or `NA`).
 
 - `gradient`:
 
@@ -94,13 +94,20 @@ for the structure of each.
   column if the timetable changes the flow. Long format: `time_min`,
   `channel`, `percent`, where a `flow` channel holds the flow in mL/min.
 
-**`dad`** — a list with scalar elements `peakwidth_nm`, `slitwidth_nm`,
-`uv_lamp_required`, `vis_lamp_required`, `spectra_from_nm`,
-`spectra_to_nm`, `spectra_step_nm`, plus:
+**`dad`** — a list with scalar elements `peakwidth_code`,
+`slitwidth_nm`, `uv_lamp_required`, `vis_lamp_required`,
+`spectra_from_nm`, `spectra_to_nm`, `spectra_step_nm`, plus:
 
 - `signals`:
 
-  A table of active signals: `id`, `wavelength_nm`, `bandwidth_nm`.
+  A table of active signals: `id` (e.g. `"A"`), `wavelength_nm`,
+  `bandwidth_nm`, `reference_nm` and `reference_bandwidth_nm` (`NA`
+  without a reference).
+
+`peakwidth_code` is the stored code for the detector's peak width
+setting, which sets its data rate and response time; for example, `4` is
+"\> 0.1 min". It is not decoded, since detector models offer different
+settings.
 
 **`column`** — a list with scalar element `post_time_min`, plus:
 

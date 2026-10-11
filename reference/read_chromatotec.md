@@ -12,7 +12,8 @@ read_chromatotec(
   data_format = c("wide", "long"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  collapse = TRUE
+  collapse = TRUE,
+  peaktable_format = c("chromatographr", "original")
 )
 ```
 
@@ -49,11 +50,27 @@ read_chromatotec(
   Logical. Whether to collapse lists that only contain a single element.
   Defaults to `TRUE`.
 
+- peaktable_format:
+
+  Whether to return peak tables in the standard `chromatographr` layout
+  (the default) or with all the columns the file provides (`original`).
+  A `chromatographr` table has the columns `rt`, `start`, `end`, `area`,
+  `height` and `FWHM` (the full width at half maximum), with times in
+  the same unit as the format's chromatograms and `NA` where the file
+  does not record a value.
+
 ## Value
 
 A chromatogram and/or peak table from the specified `path`, according to
-the value of `what`. Chromatograms are returned in the format specified
-by `format_out`.
+the value of `what`, with times in minutes. Chromatograms are returned
+in the format specified by `format_out`. The rows of the peak table that
+report a total over most of the run rather than a peak, such as
+`NMTHC-EqC6` and `THC_PAMS`, are only kept with
+`peaktable_format = "original"`. In the original table, `Start` and
+`End` are where integration of the peak starts and ends, and
+`SubstanceIndex` appears to be the position of its substance in the
+run's substance table (`0` for an unnamed peak); `U1`, `U3` and `U4`
+have not been identified.
 
 ## Author
 

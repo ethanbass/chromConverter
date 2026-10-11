@@ -2,7 +2,12 @@
 
 Reads the pump, diode array detector, autosampler and column thermostat
 settings from the module register files (`LPMP1.REG`, `LDAD1.REG`,
-`LALS1.REG` and `LTHM1.REG`) of a 'ChemStation' `.M` method directory.
+`LALS1.REG` or `LWLS1.REG`, and `LTHM1.REG`) of a 'ChemStation' `.M`
+method directory. Revisions that store a module's settings as
+'RapidControl' XML (e.g.
+`AgilentPumpDriver1.RapidControl.MethodXML.xml`) instead are read as
+'OpenLab CDS' methods are by
+[read_agilent_amx](https://ethanbass.github.io/chromConverter/reference/read_agilent_amx.md).
 
 ## Usage
 
@@ -40,10 +45,11 @@ read_chemstation_method(
 ## Value
 
 A named list with one element per module read. A module the method has
-no register file for is left out with a warning, and it is an error if
-none of the requested modules are present. The `sampler` module is
-returned as `autosampler`. The elements follow
-[read_agilent_amx](https://ethanbass.github.io/chromConverter/reference/read_agilent_amx.md):
+no settings for is left out with a warning, and it is an error if none
+of the requested modules are present. The `sampler` module is returned
+as `autosampler`. The elements are those of
+[read_agilent_amx](https://ethanbass.github.io/chromConverter/reference/read_agilent_amx.md),
+with `NA` for a setting the method does not record:
 
 **`pump`**: a list with scalar elements `flow_mL_min`, `stop_time_min`,
 `post_time_min`, `pressure_low_bar` and `pressure_high_bar`, plus:
@@ -58,19 +64,26 @@ returned as `autosampler`. The elements follow
   `percent`, where a `flow` channel holds the flow in mL/min. An empty
   timetable gives the starting composition at time 0.
 
-**`dad`**: a list with scalar elements `spectra_from_nm`,
-`spectra_to_nm`, `spectra_step_nm`, `uv_lamp_required` and
-`vis_lamp_required`, plus `signals`, a table of the stored signals with
-columns `id`, `wavelength_nm`, `bandwidth_nm`, `reference_nm` and
-`reference_bandwidth_nm` (`NA` without a reference).
+**`dad`**: a list with scalar elements `peakwidth_code`, `slitwidth_nm`,
+`uv_lamp_required`, `vis_lamp_required`, `spectra_from_nm`,
+`spectra_to_nm` and `spectra_step_nm`, plus `signals`, a table of the
+stored signals with columns `id`, `wavelength_nm`, `bandwidth_nm`,
+`reference_nm` and `reference_bandwidth_nm` (`NA` without a reference).
+`peakwidth_code` is the stored code for the detector's peak width
+setting, which sets its data rate and response time; for example, `4` is
+"\> 0.1 min". It is not decoded, since detector models offer different
+settings.
 
-**`autosampler`**: a list with scalar elements `injection_volume_uL`,
-`draw_speed_uL_min` and `eject_speed_uL_min`.
+**`autosampler`**: a list with scalar elements `thermostat_installed`,
+`draw_speed_uL_min`, `eject_speed_uL_min`, `wait_after_draw_min`,
+`injection_volume_uL` and `wash_time_s`. Register files record only the
+speeds and the injection volume.
 
-**`column`**: a list holding `temp_controls`, a two-row table (`Left`,
-`Right`) with columns `side` and `temperature_C`. A temperature stored
-below absolute zero (e.g. -274) is `NA`; this may mean no temperature
-was set.
+**`column`**: a list with scalar element `post_time_min` (`NA` when
+off), plus `temp_controls`, a two-row table (`Left`, `Right`) with
+columns `side`, `temperature_C`, `not_ready_limit_C` and
+`equilibration_time_min`. A temperature stored below absolute zero (e.g.
+-274) is `NA`; this may mean no temperature was set.
 
 ## Details
 

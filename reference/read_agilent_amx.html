@@ -9,7 +9,7 @@ from one or more of its driver sub-files."><meta property="og:image" content="ht
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,7 +17,8 @@ from one or more of its driver sub-files."><meta property="og:image" content="ht
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/chromConverter.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
@@ -114,8 +115,8 @@ and it is an error if none of the requested modules has one. The <code>comp</cod
 
 </dl><p><strong><code>pump</code></strong> — a list with scalar elements <code>flow_mL_min</code>, <code>stop_time_min</code>,
 <code>post_time_min</code>, <code>pressure_low_bar</code>, <code>pressure_high_bar</code>, plus:</p><dl><dt><code>solvents</code></dt>
-<dd><p>A table of active solvent channels: <code>channel</code>,
-<code>percentage</code>, <code>solvent</code>.</p></dd>
+<dd><p>A table of active solvent channels: <code>channel</code> (e.g.
+<code>"A"</code>), <code>percentage</code> and <code>solvent</code> (its name, or <code>NA</code>).</p></dd>
 
 <dt><code>gradient</code></dt>
 <dd><p>A table of timetable entries. Wide format (default):
@@ -125,14 +126,19 @@ and it is an error if none of the requested modules has one. The <code>comp</cod
 flow in mL/min.</p></dd>
 
 
-</dl><p><strong><code>dad</code></strong> — a list with scalar elements <code>peakwidth_nm</code>, <code>slitwidth_nm</code>,
+</dl><p><strong><code>dad</code></strong> — a list with scalar elements <code>peakwidth_code</code>, <code>slitwidth_nm</code>,
 <code>uv_lamp_required</code>, <code>vis_lamp_required</code>, <code>spectra_from_nm</code>,
 <code>spectra_to_nm</code>, <code>spectra_step_nm</code>, plus:</p><dl><dt><code>signals</code></dt>
-<dd><p>A table of active signals: <code>id</code>, <code>wavelength_nm</code>,
-<code>bandwidth_nm</code>.</p></dd>
+<dd><p>A table of active signals: <code>id</code> (e.g. <code>"A"</code>),
+<code>wavelength_nm</code>, <code>bandwidth_nm</code>, <code>reference_nm</code> and
+<code>reference_bandwidth_nm</code> (<code>NA</code> without a reference).</p></dd>
 
 
-</dl><p><strong><code>column</code></strong> — a list with scalar element <code>post_time_min</code>, plus:</p><dl><dt><code>temp_controls</code></dt>
+</dl><p><code>peakwidth_code</code> is the stored code for the detector's peak width
+setting, which sets its data rate and response time; for example, <code>4</code> is
+"&gt; 0.1 min". It is not decoded, since detector models offer different
+settings.</p>
+<p><strong><code>column</code></strong> — a list with scalar element <code>post_time_min</code>, plus:</p><dl><dt><code>temp_controls</code></dt>
 <dd><p>Two-row table (Left/Right): <code>side</code>,
 <code>temperature_C</code>, <code>not_ready_limit_C</code>, <code>equilibration_time_min</code>.</p></dd>
 

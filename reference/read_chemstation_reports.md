@@ -1,6 +1,9 @@
 # Read 'Agilent ChemStation' report files
 
-Reads peak tables from 'Agilent ChemStation' `Report.TXT` files.
+Reads peak tables from 'Agilent ChemStation' `Report.TXT` files, or from
+the `Result.xml` files 'ChemStation' writes when set up to export its
+results. Only `Result.xml` records where each peak starts and ends, so
+it is read in preference to a `Report.TXT` in the same directory.
 
 ## Usage
 
@@ -17,12 +20,16 @@ read_chemstation_reports(
 
 - paths:
 
-  Paths to 'ChemStation' report files.
+  Paths to 'ChemStation' `Report.TXT` or `Result.xml` files.
 
 - peaktable_format:
 
-  Whether to return peak tables in `chromatographr` or `original`
-  format.
+  Whether to return peak tables in the standard `chromatographr` layout
+  (the default) or with all the columns the file provides (`original`).
+  A `chromatographr` table has the columns `rt`, `start`, `end`, `area`,
+  `height` and `FWHM` (the full width at half maximum), with times in
+  the same unit as the format's chromatograms and `NA` where the file
+  does not record a value.
 
 - metadata_format:
 

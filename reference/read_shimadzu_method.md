@@ -24,9 +24,10 @@ read_shimadzu_method(
 
   One or more modules to read. For GC runs, any of `"oven"`,
   `"injector"`, `"detector"`, `"autosampler"` and `"column"`; for GC-MS
-  runs, `"oven"`, `"injector"`, `"column"` and `"ms"`; for LC runs,
-  `"pump"`, `"column"` and, with a PDA detector, `"dad"`. Defaults to
-  all the modules the run has.
+  runs, `"oven"`, `"injector"`, `"autosampler"`, `"column"` and `"ms"`;
+  for LC runs, `"pump"`, `"column"` and, with a PDA detector, `"dad"`,
+  and with a single or triple quadrupole mass spectrometer, `"ms"`.
+  Defaults to all the modules the run has.
 
 - format_out:
 
@@ -58,32 +59,39 @@ of the temperature ramps with columns `rate_C_min`, `temperature_C` and
 `diameter_mm`, `film_thickness_um`, `max_temperature_C` and
 `serial_number`.
 
-For GC-MS runs, `oven` and `column` as for GC runs but without
-`equilibration_time_min`, `diameter_mm` and `film_thickness_um`;
-`injector` with `temperature_C`, `split_ratio`, `column_flow_mL_min`,
-`linear_velocity_cm_s`, `total_flow_mL_min` and `purge_flow_mL_min`; and
-**`ms`**, a list with scalar elements `start_time_min` and
-`end_time_min`, the window in which the mass spectrometer acquires. A
-split ratio of -1 appears to mean the split is off. The injector
-settings are the values at the start of the run; a method may program
-the pressure or purge flow to change later, so a purge flow of 0 can be
-the start of a purge program. Unlike the other settings, `temperature_C`
-could not be checked against other values: it is identified by its
-position, which matches the order of the labelled settings in `.gcd`
-files.
+For GC-MS runs, `oven`, `injector`, `autosampler` and `column` as for GC
+runs, and **`ms`**, a list with scalar elements `start_time_min` and
+`end_time_min` (the window in which the mass spectrometer acquires),
+`ion_source_temperature_C`, `interface_temperature_C` and
+`event_time_s`. Files without the labeled method (e.g. from a GC-2010)
+record no `equilibration_time_min`, injector `name` or `pressure_kPa`,
+`injection_volume_uL`, column `diameter_mm` or `film_thickness_um`, or
+`interface_temperature_C`, which are then `NA`. A split ratio of -1
+appears to mean the split is off. The injector settings are the values
+at the start of the run; a method may program the pressure or purge flow
+to change later, so a purge flow of 0 can be the start of a purge
+program.
 
 For LC runs:
 
 **`pump`**: a list with scalar elements `mode`, the abbreviation
 'LabSolutions' stores for the pump mode (e.g. `ISO`, `BGE` or `LPGE`),
 `flow_mL_min` and `stop_time_min`, plus `gradient`, a table with columns
-`time_min` and `pct_B`. The gradient starts from the pump's initial
-concentration of B at time 0 and changes linearly between the times
-listed. It is `NULL` for an isocratic run whose time program sets no
-concentration, as is `flow_mL_min`.
+`time_min` and `pct_B`, and `solvents`, a table of the mobile phase
+names entered in the method, with columns `pump`, `line` and `solvent`,
+or `NULL` if none were entered. The gradient starts from the pump's
+initial concentration of B at time 0 and changes linearly between the
+times listed. It is `NULL` for an isocratic run whose time program sets
+no concentration. `flow_mL_min` is `NA` if the method sets no flow.
 
 **`column`**: a list with scalar element `temperature_C`, the
 temperature of the column oven, which is `NA` if the oven is not in use.
+
+**`ms`**: the ion source interface of a single or triple quadrupole mass
+spectrometer, a list with scalar elements `dl_temperature_C`, the
+temperature of the desolvation line (CDL on single quadrupole
+instruments), and `heat_block_temperature_C`. It is attached to the
+chromatograms as `ms_params`.
 
 **`dad`**: the PDA detector, a list with scalar elements
 `start_wavelength_nm`, `end_wavelength_nm`, `sampling_interval_ms`,
@@ -95,23 +103,33 @@ wavelengths of the peak tables are those of the processed channels.
 
 ## Details
 
-Method parameters are also attached automatically to every chromatogram
-and peak table read from these files, in the `method_params` metadata
-field. This includes all scalar values but leaves out the oven program
-and gradient tables, which are only returned by this function. The `ms`
-module of a GC-MS run is attached as `ms_params`.
+Method parameters are attached automatically to every chromatogram and
+peak table read from these files, in the `method_params` metadata field.
+This includes all scalar values but leaves out the oven program,
+gradient and other tables, which are only returned by this function. The
+`ms` module of a GC-MS or LC-MS run is attached as `ms_params`.
 
 ## File format
 
 `.gcd` and `.lcd` files store the method and instrument configuration as
-labelled XML, in the `GUC.1.METHOD` and `GUC.1.CONFIG` streams, and the
-PDA settings in `PDA.1.METHOD`.
+labeled XML, in the `GUC.1.METHOD` and `GUC.1.CONFIG` streams, and the
+PDA settings in `PDA.1.METHOD`. The settings of a single or triple
+quadrupole mass spectrometer are records stored as hex in the same XML,
+in the `LCMS` unit of its own `GUC.1.METHOD` or `GUM.METHOD` stream; of
+these, only the interface record (`Ifs`) is read, whose DL and heat
+block temperatures are uint16 in hundredths of a degree at bytes 70 and
+74. They were checked against a method printout for an 'LCMS-2020' and
+the published method of an 'LCMS-8040'.
 
-`.qgd` files store the method as unlabelled binary records, one stream
-per module, at fixed byte offsets. Values are little-endian float32
-unless marked otherwise, and bytes not listed are not read. The same
-streams are found in files from 'GCMS-QP2010' and 'QP2020 NX'
-instruments:
+`.qgd` files from a GC-2030 (e.g. with a 'GCMS-QP2020 NX') also hold the
+GC method and configuration as labeled XML, in
+`GCMS Configuration/GUC_GC2`, and their oven, injector, autosampler and
+column settings are read from it as for `.gcd` files. Every `.qgd` file
+stores the method as unlabeled binary records, one stream per module, at
+fixed byte offsets, which are read for the other settings and for files
+without the XML. Values are little-endian float32 unless marked
+otherwise, and bytes not listed are not read. The same streams are found
+in files from 'GCMS-QP2010' and 'QP2020 NX' instruments:
 
 - `GC-2010 Instrument Parameters/Column Oven Parameter`, 260 bytes:
 
@@ -141,7 +159,19 @@ instruments:
 
 - `QP5K Instrument Parameters/MS Parameter`, 600 or 664 bytes:
 
+  - 20: the ion source temperature in tenths of a degree (int32).
+
   - 44, 48: the start and end of acquisition in milliseconds (int32).
+
+  - 52: the event time in milliseconds (int32).
+
+The interface temperature is only read from the XML, as the additional
+heater the configuration names `MS`. Method heaters are numbered by
+their position in the configuration's list of heaters, which starts at
+2, so the `MS` heater is method heater 4 in every file seen.
+
+The settings were checked against the 'GCMSsolution' method printouts
+published with three 'QP2020 NX' runs.
 
 ## See also
 

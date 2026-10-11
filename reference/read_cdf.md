@@ -13,6 +13,7 @@ read_cdf(
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
   collapse = TRUE,
+  peaktable_format = c("chromatographr", "original"),
   ...
 )
 ```
@@ -53,6 +54,15 @@ read_cdf(
   Logical. Whether to collapse lists that only contain a single element.
   Defaults to `TRUE`.
 
+- peaktable_format:
+
+  Whether to return peak tables in the standard `chromatographr` layout
+  (the default) or with all the columns the file provides (`original`).
+  A `chromatographr` table has the columns `rt`, `start`, `end`, `area`,
+  `height` and `FWHM` (the full width at half maximum), with times in
+  the same unit as the format's chromatograms and `NA` where the file
+  does not record a value.
+
 - ...:
 
   Additional arguments to the parser. For ANDI MS files, pass
@@ -80,6 +90,10 @@ read as seconds, the only unit the specification suggests, unless a
 
 Either kind of file warns about a unit it does not recognize and reads
 it as seconds.
+
+Some writers that do not record peak heights fill `peak_height` with
+`-1` or `0` for every peak. A `chromatographr` peak table returns `NA`
+heights in these cases.
 
 ## Author
 

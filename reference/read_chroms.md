@@ -162,7 +162,10 @@ read_chroms(
 A `chrom_list` of chromatograms in `matrix`, `data.frame`, or
 `data.table` format, according to the value of `format_out`.
 Chromatograms may be returned in either `wide` or `long` format
-according to the value of `data_format`.
+according to the value of `data_format`. Peak tables are returned in the
+`chromatographr` layout described in
+[read_peaklist](https://ethanbass.github.io/chromConverter/reference/read_peaklist.md),
+which can also return all the columns the file provides.
 
 ## Details
 

@@ -53,8 +53,12 @@ read_shimadzu(
 
 - peaktable_format:
 
-  Whether to return peak tables in `chromatographr` or `original`
-  format.
+  Whether to return peak tables in the standard `chromatographr` layout
+  (the default) or with all the columns the file provides (`original`).
+  A `chromatographr` table has the columns `rt`, `start`, `end`, `area`,
+  `height` and `FWHM` (the full width at half maximum), with times in
+  the same unit as the format's chromatograms and `NA` where the file
+  does not record a value.
 
 - read_metadata:
 

@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/chromConverter.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -76,7 +77,7 @@
 <li><a href="#formats">File formats</a></li>
 <li><a href="#usage">Usage</a></li>
 <li><a href="#optional-dependencies">Additional dependencies</a></li>
-<li><a href="#further-analysis">Further analysis</a></li>
+<li><a href="#see-also">See also</a></li>
 <li><a href="#contributing">Contributing</a></li>
 <li><a href="#citation">Citation</a></li>
 </ul>
@@ -111,6 +112,7 @@
 <span></span>
 <span><span class="co"># Read a folder of Agilent ChemStation UV files</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chroms.html">read_chroms</a></span><span class="op">(</span><span class="st">"path/to/files"</span>, format_in <span class="op">=</span> <span class="st">"chemstation_uv"</span><span class="op">)</span></span></code></pre></div>
+<p>For a full example workflow, see the <a href="https://ethanbass.github.io/chromConverter/articles/chromConverter.html">Getting started</a> vignette (<code><a href="articles/chromConverter.html">vignette("chromConverter")</a></code>).</p>
 </div>
 <div class="section level3">
 <h3 id="formats">Formats<a class="anchor" aria-label="anchor" href="#formats"></a>
@@ -119,23 +121,24 @@
 <h5 id="chromconverter-internal-parsers">ChromConverter (internal parsers)<a class="anchor" aria-label="anchor" href="#chromconverter-internal-parsers"></a>
 </h5>
 <ul>
-<li>‘Agilent ChemStation’ &amp; ‘OpenLab’ <code>.uv</code> files (versions 131, 31)</li>
-<li>‘Agilent ChemStation’ &amp; ‘OpenLab’ <code>.ch</code> files (versions 30, 130, 8, 81, 179, 181)</li>
-<li>‘Agilent ChemStation’ <code>.ms</code> and <code>.csv</code> files</li>
-<li>‘Agilent OpenLab’ <code>.dx</code>, <code>.acaml</code>, <code>.amx</code>, and <code>.D</code> directories</li>
-<li>‘Agilent OpenLab’ <code>.rslt</code> sequence directories</li>
-<li>Allotrope® Simple Model (ASM) 2D chromatograms (<code>.json</code>)</li>
+<li>Agilent ChemStation &amp; OpenLab <code>.uv</code> files (versions 131, 31)</li>
+<li>Agilent ChemStation &amp; OpenLab <code>.ch</code> files (versions 30, 130, 8, 81, 179, 181)</li>
+<li>Agilent ChemStation <code>.ms</code> and <code>.csv</code> files</li>
+<li>Agilent ChemStation sequence logs (<code>.LOG</code>), instrument traces (<code>LCDIAG.REG</code>) and methods (<code>.M</code>)</li>
+<li>Agilent OpenLab <code>.dx</code>, <code>.acaml</code>, <code>.amx</code>, and <code>.D</code> directories</li>
+<li>Agilent OpenLab <code>.rslt</code> sequence directories</li>
+<li>Allotrope® Simple Model (ASM) chromatograms, GC-MS spectra, peak lists and instrument traces (<code>.json</code>)</li>
 <li>ANDI (Analytical Data Interchange) Chromatography &amp; MS formats (<code>.cdf</code>)</li>
 <li>mzML (<code>.mzml</code>) &amp; mzXML (<code>.mzxml</code>) (via <em>RaMS</em>)</li>
-<li>‘Shimadzu LabSolutions’ ascii (<code>.txt</code>)</li>
-<li>‘Shimadzu GCsolution’ data files (<code>.gcd</code>)</li>
-<li>‘Shimadzu GCMSsolution’ data files (<code>.qgd</code>)</li>
-<li>‘Shimadzu LabSolutions’ <code>.lcd</code> (PDA, QTOF, TLM (triple quadrupole MS), TIC, chromatogram, and peak table streams)</li>
-<li>‘Lumex’ <code>.mdf</code> files</li>
-<li>‘Thermo Scientific Chromeleon’ ascii (<code>.txt</code>)</li>
-<li>‘Varian Workstation’ (<code>.SMS</code>)</li>
-<li>‘Waters Empower’ ascii (<code>.arw</code>)</li>
-<li>‘Waters MassLynx’ <code>.raw</code> directories (2D chromatograms only)</li>
+<li>Shimadzu LabSolutions ascii (<code>.txt</code>)</li>
+<li>Shimadzu GCsolution data files (<code>.gcd</code>)</li>
+<li>Shimadzu GCMSsolution data files (<code>.qgd</code>)</li>
+<li>Shimadzu LabSolutions <code>.lcd</code> (PDA, QTOF, TLM (triple quadrupole MS), TIC, chromatogram, and peak table streams)</li>
+<li>Lumex <code>.mdf</code> files</li>
+<li>Thermo Scientific Chromeleon ascii (<code>.txt</code>)</li>
+<li>Varian Workstation (<code>.SMS</code>)</li>
+<li>Waters Empower ascii (<code>.arw</code>)</li>
+<li>Waters MassLynx <code>.raw</code> directories (2D chromatograms only)</li>
 <li>Chromatotec <code>.Chrom</code> files.</li>
 </ul>
 </div>
@@ -191,19 +194,35 @@
 <div class="section level6">
 <h6 id="choosing-between-multiple-parsers">Choosing between multiple parsers<a class="anchor" aria-label="anchor" href="#choosing-between-multiple-parsers"></a>
 </h6>
-<p>For formats where multiple parsers are available, you can choose between them using the <code>parser</code> argument. For example, ‘Agilent’ files can be read by parsers from several external libraries, including Entab and rainbow. Some of these parsers must be installed manually as described in the <a href="#optional-dependencies">installation instructions</a>.</p>
+<p>For formats where multiple parsers are available, you can choose between them using the <code>parser</code> argument. For example, Agilent files can be read by parsers from several external libraries, including Entab and rainbow. Some of these parsers must be installed manually as described in the <a href="#optional-dependencies">installation instructions</a>.</p>
 </div>
 <div class="section level6">
-<h6 id="extracting-metadata">Extracting metadata<a class="anchor" aria-label="anchor" href="#extracting-metadata"></a>
+<h6 id="working-with-the-results">Working with the results<a class="anchor" aria-label="anchor" href="#working-with-the-results"></a>
 </h6>
-<p>chromConverter can extract metadata from the files it reads. If <code>read_metadata = TRUE</code>, metadata will be extracted and stored as <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html" class="external-link">attributes</a> of the associated object. The metadata can then be accessed using the <code>attributes</code> or <code>attr</code> functions on individual chromatograms, or extracted into a data.frame or tibble from a list of chromatograms using the <code>extract_metadata</code> function.</p>
+<p><code>read_chroms</code> returns a <code>chrom_list</code>, with files found in a directory sorted by acquisition time (see <code>sort_by</code>). Metadata are read by default and stored as <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/attributes.html" class="external-link">attributes</a> of each chromatogram. Printing a <code>chrom_list</code> shows the metadata rather than the data, and <code>summary</code> returns the same fields as a data frame along with each chromatogram’s dimensions. <code>subset</code> selects chromatograms by their metadata, <code>attr</code> returns a single field, and <code>extract_metadata</code> collects every standard field into a data.frame or tibble:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dat</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">dat</span>, <span class="va">sample_name</span> <span class="op">!=</span> <span class="st">"blank"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"run_datetime"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/extract_metadata.html">extract_metadata</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span></span></code></pre></div>
+<p><code>add_metadata(dat, sample_sheet)</code> attaches your own columns, such as treatment or dry weight, matched by sample name, so <code>subset</code> and <code>extract_metadata</code> can use them; <a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a> carries them into <code>get_peaktable</code>.</p>
 </div>
 </div>
 <div class="section level5">
 <h5 id="importing-peak-lists">Importing peak lists<a class="anchor" aria-label="anchor" href="#importing-peak-lists"></a>
 </h5>
-<p>The <code>read_peaklist</code> function imports peak lists from ‘Agilent ChemStation’ REPORT files, ‘Shimadzu’ ascii, <code>.lcd</code> and <code>.gcd</code> files, and ‘Chromatotec’ <code>.Chrom</code> files. The syntax is similar to <code>read_chroms</code>. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (<code>format_in</code>), e.g.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>pks <span class="ot">&lt;-</span> <span class="fu">read_peaklist</span>(<span class="sc">&lt;</span>path_to_directory<span class="sc">&gt;</span>, <span class="at">format_in =</span> <span class="st">"chemstation"</span>)</span></code></pre></div>
+<p>The <code>read_peaklist</code> function imports peak lists from Agilent ChemStation REPORT (or <code>Result.xml</code>) files, Shimadzu ascii, <code>.lcd</code> and <code>.gcd</code> files, Chromatotec <code>.Chrom</code> files, and Allotrope Simple Model (ASM) files. The syntax is similar to <code>read_chroms</code>. In the simplest case, you can just provide paths to the files or directory you want to read in along with the format (<code>format_in</code>), e.g.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>pks <span class="ot">&lt;-</span> <span class="fu">read_peaklist</span>(<span class="sc">&lt;</span>path_to_directory<span class="sc">&gt;</span>, <span class="at">format_in =</span> <span class="st">"chemstation"</span>)</span></code></pre></div>
+</div>
+<div class="section level5">
+<h5 id="reading-instrument-methods">Reading instrument methods<a class="anchor" aria-label="anchor" href="#reading-instrument-methods"></a>
+</h5>
+<p><code>read_chemstation_method</code> reads the gradient, solvents and other instrument settings from Agilent ChemStation <code>.M</code> methods, including the copy a <code>.D</code> directory may hold. <code>read_shimadzu_method</code> reads the method stored in Shimadzu <code>.gcd</code>, <code>.lcd</code> and <code>.qgd</code> files, and <code>read_agilent_amx</code> reads Agilent OpenLab <code>.amx</code> methods.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">method</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_chemstation_method.html">read_chemstation_method</a></span><span class="op">(</span><span class="st">"path/to/METHOD.M"</span><span class="op">)</span></span>
+<span><span class="va">method</span><span class="op">$</span><span class="va">pump</span><span class="op">$</span><span class="va">gradient</span></span></code></pre></div>
+<p>The Shimadzu readers also attach the method’s settings to each chromatogram as <code>method_params</code>, so <code>extract_metadata</code> can compare them across a sequence, e.g. <code>extract_metadata(dat, "method_params.column.name")</code>.</p>
 </div>
 </div>
 <div class="section level3">
@@ -215,7 +234,7 @@
 <strong>Entab</strong><a class="anchor" aria-label="anchor" href="#entab"></a>
 </h5>
 <p><a href="https://github.com/bovee/entab" class="external-link">Entab</a> is a Rust-based parsing framework for converting a variety of scientific file formats into tabular data. To use parsers from Entab, you must first install Rust and Entab-R. After following the <a href="https://rust-lang.org/tools/install/" class="external-link">instructions</a> to install Rust, you can install Entab from GitHub as follows:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"bovee/entab/entab-r"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level5">
@@ -244,9 +263,17 @@
 </div>
 </div>
 <div class="section level3">
-<h3 id="further-analysis">Further analysis<a class="anchor" aria-label="anchor" href="#further-analysis"></a>
+<h3 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>
 </h3>
-<p>For downstream analyses of chromatographic data, see <a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a>. For interactive visualization of chromatograms, see <a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release). There is also a vignette providing an introduction to some basic syntax for <a href="https://ethanbass.github.io/chromConverter/articles/plot_ms.html">plotting mass spectrometry data</a> returned by chromConverter in various R dialects (e.g., base R, tidyverse, and data.table).</p>
+<ul>
+<li>The <a href="https://ethanbass.github.io/chromConverter/articles/chromConverter.html">Getting started</a> vignette shows how to read a sequence of standards from ChemStation, use the metadata to view and select runs, and fit a calibration curve to the peak tables.</li>
+<li>
+<a href="https://ethanbass.github.io/chromConverter/articles/plot_ms.html">Plotting mass spectrometry data</a> introduces basic syntax for plotting MS data returned by chromConverter in base R, tidyverse and data.table.</li>
+<li>
+<a href="https://ethanbass.github.io/chromatographR/" class="external-link">chromatographR</a> provides downstream analysis of chromatographic data.</li>
+<li>
+<a href="https://github.com/ethanbass/ShinyChromViewer" class="external-link">ShinyChromViewer</a> (alpha release) provides interactive visualization of chromatograms.</li>
+</ul>
 </div>
 <div class="section level3">
 <h3 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>

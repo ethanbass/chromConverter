@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/chromConverter.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
@@ -36,80 +37,114 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.10.1" id="chromconverter-0101">chromConverter 0.10.1<a class="anchor" aria-label="anchor" href="#chromconverter-0101"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.11.0" id="chromconverter-0110">chromConverter 0.11.0<a class="anchor" aria-label="anchor" href="#chromconverter-0110"></a></h2>
 <div class="section level3">
-<h3 id="breaking-changes-0-10-1">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-10-1"></a></h3>
+<h3 id="breaking-changes-0-11-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-11-0"></a></h3>
 <ul><li>
 <code>read_chroms</code> and <code>read_peaklist</code> now return files found in a directory in acquisition order, if every file records its run time, rather than alphabetically. <code>sort_by = "none"</code> restores the previous order.</li>
-<li>
-<code>read_peaklist</code> now returns ‘Shimadzu’ <code>.lcd</code> and <code>.gcd</code> peak tables in the default <code>chromatographr</code> format, like the other formats. <code>peaktable_format = "original"</code> restores the vendor columns.</li>
-<li>
-<code>detector_range</code> now holds only a numeric wavelength range, as for ‘ChemStation’ since 0.10.0. Channel descriptions and single wavelengths that ‘Waters’ <code>.arw</code>, ANDI, ‘Lumex’ MDF and ASM files put there are now <code>signal_descriptor</code> or <code>wavelength</code>.</li>
+</ul><div class="section level4">
+<h4 id="peak-tables-0-11-0">Peak tables<a class="anchor" aria-label="anchor" href="#peak-tables-0-11-0"></a></h4>
+<ul><li>Peak tables from every format now share one layout, <code>rt</code>, <code>start</code>, <code>end</code>, <code>area</code>, <code>height</code> and <code>FWHM</code> (<code>NA</code> where the file records none), in both <code>read_chroms</code> and <code>read_peaklist</code>. ‘ChemStation’ <code>width</code> is now <code>FWHM</code>. Use <code>peaktable_format = "original"</code> to return all the columns read by the parser.</li>
 <li>
 <code>read_peaklist</code> tables from every format now have a numeric <code>lambda</code> column after <code>sample</code>, giving the signal’s wavelength (<code>NA</code> where none is recorded).</li>
-<li>
-<code>read_peaklist</code> now names each peak table by its wavelength (e.g. <code>"254"</code>) wherever the file records one, as it already did for ‘ChemStation’ reports. Tables without a wavelength keep their names.</li>
-<li>Retention times from ‘ANDI MS’ files, and from ‘ANDI chrom’ files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See <code><a href="../reference/read_cdf.html">?read_cdf</a></code>.</li>
-<li>Run times of ‘OpenLab’ <code>.dx</code> files are now in UTC, read from the archive’s <code>injection.acmd</code>, so they shift by the site’s offset from UTC. They were the local time labelled as UTC.</li>
-<li>Numeric metadata from text formats, such as <code>time_range</code> and <code>sample_injection_volume</code> in ‘Shimadzu’ ASCII exports, are now numbers. So are the wavelengths of ‘Shimadzu’ <code>.lcd</code> traces, previously text such as <code>"260nm"</code>, including the <code>lambda</code> column of long-format chromatograms. An injection volume written with its unit, e.g. <code>17 µl</code>, is split into the number and <code>sample_injection_volume_unit</code>; other values with a unit stay strings.</li>
-<li>
-<code>extract_metadata</code> now returns numeric fields, such as <code>time_range</code> and <code>wavelength</code>, as numbers rather than strings.</li>
-<li>Dropped <code>what = "chroms"</code> from <code>read_varian_sms</code>, which returned an internal table rather than a chromatogram. Use <code>what = "TIC"</code> or <code>"BPC"</code>.</li>
+<li>Peak tables are now named by their wavelength (e.g. <code>"254"</code>) wherever the file records one, both in <code>read_peaklist</code> and in ‘ChemStation’ <code>.D</code> directories. Tables without a wavelength keep their names.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="time-units-0-11-0">Time units<a class="anchor" aria-label="anchor" href="#time-units-0-11-0"></a></h4>
+<ul><li>Retention times from ‘ANDI MS’ files, and from ‘ANDI chrom’ files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See <code><a href="../reference/read_cdf.html">?read_cdf</a></code>.</li>
+<li>Retention times from ASM files recorded in seconds are now in minutes, and <code>time_unit</code> is <code>"Minutes"</code>. Retention volumes (mL) are unchanged.</li>
+<li>‘Chromatotec’ times are now in minutes, and original peak tables name <code>U2</code>, <code>U5</code> and <code>U6</code> as <code>Start</code>, <code>End</code> and <code>SubstanceIndex</code>.</li>
+<li>Run times of ‘OpenLab’ <code>.dx</code> files now apply the recorded time-zone offset, so they are true UTC rather than local time mislabeled as UTC.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="metadata-0-11-0">Metadata<a class="anchor" aria-label="anchor" href="#metadata-0-11-0"></a></h4>
+<ul><li>
+<code>detector_range</code> now holds only a numeric wavelength range, as for ‘ChemStation’ since 0.10.0. Channel descriptions and single wavelengths that ‘Waters’ <code>.arw</code>, ANDI, ‘Lumex’ MDF and ASM files put there are now <code>signal_descriptor</code> or <code>wavelength</code>.</li>
+<li>Numeric metadata, such as <code>time_range</code>, are now numbers, both on chromatograms read from text formats and in <code>extract_metadata</code> output. So are the wavelengths of ‘Shimadzu’ <code>.lcd</code> traces, previously text such as <code>"260nm"</code>, including the <code>lambda</code> column of long-format chromatograms. An injection volume written with its unit, e.g. <code>17 µl</code>, is now split into the number and <code>sample_injection_volume_unit</code>.</li>
 <li>
 <code>extract_metadata</code> now returns one row per sample, retaining the values its chromatograms agree on. The <code>by = "chromatogram"</code> argument restores one row per chromatogram (in nested lists).</li>
-<li>The example file <code>extdata/ladder.txt</code> is now <code>extdata/alkane_ladder.txt</code>, documented at <code><a href="../reference/alkane_ladder.html">?alkane_ladder</a></code>. Update the path in <code>system.file</code> calls.</li>
 </ul></div>
+<div class="section level4">
+<h4 id="other-0-11-0">Other<a class="anchor" aria-label="anchor" href="#other-0-11-0"></a></h4>
+<ul><li>Dropped <code>what = "chroms"</code> from <code>read_varian_sms</code>, which returned an internal table rather than a chromatogram. Use <code>what = "TIC"</code> or <code>"BPC"</code>.</li>
+<li>The example file <code>extdata/ladder.txt</code> is now <code>extdata/alkane_ladder.txt</code>, documented at <code><a href="../reference/alkane_ladder.html">?alkane_ladder</a></code>. Update the path in <code>system.file</code> calls.</li>
+<li>
+<code>read_agilent_amx</code> returns the DAD’s peak width setting as <code>peakwidth_code</code>, replacing <code>peakwidth_nm</code>. The value is a stored code, not a width in nm.</li>
+<li>
+<code>read_agilent_amx</code> now names solvent channels <code>A</code>–<code>D</code> rather than <code>Channel_A</code>, matching the gradient’s <code>pct_A</code> columns, and DAD signals <code>A</code>, <code>B</code>, etc. rather than <code>SigA</code>.</li>
+</ul></div>
+</div>
 <div class="section level3">
-<h3 id="new-features-0-10-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-10-1"></a></h3>
-<ul><li>Added <code>read_chemstation_logs</code> to read the instrument errors, aborted runs and pump pressures recorded in ‘Agilent ChemStation’ sequence logs, including every log in a folder.</li>
-<li>Added <code>read_chemstation_method</code> to read the gradient, solvents and other instrument settings from ‘Agilent ChemStation’ methods, including the copy a <code>.D</code> directory may hold.</li>
+<h3 id="new-features-0-11-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-11-0"></a></h3>
+<ul><li>Added a “Getting started” vignette, <code><a href="../articles/chromConverter.html">vignette("chromConverter")</a></code>, which works through a calibration series of benzoxazinoid standards now included as example data. See <code><a href="../reference/benzoxazinoid_standards.html">?benzoxazinoid_standards</a></code>.</li>
+</ul><div class="section level4">
+<h4 id="instrument-methods-and-logs-0-11-0">Instrument methods and logs<a class="anchor" aria-label="anchor" href="#instrument-methods-and-logs-0-11-0"></a></h4>
+<ul><li>Added <code>read_chemstation_method</code> to read the gradient, solvents and other instrument settings from ‘Agilent ChemStation’ methods, including the copy a <code>.D</code> directory may hold, whether stored as register files or as ‘RapidControl’ XML.</li>
 <li>Added <code>read_shimadzu_method</code> to read the oven program, gradient and other instrument settings stored in ‘Shimadzu’ GC (<code>.gcd</code>), LC (<code>.lcd</code>) and GC-MS (<code>.qgd</code>) files.</li>
-<li>Files read with the <code>rainbow</code> parser now report most of the metadata the parser supplies, including <code>instrument</code>, <code>operator</code>, <code>detector_model</code>, <code>wavelength</code> and <code>instrument_modules</code>.</li>
-<li>Run times of ‘OpenLab’ <code>.dx</code> files read with the <code>rainbow</code> parser are now returned as <code>POSIXct</code> in UTC, applying the time-zone offset the file records.</li>
-<li>‘OpenLab’ <code>.dx</code> files now report their injection volume.</li>
+<li>Added <code>read_chemstation_logs</code> to read the instrument errors, aborted runs and pump pressures recorded in ‘Agilent ChemStation’ sequence logs, including every log in a folder.</li>
 <li>‘Agilent ChemStation’ <code>.D</code> directories now return pump pressure, flow, solvent composition and temperature traces from <code>LCDIAG.REG</code> with <code>what = "instrument"</code>. See <code><a href="../reference/read_agilent_d.html">?read_agilent_d</a></code>.</li>
-<li>‘Agilent’ <code>.ch</code>, <code>.uv</code> and <code>.it</code> traces now report the channel they were recorded on as <code>channel_id</code> (e.g. <code>DAD1A</code> or <code>PMP1A</code>), and its module as <code>detector</code> (e.g. <code>DAD</code>).</li>
-<li>‘Agilent’ <code>.ch</code> traces and ‘ChemStation’ peak tables now report <code>wavelength</code> and <code>bandwidth</code> from their signal descriptor (e.g. <code>Sig=254,8</code>); peak tables also report <code>detector</code> and <code>channel_id</code>.</li>
-<li>
-<code>extract_metadata</code> now accepts an element of a nested field in <code>what</code>, such as <code>"SampleLabel"</code> or <code>"acaml_metadata.SampleLabel"</code>, and returns that column alone.</li>
-<li>
-<code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> now selects the chromatograms of a <code>chrom_list</code> by their metadata, e.g. <code>subset(chroms, sample_name == "S1")</code>. See <code><a href="../reference/subset.chrom_list.html">?subset.chrom_list</a></code>.</li>
-<li>Added <code>add_metadata</code> to attach sample metadata from a table to a <code>chrom_list</code>, matched by name, for use with <code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> and <code>extract_metadata</code>.</li>
-<li>
-<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> of a <code>chrom_list</code> now shows numeric metadata to <code>getOption("digits")</code> significant digits, set with a new <code>digits</code> argument that <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and <code><a href="../reference/extract_metadata.html">extract_metadata()</a></code> also take.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="file-formats-0-11-0">File formats<a class="anchor" aria-label="anchor" href="#file-formats-0-11-0"></a></h4>
+<ul><li>
+<code>read_agilent_d</code> and <code>read_peaklist</code> now read ‘ChemStation’ <code>Result.xml</code> files where present, which unlike <code>Report.TXT</code> record where each peak starts and ends.</li>
 <li>
 <code>read_asm</code> now reads mass spectra from ASM GC-MS files, and peak lists and instrument traces (e.g. pump pressure, flow rate, temperature) from any ASM chromatography file, chosen with a new <code>what</code> argument. <code>read_peaklist</code> accepts <code>format_in = "asm"</code>.</li>
 <li>
-<code>read_thermoraw</code> now accepts <code>format_out = "data.table"</code>, like every other parser.</li>
+<code>read_peaklist</code> now reads peak tables from ‘ANDI chrom’ files with <code>format_in = "cdf"</code>.</li>
 <li>
+<code>read_thermoraw</code> now accepts <code>format_out = "data.table"</code>, like every other parser.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="metadata-0-11-0-1">Metadata<a class="anchor" aria-label="anchor" href="#metadata-0-11-0-1"></a></h4>
+<ul><li>Files read with the <code>rainbow</code> parser now report most of the metadata the parser supplies, including <code>instrument</code>, <code>operator</code>, <code>detector_model</code>, <code>wavelength</code> and <code>instrument_modules</code>.</li>
+<li>Run times of ‘OpenLab’ <code>.dx</code> files read with the <code>rainbow</code> parser are now returned as <code>POSIXct</code> in UTC, applying the time-zone offset the file records.</li>
+<li>‘OpenLab’ <code>.dx</code> files now report their injection volume.</li>
+<li>‘Agilent’ <code>.ch</code>, <code>.uv</code> and <code>.it</code> traces now report the channel they were recorded on as <code>channel_id</code> (e.g. <code>DAD1A</code> or <code>PMP1A</code>), and its module as <code>detector</code> (e.g. <code>DAD</code>).</li>
+<li>‘Agilent’ <code>.ch</code> traces and ‘ChemStation’ peak tables now report <code>wavelength</code> and <code>bandwidth</code> from their signal descriptor (e.g. <code>Sig=254,8</code>); peak tables also report <code>detector</code>, <code>channel_id</code> and the descriptor itself as <code>signal_descriptor</code>.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="working-with-chrom_lists-0-11-0">Working with <code>chrom_list</code>s<a class="anchor" aria-label="anchor" href="#working-with-chrom_lists-0-11-0"></a></h4>
+<ul><li>
+<code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> now selects the chromatograms of a <code>chrom_list</code> by their metadata, e.g. <code>subset(chroms, sample_name == "S1")</code>. See <code><a href="../reference/subset.chrom_list.html">?subset.chrom_list</a></code>.</li>
+<li>Added <code>add_metadata</code> to attach sample metadata from a table to a <code>chrom_list</code>, matched by name, for use with <code><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset()</a></code> and <code>extract_metadata</code>.</li>
+<li>
+<code>extract_metadata</code> now accepts an element of a nested field in <code>what</code>, such as <code>"SampleLabel"</code> or <code>"acaml_metadata.SampleLabel"</code>, and returns that column alone.</li>
+<li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> of a <code>chrom_list</code> now shows numeric metadata to <code>getOption("digits")</code> significant digits, set with a new <code>digits</code> argument that <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and <code><a href="../reference/extract_metadata.html">extract_metadata()</a></code> also take.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="mzml-export-0-11-0">mzML export<a class="anchor" aria-label="anchor" href="#mzml-export-0-11-0"></a></h4>
+<ul><li>
 <code>write_mzml</code> now writes MS2 spectra, interleaved with MS1 in scan order, each with its precursor m/z and a reference to the MS1 scan before it. MS2 was previously skipped.</li>
 <li>mzML files now record each scan’s polarity, and a new <code>centroided</code> argument lets profile data be marked as profile. All spectra were previously assumed to be centroided.</li>
 <li>mzML files now name the instrument, acquisition software and operator from the chromatogram’s metadata. The <code>instrument_info</code> argument still overrides the instrument.</li>
 </ul></div>
+</div>
 <div class="section level3">
-<h3 id="bug-fixes-and-other-minor-changes-0-10-1">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-0-10-1"></a></h3>
+<h3 id="bug-fixes-and-other-minor-changes-0-11-0">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-0-11-0"></a></h3>
 <div class="section level4">
-<h4 id="andi-netcdf-0-10-1">ANDI (netCDF)<a class="anchor" aria-label="anchor" href="#andi-netcdf-0-10-1"></a></h4>
-<ul><li>Retention times from evenly sampled ‘ANDI chrom’ files are now reconstructed accurately. Previously, the run length was treated as the time of the last point, which resulted in slight stretching of the time axis.</li>
+<h4 id="andi-netcdf-0-11-0">ANDI (netCDF)<a class="anchor" aria-label="anchor" href="#andi-netcdf-0-11-0"></a></h4>
+<ul><li>Retention times from evenly sampled ‘ANDI chrom’ files are no longer slightly stretched.</li>
 <li>Unevenly sampled ‘ANDI chrom’ data now keep their original retention times on import and on export with <code>write_andi_chrom</code>.</li>
-<li>‘ANDI chrom’ peak tables now include text columns such as <code>peak_name</code>, which were previously dropped.</li>
+<li>
+<code>read_cdf(peaktable_format = "original")</code> now keeps the text columns of ‘ANDI chrom’ peak tables, such as <code>peak_name</code>, which were previously dropped.</li>
 <li>Files written by <code>write_andi_chrom</code> now record the correct time unit, run length and detector range, and the exported signal’s wavelength, which <code>read_cdf</code> reads back.</li>
 <li>‘ANDI MS’ files with flagged peaks no longer fail to read or return the flags as extra data points.</li>
 <li>‘ANDI MS’ files without scan times, such as spectral libraries, can now be read. Retention times are <code>NA</code> and no TIC is returned.</li>
 <li>‘ANDI MS’ files now report their intensity unit in <code>detector_y_unit</code>, which was always empty, and files from other software also report their mass unit in <code>detector_x_unit</code>.</li>
-<li>Exporting data that include MS2 scans to ‘ANDI MS’ no longer fails. The MS1 scans are written, and the MS2 scans are left out with a warning, since the format cannot hold them; <code>write_mzml</code> keeps both.</li>
-<li>Files written by <code>write_andi_ms</code> now record the chromatogram’s polarity, instrument, software and acquisition mode (full scan or selected ion monitoring). See <code><a href="../reference/write_andi_ms.html">?write_andi_ms</a></code>.</li>
+<li>Exporting data that include MS2 scans to ‘ANDI MS’ no longer fails; the MS2 scans are left out with a warning. Use <code>write_mzml</code> to keep both.</li>
+<li>Files written by <code>write_andi_ms</code> now follow the ANDI MS specification more closely, recording each scan’s actual mass and time range, the intensity unit, polarity, instrument, software and acquisition mode. See <code><a href="../reference/write_andi_ms.html">?write_andi_ms</a></code>.</li>
 <li>Setting one entry of <code>ms_params</code> in <code>write_andi_ms</code> no longer drops the defaults of the others.</li>
-<li>Files written by <code>write_andi_ms</code> now follow the ANDI MS specification more closely, including each scan’s actual mass and time range and the chromatogram’s intensity unit.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="rainbow-0-10-1">‘rainbow’<a class="anchor" aria-label="anchor" href="#rainbow-0-10-1"></a></h4>
+<h4 id="rainbow-0-11-0">‘rainbow’<a class="anchor" aria-label="anchor" href="#rainbow-0-11-0"></a></h4>
 <ul><li>
 <code>call_rainbow</code> now works when <code>format_in</code> is not supplied, which failed on R 4.2 and later.</li>
-<li>A chromatogram read with the <code>rainbow</code> parser no longer loses its retention times when the parser returns fewer of them than the trace has rows (as the compressed 181 <code>.ch</code> container does). The time axis is rebuilt from the first and last time, with a warning.</li>
+<li>Chromatograms read with the <code>rainbow</code> parser no longer lose their retention times when it returns fewer times than rows, as for compressed 181 <code>.ch</code> files. The time axis is rebuilt, with a warning.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="mzml-export-0-10-1">mzML export<a class="anchor" aria-label="anchor" href="#mzml-export-0-10-1"></a></h4>
+<h4 id="mzml-export-0-11-0-1">mzML export<a class="anchor" aria-label="anchor" href="#mzml-export-0-11-0-1"></a></h4>
 <ul><li>mzML files now name the format of the source file (e.g. <code>Andi-MS format</code>).</li>
 <li>mzML files no longer carry a placeholder sample <code>id</code> (<code>sNA</code>) or characters an ID cannot hold, and <code>sample_name</code> now also names the <code>&lt;sample&gt;</code> element. Metadata values are now XML-escaped.</li>
 <li>mzML files written from data without a <code>run_datetime</code> no longer fail schema validation.</li>
@@ -117,37 +152,42 @@
 <code>write_mzml</code> now errors on a table without <code>mz</code> (or <code>lambda</code>) and <code>intensity</code> columns, instead of writing a corrupt file.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="shimadzu-0-10-1">‘Shimadzu’<a class="anchor" aria-label="anchor" href="#shimadzu-0-10-1"></a></h4>
+<h4 id="shimadzu-0-11-0">‘Shimadzu’<a class="anchor" aria-label="anchor" href="#shimadzu-0-11-0"></a></h4>
 <ul><li>Raw ‘Shimadzu’ <code>.lcd</code> chromatograms (<code>scale = FALSE</code>) now report <code>detector_y_unit</code> as <code>NA</code> where the channel’s calibration factor is not 1, since those values are not in a defined unit.</li>
 <li>QTOF mass spectra from <code>.lcd</code> files now carry the <code>scaled</code> attribute.</li>
-<li>‘Shimadzu’ <code>.qgd</code> scans whose intensities are more than 4 bytes wide can now be read. They are read with a warning, since the decoding of values this wide has not been checked against a ‘LabSolutions’ export.</li>
-<li>‘Shimadzu’ <code>.gcd</code>, <code>.lcd</code> and <code>.qgd</code> files now report their method’s settings as <code>method_params</code>, and the acquisition window of GC-MS runs as <code>ms_params</code>. See <code><a href="../reference/read_shimadzu_method.html">?read_shimadzu_method</a></code>.</li>
+<li>‘Shimadzu’ <code>.qgd</code> scans whose intensities are more than 4 bytes wide can now be read, with a warning that this decoding is unverified.</li>
 <li>‘Shimadzu’ <code>.lcd</code> peak tables stored as <code>Peak Table-100</code> and similar now read correctly; every peak after the first was misread.</li>
 <li>‘Shimadzu’ <code>.lcd</code> peak tables no longer include mass spectrometry tables (<code>Mass Peak Table</code>, <code>Compound Peak Table</code>), which were misread.</li>
 <li>
 <code>read_peaklist</code> no longer returns the peak table of a PDA channel twice for ‘Shimadzu’ <code>.lcd</code> files.</li>
 <li>‘Shimadzu’ ASCII, <code>.lcd</code> and <code>.gcd</code> peak tables now carry the file’s metadata, such as <code>sample_name</code>, <code>instrument</code> and <code>run_datetime</code>, and their channel’s <code>wavelength</code> (and <code>bandwidth</code>, for channels extracted from PDA data), as the chromatograms do.</li>
+<li>‘Shimadzu’ <code>.gcd</code>, <code>.lcd</code> and <code>.qgd</code> files now report their method’s settings as <code>method_params</code>, and the mass spectrometer settings of GC-MS and quadrupole LC-MS runs, such as ion source temperatures, as <code>ms_params</code>. See <code><a href="../reference/read_shimadzu_method.html">?read_shimadzu_method</a></code>.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="agilent-0-10-1">‘Agilent’<a class="anchor" aria-label="anchor" href="#agilent-0-10-1"></a></h4>
-<ul><li>
-<code>read_agilent_amx</code> now warns when a method doesn’t contain a requested module, such as a DAD on an instrument that has none, and returns the others. Asking for that module alone now gives a clear error.</li>
+<h4 id="agilent-0-11-0">‘Agilent’<a class="anchor" aria-label="anchor" href="#agilent-0-11-0"></a></h4>
+<ul><li>Version 179 ‘ChemStation’ <code>.ch</code> files written by ‘Asterix ChemStation’ are now decoded as 8-byte doubles. They were incorrectly read as 4-byte floats, which compressed the signal into tiny values near 0.001.</li>
+<li>
+<code>read_agilent_amx</code> now warns when a method lacks a requested module, such as a DAD, and returns the others; asking for a missing module alone gives a clear error.</li>
 <li>The <code>solvents</code> table from <code>read_agilent_amx</code> now returns the class that <code>format_out</code> asks for.</li>
 <li>
-<code>read_agilent_dx(what = "instrument")</code> now gives a clear error for an archive without instrument data.</li>
-<li>Improved handling of metadata from’ChemStation’ report files including additional fields such as <code>run_datetime</code>, injection volume, <code>method</code>, and the <code>sample_name</code>.</li>
+<code>read_agilent_amx</code> signal tables now include each signal’s reference wavelength and bandwidth, as <code>reference_nm</code> and <code>reference_bandwidth_nm</code>.</li>
 <li>
-<code>extract_metadata</code> no longer erroneously splits the <code>source_file</code> of ‘ChemStation’ peak lists into one column per sample.</li>
+<code>slitwidth_nm</code> from <code>read_agilent_amx</code> is now the slit width in nm (e.g. <code>4</code>). It previously held the stored code (<code>2</code>).</li>
+<li>
+<code>read_agilent_dx(what = "instrument")</code> now gives a clear error for an archive without instrument data.</li>
+<li>‘ChemStation’ report files now report <code>run_datetime</code>, and read <code>sample_name</code>, <code>method</code> and the injection volume correctly.</li>
+<li>
+<code>extract_metadata</code> no longer splits the <code>source_file</code> of ‘ChemStation’ peak lists into one column per sample.</li>
 <li>Each ‘ChemStation’ peak table now carries the report’s metadata, such as <code>sample_name</code> and <code>run_datetime</code>, as the chromatograms do.</li>
 <li>‘Agilent’ <code>.ch</code> and <code>.uv</code> traces now report the volume actually injected, which can differ from the volume the sequence requested.</li>
 <li>Several files read from one <code>.D</code> directory now get distinct names, e.g. <code>RUTIN_2.dad1A</code>, instead of all sharing the directory or sample name.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="export-0-10-1">Export<a class="anchor" aria-label="anchor" href="#export-0-10-1"></a></h4>
+<h4 id="export-0-11-0">Export<a class="anchor" aria-label="anchor" href="#export-0-11-0"></a></h4>
 <ul><li>Exported file names now replace characters that file names cannot hold, such as <code>"</code> or <code>:</code>, with <code>_</code>. Sample names containing them previously failed to export on Windows.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="allotrope-simple-model-asm-0-10-1">Allotrope Simple Model (ASM)<a class="anchor" aria-label="anchor" href="#allotrope-simple-model-asm-0-10-1"></a></h4>
+<h4 id="allotrope-simple-model-asm-0-11-0">Allotrope Simple Model (ASM)<a class="anchor" aria-label="anchor" href="#allotrope-simple-model-asm-0-11-0"></a></h4>
 <ul><li>Files from ASM releases 2024/12 onward, and files converted by ‘allotropy’ (e.g. ‘Chromeleon’, ‘Empower’ and ‘OpenLab CDS’ exports), now load.</li>
 <li>A file holding several injections, such as an exported sequence, now returns one sample per injection, named by sample, which <code>read_chroms</code> adds to its list of samples.</li>
 <li>Chromatograms in one file now get distinct names, taken from the file’s labels (e.g. <code>"UV 1_280"</code>) where their detection types don’t tell them apart, in the list and in the <code>detector</code> column.</li>
@@ -160,9 +200,9 @@
 <li>Raw ASM metadata (<code>metadata_format = "raw"</code>) now keep the file’s own field names, e.g. <code>injection time</code> and <code>analyst</code>, and describe each chromatogram rather than the whole file.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="other-formats-0-10-1">Other formats<a class="anchor" aria-label="anchor" href="#other-formats-0-10-1"></a></h4>
+<h4 id="other-formats-0-11-0">Other formats<a class="anchor" aria-label="anchor" href="#other-formats-0-11-0"></a></h4>
 <ul><li>
-<code>read_chromeleon</code> now honors <code>decimal_mark = ","</code> when it is given explicitly. The commas were being erroneously stripped due to a logic error, inflating every value.</li>
+<code>read_chromeleon</code> now honors <code>decimal_mark = ","</code> when it is given explicitly. Previously, the commas were stripped, inflating every value.</li>
 <li>
 <code>read_peaklist</code> now warns about files it cannot parse and drops them, rather than returning the error message as a peak table.</li>
 <li>

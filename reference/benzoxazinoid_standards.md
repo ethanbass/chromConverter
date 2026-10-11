@@ -30,4 +30,5 @@ These files are released under CC0 1.0
 
 ## See also
 
-`vignette("chromConverter")`, which works through these files.
+[`vignette("chromConverter")`](https://ethanbass.github.io/chromConverter/articles/chromConverter.md),
+which works through these files.

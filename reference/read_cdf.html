@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/chromConverter.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/plot_ms.html">Intro to plotting mass spectrometry data</a></li>
@@ -50,6 +51,7 @@
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
 <span>  collapse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  peaktable_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromatographr"</span>, <span class="st">"original"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -93,6 +95,15 @@ files, MS1 scans (<code>MS1</code>) and/or the total ion chromatogram (<code>TIC
 element. Defaults to <code>TRUE</code>.</p></dd>
 
 
+<dt id="arg-peaktable-format">peaktable_format<a class="anchor" aria-label="anchor" href="#arg-peaktable-format"></a></dt>
+<dd><p>Whether to return peak tables in the standard
+<code>chromatographr</code> layout (the default) or with all the columns the file
+provides (<code>original</code>). A <code>chromatographr</code> table has the columns <code>rt</code>, <code>start</code>,
+<code>end</code>, <code>area</code>, <code>height</code> and <code>FWHM</code> (the full width at half maximum), with
+times in the same unit as the format's chromatograms and <code>NA</code> where the file
+does not record a value.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments to the parser. For ANDI MS files, pass
 <code>ms_format</code> to return the mass spectra as a <code>data.frame</code> (the default) or a
@@ -118,6 +129,9 @@ seconds, the only unit the specification suggests, unless a
 <code>raw_data_time_units</code> attribute says otherwise.</p>
 <p>Either kind of file warns about a unit it does not recognize and reads it
 as seconds.</p>
+<p>Some writers that do not record peak heights fill <code>peak_height</code> with <code>-1</code>
+or <code>0</code> for every peak. A <code>chromatographr</code> peak table returns <code>NA</code> heights
+in these cases.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
