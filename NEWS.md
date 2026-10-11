@@ -76,7 +76,7 @@
 * Raw 'Shimadzu' `.lcd` chromatograms (`scale = FALSE`) now report `detector_y_unit` as `NA` where the channel's calibration factor is not 1, since those values are not in a defined unit.
 * QTOF mass spectra from `.lcd` files now carry the `scaled` attribute.
 * 'Shimadzu' `.qgd` scans whose intensities are more than 4 bytes wide can now be read. They are read with a warning, since the decoding of values this wide has not been checked against a 'LabSolutions' export.
-* 'Shimadzu' `.gcd`, `.lcd` and `.qgd` files now report their method's settings as `method_params`, and the mass spectrometer settings of GC-MS runs, such as the acquisition window and ion source temperature, as `ms_params`. See `?read_shimadzu_method`.
+* 'Shimadzu' `.gcd`, `.lcd` and `.qgd` files now report their method's settings as `method_params`, and the mass spectrometer settings of GC-MS and quadrupole LC-MS runs, such as ion source temperatures, as `ms_params`. See `?read_shimadzu_method`.
 * 'Shimadzu' `.lcd` peak tables stored as `Peak Table-100` and similar now read correctly; every peak after the first was misread.
 * 'Shimadzu' `.lcd` peak tables no longer include mass spectrometry tables (`Mass Peak Table`, `Compound Peak Table`), which were misread.
 * `read_peaklist` no longer returns the peak table of a PDA channel twice for 'Shimadzu' `.lcd` files.

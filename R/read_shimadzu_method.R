@@ -4,21 +4,27 @@
 #' run (`.lcd`) or GC-MS run (`.qgd`), such as the oven program, gradient,
 #' flows and column.
 #'
-#' Method parameters are also attached automatically to every chromatogram and
+#' Method parameters are attached automatically to every chromatogram and
 #' peak table read from these files, in the `method_params` metadata field.
-#' This includes all scalar values but leaves out the oven program and gradient
-#' tables, which are only returned by this function. The `ms` module of a
-#' GC-MS run is attached as `ms_params`.
+#' This includes all scalar values but leaves out the oven program, gradient
+#' and other tables, which are only returned by this function. The `ms` module
+#' of a GC-MS or LC-MS run is attached as `ms_params`.
 #'
 #' @section File format:
 #' `.gcd` and `.lcd` files store the method and instrument configuration as
-#' labelled XML, in the `GUC.1.METHOD` and `GUC.1.CONFIG` streams, and the PDA
-#' settings in `PDA.1.METHOD`.
+#' labeled XML, in the `GUC.1.METHOD` and `GUC.1.CONFIG` streams, and the PDA
+#' settings in `PDA.1.METHOD`. The settings of a single or triple quadrupole
+#' mass spectrometer are records stored as hex in the same XML, in the
+#' `LCMS` unit of its own `GUC.1.METHOD` or `GUM.METHOD` stream; of these,
+#' only the interface record (`Ifs`) is read, whose DL and heat block
+#' temperatures are uint16 in hundredths of a degree at bytes 70 and 74.
+#' They were checked against a method printout for an 'LCMS-2020' and the
+#' published method of an 'LCMS-8040'.
 #'
 #' `.qgd` files from a GC-2030 (e.g. with a 'GCMS-QP2020 NX') also hold the GC
-#' method and configuration as labelled XML, in `GCMS Configuration/GUC_GC2`,
+#' method and configuration as labeled XML, in `GCMS Configuration/GUC_GC2`,
 #' and their oven, injector, autosampler and column settings are read from it
-#' as for `.gcd` files. Every `.qgd` file stores the method as unlabelled binary
+#' as for `.gcd` files. Every `.qgd` file stores the method as unlabeled binary
 #' records, one stream per module, at fixed byte offsets, which are read for the
 #' other settings and for files without the XML. Values are little-endian
 #' float32 unless marked otherwise, and bytes not listed are not read. The same
@@ -55,9 +61,9 @@
 #' @param what One or more modules to read. For GC runs, any of `"oven"`,
 #'   `"injector"`, `"detector"`, `"autosampler"` and `"column"`; for GC-MS runs,
 #'   `"oven"`, `"injector"`, `"autosampler"`, `"column"` and `"ms"`; for LC
-#'   runs, `"pump"`,
-#'   `"column"` and, with a PDA detector, `"dad"`. Defaults to all the modules
-#'   the run has.
+#'   runs, `"pump"`, `"column"` and, with a PDA detector, `"dad"`, and with a
+#'   single or triple quadrupole mass spectrometer, `"ms"`. Defaults to all the
+#'   modules the run has.
 #' @param format_out Class of the tables returned: `"data.frame"`, `"tibble"`
 #'   or `"data.table"`.
 #' @return A named list with one element per module.
@@ -87,7 +93,7 @@
 #'   runs, and **`ms`**, a list with scalar elements `start_time_min` and
 #'   `end_time_min` (the window in which the mass spectrometer acquires),
 #'   `ion_source_temperature_C`, `interface_temperature_C` and `event_time_s`.
-#'   Files without the labelled method (e.g. from a GC-2010) record no
+#'   Files without the labeled method (e.g. from a GC-2010) record no
 #'   `equilibration_time_min`, injector `name` or `pressure_kPa`,
 #'   `injection_volume_uL`, column `diameter_mm` or `film_thickness_um`, or
 #'   `interface_temperature_C`, which are then `NA`. A split ratio of -1
@@ -100,13 +106,21 @@
 #'   **`pump`**: a list with scalar elements `mode`, the abbreviation
 #'   'LabSolutions' stores for the pump mode (e.g. `ISO`, `BGE` or `LPGE`),
 #'   `flow_mL_min` and `stop_time_min`, plus `gradient`, a table with columns
-#'   `time_min` and `pct_B`. The gradient starts from the pump's initial
+#'   `time_min` and `pct_B`, and `solvents`, a table of the mobile phase names
+#'   entered in the method, with columns `pump`, `line` and `solvent`, or
+#'   `NULL` if none were entered. The gradient starts from the pump's initial
 #'   concentration of B at time 0 and changes linearly between the times
 #'   listed. It is `NULL` for an isocratic run whose time program sets no
-#'   concentration, as is `flow_mL_min`.
+#'   concentration. `flow_mL_min` is `NA` if the method sets no flow.
 #'
 #'   **`column`**: a list with scalar element `temperature_C`, the temperature
 #'   of the column oven, which is `NA` if the oven is not in use.
+#'
+#'   **`ms`**: the ion source interface of a single or triple quadrupole mass
+#'   spectrometer, a list with scalar elements `dl_temperature_C`, the
+#'   temperature of the desolvation line (CDL on single quadrupole
+#'   instruments), and `heat_block_temperature_C`. It is attached to the
+#'   chromatograms as `ms_params`.
 #'
 #'   **`dad`**: the PDA detector, a list with scalar elements
 #'   `start_wavelength_nm`, `end_wavelength_nm`, `sampling_interval_ms`,
@@ -156,7 +170,8 @@ read_shimadzu_method <- function(path, what = NULL,
                            if (check_stream(path, c("GUMM_Information",
                                                     "ShimadzuPDA.1",
                                                     "PDA.1.METHOD"),
-                                            min_size = 0)) "dad"))
+                                            min_size = 0)) "dad",
+                           if (!is.null(sz_lcms_interface(path))) "ms"))
   what <- if (is.null(what)) modules else
     match.arg(what, modules, several.ok = TRUE)
   out <- switch(type,
@@ -268,6 +283,61 @@ sz_method_metadata <- function(path){
                         logical(1))]
        }),
        ms_params = ms)
+}
+
+#' Mobile phase names entered in a 'Shimadzu' LC method
+#' @return A table with columns `pump`, `line` and `solvent`, one row per
+#' name entered, or `NULL` if none is.
+#' @noRd
+sz_mobile_phases <- function(method, format_out){
+  x <- xml2::xml_find_all(method,
+                          "/GUD/UP[@Name='MOBILEPHASE']/UPD[starts-with(@ID, 'mphase')]")
+  id <- xml2::xml_attr(x, "ID")
+  name <- xml2::xml_text(xml2::xml_find_first(x, "Val"))
+  keep <- !is.na(name) & nzchar(name) & name != "0"
+  if (!any(keep)) return(NULL)
+  convert_format_out(
+    data.frame(pump = sub("^mphase(.)#.*", "\\1", id[keep]),
+               line = as.integer(sub(".*#", "", id[keep])),
+               solvent = name[keep]),
+    format_out = format_out)
+}
+
+#' Read the interface settings of a 'Shimadzu' LC-MS method
+#'
+#' The single and triple quadrupole methods hold a `CQLMInterfaceParam` or
+#' `CTLMInterfaceParam` record, stored as hex in the `Ifs` setting of the
+#' `LCMS` unit. Temperatures are uint16 in hundredths of a degree.
+#' @return A list with `dl_temperature_C` and `heat_block_temperature_C`, or
+#' `NULL` if the file has no such record.
+#' @noRd
+sz_lcms_interface <- function(path){
+  olefile <- py_import("olefile")
+  ole <- olefile$OleFileIO(path)
+  entries <- vapply(ole$listdir(), paste, "", collapse = "/")
+  ole$close()
+  streams <- grep("^GUMM_Information/ShimadzuLCMS[^/]*/(GUC\\.1\\.METHOD|GUM\\.METHOD)$",
+                  entries, value = TRUE)
+  for (stream in streams){
+    doc <- tryCatch(sz_method_xml(path, strsplit(stream, "/")[[1]]),
+                    error = function(e) NULL)
+    if (is.null(doc)) next
+    val <- xml2::xml_text(xml2::xml_find_first(
+      doc, "/GUD/UP[@Name='LCMS']/UPD[@ID='Ifs']/Val"))
+    if (is.na(val)) next
+    hex <- utils::tail(strsplit(val, "\t")[[1]], 1)
+    b <- as.raw(strtoi(substring(hex, seq(1, nchar(hex) - 1, 2),
+                                 seq(2, nchar(hex), 2)), 16L))
+    if (length(b) < 76 ||
+        !grepl("InterfaceParam$", rawToChar(b[1:48][cumsum(b[1:48] == as.raw(0)) == 0]))){
+      next
+    }
+    u16 <- function(o) readBin(b[o + 1:2], "integer", size = 2, signed = FALSE,
+                               endian = "little") / 100
+    return(list(dl_temperature_C = u16(70),
+                heat_block_temperature_C = u16(74)))
+  }
+  NULL
 }
 
 #' Read the GC method of a 'Shimadzu' GC-MS file
@@ -392,13 +462,16 @@ sz_lc_method <- function(method, what, format_out, path){
                                         pct_B = conc$data),
                              format_out = format_out)
         }
+        if (mode == "ISO" && !isTRUE(flow > 0)) flow <- p("aflow")
         list(mode = mode,
              flow_mL_min = if (!is.na(flow) && flow > 0) flow else NA,
              stop_time_min = if (any(prog$code == 97)){
                max(prog$time[prog$code == 97])
              } else NA,
-             gradient = gradient)
+             gradient = gradient,
+             solvents = sz_mobile_phases(method, format_out))
       },
+      ms = sz_lcms_interface(path),
       column = list(temperature_C = if (sz_param(method, "OVEN", "OVEN$use") %in% 1){
         sz_param(method, "OVEN", "OVEN$ovent")
       } else NA),

@@ -16,9 +16,9 @@ read_shimadzu_method(
 \item{what}{One or more modules to read. For GC runs, any of \code{"oven"},
 \code{"injector"}, \code{"detector"}, \code{"autosampler"} and \code{"column"}; for GC-MS runs,
 \code{"oven"}, \code{"injector"}, \code{"autosampler"}, \code{"column"} and \code{"ms"}; for LC
-runs, \code{"pump"},
-\code{"column"} and, with a PDA detector, \code{"dad"}. Defaults to all the modules
-the run has.}
+runs, \code{"pump"}, \code{"column"} and, with a PDA detector, \code{"dad"}, and with a
+single or triple quadrupole mass spectrometer, \code{"ms"}. Defaults to all the
+modules the run has.}
 
 \item{format_out}{Class of the tables returned: \code{"data.frame"}, \code{"tibble"}
 or \code{"data.table"}.}
@@ -51,7 +51,7 @@ For GC-MS runs, \code{oven}, \code{injector}, \code{autosampler} and \code{colum
 runs, and \strong{\code{ms}}, a list with scalar elements \code{start_time_min} and
 \code{end_time_min} (the window in which the mass spectrometer acquires),
 \code{ion_source_temperature_C}, \code{interface_temperature_C} and \code{event_time_s}.
-Files without the labelled method (e.g. from a GC-2010) record no
+Files without the labeled method (e.g. from a GC-2010) record no
 \code{equilibration_time_min}, injector \code{name} or \code{pressure_kPa},
 \code{injection_volume_uL}, column \code{diameter_mm} or \code{film_thickness_um}, or
 \code{interface_temperature_C}, which are then \code{NA}. A split ratio of -1
@@ -64,13 +64,21 @@ For LC runs:
 \strong{\code{pump}}: a list with scalar elements \code{mode}, the abbreviation
 'LabSolutions' stores for the pump mode (e.g. \code{ISO}, \code{BGE} or \code{LPGE}),
 \code{flow_mL_min} and \code{stop_time_min}, plus \code{gradient}, a table with columns
-\code{time_min} and \code{pct_B}. The gradient starts from the pump's initial
+\code{time_min} and \code{pct_B}, and \code{solvents}, a table of the mobile phase names
+entered in the method, with columns \code{pump}, \code{line} and \code{solvent}, or
+\code{NULL} if none were entered. The gradient starts from the pump's initial
 concentration of B at time 0 and changes linearly between the times
 listed. It is \code{NULL} for an isocratic run whose time program sets no
-concentration, as is \code{flow_mL_min}.
+concentration. \code{flow_mL_min} is \code{NA} if the method sets no flow.
 
 \strong{\code{column}}: a list with scalar element \code{temperature_C}, the temperature
 of the column oven, which is \code{NA} if the oven is not in use.
+
+\strong{\code{ms}}: the ion source interface of a single or triple quadrupole mass
+spectrometer, a list with scalar elements \code{dl_temperature_C}, the
+temperature of the desolvation line (CDL on single quadrupole
+instruments), and \code{heat_block_temperature_C}. It is attached to the
+chromatograms as \code{ms_params}.
 
 \strong{\code{dad}}: the PDA detector, a list with scalar elements
 \code{start_wavelength_nm}, \code{end_wavelength_nm}, \code{sampling_interval_ms},
@@ -87,22 +95,28 @@ run (\code{.lcd}) or GC-MS run (\code{.qgd}), such as the oven program, gradient
 flows and column.
 }
 \details{
-Method parameters are also attached automatically to every chromatogram and
+Method parameters are attached automatically to every chromatogram and
 peak table read from these files, in the \code{method_params} metadata field.
-This includes all scalar values but leaves out the oven program and gradient
-tables, which are only returned by this function. The \code{ms} module of a
-GC-MS run is attached as \code{ms_params}.
+This includes all scalar values but leaves out the oven program, gradient
+and other tables, which are only returned by this function. The \code{ms} module
+of a GC-MS or LC-MS run is attached as \code{ms_params}.
 }
 \section{File format}{
 
 \code{.gcd} and \code{.lcd} files store the method and instrument configuration as
-labelled XML, in the \code{GUC.1.METHOD} and \code{GUC.1.CONFIG} streams, and the PDA
-settings in \code{PDA.1.METHOD}.
+labeled XML, in the \code{GUC.1.METHOD} and \code{GUC.1.CONFIG} streams, and the PDA
+settings in \code{PDA.1.METHOD}. The settings of a single or triple quadrupole
+mass spectrometer are records stored as hex in the same XML, in the
+\code{LCMS} unit of its own \code{GUC.1.METHOD} or \code{GUM.METHOD} stream; of these,
+only the interface record (\code{Ifs}) is read, whose DL and heat block
+temperatures are uint16 in hundredths of a degree at bytes 70 and 74.
+They were checked against a method printout for an 'LCMS-2020' and the
+published method of an 'LCMS-8040'.
 
 \code{.qgd} files from a GC-2030 (e.g. with a 'GCMS-QP2020 NX') also hold the GC
-method and configuration as labelled XML, in \verb{GCMS Configuration/GUC_GC2},
+method and configuration as labeled XML, in \verb{GCMS Configuration/GUC_GC2},
 and their oven, injector, autosampler and column settings are read from it
-as for \code{.gcd} files. Every \code{.qgd} file stores the method as unlabelled binary
+as for \code{.gcd} files. Every \code{.qgd} file stores the method as unlabeled binary
 records, one stream per module, at fixed byte offsets, which are read for the
 other settings and for files without the XML. Values are little-endian
 float32 unless marked otherwise, and bytes not listed are not read. The same

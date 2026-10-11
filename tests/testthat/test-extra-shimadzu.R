@@ -1696,6 +1696,23 @@ test_that("read_shimadzu_method reads an LC method", {
                data.frame(time_min = c(0, 1), pct_B = c(5, 5)))
 })
 
+test_that("read_shimadzu_method reads mobile phases and the LC-MS interface", {
+  x <- read_shimadzu_method(extra_test_file("shimadzu_tlm_sim.lcd"))
+  expect_named(x, c("pump", "column", "dad", "ms"))
+  expect_equal(x$pump$solvents,
+               data.frame(pump = "A", line = 1:2,
+                          solvent = c("Water", "Acetonitrile")))
+  expect_null(read_shimadzu_method(extra_test_file("Anthocyanin.lcd"),
+                                   what = "pump")$pump$solvents)
+  # the published method of the run (MSV000099582): DL 250 °C, heat block
+  # 400 °C
+  y <- read_shimadzu_method(extra_test_file("shimadzu_tlm_mrm_multi.lcd"),
+                            what = "ms")
+  expect_equal(y$ms, list(dl_temperature_C = 250,
+                          heat_block_temperature_C = 400))
+  expect_null(read_shimadzu_method(extra_test_file("shimadzu_qtof.lcd"))$ms)
+})
+
 test_that("read_shimadzu_method reads the GC method of a GC-MS run", {
   path <- extra_test_file("B4NF.7_C23.qgd")
   x <- read_shimadzu_method(path)
