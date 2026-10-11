@@ -1,6 +1,6 @@
 Package: chromConverter
 Title: Chromatographic File Converter
-Version: 0.10.1
+Version: 0.11.0
 Authors@R: c(
     person(given = "Ethan", family = "Bass", email = "ethanbass@gmail.com",
                   role = c("aut", "cre"),
@@ -66,4 +66,4 @@ Roxygen: list(markdown = TRUE)
 Additional_repositories: https://ethanbass.github.io/drat/
 Config/testthat/edition: 3
 Config/Needs/website: rmarkdown, ggplot2, dplyr
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1
