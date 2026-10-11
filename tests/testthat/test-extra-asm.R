@@ -20,7 +20,7 @@ test_that("read_chroms can read ASM LC format", {
   expect_equal(attr(x[[1]], "detector_y_unit"), "mAU")
   expect_equal(attr(x[[1]], "run_datetime"), as.POSIXct("2016-10-20 06:33:54",
                                                         tz = "UTC"))
-  expect_equal(as.character(attr(x[[1]], "time_unit")), "s")
+  expect_equal(as.character(attr(x[[1]], "time_unit")), "Minutes")
   expect_equal(as.character(attr(x[[1]], "data_format")), "long")
 
   expect_equal(sum(x[[1]]$intensity),
@@ -42,7 +42,7 @@ test_that("read_chroms can read ASM LC format", {
     -3.49760055541992, -4.41122055053711, -4.68301773071289, 
     -4.14466857910156, -4.52375411987305))
   expect_equal(head(x[[1]]$rt, 3),
-    c(0, 0.000833333, 0.001666666)) 
+    c(0, 0.000833333, 0.001666666) / 60) 
 })
 
 test_that("read_chroms can read ASM GC format", {
@@ -63,7 +63,7 @@ test_that("read_chroms can read ASM GC format", {
   expect_equal(attr(x, "detector_y_unit"), "pA")
   expect_equal(attr(x, "run_datetime"), as.POSIXct("2022-05-12 11:24:28",
                                                    tz = "UTC"))
-  expect_equal(as.character(attr(x, "time_unit")), "s")
+  expect_equal(as.character(attr(x, "time_unit")), "Minutes")
   expect_equal(as.character(attr(x, "data_format")), "long")
 
   expect_equal(sum(x[[2]]),
@@ -73,7 +73,7 @@ test_that("read_chroms can read ASM GC format", {
   expect_equal(which.max(x[[2]]),
     7344L)
   expect_equal(head(x[[1]], 3),
-    c(0, 0.000833333, 0.001666666))
+    c(0, 0.000833333, 0.001666666) / 60)
   expect_equal(head(x[[2]], 5),
     c(1.29270553588867, 1.28221511840821, 1.26743316650391, 1.251220703125, 
     1.2350082397461))
@@ -115,7 +115,7 @@ test_that("read_chroms can read ASM LC-MS format", {
 
   expect_equal(sum(x[[1]]$intensity), 289847233.52752)
   expect_equal(sum(x[[3]]$intensity), 168719.854554)
-  expect_equal(head(x[[3]]$rt, 3), c(0.0029, 0.0087, 0.01447))
+  expect_equal(head(x[[3]]$rt, 3), c(0.0029, 0.0087, 0.01447) / 60)
 })
 
 test_that("read_chroms can read ASM GC-MS mass spectra", {
@@ -130,10 +130,10 @@ test_that("read_chroms can read ASM GC-MS mass spectra", {
   expect_s3_class(x, "data.table")
   expect_equal(names(x), c("rt", "mz", "intensity"))
   expect_equal(nrow(x), 40)
-  expect_equal(unique(x$rt), c(353.43, 359.43, 42.05))
+  expect_equal(unique(x$rt), c(353.43, 359.43, 42.05) / 60)
   expect_equal(x$mz[1:3], c(0, 1, 2))
   expect_equal(sum(x$intensity), 350)
-  expect_equal(attr(x, "time_unit"), "s")
+  expect_equal(attr(x, "time_unit"), "Minutes")
   expect_equal(attr(x, "sample_name"), "tiny.pwiz.1.1")
 })
 
@@ -149,14 +149,14 @@ test_that("read_chroms can read ASM GC-MS mass spectra and peak lists", {
   expect_s3_class(x, "data.table")
   expect_equal(nrow(x), 78182)
   expect_equal(length(unique(x$rt)), 646)
-  expect_equal(range(x$rt), c(3502.856, 3691.025))
+  expect_equal(range(x$rt), c(3502.856, 3691.025) / 60)
   expect_equal(sum(x$intensity), 1223813621)
   expect_equal(attr(x, "sample_name"), "212 SEXY")
 
   y <- read_asm(path, what = "peak_table", peaktable_format = "original",
                 format_out = "data.frame")
   expect_equal(y[["written name"]], c("Ethyl Vanillin", "Vanillin"))
-  expect_equal(y[["retention time"]], c(3567.329, 3636.762))
+  expect_equal(y[["retention time"]], c(3567.329, 3636.762) / 60)
 })
 
 test_that("read_chroms splits ASM sequences into samples", {
@@ -179,7 +179,7 @@ test_that("read_chroms splits ASM sequences into samples", {
 
   pk <- read_asm(path, what = "peak_table", format_out = "data.frame")
   expect_equal(names(pk), c("S0102", "S0103"))
-  expect_equal(pk[[1]]$rt, c(74.9226, 127.9421, 186.6237, 286.9002),
+  expect_equal(pk[[1]]$rt, c(74.9226, 127.9421, 186.6237, 286.9002) / 60,
                tolerance = 1e-6)
 
   path <- system.file("ASM-openlab-sequence.json",
@@ -244,10 +244,10 @@ test_that("read_chroms can read ASM peak lists", {
   expect_equal(names(x), c("single channel", "UV spectrum"))
   expect_equal(names(x[[1]]), c("rt", "start", "end", "area", "height",
                                   "FWHM"))
-  expect_equal(x[[1]]$rt, c(367.2145, 372.7502, 374.4260), tolerance = 1e-6)
+  expect_equal(x[[1]]$rt, c(367.2145, 372.7502, 374.4260) / 60, tolerance = 1e-6)
   expect_equal(x[[1]]$area, c(53118.3728, 1004.5008, 408.5294),
                tolerance = 1e-6)
-  expect_equal(attr(x[[1]], "time_unit"), "s")
+  expect_equal(attr(x[[1]], "time_unit"), "Minutes")
   expect_equal(attr(x[[1]], "sample_name"), "Sample 1")
 
   y <- read_asm(path, what = "peak_table", peaktable_format = "original",
@@ -272,7 +272,7 @@ test_that("read_peaklist can read ASM peak lists", {
   expect_equal(names(x[[1]]), c("sample", "lambda", "rt", "start", "end", "area",
                                "height", "FWHM"))
   expect_equal(nrow(x[[1]]), 4)
-  expect_equal(x[[1]]$rt[1], 39.80021, tolerance = 1e-6)
+  expect_equal(x[[1]]$rt[1], 39.80021 / 60, tolerance = 1e-6)
 })
 
 test_that("ASM chromatograms and peak tables report their wavelength", {

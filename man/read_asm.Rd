@@ -58,7 +58,8 @@ Reads chromatograms, mass spectra and peak lists from
 chromatography files into R.
 }
 \details{
-Retention times are returned in the unit the file declares, which is
+Retention times in seconds are converted to minutes. Other units, such as
+retention volumes (mL), are returned as the file declares them. The unit is
 recorded in the \code{time_unit} attribute.
 
 A file can hold several injections, such as a sequence exported from a

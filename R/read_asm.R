@@ -4,7 +4,8 @@
 #' ['Allotrope Simple Model'](https://allotropefoundation.org/our-technology/)
 #' chromatography files into R.
 #'
-#' Retention times are returned in the unit the file declares, which is
+#' Retention times in seconds are converted to minutes. Other units, such as
+#' retention volumes (mL), are returned as the file declares them. The unit is
 #' recorded in the `time_unit` attribute.
 #'
 #' A file can hold several injections, such as a sequence exported from a
@@ -277,7 +278,9 @@ find_asm_cube <- function(md, n_dim = 1){
 #' @noRd
 read_asm_2d_data <- function(cube, data_format, format_out){
   dat <- cube[["data"]]
-  format_2d_chromatogram(rt = asm_dimension_values(dat[["dimensions"]][[1]]),
+  rt <- asm_minutes(asm_dimension_values(dat[["dimensions"]][[1]]),
+                    asm_cube_time_unit(cube))
+  format_2d_chromatogram(rt = rt,
                          int = asm_numeric(dat[["measures"]][[1]]),
                          data_format = data_format, format_out = format_out)
 }
@@ -304,9 +307,28 @@ read_asm_ms_data <- function(cube, format_out = "data.frame"){
     n <- lengths(points)
     if (length(rt) == length(n)) x[, 1] <- rep(rt, n)
   }
-  x <- data.frame(rt = x[, 1], mz = x[, 2], intensity = x[, 3])
+  x <- data.frame(rt = asm_minutes(x[, 1], asm_cube_time_unit(cube)),
+                  mz = x[, 2], intensity = x[, 3])
   if (format_out == "data.table") data.table::setDT(x)
   x
+}
+
+#' Unit of the first dimension of an ASM data cube
+#' @noRd
+asm_cube_time_unit <- function(cube){
+  cube[["cube-structure"]][["dimensions"]][[1]][["unit"]]
+}
+
+#' Convert ASM times in seconds to minutes
+#' @noRd
+asm_minutes <- function(x, unit){
+  if (identical(unit, "s")) x / 60 else x
+}
+
+#' Name the time unit of an ASM chromatogram after conversion to minutes
+#' @noRd
+asm_time_unit <- function(unit){
+  if (length(unit) == 1 && unit %in% c("s", "min")) "Minutes" else unit
 }
 
 #' Convert an ASM array to numeric, keeping `null` as `NA`
@@ -365,6 +387,8 @@ asm_peak_table <- function(peaks, peaktable_format = "chromatographr"){
     v <- unlist(v)
     if (any(quantity)) suppressWarnings(as.numeric(v)) else v
   })
+  seconds <- names(units)[units %in% "s"]
+  cols[seconds] <- lapply(cols[seconds], `/`, 60)
   tab <- as.data.frame(cols, check.names = FALSE)
   rt_field <- intersect(c("retention time", "retention volume"), fields)[1]
   if (peaktable_format == "chromatographr"){
@@ -373,7 +397,7 @@ asm_peak_table <- function(peaks, peaktable_format = "chromatographr"){
       area = "peak area", height = "peak height",
       FWHM = "peak width at half height"))
   }
-  attr(tab, "units") <- list(time = unname(units[rt_field]),
+  attr(tab, "units") <- list(time = asm_time_unit(unname(units[rt_field])),
                              y = unname(units["peak height"]))
   tab
 }
@@ -437,7 +461,7 @@ get_asm_metadata <- function(m, file_meta, cube = NULL, units = NULL){
          `device control document` = lapply(device_control, flatten_asm),
          detection_type = md[["detection type"]],
          label = if (!is.null(cube)) md[[cube]][["label"]],
-         time_unit = units$time,
+         time_unit = asm_time_unit(units$time),
          detector_unit = units$y))
 }
 

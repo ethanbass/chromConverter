@@ -8,6 +8,7 @@
 * `read_peaklist` tables from every format now have a numeric `lambda` column after `sample`, giving the signal's wavelength (`NA` where none is recorded).
 * Peak tables are now named by their wavelength (e.g. `"254"`) wherever the file records one, both in `read_peaklist` and in 'ChemStation' `.D` directories. Tables without a wavelength keep their names.
 * Retention times from 'ANDI MS' files, and from 'ANDI chrom' files recorded in seconds, are now 60x smaller. Both formats are now read in minutes, peak tables included, matching the package convention. See `?read_cdf`.
+* Retention times from ASM files recorded in seconds are now in minutes, and `time_unit` is `"Minutes"`. Retention volumes (mL) are unchanged.
 * Run times of 'OpenLab' `.dx` files are now in UTC, read from the archive's `injection.acmd`, so they shift by the site's offset from UTC. They were the local time labelled as UTC.
 * Numeric metadata from text formats, such as `time_range` and `sample_injection_volume` in 'Shimadzu' ASCII exports, are now numbers. So are the wavelengths of 'Shimadzu' `.lcd` traces, previously text such as `"260nm"`, including the `lambda` column of long-format chromatograms. An injection volume written with its unit, e.g. `17 µl`, is split into the number and `sample_injection_volume_unit`; other values with a unit stay strings.
 * `extract_metadata` now returns numeric fields, such as `time_range` and `wavelength`, as numbers rather than strings.
