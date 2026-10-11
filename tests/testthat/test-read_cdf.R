@@ -167,6 +167,27 @@ test_that("read_cdf converts the ANDI chrom peak table to minutes and keeps its
   expect_true(all(is.na(std$start)))
 })
 
+test_that("read_peaklist reads ANDI chrom peak tables", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  write_andi_chrom_fixture(tmp)
+  pk <- read_peaklist(tmp, format_in = "cdf", progress_bar = FALSE)
+  expect_s3_class(pk, "peak_list")
+  expect_equal(names(pk), "fixture")
+  expect_equal(names(pk$fixture), c("sample", "lambda", "rt", "start", "end",
+                                    "area", "height", "FWHM"))
+  expect_equal(pk$fixture$rt, c(0.5, 2), tolerance = 1e-6)
+
+  pk <- read_peaklist(tmp, format_in = "cdf", peaktable_format = "original",
+                      progress_bar = FALSE)
+  expect_equal(pk$fixture$peak_name, c("peak A", "peak B"))
+})
+
 test_that("write_andi_chrom round-trips unevenly spaced retention times", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")

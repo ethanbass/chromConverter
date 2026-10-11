@@ -9,7 +9,7 @@
 #' whether every path is a file.
 #' @param format_in Format of files to be imported/converted. One of
 #' `chemstation` (the default), `shimadzu_fid`, `shimadzu_dad`,
-#' `shimadzu_lcd`, `shimadzu_gcd`, `chromatotec`, or `asm`.
+#' `shimadzu_lcd`, `shimadzu_gcd`, `chromatotec`, `asm` or `cdf` (ANDI chrom).
 #' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
 #' which case the file extension will be deduced from `format_in`.
 #' @param sort_by How to sort the samples: `auto` (default) sorts files by
@@ -43,7 +43,8 @@
 read_peaklist <- function(paths, find_files,
                         format_in = c("chemstation", "shimadzu_fid",
                                       "shimadzu_dad", "shimadzu_lcd",
-                                      "shimadzu_gcd", "chromatotec", "asm"),
+                                      "shimadzu_gcd", "chromatotec", "asm",
+                                      "cdf"),
                         pattern = NULL,
                         peaktable_format = c("chromatographr", "original"),
                         metadata_format = c("chromconverter", "raw"),
@@ -60,7 +61,7 @@ read_peaklist <- function(paths, find_files,
   format_in <- match.arg(tolower(format_in),
                          c("chemstation", "shimadzu_fid", "shimadzu_dad",
                            "shimadzu_lcd", "shimadzu_gcd", "chromatotec",
-                           "asm"))
+                           "asm", "cdf"))
   sort_by <- match.arg(sort_by, c("auto", "none", "acquisition_time",
                                    "file_time"))
   if (missing(progress_bar)){
@@ -109,6 +110,13 @@ read_peaklist <- function(paths, find_files,
   } else if (format_in == "asm"){
     pattern <- ifelse(is.null(pattern), "\\.json$", pattern)
     parser <- partial(read_asm, what = "peak_table",
+                      peaktable_format = peaktable_format,
+                      format_out = "data.frame",
+                      read_metadata = read_metadata,
+                      metadata_format = metadata_format)
+  } else if (format_in == "cdf"){
+    pattern <- ifelse(is.null(pattern), "\\.cdf$", pattern)
+    parser <- partial(read_cdf, what = "peak_table",
                       peaktable_format = peaktable_format,
                       format_out = "data.frame",
                       read_metadata = read_metadata,
@@ -223,6 +231,7 @@ peak_table_lambda <- function(x){
 #' `"254"`, `"254_1"`.
 #' @noRd
 name_peak_tables <- function(tabs){
+  if (length(tabs) == 0) return(tabs)
   lam <- vapply(tabs, function(t){
     if ("lambda" %in% names(t)) suppressWarnings(as.numeric(t$lambda[1])) else
       peak_table_lambda(t)
