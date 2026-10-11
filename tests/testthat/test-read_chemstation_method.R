@@ -3,8 +3,8 @@
 
 test_that("read_chemstation_method reads a binary pump method", {
   path <- extra_test_file("chemstation_orange_ACQ.M")
-  expect_warning(x <- read_chemstation_method(path), "sampler")
-  expect_named(x, c("pump", "dad", "column"))
+  x <- read_chemstation_method(path)
+  expect_named(x, c("pump", "dad", "autosampler", "column"))
 
   expect_equal(x$pump$flow_mL_min, 0.75)
   expect_equal(x$pump$stop_time_min, 5)
@@ -24,6 +24,14 @@ test_that("read_chemstation_method reads a binary pump method", {
   expect_equal(c(x$dad$spectra_from_nm, x$dad$spectra_to_nm), c(190, 400))
   # "Right temperature: Same as left"
   expect_equal(x$column$temp_controls$temperature_C, c(45, 45))
+  # "Enable analysis: When Temp. is within setpoint +/- 0.8°C"
+  expect_equal(x$column$temp_controls$not_ready_limit_C, c(0.8, 0.8))
+  # "Posttime: Off"
+  expect_equal(x$column$post_time_min, NA_real_)
+  # the wellplate sampler's settings are in `LWLS1.REG`
+  expect_equal(x$autosampler$injection_volume_uL, 2)
+  expect_equal(x$autosampler$draw_speed_uL_min, 200)
+  expect_equal(x$autosampler$eject_speed_uL_min, 200)
 })
 
 test_that("read_chemstation_method reads a quaternary pump method", {
@@ -71,9 +79,42 @@ test_that("read_chemstation_method finds the method in a `.D` directory", {
   empty <- file.path(withr::local_tempdir(), "EMPTY.D")
   dir.create(empty)
   expect_error(read_chemstation_method(empty), "no `ACQ.M` or `RUN.M`")
-  expect_error(read_chemstation_method(extra_test_file("chemstation_orange_ACQ.M"),
-                                       what = "sampler"),
+  pump_only <- file.path(withr::local_tempdir(), "PUMP.M")
+  dir.create(pump_only)
+  file.copy(file.path(extra_test_file("chemstation_orange_ACQ.M"), "LPMP1.REG"),
+            pump_only)
+  expect_error(read_chemstation_method(pump_only, what = "sampler"),
                "none of the requested modules")
+  expect_warning(read_chemstation_method(pump_only, what = c("pump", "dad")),
+                 "No method settings for `dad`")
+})
+
+test_that("read_chemstation_method reads RapidControl XML methods", {
+  path <- extra_test_file("chemstation_rapidcontrol_RUN.M")
+  x <- read_chemstation_method(path)
+  expect_named(x, c("pump", "dad", "autosampler", "column"))
+  expect_equal(x$pump$solvents,
+               data.frame(channel = c("A", "B"), percentage = c(95, 5),
+                          solvent = c("H20", "ACN")))
+  expect_equal(x$pump$gradient,
+               data.frame(time_min = c(0, 2, 2.5, 2.6), pct_A = c(95, 0, 0, 95),
+                          pct_B = c(5, 100, 100, 5), flow_mL_min = 0.5))
+  expect_equal(x$dad$signals,
+               data.frame(id = c("A", "B", "C"),
+                          wavelength_nm = c(210, 230, 250), bandwidth_nm = 4,
+                          reference_nm = 425, reference_bandwidth_nm = 50))
+  expect_equal(x$column$temp_controls$temperature_C, c(25, 25))
+})
+
+test_that("register and RapidControl methods return the same fields", {
+  reg <- read_chemstation_method(extra_test_file("chemstation_orange_ACQ.M"))
+  rapid <- read_chemstation_method(
+    extra_test_file("chemstation_rapidcontrol_RUN.M"))
+  for (module in names(reg)){
+    expect_named(rapid[[module]], names(reg[[module]]))
+  }
+  expect_named(rapid$dad$signals, names(reg$dad$signals))
+  expect_named(rapid$column$temp_controls, names(reg$column$temp_controls))
 })
 
 test_that("read_chemstation_method warns about a data analysis method", {

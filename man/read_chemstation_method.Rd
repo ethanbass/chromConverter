@@ -26,9 +26,10 @@ or \code{"long"} format.}
 }
 \value{
 A named list with one element per module read. A module the method
-has no register file for is left out with a warning, and it is an error if
+has no settings for is left out with a warning, and it is an error if
 none of the requested modules are present. The \code{sampler} module is
-returned as \code{autosampler}. The elements follow \link{read_agilent_amx}:
+returned as \code{autosampler}. The elements are those of \link{read_agilent_amx},
+with \code{NA} for a setting the method does not record:
 
 \strong{\code{pump}}: a list with scalar elements \code{flow_mL_min}, \code{stop_time_min},
 \code{post_time_min}, \code{pressure_low_bar} and \code{pressure_high_bar}, plus:
@@ -43,24 +44,31 @@ channel holds the flow in mL/min. An empty timetable gives the starting
 composition at time 0.
 }
 
-\strong{\code{dad}}: a list with scalar elements \code{spectra_from_nm}, \code{spectra_to_nm},
-\code{spectra_step_nm}, \code{uv_lamp_required} and \code{vis_lamp_required}, plus
+\strong{\code{dad}}: a list with scalar elements \code{peakwidth_nm}, \code{slitwidth_nm},
+\code{uv_lamp_required}, \code{vis_lamp_required}, \code{spectra_from_nm},
+\code{spectra_to_nm} and \code{spectra_step_nm}, plus
 \code{signals}, a table of the stored signals with columns \code{id},
 \code{wavelength_nm}, \code{bandwidth_nm}, \code{reference_nm} and
 \code{reference_bandwidth_nm} (\code{NA} without a reference).
 
-\strong{\code{autosampler}}: a list with scalar elements \code{injection_volume_uL},
-\code{draw_speed_uL_min} and \code{eject_speed_uL_min}.
+\strong{\code{autosampler}}: a list with scalar elements \code{thermostat_installed},
+\code{draw_speed_uL_min}, \code{eject_speed_uL_min}, \code{wait_after_draw_min},
+\code{injection_volume_uL} and \code{wash_time_s}. Register files record only the
+speeds and the injection volume.
 
-\strong{\code{column}}: a list holding \code{temp_controls}, a two-row table (\code{Left},
-\code{Right}) with columns \code{side} and \code{temperature_C}. A temperature stored
-below absolute zero (e.g. -274) is \code{NA}; this may mean no temperature was
-set.
+\strong{\code{column}}: a list with scalar element \code{post_time_min} (\code{NA} when off),
+plus \code{temp_controls}, a two-row table (\code{Left}, \code{Right}) with columns
+\code{side}, \code{temperature_C}, \code{not_ready_limit_C} and \code{equilibration_time_min}.
+A temperature stored below absolute zero (e.g. -274) is \code{NA}; this may
+mean no temperature was set.
 }
 \description{
 Reads the pump, diode array detector, autosampler and column thermostat
 settings from the module register files (\code{LPMP1.REG}, \code{LDAD1.REG},
-\code{LALS1.REG} and \code{LTHM1.REG}) of a 'ChemStation' \code{.M} method directory.
+\code{LALS1.REG} or \code{LWLS1.REG}, and \code{LTHM1.REG}) of a 'ChemStation' \code{.M} method
+directory. Revisions that store a module's settings as 'RapidControl' XML
+(e.g. \code{AgilentPumpDriver1.RapidControl.MethodXML.xml}) instead are read as
+'OpenLab CDS' methods are by \link{read_agilent_amx}.
 }
 \details{
 Depending on how 'ChemStation' is configured, a \code{.D} directory may hold a

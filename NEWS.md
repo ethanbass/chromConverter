@@ -22,7 +22,7 @@
 
 * Added a "Getting started" vignette, `vignette("chromConverter")`, which works through a calibration series of benzoxazinoid standards now included as example data. See `?benzoxazinoid_standards`.
 * Added `read_chemstation_logs` to read the instrument errors, aborted runs and pump pressures recorded in 'Agilent ChemStation' sequence logs, including every log in a folder.
-* Added `read_chemstation_method` to read the gradient, solvents and other instrument settings from 'Agilent ChemStation' methods, including the copy a `.D` directory may hold.
+* Added `read_chemstation_method` to read the gradient, solvents and other instrument settings from 'Agilent ChemStation' methods, including the copy a `.D` directory may hold, whether stored as register files or as 'RapidControl' XML.
 * Added `read_shimadzu_method` to read the oven program, gradient and other instrument settings stored in 'Shimadzu' GC (`.gcd`), LC (`.lcd`) and GC-MS (`.qgd`) files.
 * `read_agilent_d` and `read_peaklist` now read 'ChemStation' `Result.xml` files where present, which unlike `Report.TXT` record where each peak starts and ends.
 * Files read with the `rainbow` parser now report most of the metadata the parser supplies, including `instrument`, `operator`, `detector_model`, `wavelength` and `instrument_modules`.

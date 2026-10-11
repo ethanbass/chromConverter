@@ -2,7 +2,10 @@
 #'
 #' Reads the pump, diode array detector, autosampler and column thermostat
 #' settings from the module register files (`LPMP1.REG`, `LDAD1.REG`,
-#' `LALS1.REG` and `LTHM1.REG`) of a 'ChemStation' `.M` method directory.
+#' `LALS1.REG` or `LWLS1.REG`, and `LTHM1.REG`) of a 'ChemStation' `.M` method
+#' directory. Revisions that store a module's settings as 'RapidControl' XML
+#' (e.g. `AgilentPumpDriver1.RapidControl.MethodXML.xml`) instead are read as
+#' 'OpenLab CDS' methods are by [read_agilent_amx].
 #'
 #' Depending on how 'ChemStation' is configured, a `.D` directory may hold a
 #' copy of the method it was acquired with, in `ACQ.M` or, in older revisions,
@@ -24,9 +27,10 @@
 #' @param gradient_format Whether to return the gradient in `"wide"` (default)
 #'   or `"long"` format.
 #' @return A named list with one element per module read. A module the method
-#'   has no register file for is left out with a warning, and it is an error if
+#'   has no settings for is left out with a warning, and it is an error if
 #'   none of the requested modules are present. The `sampler` module is
-#'   returned as `autosampler`. The elements follow [read_agilent_amx]:
+#'   returned as `autosampler`. The elements are those of [read_agilent_amx],
+#'   with `NA` for a setting the method does not record:
 #'
 #'   **`pump`**: a list with scalar elements `flow_mL_min`, `stop_time_min`,
 #'   `post_time_min`, `pressure_low_bar` and `pressure_high_bar`, plus:
@@ -39,19 +43,23 @@
 #'     channel holds the flow in mL/min. An empty timetable gives the starting
 #'     composition at time 0.
 #'
-#'   **`dad`**: a list with scalar elements `spectra_from_nm`, `spectra_to_nm`,
-#'   `spectra_step_nm`, `uv_lamp_required` and `vis_lamp_required`, plus
+#'   **`dad`**: a list with scalar elements `peakwidth_nm`, `slitwidth_nm`,
+#'   `uv_lamp_required`, `vis_lamp_required`, `spectra_from_nm`,
+#'   `spectra_to_nm` and `spectra_step_nm`, plus
 #'   `signals`, a table of the stored signals with columns `id`,
 #'   `wavelength_nm`, `bandwidth_nm`, `reference_nm` and
 #'   `reference_bandwidth_nm` (`NA` without a reference).
 #'
-#'   **`autosampler`**: a list with scalar elements `injection_volume_uL`,
-#'   `draw_speed_uL_min` and `eject_speed_uL_min`.
+#'   **`autosampler`**: a list with scalar elements `thermostat_installed`,
+#'   `draw_speed_uL_min`, `eject_speed_uL_min`, `wait_after_draw_min`,
+#'   `injection_volume_uL` and `wash_time_s`. Register files record only the
+#'   speeds and the injection volume.
 #'
-#'   **`column`**: a list holding `temp_controls`, a two-row table (`Left`,
-#'   `Right`) with columns `side` and `temperature_C`. A temperature stored
-#'   below absolute zero (e.g. -274) is `NA`; this may mean no temperature was
-#'   set.
+#'   **`column`**: a list with scalar element `post_time_min` (`NA` when off),
+#'   plus `temp_controls`, a two-row table (`Left`, `Right`) with columns
+#'   `side`, `temperature_C`, `not_ready_limit_C` and `equilibration_time_min`.
+#'   A temperature stored below absolute zero (e.g. -274) is `NA`; this may
+#'   mean no temperature was set.
 #' @seealso [read_agilent_amx] for 'OpenLab CDS' methods, and [read_agilent_d]
 #'   with `what = "instrument"` for the pump's record of what it delivered.
 #' @examples \dontrun{
@@ -89,24 +97,44 @@ read_chemstation_method <- function(path,
             "be those the run was acquired with. Read `ACQ.M` instead if the ",
             "`.D` directory has one.", call. = FALSE)
   }
-  files <- c(pump = "LPMP1.REG", dad = "LDAD1.REG", sampler = "LALS1.REG",
-             column = "LTHM1.REG")[what]
-  found <- vapply(files, function(f){
-    hit <- list.files(path, paste0("^", f, "$"), ignore.case = TRUE,
-                      full.names = TRUE)
-    if (length(hit)) hit[1] else NA_character_
-  }, "")
-  if (all(is.na(found))){
-    stop("`", path, "` holds none of the requested modules (",
-         paste0("`", files, "`", collapse = ", "), ").", call. = FALSE)
+  files <- list(pump = "LPMP1\\.REG", dad = "LDAD1\\.REG",
+                sampler = "L(ALS|WLS)1\\.REG", column = "LTHM1\\.REG")[what]
+  xml <- c(pump = "Pump", dad = "Dad", sampler = "Sampler",
+           column = "ColumnComp")[what]
+  contents <- list.files(path)
+  find <- function(pattern){
+    hit <- grep(pattern, contents, ignore.case = TRUE, value = TRUE)
+    if (length(hit)) file.path(path, hit[1]) else NA_character_
   }
-  if (any(is.na(found))){
-    warning("No register file for ", paste0("`", names(found)[is.na(found)],
-                                            "`", collapse = ", "),
+  found <- vapply(names(files), function(module){
+    find(paste0("^", files[[module]], "$"))
+  }, "")
+  rapid <- vapply(names(files), function(module){
+    if (!is.na(found[[module]])) return(NA_character_)
+    find(paste0("^Agilent.*", xml[[module]],
+                "Driver.*\\.RapidControl\\.MethodXML\\.xml$"))
+  }, "")
+  missing <- is.na(found) & is.na(rapid)
+  if (all(missing)){
+    stop("`", path, "` holds none of the requested modules (",
+         paste0("`", names(files), "`", collapse = ", "), ").", call. = FALSE)
+  }
+  if (any(missing)){
+    warning("No method settings for ", paste0("`", names(files)[missing],
+                                              "`", collapse = ", "),
             " in `", path, "`.", call. = FALSE)
   }
-  found <- found[!is.na(found)]
-  out <- lapply(names(found), function(module){
+  modules <- names(files)[!missing]
+  out <- lapply(modules, function(module){
+    if (!is.na(rapid[[module]])){
+      f <- rapid[[module]]
+      return(switch(module,
+                    pump = parse_pump_method(f, format_out = format_out,
+                                             gradient_format = gradient_format),
+                    dad = parse_dad_method(f, format_out = format_out),
+                    sampler = parse_multisampler_method(f),
+                    column = parse_column_method(f, format_out = format_out)))
+    }
     reg <- read_chemstation_reg(found[[module]])
     switch(module,
            pump = method_pump(reg, format_out, gradient_format),
@@ -115,7 +143,7 @@ read_chemstation_method <- function(path,
            column = method_column(reg, format_out))
   })
   names(out) <- c(pump = "pump", dad = "dad", sampler = "autosampler",
-                  column = "column")[names(found)]
+                  column = "column")[modules]
   out
 }
 
@@ -221,19 +249,24 @@ method_dad <- function(reg, format_out){
     reference_bandwidth_nm = ifelse(ref, method_num(reg, sprintf("Reference%sBw",
                                                                  ids)),
                                     NA_real_))
-  list(spectra_from_nm = method_num(reg, "RangeFrom"),
-       spectra_to_nm = method_num(reg, "RangeTo"),
-       spectra_step_nm = method_num(reg, "RangeStep"),
+  list(peakwidth_nm = method_num(reg, "Peakwidth"),
+       slitwidth_nm = method_num(reg, "Slit"),
        uv_lamp_required = method_num(reg, "UVLamp") %in% 1,
        vis_lamp_required = method_num(reg, "VisLamp") %in% 1,
+       spectra_from_nm = method_num(reg, "RangeFrom"),
+       spectra_to_nm = method_num(reg, "RangeTo"),
+       spectra_step_nm = method_num(reg, "RangeStep"),
        signals = convert_format_out(signals, format_out = format_out))
 }
 
 #' @noRd
 method_sampler <- function(reg){
-  list(injection_volume_uL = method_num(reg, "INJVOLUME"),
+  list(thermostat_installed = NA,
        draw_speed_uL_min = method_num(reg, "DRAWSPEED"),
-       eject_speed_uL_min = method_num(reg, "EJECTSPEED"))
+       eject_speed_uL_min = method_num(reg, "EJECTSPEED"),
+       wait_after_draw_min = NA_real_,
+       injection_volume_uL = method_num(reg, "INJVOLUME"),
+       wash_time_s = NA_real_)
 }
 
 #' @noRd
@@ -243,8 +276,13 @@ method_column <- function(reg, format_out){
     method_num(reg, "RightTemp")
   } else left
   temps <- c(left, right)
-  list(temp_controls = convert_format_out(
-    data.frame(side = c("Left", "Right"),
-               temperature_C = replace(temps, temps < -273.15, NA)),
-    format_out = format_out))
+  post <- method_num(reg, "Posttime")
+  list(post_time_min = if (isTRUE(post > 0)) post else NA_real_,
+       temp_controls = convert_format_out(
+         data.frame(side = c("Left", "Right"),
+                    temperature_C = replace(temps, temps < -273.15, NA),
+                    not_ready_limit_C = method_num(reg, c("LeftReady",
+                                                          "RightReady")),
+                    equilibration_time_min = NA_real_),
+         format_out = format_out))
 }
