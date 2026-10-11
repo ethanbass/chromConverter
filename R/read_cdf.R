@@ -17,6 +17,10 @@
 #' Either kind of file warns about a unit it does not recognize and reads it
 #' as seconds.
 #'
+#' Some writers that do not record peak heights fill `peak_height` with `-1`
+#' or `0` for every peak. A `chromatographr` peak table returns `NA` heights
+#' in these cases.
+#'
 #' @inheritParams shared_params
 #' @param path Path to ANDI netCDF file.
 #' @param data_format Whether to return data in `wide` or `long` format.
@@ -182,6 +186,10 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
         peak_table <- chromatographr_peak_table(peak_table, list(
           rt = "peak_retention_time", start = "peak_start_time",
           end = "peak_end_time", area = "peak_area", height = "peak_height"))
+        h <- peak_table$height
+        if (length(unique(h)) == 1 && h[1] %in% c(-1, 0)){
+          peak_table$height <- NA_real_
+        }
       }
     } else {
       warning("No peak table found in this file.", call. = FALSE)

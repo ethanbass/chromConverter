@@ -71,6 +71,10 @@ seconds, the only unit the specification suggests, unless a
 
 Either kind of file warns about a unit it does not recognize and reads it
 as seconds.
+
+Some writers that do not record peak heights fill \code{peak_height} with \code{-1}
+or \code{0} for every peak. A \code{chromatographr} peak table returns \code{NA} heights
+in these cases.
 }
 \examples{
 \dontrun{

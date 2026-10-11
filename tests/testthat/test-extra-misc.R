@@ -65,6 +65,8 @@ test_that("read_cdf function can read peak tables", {
   expect_true("peak_name" %in% names(y))
   expect_equal(x$rt, y$peak_retention_time)
   expect_equal(x$area, y$peak_area)
+  expect_true(all(is.na(x$height)))
+  expect_true(all(y$peak_height == -1))
 })
 
 test_that("read_chroms can read ANDI MS files", {
