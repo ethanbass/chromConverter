@@ -15,6 +15,7 @@
 * Dropped `what = "chroms"` from `read_varian_sms`, which returned an internal table rather than a chromatogram. Use `what = "TIC"` or `"BPC"`.
 * `extract_metadata` now returns one row per sample, retaining the values its chromatograms agree on. The `by = "chromatogram"` argument restores one row per chromatogram (in nested lists).
 * The example file `extdata/ladder.txt` is now `extdata/alkane_ladder.txt`, documented at `?alkane_ladder`. Update the path in `system.file` calls.
+* `read_agilent_amx` now names solvent channels `A`–`D` rather than `Channel_A`, matching the gradient's `pct_A` columns, and DAD signals `A`, `B`, etc. rather than `SigA`.
 * 'Chromatotec' times are now in minutes, and original peak tables name `U2`, `U5` and `U6` as `Start`, `End` and `SubstanceIndex`.
 
 ### New features
@@ -85,6 +86,7 @@
 * `read_agilent_amx` now warns when a method doesn't contain a requested module, such as a DAD on an instrument that has none, and returns the others. Asking for that module alone now gives a clear error.
 * Version 179 'ChemStation' `.ch` files written by 'Asterix ChemStation' are now decoded as 8-byte doubles. They were incorrectly read as 4-byte floats, which compressed the signal into tiny values near 0.001.
 * The `solvents` table from `read_agilent_amx` now returns the class that `format_out` asks for.
+* `read_agilent_amx` signal tables now include each signal's reference wavelength and bandwidth, as `reference_nm` and `reference_bandwidth_nm`.
 * `read_agilent_dx(what = "instrument")` now gives a clear error for an archive without instrument data.
 * Improved handling of metadata from'ChemStation' report files including additional fields such as `run_datetime`, injection volume, `method`, and the `sample_name`.
 * `extract_metadata` no longer erroneously splits the `source_file` of 'ChemStation' peak lists into one column per sample.

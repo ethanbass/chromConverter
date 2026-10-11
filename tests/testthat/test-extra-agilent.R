@@ -1181,6 +1181,11 @@ test_that("read_agilent_amx works correctly, part 2", {
   expect_equal(method2$column$temp_controls$temperature_C, c(40, 40))
   expect_equal(method2$autosampler$injection_volume_uL, 5)
   expect_equal(as.numeric(method2$metadata$created), 1770419005)
+  expect_equal(method2$pump$solvents$channel, c("A", "B"))
+  expect_equal(method2$pump$solvents$solvent,
+               c("Water V.03", "Acetonitrile V.03"))
+  expect_equal(method2$dad$signals$id, c("A", "B", "C", "D"))
+  expect_true(all(is.na(method2$dad$signals$reference_nm)))
 
   method_dt <- read_agilent_amx(path, format_out = "data.table",
                                 gradient_format = "long")

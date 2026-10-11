@@ -49,8 +49,8 @@ and it is an error if none of the requested modules has one. The \code{comp} mod
 \strong{\code{pump}} — a list with scalar elements \code{flow_mL_min}, \code{stop_time_min},
 \code{post_time_min}, \code{pressure_low_bar}, \code{pressure_high_bar}, plus:
 \describe{
-\item{\code{solvents}}{A table of active solvent channels: \code{channel},
-\code{percentage}, \code{solvent}.}
+\item{\code{solvents}}{A table of active solvent channels: \code{channel} (e.g.
+\code{"A"}), \code{percentage} and \code{solvent} (its name, or \code{NA}).}
 \item{\code{gradient}}{A table of timetable entries. Wide format (default):
 \code{time_min} plus one \verb{pct_<channel>} column per active channel, and a
 \code{flow_mL_min} column if the timetable changes the flow. Long format:
@@ -62,8 +62,9 @@ flow in mL/min.}
 \code{uv_lamp_required}, \code{vis_lamp_required}, \code{spectra_from_nm},
 \code{spectra_to_nm}, \code{spectra_step_nm}, plus:
 \describe{
-\item{\code{signals}}{A table of active signals: \code{id}, \code{wavelength_nm},
-\code{bandwidth_nm}.}
+\item{\code{signals}}{A table of active signals: \code{id} (e.g. \code{"A"}),
+\code{wavelength_nm}, \code{bandwidth_nm}, \code{reference_nm} and
+\code{reference_bandwidth_nm} (\code{NA} without a reference).}
 }
 
 \strong{\code{column}} — a list with scalar element \code{post_time_min}, plus:

@@ -35,8 +35,8 @@
 #'   **`pump`** — a list with scalar elements `flow_mL_min`, `stop_time_min`,
 #'   `post_time_min`, `pressure_low_bar`, `pressure_high_bar`, plus:
 #'   \describe{
-#'     \item{`solvents`}{A table of active solvent channels: `channel`,
-#'       `percentage`, `solvent`.}
+#'     \item{`solvents`}{A table of active solvent channels: `channel` (e.g.
+#'       `"A"`), `percentage` and `solvent` (its name, or `NA`).}
 #'     \item{`gradient`}{A table of timetable entries. Wide format (default):
 #'       `time_min` plus one `pct_<channel>` column per active channel, and a
 #'       `flow_mL_min` column if the timetable changes the flow. Long format:
@@ -48,8 +48,9 @@
 #'   `uv_lamp_required`, `vis_lamp_required`, `spectra_from_nm`,
 #'   `spectra_to_nm`, `spectra_step_nm`, plus:
 #'   \describe{
-#'     \item{`signals`}{A table of active signals: `id`, `wavelength_nm`,
-#'       `bandwidth_nm`.}
+#'     \item{`signals`}{A table of active signals: `id` (e.g. `"A"`),
+#'       `wavelength_nm`, `bandwidth_nm`, `reference_nm` and
+#'       `reference_bandwidth_nm` (`NA` without a reference).}
 #'   }
 #'
 #'   **`column`** — a list with scalar element `post_time_min`, plus:
@@ -165,15 +166,15 @@ parse_pump_method <- function(file_path, format_out = "data.frame",
 
   solvents <- purrr::map_dfr(solvent_nodes, function(node) {
     data.frame(
-      channel    = get_amx_val(node, ".//Channel"),
+      channel    = sub("^Channel_", "", get_amx_val(node, ".//Channel")),
       in_use     = get_amx_bool(node, ".//Used"),
       percentage = get_amx_num(node, ".//Percentage"),
-      solvent    = get_amx_val(node, ".//Name")
+      solvent    = amx_solvent_name(node)
     )
   })
   solvents <- solvents[solvents$in_use, setdiff(names(solvents), "in_use")]
 
-  active_channels <- gsub("Channel_", "", solvents$channel)
+  active_channels <- solvents$channel
 
   timetable_nodes <- xml2::xml_find_all(doc, ".//TimetableEntry")
 
@@ -265,14 +266,20 @@ parse_dad_method <- function(file_path, format_out = "data.frame") {
 
   signals <- purrr::map_dfr(signal_nodes, function(node) {
     data.frame(
-      id            = get_amx_val(node, ".//ID"),
+      id            = sub("^Sig", "", get_amx_val(node, ".//ID")),
       in_use        = get_amx_bool(node, ".//UseSignal"),
       wavelength_nm = suppressWarnings(
         get_amx_num(node, ".//Wavelength")
       ),
       bandwidth_nm  = suppressWarnings(
         get_amx_num(node, ".//Bandwidth")
-      )
+      ),
+      reference_nm = if (isTRUE(get_amx_bool(node, ".//UseReference"))){
+        get_amx_num(node, ".//RefWavelength")
+      } else NA_real_,
+      reference_bandwidth_nm = if (isTRUE(get_amx_bool(node, ".//UseReference"))){
+        get_amx_num(node, ".//RefBandwidth")
+      } else NA_real_
     )
   })
   signals <- signals[signals$in_use, setdiff(names(signals), "in_use")]
@@ -328,6 +335,23 @@ parse_column_method <- function(file_path, format_out = "data.frame") {
     post_time_min = get_amx_num(doc, ".//PostTimeValue"),
     temp_controls = temp_controls
   )
+}
+
+#' Name of the solvent in a pump channel
+#'
+#' The name entered by the user, or else the solvent chosen for the channel's
+#' selected inlet: a `Name` under `ExtendedSolventType` in newer schemas, a
+#' `SolventName` under `SolventType` in older ones.
+#' @noRd
+amx_solvent_name <- function(node){
+  inlet <- get_amx_val(node, "./SelectedSolventChannel")
+  if (is.na(inlet)) inlet <- "Channel1"
+  for (path in sprintf(c("./%sUserName", "./%sExtendedSolventType//Name",
+                         "./%sSolventType/SolventName"), inlet)){
+    name <- get_amx_val(node, path)
+    if (!is.na(name) && nzchar(name)) return(name)
+  }
+  NA_character_
 }
 
 #' Get AMX value
