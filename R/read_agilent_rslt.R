@@ -97,5 +97,5 @@ read_agilent_rslt <- function(path, what = c("chroms","dad"), path_out = NULL,
   names(data) <- if (sample_names == "sample_name"){
     name_by_sample_name(data, file_names)
   } else file_names
-  structure(data, class = "chrom_list")
+  structure(data, class = c("chrom_list", "list"))
 }

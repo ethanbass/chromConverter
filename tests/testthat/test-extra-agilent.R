@@ -960,6 +960,7 @@ test_that("read_agilent_rslt attaches metadata from the .acaml file", {
   path <- system.file("openlab.sirslt", package = "chromConverterExtraTests")
   skip_if_not(dir.exists(path))
 
+  expect_identical(class(read_agilent_rslt(path)), c("chrom_list", "list"))
   s <- read_agilent_rslt(path)[[1]]
 
   # acaml fields are attached to the list holding the injection's traces,

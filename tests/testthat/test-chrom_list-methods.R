@@ -731,3 +731,22 @@ test_that("numeric metadata stay numbers and print to `digits`", {
                                                  digits = 3)), collapse = "\n"),
                "0.333, 0.667", fixed = TRUE)
 })
+
+test_that("`[` keeps a chrom_list a list and carries `warped` but no other list attributes", {
+  m <- matrix(1:4, 2, 2)
+  x <- structure(list(a = m, b = m, c = m), class = "chrom_list",
+                 warped = TRUE, warping_args = list(reference = 3))
+  y <- x[1:2]
+  expect_identical(class(y), c("chrom_list", "list"))
+  expect_true(attr(y, "warped"))
+  expect_null(attr(y, "warping_args"))
+  expect_identical(names(y), c("a", "b"))
+  expect_null(attr(structure(list(a = m), class = c("chrom_list", "list"))[1],
+                   "warped"))
+})
+
+test_that("c() returns a chrom_list that is also a list", {
+  m <- matrix(1:4, 2, 2)
+  x <- structure(list(a = m), class = "chrom_list")
+  expect_identical(class(c(x, list(b = m))), c("chrom_list", "list"))
+})

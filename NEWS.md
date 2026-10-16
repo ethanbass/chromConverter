@@ -141,6 +141,7 @@
 * `read_chromeleon` now honors `decimal_mark = ","` when it is given explicitly. Previously, the commas were stripped, inflating every value.
 * `read_peaklist` now warns about files it cannot parse and drops them, rather than returning the error message as a peak table.
 * `read_mzml` now returns DAD data in the correct class as requested by `format_out`.
+* `c()` now returns a `chrom_list` that is also a `list` when combining `chrom_list` objects, such as the output of two `read_chroms` calls. Previously the result was not a `list`, so chromatographR's `preprocess` rejected it.
 
 ## chromConverter 0.10.0
 

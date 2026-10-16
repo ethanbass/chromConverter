@@ -375,7 +375,10 @@ block_header_fields <- function(cols, group){
 #' Subset a `chrom_list` object
 #'
 #' Extracts a subset of a `chrom_list` while preserving its class, so
-#' the result remains a `chrom_list` rather than a plain `list`.
+#' the result remains a `chrom_list` rather than a plain `list`. Of the list's
+#' own attributes, only `warped`, which chromatographR's `correct_rt` sets on
+#' aligned chromatograms, is kept, since a subset of aligned chromatograms is
+#' still aligned.
 #'
 #' @param x A `chrom_list` object.
 #' @param i Indices specifying elements to extract.
@@ -387,9 +390,13 @@ block_header_fields <- function(cols, group){
 #' @keywords internal
 `[.chrom_list` <- function(x, i, ...) {
   out <- NextMethod()
-  class(out) <- class(x)
+  keep <- intersect(CHROM_LIST_SUBSET_ATTRS, names(attributes(x)))
+  attributes(out)[keep] <- attributes(x)[keep]
+  class(out) <- union(class(x), "list")
   out
 }
+
+CHROM_LIST_SUBSET_ATTRS <- "warped"
 
 #' Metadata fields the chromatograms of a sample agree on
 #'
@@ -579,6 +586,6 @@ set_leaf_attrs <- function(x, vals){
 #' @keywords internal
 c.chrom_list <- function(...) {
   out <- NextMethod()
-  class(out) <- "chrom_list"
+  class(out) <- c("chrom_list", "list")
   out
 }

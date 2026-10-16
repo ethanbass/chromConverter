@@ -18,6 +18,9 @@ A \code{chrom_list} containing the selected elements.
 }
 \description{
 Extracts a subset of a \code{chrom_list} while preserving its class, so
-the result remains a \code{chrom_list} rather than a plain \code{list}.
+the result remains a \code{chrom_list} rather than a plain \code{list}. Of the list's
+own attributes, only \code{warped}, which chromatographR's \code{correct_rt} sets on
+aligned chromatograms, is kept, since a subset of aligned chromatograms is
+still aligned.
 }
 \keyword{internal}

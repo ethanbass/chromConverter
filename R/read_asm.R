@@ -92,7 +92,7 @@ read_asm <- function(path, what = c("chroms", "MS1"),
     dat
   })
   if (length(samples) == 1) return(samples[[1]])
-  structure(samples, class = "chrom_list")
+  structure(samples, class = c("chrom_list", "list"))
 }
 
 #' List the measurement documents of an ASM file
