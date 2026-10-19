@@ -232,7 +232,7 @@ sessionInfo()
 #> [41] ragg_1.5.2         pkgconfig_2.0.3    desc_1.4.3         pkgdown_2.2.1     
 #> [45] bslib_0.12.0       pillar_1.11.1      gtable_0.3.6       glue_1.8.1        
 #> [49] Rcpp_1.1.2         systemfonts_1.3.2  tidyselect_1.2.1   tibble_3.3.1      
-#> [53] xfun_0.61          knitr_1.52         farver_2.1.2       htmltools_0.5.9   
+#> [53] xfun_0.62          knitr_1.52         farver_2.1.2       htmltools_0.5.9   
 #> [57] labeling_0.4.3     rmarkdown_2.32     compiler_4.6.1     entab_0.3.1       
-#> [61] S7_0.2.2           readxl_1.5.0.1
+#> [61] S7_0.2.2           readxl_1.6.0
 ```
