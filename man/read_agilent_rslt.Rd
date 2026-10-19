@@ -71,8 +71,9 @@ Combines raw chromatogram data from \code{.dx} files with injection-level
 metadata parsed from the accompanying \code{.acaml} file.
 }
 \details{
-Currently this function only reads \code{.dx} chromatogram files. Peak tables
-stored in \code{.rx} files are not yet supported.
+Currently this function only reads \code{.dx} chromatogram files. To read the
+peak tables stored in \code{.rx} files, use \link{read_peaklist} with
+\code{format_in = "openlab"}.
 }
 \examples{
 \dontrun{

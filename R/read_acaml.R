@@ -68,11 +68,11 @@ read_acaml <- function(path, find_files,
 read_acaml_single <- function(path, format_out = c("data.frame","data.table",
                                                    "tibble")) {
   doc <- xml2::read_xml(path)
-  ns <- xml2::xml_ns(doc)
+  ns <- character()
 
-  setup_nodes <- xml2::xml_find_all(doc, ".//*[local-name()='Samples']/*[local-name()='Setup']")
+  setup_nodes <- xml2::xml_find_all(doc, ".//*[local-name()='Samples']/*[local-name()='Setup']", ns = ns)
   vol_lookup <- purrr::map(setup_nodes, function(s){
-    vol_node <- xml2::xml_find_first(s, ".//*[local-name()='AcqParam']/*[local-name()='InjectionVolume']")
+    vol_node <- xml2::xml_find_first(s, ".//*[local-name()='AcqParam']/*[local-name()='InjectionVolume']", ns = ns)
     if (is.na(vol_node)){
       list(InjectionVolume = NA, InjectionVolume_unit = NA)
     } else {
@@ -84,12 +84,12 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
   })
   names(vol_lookup) <- xml2::xml_attr(setup_nodes, "id")
 
-  app <- xml2::xml_find_first(doc, ".//*[local-name()='AcquisitionApplication']/*[local-name()='AgilentApp']")
-  software <- if (is.na(app)) NA_character_ else xml2::xml_text(xml2::xml_find_first(app, "*[local-name()='Name']"))
-  software_version <- if (is.na(app)) NA_character_ else trimws(xml2::xml_text(xml2::xml_find_first(app, "*[local-name()='Version']")))
+  app <- xml2::xml_find_first(doc, ".//*[local-name()='AcquisitionApplication']/*[local-name()='AgilentApp']", ns = ns)
+  software <- if (is.na(app)) NA_character_ else xml2::xml_text(xml2::xml_find_first(app, "*[local-name()='Name']", ns = ns))
+  software_version <- if (is.na(app)) NA_character_ else trimws(xml2::xml_text(xml2::xml_find_first(app, "*[local-name()='Version']", ns = ns)))
 
   injections <- xml2::xml_find_all(doc,
-                                   ".//*[local-name()='InjectionMetaData']")
+                                   ".//*[local-name()='InjectionMetaData']", ns = ns)
 
   df <- purrr::map(injections, function(node) {
     attrs <- xml2::xml_attrs(node)
@@ -97,7 +97,7 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
     val_nodes <- c("ReplicateNumber", "SampleAmount",
                    "SampleInjectionsCount", "SampleOrderNumber")
     val_data <- purrr::map(val_nodes, function(tag) {
-      child <- xml2::xml_find_first(node, paste0("*[local-name()='", tag, "']"))
+      child <- xml2::xml_find_first(node, paste0("*[local-name()='", tag, "']"), ns = ns)
       if (is.na(child)) return(stats::setNames(list(NA), tag))
       v <- xml2::xml_attr(child, "val")
       u <- xml2::xml_attr(child, "unit")
@@ -113,7 +113,7 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
 
     text_nodes <- c("Dil", "Mult", "Locked")
     text_data <- purrr::map(text_nodes, function(tag) {
-      child <- xml2::xml_find_first(node, paste0("*[local-name()='", tag, "']"))
+      child <- xml2::xml_find_first(node, paste0("*[local-name()='", tag, "']"), ns = ns)
       v <- if (is.na(child)) NA else xml2::xml_text(child)
       stats::setNames(list(v), tag)
     }) |> purrr::list_flatten()

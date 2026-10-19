@@ -2,6 +2,7 @@
 
 ### New features
 
+* `read_peaklist` now reads peak tables from 'Agilent OpenLab CDS' `.rx` files with `format_in = "openlab"`, named by signal from the `.acaml` file beside them.
 * Added `get_element` to extract one element, such as `"dad"` or a pump pressure trace, from each sample of a `chrom_list` read with several `what` values.
 
 ### Bug fixes and other minor changes

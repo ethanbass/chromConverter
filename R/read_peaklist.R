@@ -9,7 +9,9 @@
 #' whether every path is a file.
 #' @param format_in Format of files to be imported/converted. One of
 #' `chemstation` (the default), `shimadzu_fid`, `shimadzu_dad`,
-#' `shimadzu_lcd`, `shimadzu_gcd`, `chromatotec`, `asm` or `cdf` (ANDI chrom).
+#' `shimadzu_lcd`, `shimadzu_gcd`, `chromatotec`, `asm`, `cdf` (ANDI chrom) or
+#' `openlab` ('Agilent OpenLab CDS' `.rx` files, named by signal from the
+#' `.acaml` file beside them).
 #' @param pattern A pattern (e.g. a file extension). Defaults to `NULL`, in
 #' which case the file extension will be deduced from `format_in`.
 #' @param sort_by How to sort the samples: `auto` (default) sorts files by
@@ -44,7 +46,7 @@ read_peaklist <- function(paths, find_files,
                         format_in = c("chemstation", "shimadzu_fid",
                                       "shimadzu_dad", "shimadzu_lcd",
                                       "shimadzu_gcd", "chromatotec", "asm",
-                                      "cdf"),
+                                      "cdf", "openlab"),
                         pattern = NULL,
                         peaktable_format = c("chromatographr", "original"),
                         metadata_format = c("chromconverter", "raw"),
@@ -61,7 +63,7 @@ read_peaklist <- function(paths, find_files,
   format_in <- match.arg(tolower(format_in),
                          c("chemstation", "shimadzu_fid", "shimadzu_dad",
                            "shimadzu_lcd", "shimadzu_gcd", "chromatotec",
-                           "asm", "cdf"))
+                           "asm", "cdf", "openlab"))
   sort_by <- match.arg(sort_by, c("auto", "none", "acquisition_time",
                                    "file_time"))
   if (missing(progress_bar)){
@@ -121,6 +123,11 @@ read_peaklist <- function(paths, find_files,
                       format_out = "data.frame",
                       read_metadata = read_metadata,
                       metadata_format = metadata_format)
+  } else if (format_in == "openlab"){
+    pattern <- ifelse(is.null(pattern), "\\.rx$", pattern)
+    acaml_cache <- new.env()
+    parser <- partial(read_agilent_rx, peaktable_format = peaktable_format,
+                      read_metadata = read_metadata, acaml_cache = acaml_cache)
   }
   files <- collect_files(paths, pattern, search_dirs = find_files)
   if (sort_by == "file_time"){

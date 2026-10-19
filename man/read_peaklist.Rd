@@ -8,7 +8,7 @@ read_peaklist(
   paths,
   find_files,
   format_in = c("chemstation", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
-    "shimadzu_gcd", "chromatotec", "asm", "cdf"),
+    "shimadzu_gcd", "chromatotec", "asm", "cdf", "openlab"),
   pattern = NULL,
   peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
@@ -28,7 +28,9 @@ whether every path is a file.}
 
 \item{format_in}{Format of files to be imported/converted. One of
 \code{chemstation} (the default), \code{shimadzu_fid}, \code{shimadzu_dad},
-\code{shimadzu_lcd}, \code{shimadzu_gcd}, \code{chromatotec}, \code{asm} or \code{cdf} (ANDI chrom).}
+\code{shimadzu_lcd}, \code{shimadzu_gcd}, \code{chromatotec}, \code{asm}, \code{cdf} (ANDI chrom) or
+\code{openlab} ('Agilent OpenLab CDS' \code{.rx} files, named by signal from the
+\code{.acaml} file beside them).}
 
 \item{pattern}{A pattern (e.g. a file extension). Defaults to \code{NULL}, in
 which case the file extension will be deduced from \code{format_in}.}

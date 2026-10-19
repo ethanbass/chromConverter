@@ -1481,3 +1481,57 @@ test_that("read_chemstation_reg reads a ChemStation A.00.01 LCDIAG.REG", {
   expect_lt(abs(as.numeric(pmp$value[pmp$key == "StopPressure"]) - 53.1), 0.05)
   expect_equal(pmp$value[pmp$key == "DateTime"], "18-Nov-10, 15:48:06")
 })
+
+test_that("read_peaklist reads an 'OpenLab' .rx file with no integrated peaks", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("openlab.sirslt", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path))
+
+  x <- read_peaklist(path, format_in = "openlab", progress_bar = FALSE)
+  expect_s3_class(x, "peak_list")
+  expect_equal(names(x), "Norbert II-2026-05-26 16-19-41-05-00")
+  expect_length(x[[1]], 0)
+  expect_equal(attr(x[[1]], "method"), "flow_rate_simple_test")
+})
+
+test_that("read_peaklist reads peak tables from an 'OpenLab' sequence", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("openlab_rx", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path))
+
+  x <- read_peaklist(path, format_in = "openlab", progress_bar = FALSE)
+  expect_s3_class(x, "peak_list")
+  expect_equal(names(x), c("D2F-A2_1", "D2F-A3_407"))
+  expect_setequal(names(x[[2]]), c("200", "229", "260", "360"))
+
+  tab <- x[["D2F-A3_407"]][["229"]]
+  expect_equal(names(tab), c("sample", "lambda", "rt", "start", "end", "area",
+                             "height", "FWHM"))
+  expect_equal(tab$lambda[1], 229)
+  expect_false(is.unsorted(tab$rt))
+  expect_true(all(tab$start <= tab$rt & tab$rt <= tab$end))
+  # areas and heights as shown in 'OpenLab' Data Analysis
+  expect_equal(round(tab$area[1:3], 3), c(101.124, 43.300, 31.893))
+  expect_equal(round(tab$height[1:3], 3), c(25.861, 13.791, 12.026))
+
+  expect_equal(attr(tab, "signal_descriptor"), "DAD1A,Sig=229,4  Ref=off")
+  expect_equal(attr(tab, "detector"), "DAD")
+  expect_equal(attr(tab, "sample_name"), "407")
+  expect_equal(attr(tab, "sample_position"), "D2F-A3")
+  expect_equal(attr(tab, "batch"), "Demog_S0_P1")
+  # each injection gets its own row of the sequence's .acaml
+  expect_equal(attr(x[["D2F-A2_1"]][[1]], "sample_name"), "1")
+  expect_equal(attr(tab, "run_datetime"),
+               as.POSIXct("2026-07-22 15:27:52", tz = "UTC"))
+
+  y <- read_peaklist(path, format_in = "openlab", progress_bar = FALSE,
+                     peaktable_format = "original")
+  y <- y[["D2F-A3_407"]][["229"]]
+  expect_true(all(c("RetentionTime", "BeginTime", "EndTime", "BaselineCode",
+                    "WidthBase", "CompoundName") %in% names(y)))
+  expect_equal(y$CompoundName[1:3], c("Sinigrin", "GS_1ME", "GS_6MSOH"))
+})
