@@ -589,3 +589,52 @@ c.chrom_list <- function(...) {
   class(out) <- c("chrom_list", "list")
   out
 }
+
+#' Get one element of each sample
+#'
+#' Extracts the same element from every sample of a `chrom_list` whose samples
+#' are themselves lists, such as the output of [read_chroms] with several
+#' `what` values (e.g. `c("dad", "instrument")`). The result has one
+#' chromatogram per sample, which packages that expect a list of chromatograms,
+#' such as chromatographR, accept as is.
+#'
+#' @param x A `chrom_list` whose samples are lists of elements.
+#' @param what The element to extract: a single name (e.g. `"dad"`), or a
+#' vector of names for a nested element (e.g.
+#' `c("instrument", "PMP1, Pressure")`). A nested element can also be written
+#' as one string split at the first colon, as in `"instrument:PMP1, Pressure"`,
+#' unless that string is itself an element name.
+#' @return A list of the extracted chromatograms, with the names and class of
+#' `x`.
+#' @examples
+#' path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+#'                     package = "chromConverter")
+#' run <- read_chroms(path, format_in = "agilent_d",
+#'                    what = c("chroms", "instrument"), progress_bar = FALSE)
+#' pressure <- get_element(run, "instrument:PMP1, Pressure")
+#' head(pressure[[1]])
+#' @seealso [read_chroms], [extract_metadata]
+#' @export
+get_element <- function(x, what){
+  colon <- length(what) == 1 && grepl(":", what, fixed = TRUE) &&
+    !(what %in% names(x[[1]]))
+  if (colon)
+    what <- trimws(c(sub(":.*$", "", what), sub("^[^:]*:", "", what)))
+  path <- function(w){
+    sprintf("`what = %s`", if (colon) deparse(paste(w, collapse = ":")) else deparse(w))
+  }
+  out <- lapply(x, function(xx){
+    el <- if (is.list(xx)) tryCatch(xx[[what]], error = function(e) NULL)
+    if (!is.null(el) && (!is.list(el) || is.data.frame(el))) return(el)
+    if (is.list(el))
+      stop(sprintf("%s is a list, not a chromatogram. Choose one of its elements, e.g. %s. Elements: %s.",
+                   path(what), path(c(what, names(el)[1])),
+                   paste(sQuote(names(el), FALSE), collapse = ", ")), call. = FALSE)
+    parent <- if (length(what) > 1) tryCatch(xx[[what[-length(what)]]], error = function(e) NULL) else xx
+    stop(sprintf("%s was not found. Elements available%s: %s.", path(what),
+                 if (length(what) > 1) sprintf(" in %s", path(what[-length(what)])) else "",
+                 paste(sQuote(names(parent), FALSE), collapse = ", ")), call. = FALSE)
+  })
+  class(out) <- class(x)
+  out
+}

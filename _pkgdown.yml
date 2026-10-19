@@ -8,6 +8,7 @@ reference:
   - read_peaklist
   - extract_metadata
   - add_metadata
+  - get_element
   - write_chroms
 - title: "Agilent parsers"
   contents:

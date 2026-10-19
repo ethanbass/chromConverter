@@ -750,3 +750,27 @@ test_that("c() returns a chrom_list that is also a list", {
   x <- structure(list(a = m), class = "chrom_list")
   expect_identical(class(c(x, list(b = m))), c("chrom_list", "list"))
 })
+
+test_that("get_element extracts one element of each sample", {
+  m <- matrix(1:6, ncol = 1, dimnames = list(1:6, "254"))
+  x <- structure(list(a = list(dad = m, instrument = list(pressure = m * 2)),
+                      b = list(dad = m + 1, instrument = list(pressure = m * 3))),
+                 class = c("chrom_list", "list"))
+  dad <- get_element(x, "dad")
+  expect_s3_class(dad, "chrom_list")
+  expect_equal(names(dad), c("a", "b"))
+  expect_equal(dad$b, m + 1)
+  expect_equal(get_element(x, "instrument:pressure"),
+               get_element(x, c("instrument", "pressure")))
+  expect_equal(get_element(x, "instrument: pressure")$a, m * 2)
+  df <- lapply(x, function(s) list(dad = as.data.frame(s$dad)))
+  expect_equal(get_element(df, "dad")$a, as.data.frame(m))
+  expect_error(get_element(x, "uv"),
+               "`what = \"uv\"` was not found. Elements available: 'dad', 'instrument'")
+  expect_error(get_element(x, "instrument"),
+               "is a list, not a chromatogram.*c\\(\"instrument\", \"pressure\"\\)")
+  expect_error(get_element(x, c("instrument", "flow")),
+               "Elements available in .*: 'pressure'")
+  colon_named <- lapply(x, function(s) c(s, list("dad:raw" = s$dad)))
+  expect_equal(get_element(colon_named, "dad:raw")$a, m)
+})
