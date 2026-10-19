@@ -13,6 +13,8 @@
 
 ### Bug fixes and other minor changes
 
+- `read_peaklist` now warns when two samples get the same name, as
+  `read_chroms` does.
 - [`c()`](https://rdrr.io/r/base/c.html) now returns a `chrom_list` that
   is also a `list` when combining `chrom_list` objects, such as the
   output of two `read_chroms` calls. Previously the result was not a

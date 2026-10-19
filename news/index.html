@@ -47,6 +47,8 @@
 <div class="section level3">
 <h3 id="bug-fixes-and-other-minor-changes-0-11-1">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-0-11-1"></a></h3>
 <ul><li>
+<code>read_peaklist</code> now warns when two samples get the same name, as <code>read_chroms</code> does.</li>
+<li>
 <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> now returns a <code>chrom_list</code> that is also a <code>list</code> when combining <code>chrom_list</code> objects, such as the output of two <code>read_chroms</code> calls. Previously the result was not a <code>list</code>, so chromatographR’s <code>preprocess</code> rejected it.</li>
 <li>Paths to ‘OpenChrom’ and ‘ThermoRawFileParser’ are now saved in <code>tools::R_user_dir("chromConverter", "config")</code> and survive package updates. You may be asked for them once more after upgrading.</li>
 <li>‘Thermo’ RAW files now convert on macOS and Linux when the file path or <code>path_out</code> contains spaces.</li>
