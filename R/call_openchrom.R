@@ -29,7 +29,8 @@
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for
 #' FID, ECD or NPD data, or `wsd` for DAD/UV data.
 #' @param export_format Either `mzml`, `csv`, `cdf`, or `animl`. Defaults to
-#' `mzml`. `mzml` and `cdf` are available only for `msd`.
+#' `mzml`. `mzml` and `cdf` are available only for `msd`. OpenChrom versions
+#' before 1.4 can export only `msd` files, and only to `csv`, `cdf` or `animl`.
 #' @param return_paths Logical. If `TRUE`, the function will return a character
 #' vector of paths to the newly created files.
 #' @param verbose Logical. Whether to print output from OpenChrom to the console.
@@ -82,11 +83,18 @@ call_openchrom <- function(files, path_out = NULL, format_in,
     stop("Export directory not found. Please check `path_out` argument and try again.")
   }
   openchrom_path <- configure_openchrom()
+  legacy <- is_legacy_openchrom(openchrom_path)
+  if (legacy && (format_in != "msd" || export_format == "mzml")){
+    stop("OpenChrom versions before 1.4 can only export `msd` files, ",
+         "with `export_format` set to `csv`, `cdf` or `animl`.", call. = FALSE)
+  }
   path_xml <- write_openchrom_batchfile(files = files, path_out = path_out,
                                         format_in = format_in,
-                                        export_format = export_format)
+                                        export_format = export_format,
+                                        legacy = legacy)
   on.exit(unlink(path_xml), add = TRUE)
-  system(paste0(openchrom_path, " -nosplash -cli -batchfile ", path_xml),
+  system(paste(shQuote(path.expand(openchrom_path)), "-nosplash -cli -batchfile",
+               shQuote(path_xml)),
          ignore.stdout = !verbose, ignore.stderr = !verbose)
   new_files <- fs::path(path_out,
                         fs::path_ext_remove(fs::path_file(files)),
@@ -125,13 +133,16 @@ call_openchrom <- function(files, path_out = NULL, format_in,
 #' @param format_in Either `msd` for mass spectrometry data, `csd` for flame
 #' ionization data, or `wsd` for DAD/UV data.
 #' @param export_format Either `csv`, `cdf`, `mzml`, or `animl`.
+#' @param legacy Logical. Whether to write the `OutputEntries` format read by
+#' OpenChrom versions before 1.4.
 #' @return Returns path to newly created xml batch file.
 #' @author Ethan Bass
 #' @noRd
 write_openchrom_batchfile <- function(files, path_out,
                                       format_in = c("msd", "csd", "wsd"),
                                       export_format = c("csv", "cdf", "mzml",
-                                                        "animl")){
+                                                        "animl"),
+                                      legacy = FALSE){
   path_template <- system.file("openchrom_template.xml",
                                package = "chromConverter")
   x <- xml2::read_xml(x = path_template)
@@ -168,9 +179,17 @@ write_openchrom_batchfile <- function(files, path_out,
                      "csv" = wsd_csv_converter,
                      "animl" = wsd_animl_converter)
   }
-  process_entries <- xml_find_first(x,"//ProcessEntries")
-  for (file in files){
-    xml_add_child(input_entries, .value = gsub("path_out", path_out, parser))
+  if (legacy){
+    converter <- switch(export_format,
+                        "csv" = "org.eclipse.chemclipse.msd.converter.supplier.csv",
+                        "cdf" = "net.openchrom.msd.converter.supplier.cdf",
+                        "animl" = "org.eclipse.chemclipse.msd.converter.supplier.animl")
+    xml2::xml_add_child(x, "OutputEntries") |>
+      xml2::xml_add_child("OutputEntry", converterId = converter) |>
+      xml2::xml_add_child(xml2::xml_cdata(path_out))
+  } else{
+    process_entries <- xml_find_first(x,"//ProcessEntries")
+    xml_add_child(process_entries, .value = gsub("path_out", path_out, parser))
   }
 
   path_xml <- fs::path(path_out, paste0("batchfile_",
@@ -208,40 +227,27 @@ write_openchrom_batchfile <- function(files, path_out,
 configure_openchrom <- function(cli = c("null", "true", "false", "status"), path = NULL){
   cli <- match.arg(cli, c("null", "true", "false", "status"))
   if (is.null(path)){
-    path_parser <- readLines(system.file("shell/path_to_openchrom_commandline.txt", package = 'chromConverter'))
-    if (path_parser == "NULL"){
-      path_parser <- switch(.Platform$OS.type,
-                            unix = "/Applications/Eclipse.app/Contents/MacOS/openchrom",
-                            windows = fs::path(fs::path_home(),
-                                               "AppData/Local/Programs/OpenChrom/openchrom.exe"),
-                            linux = "/snap/bin/openchrom"
-      )
-    }
+    path_parser <- find_openchrom()
   } else{
     path_parser <- path
   }
   if (grepl("app/?$", path_parser)){
     path_parser <- fs::path(path_parser, "Contents/MacOS/openchrom")
   }
-  writeLines(path_parser,
-             con = system.file('shell/path_to_openchrom_commandline.txt',
-                               package='chromConverter'))
-
   if (!file.exists(path_parser)){
     warning("OpenChrom not found!", immediate. = TRUE)
     path_parser <- readline(prompt = "Please provide path to `OpenChrom` command line (v0.4)):")
     if (.Platform$OS.type == "windows"){
       path_parser <- gsub("/","\\\\", path_parser)
     }
-    writeLines(path_parser,
-               con = system.file('shell/path_to_openchrom_commandline.txt',
-                                 package = 'chromConverter'))
+    if (!file.exists(path_parser)){
+      stop("OpenChrom not found at '", path_parser, "'.", call. = FALSE)
+    }
+    write_config_path("openchrom_path", path_parser)
+  } else if (!is.null(path)){
+    write_config_path("openchrom_path", path_parser)
   }
-  path_ini <- switch(.Platform$OS.type,
-                     "unix" = fs::path(gsub("MacOS/openchrom", "", path_parser),
-                                     "Eclipse/openchrom.ini"),
-                     "linux" = fs::path(path_parser, ".uni"),
-                     "windows" = paste0(gsub(".exe", "", path_parser), ".ini"))
+  path_ini <- openchrom_ini_path(path_parser)
   ini <- readLines(path_ini)
   cli_index <- grep("-Denable.cli.support", ini)
   if (length(cli_index) == 0) stop("OpenChrom bindings require OpenChrom version < 1.5")
@@ -269,4 +275,36 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
     writeLines(ini, path_ini)
   }
   path_parser[1]
+}
+
+#' @noRd
+openchrom_ini_path <- function(path_parser){
+  switch(.Platform$OS.type,
+         "unix" = fs::path(gsub("MacOS/openchrom", "", path_parser),
+                           "Eclipse/openchrom.ini"),
+         "linux" = fs::path(path_parser, ".uni"),
+         "windows" = sub("\\.exe$", ".ini", path_parser))
+}
+
+#' Check whether OpenChrom predates version 1.4
+#' @return `TRUE` if `-Dapplication.version` in the OpenChrom ini file is
+#' below 1.4, which use the older batch file format.
+#' @noRd
+is_legacy_openchrom <- function(path_parser){
+  ini <- readLines(openchrom_ini_path(path_parser))
+  version <- sub(".*=", "", grep("-Dapplication.version=", ini, value = TRUE))
+  version <- package_version(sub("\\.x$", "", version[1]), strict = FALSE)
+  isTRUE(version < "1.4")
+}
+
+#' Path to OpenChrom: the saved path, or else the default install location
+#' @noRd
+find_openchrom <- function(){
+  read_config_path("openchrom_path",
+    switch(.Platform$OS.type,
+           unix = "/Applications/Eclipse.app/Contents/MacOS/openchrom",
+           windows = fs::path(fs::path_home(),
+                              "AppData/Local/Programs/OpenChrom/openchrom.exe"),
+           linux = "/snap/bin/openchrom"
+    ))
 }

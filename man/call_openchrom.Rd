@@ -31,7 +31,8 @@ FID, ECD or NPD data, or \code{wsd} for DAD/UV data.}
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
 \item{export_format}{Either \code{mzml}, \code{csv}, \code{cdf}, or \code{animl}. Defaults to
-\code{mzml}. \code{mzml} and \code{cdf} are available only for \code{msd}.}
+\code{mzml}. \code{mzml} and \code{cdf} are available only for \code{msd}. OpenChrom versions
+before 1.4 can export only \code{msd} files, and only to \code{csv}, \code{cdf} or \code{animl}.}
 
 \item{return_paths}{Logical. If \code{TRUE}, the function will return a character
 vector of paths to the newly created files.}

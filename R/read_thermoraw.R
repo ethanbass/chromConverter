@@ -41,6 +41,7 @@ read_thermoraw <- function(path, path_out = NULL,
   if(!file.exists(path)){
     stop("File not found. Check path.")
   }
+  path <- fs::path_expand(path)
   if (is.null(path_out)){
     path_out <- temp_directory(path)
     on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
@@ -50,22 +51,16 @@ read_thermoraw <- function(path, path_out = NULL,
   if(!dir.exists(path_out)){
     stop("Export directory not found. Please check `path_out` argument and try again.")
   }
-  configure_thermo_parser()
+  parser_path <- configure_thermo_parser()
   verbose <- switch(as.character(verbose), "TRUE" = "")
   if (.Platform$OS.type != "windows"){
-    system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
-                                          package='chromConverter'),
-                              " -i=", path, " -o=", path_out, " -a"),
-            stdout = verbose)
+    io <- shQuote(c(path.expand(parser_path), paste0("-i=", path),
+                    paste0("-o=", path_out)))
+    system2("mono", args = c(io, "-a"), stdout = verbose)
     if (read_metadata){
-      system2("sh", args = paste0(system.file('shell/thermofileparser.sh',
-                                              package='chromConverter'),
-                                  " -i=", path, " -o=", path_out, " -m=1"),
-              stdout = verbose)
+      system2("mono", args = c(io, "-m=1"), stdout = verbose)
     }
   } else {
-      parser_path <- readLines(system.file('shell/path_parser.txt',
-                                           package='chromConverter'))
       shell(paste0(parser_path, " -i=", path,
                                 " -o=", path_out, " -a"))
     if (read_metadata){
@@ -73,8 +68,7 @@ read_thermoraw <- function(path, path_out = NULL,
                                 " -o=", path_out, " -m=1"))
     }
   }
-  base_name <- basename(path)
-  base_name <- strsplit(base_name, "\\.")[[1]][1]
+  base_name <- fs::path_ext_remove(basename(path))
   new_path <- fs::path(path_out, base_name, ext = "mzML")
   x <- read_mzml(new_path, format_out)
   if (read_metadata){
@@ -98,41 +92,32 @@ read_thermoraw <- function(path, path_out = NULL,
   x
 }
 
-#' Configure shell script to call ThermoRawFileParser
+#' Find ThermoRawFileParser
 #'
 #' @name configure_thermo_parser
-#' @param reconfigure Whether to re-write the shell script. (Defaults to FALSE,
-#' unless the program finds that reconfiguration is needed).
-#' @return No return value.
+#' @param check Logical. If `TRUE`, report whether the parser exists without
+#' asking for its path.
+#' @return The path to ThermoRawFileParser or, if `check` is `TRUE`, whether
+#' it exists.
 #' @author Ethan Bass
 #' @noRd
 
-configure_thermo_parser <- function(reconfigure = FALSE, check = FALSE){
-  if (.Platform$OS.type == "windows"){
-    path_parser <- readLines(system.file("shell/path_parser.txt", package = 'chromConverter'))
-    exists <- file.exists(path_parser)
-    if (!exists & !check){
-      warning("ThermoRawFileParser not found!", immediate. = TRUE)
-      path_parser <- readline(prompt = "Please provide path to `ThermoRawFileParser.exe`):")
+configure_thermo_parser <- function(check = FALSE){
+  default <- switch(.Platform$OS.type,
+                    windows = "ThermoRawFileParser\\ThermoRawFileParser.exe",
+                    "~/software/ThermoRawFileParser/ThermoRawFileParser.exe")
+  path_parser <- read_config_path("thermorawfileparser_path", default)
+  exists <- file.exists(path_parser)
+  if (!exists & !check){
+    warning("ThermoRawFileParser not found!", immediate. = TRUE)
+    path_parser <- readline(prompt = "Please provide path to `ThermoRawFileParser.exe`):")
+    if (.Platform$OS.type == "windows"){
       path_parser <- gsub("/", "\\\\", path_parser)
-      writeLines(path_parser, con = system.file('shell/path_parser.txt',
-                                              package = 'chromConverter'))
     }
-  } else {
-    shell_script <- readLines(system.file('shell/thermofileparser.sh',
-                                          package = 'chromConverter'))
-    path_parser <- strsplit(shell_script[2]," ")[[1]]
-    path_parser <- path_parser[grep(".exe", path_parser)]
-    exists <- file.exists(path_parser)
-    if (!exists & !check){
-      warning("ThermoRawFileParser not found!", immediate. = TRUE)
-      path_parser <- readline(prompt = "Please provide path to `ThermoRawFileParser.exe`):")
-      shell_script[2] <- paste0("mono ", path_parser, ' "$@"')
-      writeLines(shell_script, con = system.file('shell/thermofileparser.sh',
-                                                 package = 'chromConverter'))
+    if (!file.exists(path_parser)){
+      stop("ThermoRawFileParser not found at '", path_parser, "'.", call. = FALSE)
     }
+    write_config_path("thermorawfileparser_path", path_parser)
   }
-  if (check){
-    exists
-  }
+  if (check) exists else path_parser
 }

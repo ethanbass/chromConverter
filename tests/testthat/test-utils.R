@@ -361,3 +361,49 @@ test_that("meta_chemstation prefers the volume actually injected", {
   expect_equal(vol(list(InjVolume = "50", ActInjVolume = "17")), "17")
   expect_equal(vol(list(InjVolume = "50")), "50")
 })
+
+test_that("paths to external software are saved in the user config directory", {
+  withr::local_envvar(R_USER_CONFIG_DIR = withr::local_tempdir())
+  expect_equal(read_config_path("thermorawfileparser_path", "default"), "default")
+  parser <- withr::local_tempfile()
+  file.create(parser)
+  write_config_path("thermorawfileparser_path", parser)
+  expect_equal(configure_thermo_parser(), normalizePath(parser))
+  expect_true(configure_thermo_parser(check = TRUE))
+  write_config_path("thermorawfileparser_path", "")
+  expect_equal(read_config_path("thermorawfileparser_path", "default"), "default")
+})
+
+test_that("configure_thermo_parser does not save a path that doesn't exist", {
+  skip_if(interactive())
+  withr::local_envvar(R_USER_CONFIG_DIR = withr::local_tempdir())
+  write_config_path("thermorawfileparser_path", "/nope.exe")
+  expect_error(suppressWarnings(configure_thermo_parser()), "not found")
+  expect_equal(read_config_path("thermorawfileparser_path", ""), "/nope.exe")
+})
+
+test_that("write_openchrom_batchfile writes OutputEntries for OpenChrom 1.3", {
+  path_out <- withr::local_tempdir()
+  f <- write_openchrom_batchfile("/a/b.SMS", path_out, "msd", "cdf",
+                                 legacy = TRUE)
+  x <- xml2::read_xml(f)
+  entry <- xml2::xml_find_first(x, "//OutputEntries/OutputEntry")
+  expect_equal(xml2::xml_attr(entry, "converterId"),
+               "net.openchrom.msd.converter.supplier.cdf")
+  expect_equal(xml2::xml_text(entry), path_out)
+  expect_length(xml2::xml_children(xml2::xml_find_first(x, "//ProcessEntries")), 0)
+
+  f <- write_openchrom_batchfile("/a/b.SMS", path_out, "msd", "csv")
+  x <- xml2::read_xml(f)
+  expect_length(xml2::xml_children(xml2::xml_find_first(x, "//InputEntries")), 1)
+  expect_length(xml2::xml_children(xml2::xml_find_first(x, "//ProcessEntries")), 1)
+})
+
+test_that("write_config_path saves relative paths as absolute paths", {
+  withr::local_envvar(R_USER_CONFIG_DIR = withr::local_tempdir())
+  dir <- withr::local_tempdir()
+  file.create(file.path(dir, "parser.exe"))
+  withr::with_dir(dir, write_config_path("thermorawfileparser_path", "parser.exe"))
+  expect_equal(read_config_path("thermorawfileparser_path", ""),
+               normalizePath(file.path(dir, "parser.exe")))
+})

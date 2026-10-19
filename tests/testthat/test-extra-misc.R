@@ -25,6 +25,21 @@ test_that("read_chroms can read 'Thermo' RAW files", {
   expect_equal(attr(y$TIC, "format_out"), "data.table")
 })
 
+test_that("read_thermoraw reads files with dots in their names", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_thermorawfileparser()
+
+  path <- system.file("CirA.raw", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+  dir <- withr::local_tempdir()
+  dotted <- file.path(dir, "CirA.rep1.raw")
+  file.copy(path, dotted)
+  x <- read_thermoraw(dotted, path_out = dir)
+  expect_equal(names(x), c("MS1", "MS2", "DAD", "BPC", "TIC", "chroms", "metadata"))
+})
+
 test_that("read_chroms can use 'OpenChrom' parsers", {
   skip_on_cran()
   skip_on_ci()
@@ -42,6 +57,13 @@ test_that("read_chroms can use 'OpenChrom' parsers", {
   expect_equal(class(x)[1], "matrix")
   expect_equal(dim(x), c(3032, 297))
 
+  x <- read_chroms(path, format_in = "msd", progress_bar = FALSE,
+                   verbose = FALSE, export_format = "cdf",
+                   path_out = tmp)[[1]]
+  expect_equal(dim(x$MS1), c(469732, 3))
+
+  skip_if(is_legacy_openchrom(configure_openchrom()),
+          "OpenChrom versions before 1.4 cannot export mzML.")
   x <- read_chroms(path, format_in = "msd", progress_bar = FALSE,
                    verbose = FALSE, path_out = tmp)[[1]]
   expect_type(x, "list")

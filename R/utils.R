@@ -640,3 +640,19 @@ get_times <- function(x, idx = 1){
     as.numeric(rownames(x))
   }
 }
+
+#' Read and save paths to external software
+#' @noRd
+read_config_path <- function(name, default){
+  f <- fs::path(tools::R_user_dir("chromConverter", "config"), name)
+  saved <- if (file.exists(f)) readLines(f, n = 1)
+  if (length(saved) && nzchar(saved)) saved else default
+}
+
+#' @noRd
+write_config_path <- function(name, value){
+  dir <- tools::R_user_dir("chromConverter", "config")
+  dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+  if (nzchar(value)) value <- normalizePath(value, mustWork = FALSE)
+  writeLines(value, fs::path(dir, name))
+}
