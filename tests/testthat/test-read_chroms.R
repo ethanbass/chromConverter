@@ -470,6 +470,19 @@ test_that("read_chroms exports CDF files correctly", {
   expect_equal(attr(x1[[1]],"time_unit"), attr(x1_out,"time_unit"))
 })
 
+test_that("read_peaklist warns when samples share a name", {
+  tmp <- withr::local_tempdir()
+  for (d in c("a", "b")){
+    dir.create(file.path(tmp, d))
+    file.copy(test_path("testdata/RUTIN2.D"), file.path(tmp, d), recursive = TRUE)
+  }
+  expect_warning(x <- read_peaklist(file.path(tmp, c("a", "b")),
+                                    format_in = "chemstation",
+                                    progress_bar = FALSE),
+                 "duplicated: .RUTIN2.")
+  expect_equal(names(x), c("RUTIN2", "RUTIN2"))
+})
+
 test_that("read_peaklist can read `ChemStation` report files", {
   path <- test_path("testdata/RUTIN2.D/")
 

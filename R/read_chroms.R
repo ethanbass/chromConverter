@@ -242,12 +242,7 @@ read_chroms <- function(paths,
     nms <- name_traces_in_d(nms, files)
   }
   data <- splice_samples(data, nms)
-  if (anyDuplicated(names(data))){
-    duplicated_names <- unique(names(data)[duplicated(names(data))])
-    warning("The following names are duplicated: ",
-            paste(sQuote(duplicated_names), collapse = ", "),
-            ". This may interfere with downstream analyses.", immediate. = TRUE)
-  }
+  warn_duplicate_names(data)
   if (sort_by == "acquisition_time"){
     if (!read_metadata){
       warning("`sort_by = \"acquisition_time\"` requires `read_metadata = TRUE`; skipping sort.",
@@ -381,6 +376,17 @@ name_traces_in_d <- function(nms, files){
   nms[shared] <- paste(nms[shared],
                        fs::path_ext_remove(basename(files[shared])), sep = ".")
   nms
+}
+
+#' Warn about samples that share a name
+#' @noRd
+warn_duplicate_names <- function(data){
+  if (anyDuplicated(names(data))){
+    duplicated_names <- unique(names(data)[duplicated(names(data))])
+    warning("The following names are duplicated: ",
+            paste(sQuote(duplicated_names), collapse = ", "),
+            ". This may interfere with downstream analyses.", immediate. = TRUE)
+  }
 }
 
 #' Sort a list of chromatograms by acquisition time

@@ -171,6 +171,7 @@ read_peaklist <- function(paths, find_files,
     if (is.data.frame(x)) x else transfer_metadata(name_peak_tables(x), x)
   })
   if (!is.null(attr(data, "lambdas"))) attr(data, "lambdas") <- names(data[[1]])
+  warn_duplicate_names(data)
   if (sort_by == "acquisition_time"){
     if (!read_metadata){
       warning("`sort_by = \"acquisition_time\"` requires `read_metadata = TRUE`; skipping sort.",

@@ -7,6 +7,7 @@
 
 ### Bug fixes and other minor changes
 
+* `read_peaklist` now warns when two samples get the same name, as `read_chroms` does.
 * `c()` now returns a `chrom_list` that is also a `list` when combining `chrom_list` objects, such as the output of two `read_chroms` calls. Previously the result was not a `list`, so chromatographR's `preprocess` rejected it.
 * Paths to 'OpenChrom' and 'ThermoRawFileParser' are now saved in `tools::R_user_dir("chromConverter", "config")` and survive package updates. You may be asked for them once more after upgrading.
 * 'Thermo' RAW files now convert on macOS and Linux when the file path or `path_out` contains spaces.
