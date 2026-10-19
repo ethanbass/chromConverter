@@ -13,9 +13,10 @@
 #' @return A `peak_list`: a list with one element per report, named by its
 #' `.D` directory, each holding one peak table per signal, named by
 #' wavelength.
-#' @examples \dontrun{
-#' read_chemstation_reports("path/to/report.txt")
-#' }
+#' @examples
+#' path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+#'                     "Report.TXT", package = "chromConverter")
+#' read_chemstation_reports(path)
 #' @author Ethan Bass
 #' @family 'Agilent' parsers
 #' @export

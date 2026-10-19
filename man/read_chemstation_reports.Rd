@@ -38,9 +38,9 @@ Only \code{Result.xml} records where each peak starts and ends, so it is read in
 preference to a \code{Report.TXT} in the same directory.
 }
 \examples{
-\dontrun{
-read_chemstation_reports("path/to/report.txt")
-}
+path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+                    "Report.TXT", package = "chromConverter")
+read_chemstation_reports(path)
 }
 \seealso{
 Other 'Agilent' parsers:
