@@ -102,11 +102,3 @@ Other 'Shimadzu' parsers:
 ## Author
 
 Ethan Bass
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-read_sz_lcd_3d("path/to/file.lcd")
-} # }
-```

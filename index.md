@@ -335,7 +335,7 @@ the cache.
 
 You can cite chromConverter as follows:
 
-`Bass, E. (2026). chromConverter: Chromatographic File Converter. http://doi.org/10.5281/zenodo.6792521`.
+`Bass, E. (2026). chromConverter: Chromatographic File Converter. https://doi.org/10.5281/zenodo.6792521`.
 
 If you use external libraries to convert your files, please cite those
 libraries as well.

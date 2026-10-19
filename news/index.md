@@ -1,5 +1,28 @@
 # Changelog
 
+## chromConverter 0.11.1
+
+### New features
+
+- `read_peaklist` now reads peak tables from ‘Agilent OpenLab CDS’ `.rx`
+  files with `format_in = "openlab"`, named by signal from the `.acaml`
+  file beside them.
+- Added `get_element` to extract one element, such as `"dad"` or a pump
+  pressure trace, from each sample of a `chrom_list` read with several
+  `what` values.
+
+### Bug fixes and other minor changes
+
+- [`c()`](https://rdrr.io/r/base/c.html) now returns a `chrom_list` that
+  is also a `list` when combining `chrom_list` objects, such as the
+  output of two `read_chroms` calls. Previously the result was not a
+  `list`, so chromatographR’s `preprocess` rejected it.
+- Paths to ‘OpenChrom’ and ‘ThermoRawFileParser’ are now saved in
+  `tools::R_user_dir("chromConverter", "config")` and survive package
+  updates. You may be asked for them once more after upgrading.
+- ‘Thermo’ RAW files now convert on macOS and Linux when the file path
+  or `path_out` contains spaces.
+
 ## chromConverter 0.11.0
 
 ### Breaking changes

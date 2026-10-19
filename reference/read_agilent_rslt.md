@@ -99,8 +99,10 @@ attributes.
 
 ## Details
 
-Currently this function only reads `.dx` chromatogram files. Peak tables
-stored in `.rx` files are not yet supported.
+Currently this function only reads `.dx` chromatogram files. To read the
+peak tables stored in `.rx` files, use
+[read_peaklist](https://ethanbass.github.io/chromConverter/reference/read_peaklist.md)
+with `format_in = "openlab"`.
 
 ## See also
 

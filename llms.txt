@@ -335,7 +335,7 @@ the cache.
 
 You can cite chromConverter as follows:
 
-`Bass, E. (2026). chromConverter: Chromatographic File Converter. http://doi.org/10.5281/zenodo.6792521`.
+`Bass, E. (2026). chromConverter: Chromatographic File Converter. https://doi.org/10.5281/zenodo.6792521`.
 
 If you use external libraries to convert your files, please cite those
 libraries as well.
@@ -352,6 +352,8 @@ libraries as well.
   : Extract metadata
 - [`add_metadata()`](https://ethanbass.github.io/chromConverter/reference/add_metadata.md)
   : Add metadata to a list of chromatograms
+- [`get_element()`](https://ethanbass.github.io/chromConverter/reference/get_element.md)
+  : Get one element of each sample
 - [`write_chroms()`](https://ethanbass.github.io/chromConverter/reference/write_chroms.md)
   : Write chromatograms
 

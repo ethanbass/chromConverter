@@ -10,6 +10,8 @@
   : Extract metadata
 - [`add_metadata()`](https://ethanbass.github.io/chromConverter/reference/add_metadata.md)
   : Add metadata to a list of chromatograms
+- [`get_element()`](https://ethanbass.github.io/chromConverter/reference/get_element.md)
+  : Get one element of each sample
 - [`write_chroms()`](https://ethanbass.github.io/chromConverter/reference/write_chroms.md)
   : Write chromatograms
 

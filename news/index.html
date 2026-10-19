@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,9 +33,25 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.11.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.11.1" id="chromconverter-0111">chromConverter 0.11.1<a class="anchor" aria-label="anchor" href="#chromconverter-0111"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-11-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-11-1"></a></h3>
+<ul><li>
+<code>read_peaklist</code> now reads peak tables from ‘Agilent OpenLab CDS’ <code>.rx</code> files with <code>format_in = "openlab"</code>, named by signal from the <code>.acaml</code> file beside them.</li>
+<li>Added <code>get_element</code> to extract one element, such as <code>"dad"</code> or a pump pressure trace, from each sample of a <code>chrom_list</code> read with several <code>what</code> values.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-and-other-minor-changes-0-11-1">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-0-11-1"></a></h3>
+<ul><li>
+<code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> now returns a <code>chrom_list</code> that is also a <code>list</code> when combining <code>chrom_list</code> objects, such as the output of two <code>read_chroms</code> calls. Previously the result was not a <code>list</code>, so chromatographR’s <code>preprocess</code> rejected it.</li>
+<li>Paths to ‘OpenChrom’ and ‘ThermoRawFileParser’ are now saved in <code>tools::R_user_dir("chromConverter", "config")</code> and survive package updates. You may be asked for them once more after upgrading.</li>
+<li>‘Thermo’ RAW files now convert on macOS and Linux when the file path or <code>path_out</code> contains spaces.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.11.0" id="chromconverter-0110">chromConverter 0.11.0<a class="anchor" aria-label="anchor" href="#chromconverter-0110"></a></h2>
 <div class="section level3">

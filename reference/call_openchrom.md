@@ -49,7 +49,8 @@ call_openchrom(
 - export_format:
 
   Either `mzml`, `csv`, `cdf`, or `animl`. Defaults to `mzml`. `mzml`
-  and `cdf` are available only for `msd`.
+  and `cdf` are available only for `msd`. OpenChrom versions before 1.4
+  can export only `msd` files, and only to `csv`, `cdf` or `animl`.
 
 - return_paths:
 

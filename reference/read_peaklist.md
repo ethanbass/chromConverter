@@ -9,7 +9,7 @@ read_peaklist(
   paths,
   find_files,
   format_in = c("chemstation", "shimadzu_fid", "shimadzu_dad", "shimadzu_lcd",
-    "shimadzu_gcd", "chromatotec", "asm", "cdf"),
+    "shimadzu_gcd", "chromatotec", "asm", "cdf", "openlab"),
   pattern = NULL,
   peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
@@ -37,7 +37,9 @@ read_peaklist(
 
   Format of files to be imported/converted. One of `chemstation` (the
   default), `shimadzu_fid`, `shimadzu_dad`, `shimadzu_lcd`,
-  `shimadzu_gcd`, `chromatotec`, `asm` or `cdf` (ANDI chrom).
+  `shimadzu_gcd`, `chromatotec`, `asm`, `cdf` (ANDI chrom) or `openlab`
+  ('Agilent OpenLab CDS' `.rx` files, named by signal from the `.acaml`
+  file beside them).
 
 - pattern:
 
