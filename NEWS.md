@@ -2,6 +2,7 @@
 
 ### New features
 
+* Mass spectra, TIC and BPC are now read from 'MassHunter' `.d` directories by default, and from 'OpenLab' `.dx` files with `what = c("MS1", "TIC", "BPC")`. See `?read_agilent_d`.
 * `call_rainbow` gains `centroid` and `hrms` arguments to read the centroid and profile mass spectra of 'MassHunter' `.d` directories, which 'rainbow' otherwise skips. See `?call_rainbow`.
 
 ### Bug fixes and other minor changes

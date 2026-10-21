@@ -218,6 +218,7 @@ validate_metadata_names <- function(attrs){
 #' than a format `read_chroms` reads.
 #' @noRd
 .metadata_maps <- list(
+  agilent_ms = "meta_agilent_ms",
   andi_chrom = "meta_andi_chrom",
   andi_ms = "meta_andi_ms",
   asm = "meta_asm",

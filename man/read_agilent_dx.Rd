@@ -19,9 +19,10 @@ read_agilent_dx(
 \item{path}{Path to Agilent \code{.dx} file.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data
-(\code{dad}) and/or auxiliary instrumental data (\code{instrument}), such as
-temperature, pressure or solvent composition. Accepts multiple arguments,
-and defaults to \code{chroms} and \code{dad}. When more than one is requested, any the archive does not contain
+(\code{dad}), auxiliary instrumental data (\code{instrument}), such as
+temperature, pressure or solvent composition, and/or mass spectra (\code{MS1})
+with the total ion chromatogram (\code{TIC}) and base peak chromatogram (\code{BPC}).
+Accepts multiple arguments, and defaults to \code{chroms} and \code{dad}. When more than one is requested, any the archive does not contain
 are left out; a single one that is missing is an error.}
 
 \item{path_out}{A directory to export unzipped files. If a path is not
@@ -45,7 +46,9 @@ element. Defaults to \code{TRUE}.}
 \value{
 A list with one element per type in \code{what}, each a chromatogram or
 a list of chromatograms named by signal, in the format specified by
-\code{format_out} and \code{data_format}. With \code{collapse = TRUE}, a list of one
+\code{format_out} and \code{data_format}. Mass spectra and the \code{BPC} are always in
+long format, with \code{rt}, \code{mz} and \code{intensity} columns, and are returned as a
+\code{data.table} when \code{format_out} is \code{matrix}. With \code{collapse = TRUE}, a list of one
 element is replaced by that element.
 }
 \description{
@@ -56,6 +59,17 @@ The archive is extracted to \code{path_out}, or to a temporary directory that is
 deleted afterwards, and its \code{.ch}, \code{.uv} and \code{.it} files are read with
 \link{read_chemstation_ch}, \link{read_chemstation_uv} and an internal reader for
 \code{.it} files.
+
+The mass spectra of an MS injection are not in the archive. They are in the
+\code{.MSScan.bin} and \code{.MSPeak.bin} files of the same name beside it. The first
+is needed for \code{MS1}, \code{TIC} and \code{BPC}, the second for \code{MS1}. \code{MSScan.bin} holds one
+record per scan, laid out as the archive's \code{MSData/MSScan.xsd} describes,
+which gives the retention time, TIC and base peak of the scan and the
+location of its spectrum in \code{MSPeak.bin}. Each spectrum there is the scan's
+m/z values followed by as many intensities, as 32- or 64-bit floats or
+32-bit integers depending on the scan's spectrum format and size. Only scans
+at MS level 1 are read into \code{MS1}, while the \code{TIC} and \code{BPC} cover every
+scan.
 
 Where the archive holds an \code{injection.acmd} file, the \code{run_datetime} and
 \code{sample_injection_volume} attributes are taken from it. Its run time

@@ -142,6 +142,33 @@ meta_masshunter_dad <- function(meta, ctx){
        detector_y_unit = NA)
 }
 
+#' Field map for 'Agilent' MS acquisitions (`MSScan.bin`)
+#' @noRd
+meta_agilent_ms <- function(meta, ctx){
+  name <- meta$sample_info[["Sample Name"]]
+  list(instrument = get_metadata_field(meta, "InstrumentName"),
+       detector = "MS",
+       detector_model = get_metadata_field(meta, "ModelNumber"),
+       software = NA,
+       method = NA,
+       batch = NA,
+       operator = NA,
+       run_datetime = parse_iso8601(get_metadata_field(meta, "AcquiredTime")),
+       sample_name = sample_name_or_file(list(name = name[nzchar(name)]),
+                                         "name", ctx$source_file),
+       sample_injection_volume = NA,
+       sample_amount = NA,
+       time_range = get_metadata_field(meta, "time_range"),
+       time_interval = NA,
+       time_unit = "Minutes",
+       detector_y_unit = NA,
+       intensity_multiplier = 1,
+       n_scans = get_metadata_field(meta, "NumOfScans"),
+       ms_params = list(serial_number = get_metadata_field(meta, "SerialNumber"),
+                        firmware_version = get_metadata_field(meta, "FirmwareVersion")),
+       parser = "chromconverter")
+}
+
 # --- 'Shimadzu' --------------------------------------------------------------
 
 #' Field map for 'Shimadzu' PDA (3D) ASCII exports

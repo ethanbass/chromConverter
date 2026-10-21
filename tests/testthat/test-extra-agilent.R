@@ -1025,7 +1025,8 @@ test_that("read_agilent_rslt respects its arguments", {
 
   # .sirslt directories are also found by scanning a parent directory
   xp <- read_chroms(dirname(path), format_in = "sirslt", progress_bar = FALSE)
-  expect_equal(names(xp), "Norbert II-2026-05-26 16-19-41-05-00")
+  expect_setequal(names(xp), c("Norbert II-2026-05-26 16-19-41-05-00",
+                               "20220718 MOR47_1"))
 
   # a single element is collapsed unless `collapse = FALSE`
   xc <- read_agilent_rslt(path, what = "chroms")[[1]]
@@ -1534,4 +1535,169 @@ test_that("read_peaklist reads peak tables from an 'OpenLab' sequence", {
   expect_true(all(c("RetentionTime", "BeginTime", "EndTime", "BaselineCode",
                     "WidthBase", "CompoundName") %in% names(y)))
   expect_equal(y$CompoundName[1:3], c("Sinigrin", "GS_1ME", "GS_6MSOH"))
+})
+
+test_that("read_agilent_dx reads the mass spectra of an 'OpenLab' GC-MS injection", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("openlab_gcms.sirslt", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path) && nzchar(path))
+
+  dx <- list.files(path, "\\.dx$", full.names = TRUE)
+  x <- read_agilent_dx(dx, what = c("MS1", "TIC", "BPC"))
+  expect_equal(nrow(x$TIC), 6940)
+  expect_equal(nrow(x$MS1), 129230)
+  expect_equal(unlist(x$MS1[1]), c(rt = 4.097434, mz = 36, intensity = 875),
+               tolerance = 1e-6)
+  rt <- as.numeric(rownames(x$TIC))
+  expect_equal(unique(x$MS1$rt), rt)
+  expect_equal(rowsum(x$MS1$intensity, x$MS1$rt, reorder = FALSE)[, 1],
+               x$TIC[, 1], ignore_attr = TRUE)
+  expect_equal(as.vector(tapply(x$MS1$intensity, x$MS1$rt, max)), x$BPC$intensity)
+  expect_equal(attr(x$TIC, "detector_model"), "5977")
+  expect_equal(attr(x$TIC, "n_scans"), 6940)
+  expect_equal(attr(x$TIC, "time_range"), range(rt))
+  expect_equal(attr(x$TIC, "sample_injection_volume"), 1)
+
+  x <- read_chroms(path, format_in = "agilent_rslt", what = c("chroms", "TIC"),
+                   progress_bar = FALSE)
+  expect_equal(names(x[[1]]), c("chroms", "TIC"))
+  expect_equal(attr(x[[1]]$chroms, "signal_descriptor"), "FID1A")
+  expect_equal(attr(x[[1]]$TIC, "sample_name"), "20220718 MOR47_1")
+})
+
+test_that("read_agilent_d reads 'MassHunter' GC-MS SIM spectra that match data.ms", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("masshunter_gcms_sim.D", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path) && nzchar(path))
+
+  x <- read_agilent_d(path, what = c("MS1", "TIC"))
+  ref <- read_chemstation_ms(file.path(path, "data.ms"), what = c("MS1", "TIC"),
+                             format_out = "data.frame")
+  expect_equal(as.numeric(rownames(x$TIC)), ref$TIC$rt)
+  expect_equal(x$TIC[, 1], ref$TIC$intensity, ignore_attr = TRUE)
+  ms1 <- x$MS1[order(x$MS1$rt, x$MS1$mz), ]
+  ref <- ref$MS1[order(ref$MS1$rt, ref$MS1$mz), ]
+  expect_equal(nrow(ms1), 7446)
+  expect_equal(ms1$rt, ref$rt)
+  # 'data.ms' rounds m/z to 0.05 and compresses intensities above 2^14
+  expect_true(all(abs(ms1$mz - ref$mz) <= 0.051))
+  expect_true(all(abs(ms1$intensity - ref$intensity) <=
+                    pmax(0.5, 0.005 * ms1$intensity)))
+  expect_equal(sort(unique(round(ms1$mz))), c(43, 60, 73, 74, 87, 101, 115, 129))
+  expect_equal(attr(x$TIC, "n_scans"), 1474)
+  expect_equal(attr(x$TIC, "sample_name"), "AKI2")
+
+  x <- read_chroms(path, format_in = "agilent_d", progress_bar = FALSE)
+  expect_equal(names(x[[1]]), c("MS1", "TIC", "BPC"))
+  expect_equal(nrow(x[[1]]$TIC), 1474)
+})
+
+test_that("read_agilent_d leaves out unreadable mass spectra only by default", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  ms <- system.file("masshunter_gcms_sim.D", "AcqData", package = "chromConverterExtraTests")
+  fid <- system.file("chemstation_179_mustang.ch", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(ms) && nzchar(ms) && file.exists(fid))
+
+  path <- file.path(withr::local_tempdir(), "fid_ms.D")
+  dir.create(file.path(path, "AcqData"), recursive = TRUE)
+  file.copy(list.files(ms, full.names = TRUE), file.path(path, "AcqData"))
+  file.copy(fid, file.path(path, "FID1A.ch"))
+  con <- file(file.path(path, "AcqData", "MSScan.bin"), "r+b")
+  seek(con, 88, rw = "write")
+  writeBin(1000L, con, size = 4)
+  close(con)
+
+  expect_warning(x <- read_agilent_d(path, collapse = FALSE), "Left out")
+  expect_equal(names(x), "chroms")
+  expect_error(read_agilent_d(path, what = c("chroms", "MS1")),
+               "does not match the record layout")
+  expect_error(read_agilent_d(path, what = "MS1"), "parser = \"rainbow\"",
+               fixed = TRUE)
+})
+
+test_that("read_agilent_d reads integer intensities from 'MassHunter' SIM scans", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("masshunter_qqq_sim.d", package = "chromConverterExtraTests")
+  mzml <- system.file("masshunter_qqq_sim.mzML", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path) && nzchar(path) && file.exists(mzml))
+
+  x <- read_agilent_d(path, what = c("MS1", "TIC"), format_out = "data.frame",
+                      data_format = "long")
+  ref <- RaMS::grabMSdata(mzml, grab_what = "chroms", verbosity = 0)$chroms
+  tic <- ref[ref$chrom_type == "TIC", ]
+  sim <- ref[grepl("^SIM", ref$chrom_type), ]
+  expect_equal(x$TIC$rt, tic$rt, tolerance = 1e-6)
+  expect_equal(x$TIC$intensity, tic$int)
+  expect_equal(x$MS1$rt, sim$rt, tolerance = 1e-6)
+  expect_equal(x$MS1$intensity, sim$int)
+  expect_true(all(abs(x$MS1$mz - 609.3) < 0.01))
+})
+
+test_that("read_agilent_d refuses 'MassHunter' profile spectra", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("masshunter.d", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path) && nzchar(path))
+
+  expect_error(read_agilent_d(path, what = "MS1"), "stored as profiles")
+})
+
+test_that("call_rainbow reads 'MassHunter' centroids with `centroid = TRUE`", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_dependencies("rainbow")
+
+  path <- system.file("masshunter_gcms_sim.D", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(path) && nzchar(path))
+
+  x <- call_rainbow(path, format_in = "masshunter", centroid = TRUE,
+                    format_out = "data.frame", data_format = "long")
+  expect_true("MSPeak.bin" %in% names(x$MS))
+  rb <- x$MS$MSPeak.bin
+  native <- read_agilent_d(path, what = "MS1", format_out = "data.frame")
+  native <- native[native$intensity != 0, ]
+  expect_equal(nrow(rb), nrow(native))
+  expect_true(all(abs(sort(rb$intensity) - sort(native$intensity)) < 1))
+})
+
+test_that("read_agilent_d keeps the TIC when the spectra are profiles", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  ms <- system.file("masshunter_gcms_sim.D", "AcqData", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(ms) && nzchar(ms))
+
+  path <- file.path(withr::local_tempdir(), "profile.D")
+  dir.create(file.path(path, "AcqData"), recursive = TRUE)
+  file.copy(list.files(ms, full.names = TRUE), file.path(path, "AcqData"))
+  file.rename(file.path(path, "AcqData", "MSPeak.bin"),
+              file.path(path, "AcqData", "MSProfile.bin"))
+
+  expect_warning(x <- read_agilent_d(path), "Left out .MS1.: The spectra are stored as profiles")
+  expect_equal(names(x), c("TIC", "BPC"))
+  expect_equal(nrow(x$TIC), 1474)
+  expect_error(read_agilent_d(path, what = "MS1"), "parser = \"rainbow\"", fixed = TRUE)
+})
+
+test_that("read_agilent_dx explains where the mass spectra are read from", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("agilent.dx", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path) && nzchar(path))
+
+  path_out <- withr::local_tempdir()
+  expect_error(read_agilent_dx(path, what = c("MS1", "TIC"), path_out = path_out),
+               "agilent.MSScan.bin")
+  expect_length(list.files(path_out, recursive = TRUE), 0)
+  expect_error(read_agilent_dx(path, what = "MS1"), "agilent.MSPeak.bin")
 })

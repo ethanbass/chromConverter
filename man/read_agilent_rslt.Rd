@@ -22,9 +22,10 @@ read_agilent_rslt(
 \item{path}{Path to 'Agilent' \code{.rslt} directory.}
 
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data
-(\code{dad}) and/or auxiliary instrumental data (\code{instrument}), such as
-temperature, pressure or solvent composition. Accepts multiple arguments,
-and defaults to \code{chroms} and \code{dad}. When more than one is requested, any the archive does not contain
+(\code{dad}), auxiliary instrumental data (\code{instrument}), such as
+temperature, pressure or solvent composition, and/or mass spectra (\code{MS1})
+with the total ion chromatogram (\code{TIC}) and base peak chromatogram (\code{BPC}).
+Accepts multiple arguments, and defaults to \code{chroms} and \code{dad}. When more than one is requested, any the archive does not contain
 are left out; a single one that is missing is an error.}
 
 \item{path_out}{A directory to export unzipped files. If a path is not

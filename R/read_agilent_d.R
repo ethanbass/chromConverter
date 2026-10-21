@@ -9,15 +9,28 @@
 #' `"PMP1, PMP1A, Pressure"`). Parts of the file that cannot be read are skipped
 #' with a warning.
 #'
+#' Mass spectra are read from the `AcqData` folder of a 'MassHunter' `.d`
+#' directory, which holds the `MSScan.bin`, `MSPeak.bin` and `MSScan.xsd` files
+#' described in [read_agilent_dx]. Only centroided spectra at MS level 1 can
+#' be read, and only from unit-resolution instruments such as single
+#' quadrupole GC-MS and LC-MS. The `TIC` and `BPC` come from the record of
+#' every scan, so they are also returned for runs whose spectra cannot be read,
+#' such as triple quadrupole MRM. For profile (`MSProfile.bin`) or
+#' high-resolution spectra, try `parser = "rainbow"` with `centroid` or `hrms`.
+#'
 #' @inheritParams shared_params
 #' @param path Path to 'Agilent' `.D` directory.
 #' @param what Whether to extract chromatograms (`chroms`), DAD data (`dad`),
 #' peak tables (`peak_table`) and/or instrument traces (`instrument`), such as
 #' pump pressure, flow, solvent composition and temperature, read from
-#' `LCDIAG.REG`. Accepts multiple arguments, and
-#' defaults to `dad`, `chroms` and `peak_table`. Types the
-#' directory does not contain are left out, and it is an error if it contains
-#' none of them.
+#' `LCDIAG.REG`, and/or mass spectra (`MS1`) with the total ion chromatogram
+#' (`TIC`) and base peak chromatogram (`BPC`). Accepts multiple arguments, and
+#' defaults to all of these but `instrument`. Types the directory does not
+#' contain are left out, and it is an error if it contains none of them. With
+#' the default, mass spectrometry data that cannot be read are also left out,
+#' with a warning, if the directory holds other data. The `TIC` and `BPC` are
+#' read from the scan records, so they are returned even when the spectra
+#' cannot be.
 #' @return A list with one element per type found, each a chromatogram or a
 #' list of them named by file, in the format specified by `format_out` and
 #' `data_format`. If `data_format` is `wide`, the chromatograms will be
@@ -29,7 +42,9 @@
 #' [read_peaklist], named by wavelength (e.g. `"254"`), and keep the report's
 #' name for the signal as `signal_descriptor`. They are read from `Result.xml`
 #' where the directory has one, since unlike `Report.TXT` it records where each
-#' peak starts and ends.
+#' peak starts and ends. Mass spectra and the `BPC` are always in long format,
+#' with `rt`, `mz` and `intensity` columns, and are returned as a `data.table`
+#' when `format_out` is `matrix`.
 #' Metadata are attached as [attributes] if `read_metadata` is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by that
 #' element.
 #' @examples
@@ -43,22 +58,33 @@
 #' @family 'Agilent' parsers
 #' @export
 
-read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table"),
+read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table",
+                                          "MS1", "TIC", "BPC"),
                            format_out = c("matrix", "data.frame", "data.table"),
                            data_format = c("wide", "long"),
                            read_metadata = TRUE,
                            metadata_format = c("chromconverter", "raw"),
                            collapse = TRUE){
-  what <- match.arg(tolower(what), c("dad", "chroms", "peak_table", "instrument"),
-                    several.ok = TRUE)
+  default_what <- missing(what)
+  ms_types <- c("MS1", "TIC", "BPC")
+  what <- ifelse(toupper(what) %in% ms_types, toupper(what), tolower(what))
+  what <- match.arg(what, c("dad", "chroms", "peak_table", "instrument",
+                            ms_types), several.ok = TRUE)
   exts <- c(chroms = "\\.ch$", dad = "\\.uv$",
             peak_table = "^(Report\\.TXT|Result\\.xml)$",
             instrument = "^LCDIAG\\.REG$")
-  exts <- exts[what]
-  files <- lapply(exts, function(ext){
+  files <- lapply(exts[setdiff(what, ms_types)], function(ext){
     list.files(path, pattern = ext,
                           ignore.case = TRUE, full.names = TRUE)
   })
+  ms_files <- fs::path(path, "AcqData", c("MSScan.bin", "MSPeak.bin", "MSScan.xsd"))
+  has_scans <- all(file.exists(ms_files[c(1, 3)]))
+  has_spectra <- has_scans && any(file.exists(
+    c(ms_files[2], fs::path(path, "AcqData", "MSProfile.bin"))))
+  files[intersect(what, c("TIC", "BPC"))] <- list(
+    if (has_scans) ms_files else character())
+  files[intersect(what, "MS1")] <- list(if (has_spectra) ms_files else character())
+  files <- files[what]
   files_found <- vapply(files, length, FUN.VALUE = numeric(1)) > 0
   if (!any(files_found)){
     missing <- names(files)[!files_found]
@@ -109,7 +135,37 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table"),
                                      metadata_format = metadata_format)
     instrument <- collapse_list(instrument)
   }
-  dat <- mget(what)
+  ms <- list()
+  ms_what <- intersect(what, ms_types)
+  failed <- character()
+  for (types in Filter(length, list(setdiff(ms_what, "MS1"),
+                                    intersect(ms_what, "MS1")))){
+    ms <- c(ms, tryCatch(
+      read_agilent_ms(ms_files[1], ms_files[2], ms_files[3], what = types,
+                      format_out = format_out, data_format = data_format,
+                      read_metadata = read_metadata,
+                      metadata_format = metadata_format, source_file = path),
+      error = function(e){
+        msg <- conditionMessage(e)
+        if (inherits(e, "agilent_ms_format_error")){
+          msg <- paste(msg, "Profile and high-resolution spectra may be",
+                       "readable with `parser = \"rainbow\"`, setting `centroid`",
+                       "or `hrms` to `TRUE`.")
+        }
+        if (!default_what) stop(msg, call. = FALSE)
+        failed <<- c(failed, msg)
+        NULL
+      }))
+  }
+  what <- setdiff(what, setdiff(ms_what, names(ms)))
+  if (length(what) == 0){
+    stop(failed[1], call. = FALSE)
+  }
+  if (length(failed) > 0){
+    warning("Left out ", paste(sQuote(setdiff(ms_what, names(ms))), collapse = ", "),
+            ": ", paste(unique(failed), collapse = " "), call. = FALSE)
+  }
+  dat <- c(mget(setdiff(what, ms_types)), ms)[what]
   if (collapse) dat <- collapse_list(dat)
   dat
 }

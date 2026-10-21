@@ -6,7 +6,7 @@
 \usage{
 read_agilent_d(
   path,
-  what = c("dad", "chroms", "peak_table"),
+  what = c("dad", "chroms", "peak_table", "MS1", "TIC", "BPC"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -20,10 +20,14 @@ read_agilent_d(
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data (\code{dad}),
 peak tables (\code{peak_table}) and/or instrument traces (\code{instrument}), such as
 pump pressure, flow, solvent composition and temperature, read from
-\code{LCDIAG.REG}. Accepts multiple arguments, and
-defaults to \code{dad}, \code{chroms} and \code{peak_table}. Types the
-directory does not contain are left out, and it is an error if it contains
-none of them.}
+\code{LCDIAG.REG}, and/or mass spectra (\code{MS1}) with the total ion chromatogram
+(\code{TIC}) and base peak chromatogram (\code{BPC}). Accepts multiple arguments, and
+defaults to all of these but \code{instrument}. Types the directory does not
+contain are left out, and it is an error if it contains none of them. With
+the default, mass spectrometry data that cannot be read are also left out,
+with a warning, if the directory holds other data. The \code{TIC} and \code{BPC} are
+read from the scan records, so they are returned even when the spectra
+cannot be.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -50,7 +54,9 @@ Peak tables are returned in the \code{chromatographr} layout described in
 \link{read_peaklist}, named by wavelength (e.g. \code{"254"}), and keep the report's
 name for the signal as \code{signal_descriptor}. They are read from \code{Result.xml}
 where the directory has one, since unlike \code{Report.TXT} it records where each
-peak starts and ends.
+peak starts and ends. Mass spectra and the \code{BPC} are always in long format,
+with \code{rt}, \code{mz} and \code{intensity} columns, and are returned as a \code{data.table}
+when \code{format_out} is \code{matrix}.
 Metadata are attached as \link{attributes} if \code{read_metadata} is \code{TRUE}. With \code{collapse = TRUE}, a list of one element is replaced by that
 element.
 }
@@ -64,6 +70,15 @@ Instrument traces are named from \code{LCDIAG.REG}, so the names differ between
 'ChemStation' revisions and/or instruments (e.g. \code{"PMP1, Pressure"} and
 \code{"PMP1, PMP1A, Pressure"}). Parts of the file that cannot be read are skipped
 with a warning.
+
+Mass spectra are read from the \code{AcqData} folder of a 'MassHunter' \code{.d}
+directory, which holds the \code{MSScan.bin}, \code{MSPeak.bin} and \code{MSScan.xsd} files
+described in \link{read_agilent_dx}. Only centroided spectra at MS level 1 can
+be read, and only from unit-resolution instruments such as single
+quadrupole GC-MS and LC-MS. The \code{TIC} and \code{BPC} come from the record of
+every scan, so they are also returned for runs whose spectra cannot be read,
+such as triple quadrupole MRM. For profile (\code{MSProfile.bin}) or
+high-resolution spectra, try \code{parser = "rainbow"} with \code{centroid} or \code{hrms}.
 }
 \examples{
 path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
