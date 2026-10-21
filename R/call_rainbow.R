@@ -31,7 +31,9 @@
 #' @param centroid,hrms Logical. Whether to read the centroided (`MSPeak.bin`)
 #' and/or profile (`MSProfile.bin`) mass spectra of an 'Agilent MassHunter'
 #' `.d` directory. Both default to `FALSE`, as in 'rainbow', so no mass spectra
-#' are read unless one is `TRUE`. Ignored for the `chemstation` formats.
+#' are read unless one is `TRUE`. Like other mass spectra, they are binned onto
+#' the m/z grid set by `precision` or `bin_width`, which coarsens
+#' high-resolution data. Ignored for the `chemstation` formats.
 #' @author Ethan Bass
 #' @return A (nested) list of chromatograms, or a single chromatogram for the
 #' `chemstation` formats, in the class given by `format_out`. The list is
@@ -91,9 +93,12 @@ call_rainbow <- function(path,
   x <- do.call(converter, c(list(path), args))
   if (by == "detector"){
     if (!is.null(what)){
-      what_not_present <- which(!(what %in% names(x$by_detector)))
-      if (length(what_not_present > 0)){
-          warning(paste(what[what_not_present], "is not a recognized detector"))
+      what_not_present <- setdiff(what, names(x$by_detector))
+      if (length(what_not_present) > 0){
+        warning(sprintf("No %s data found. The detectors present are %s.",
+                        paste(sQuote(what_not_present), collapse = ", "),
+                        paste(sQuote(names(x$by_detector)), collapse = ", ")),
+                call. = FALSE)
       }
       dtr.idx <- which(names(x$by_detector) %in% what)
     } else{
@@ -119,7 +124,7 @@ call_rainbow <- function(path,
                         source_file_format = source_file_format,
                       sparse = sparse)
     })
-    names(xx) <- names(x$by_name)
+    names(xx) <- extract_rb_names(x$datafiles)
   } else{
     xx <- extract_rb_data(x, format_out = format_out, data_format = data_format,
                           read_metadata = read_metadata, meta = x$metadata,

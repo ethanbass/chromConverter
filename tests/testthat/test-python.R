@@ -224,3 +224,25 @@ test_that("call_rainbow passes `centroid` and `hrms` to rainbow's `read()` only"
   expect_error(call_rainbow("x.d", format_in = "masshunter", centroid = NA),
                "must each be `TRUE` or `FALSE`")
 })
+
+test_that("call_rainbow names files by `datafiles` and warns about absent detectors", {
+  trace <- function(name, detector){
+    list(name = name, detector = detector, data = matrix(1:3, 3), xlabels = 1:3,
+         ylabels = "254", metadata = list())
+  }
+  uv <- trace("DAD1A.ch", "UV")
+  analog <- trace("PRESSURE.CH", NULL)
+  local_mocked_bindings(check_rb_configuration = function(...){
+    list(read = list(read = function(...){
+      list(datafiles = list(uv),
+           by_name = list(DAD1A.CH = uv, PRESSURE.CH = analog),
+           by_detector = list(UV = list(uv)), metadata = list())
+    }))
+  })
+  x <- call_rainbow("x.D", by = "name", read_metadata = FALSE)
+  expect_named(x, "DAD1A.ch")
+  expect_warning(x <- call_rainbow("x.D", what = c("UV", "MS", "CAD"),
+                                   read_metadata = FALSE),
+                 "No .MS., .CAD. data found. The detectors present are .UV..")
+  expect_named(x, "UV")
+})

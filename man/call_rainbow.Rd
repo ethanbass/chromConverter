@@ -63,7 +63,9 @@ Applies only to \code{long} format. Defaults to \code{TRUE}.}
 \item{centroid, hrms}{Logical. Whether to read the centroided (\code{MSPeak.bin})
 and/or profile (\code{MSProfile.bin}) mass spectra of an 'Agilent MassHunter'
 \code{.d} directory. Both default to \code{FALSE}, as in 'rainbow', so no mass spectra
-are read unless one is \code{TRUE}. Ignored for the \code{chemstation} formats.}
+are read unless one is \code{TRUE}. Like other mass spectra, they are binned onto
+the m/z grid set by \code{precision} or \code{bin_width}, which coarsens
+high-resolution data. Ignored for the \code{chemstation} formats.}
 }
 \value{
 A (nested) list of chromatograms, or a single chromatogram for the
