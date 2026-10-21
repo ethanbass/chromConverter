@@ -1641,14 +1641,43 @@ test_that("read_agilent_d reads integer intensities from 'MassHunter' SIM scans"
   expect_true(all(abs(x$MS1$mz - 609.3) < 0.01))
 })
 
-test_that("read_agilent_d refuses 'MassHunter' profile spectra", {
+test_that("read_agilent_d reads 'MassHunter' profile spectra", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
-  path <- system.file("masshunter.d", package = "chromConverterExtraTests")
-  skip_if_not(dir.exists(path) && nzchar(path))
+  src <- system.file("masshunter.d", "AcqData", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(src) && nzchar(src))
 
-  expect_error(read_agilent_d(path, what = "MS1"), "stored as profiles")
+  # the run's 49 scans are product-ion scans
+  expect_error(read_agilent_d(dirname(src), what = "MS1"),
+               "only scans above MS level 1")
+
+  path <- file.path(withr::local_tempdir(), "profile.d")
+  acq <- file.path(path, "AcqData")
+  dir.create(acq, recursive = TRUE)
+  file.copy(list.files(src, full.names = TRUE), acq)
+  layout <- read_msscan_layout(file.path(acq, "MSScan.xsd"))
+  level <- layout[layout$name == "MSLevel", ]
+  con <- file(file.path(acq, "MSScan.bin"), "r+b")
+  seek(con, 88)
+  start <- readBin(con, "integer", size = 4, endian = "little")
+  for (i in seq_len(49) - 1){
+    seek(con, start + i * sum(layout$size) + level$offset, rw = "write")
+    writeBin(1L, con, size = level$size, endian = "little")
+  }
+  close(con)
+
+  x <- read_agilent_d(path, what = c("MS1", "TIC", "BPC"),
+                      format_out = "data.frame", data_format = "long")
+  expect_equal(nrow(x$MS1), 49 * 5121)
+  expect_equal(range(x$MS1$mz), c(100, 612))
+  expect_equal(rowsum(x$MS1$intensity, x$MS1$rt, reorder = FALSE)[, 1],
+               x$TIC$intensity, tolerance = 1e-5, ignore_attr = TRUE)
+  top <- vapply(split(seq_len(nrow(x$MS1)), x$MS1$rt), function(i){
+    i[which.max(x$MS1$intensity[i])]
+  }, numeric(1))
+  expect_equal(x$MS1$intensity[top], x$BPC$intensity, tolerance = 1e-6)
+  expect_equal(x$MS1$mz[top], x$BPC$mz, tolerance = 1e-6)
 })
 
 test_that("call_rainbow reads 'MassHunter' centroids with `centroid = TRUE`", {
@@ -1684,23 +1713,23 @@ test_that("read_chroms identifies 'MassHunter' and 'OpenLab' directories", {
                "20220718 MOR47_1")
 })
 
-test_that("read_agilent_d keeps the TIC when the spectra are profiles", {
+test_that("read_agilent_d keeps the TIC when the spectra cannot be read", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
   ms <- system.file("masshunter_gcms_sim.D", "AcqData", package = "chromConverterExtraTests")
   skip_if_not(dir.exists(ms) && nzchar(ms))
 
-  path <- file.path(withr::local_tempdir(), "profile.D")
+  path <- file.path(withr::local_tempdir(), "no_peaks.D")
   dir.create(file.path(path, "AcqData"), recursive = TRUE)
   file.copy(list.files(ms, full.names = TRUE), file.path(path, "AcqData"))
   file.rename(file.path(path, "AcqData", "MSPeak.bin"),
               file.path(path, "AcqData", "MSProfile.bin"))
 
-  expect_warning(x <- read_agilent_d(path), "Left out .MS1.: The spectra are stored as profiles")
+  expect_warning(x <- read_agilent_d(path), "Left out .MS1.: .MSPeak.bin. could not be found")
   expect_equal(names(x), c("TIC", "BPC"))
   expect_equal(nrow(x$TIC), 1474)
-  expect_error(read_agilent_d(path, what = "MS1"), "parser = \"rainbow\"", fixed = TRUE)
+  expect_error(read_agilent_d(path, what = "MS1"), "^'MSPeak.bin' could not be found.$")
 })
 
 test_that("read_agilent_dx explains where the mass spectra are read from", {

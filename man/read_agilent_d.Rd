@@ -72,13 +72,18 @@ Instrument traces are named from \code{LCDIAG.REG}, so the names differ between
 with a warning.
 
 Mass spectra are read from the \code{AcqData} folder of a 'MassHunter' \code{.d}
-directory, which holds the \code{MSScan.bin}, \code{MSPeak.bin} and \code{MSScan.xsd} files
-described in \link{read_agilent_dx}. Only centroided spectra at MS level 1 can
-be read, and only from unit-resolution instruments such as single
-quadrupole GC-MS and LC-MS. The \code{TIC} and \code{BPC} come from the record of
-every scan, so they are also returned for runs whose spectra cannot be read,
-such as triple quadrupole MRM. For profile (\code{MSProfile.bin}) or
-high-resolution spectra, try \code{parser = "rainbow"} with \code{centroid} or \code{hrms}.
+directory. Its \code{MSScan.bin} and \code{MSScan.xsd} describe every scan, as in
+\link{read_agilent_dx}, and the spectra are in \code{MSPeak.bin}, or in
+\code{MSProfile.bin} for profiles. Each profile starts with its first m/z and the step between points, as
+two doubles or two 32-bit floats, followed by the intensities as 32-bit
+floats or integers respectively. The points are spaced by the scan's
+\code{SamplingPeriod} rather than the stored step, which can be slightly smaller.
+Only spectra at MS level 1 can be read, and only from
+unit-resolution instruments such as single quadrupole GC-MS and LC-MS. The
+\code{TIC} and \code{BPC} come from the record of every scan, so they are also
+returned for runs whose spectra cannot be read, such as triple quadrupole
+MRM. For high-resolution spectra, try \code{parser = "rainbow"} with \code{centroid}
+or \code{hrms}.
 }
 \examples{
 path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",

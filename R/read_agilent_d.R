@@ -10,13 +10,18 @@
 #' with a warning.
 #'
 #' Mass spectra are read from the `AcqData` folder of a 'MassHunter' `.d`
-#' directory, which holds the `MSScan.bin`, `MSPeak.bin` and `MSScan.xsd` files
-#' described in [read_agilent_dx]. Only centroided spectra at MS level 1 can
-#' be read, and only from unit-resolution instruments such as single
-#' quadrupole GC-MS and LC-MS. The `TIC` and `BPC` come from the record of
-#' every scan, so they are also returned for runs whose spectra cannot be read,
-#' such as triple quadrupole MRM. For profile (`MSProfile.bin`) or
-#' high-resolution spectra, try `parser = "rainbow"` with `centroid` or `hrms`.
+#' directory. Its `MSScan.bin` and `MSScan.xsd` describe every scan, as in
+#' [read_agilent_dx], and the spectra are in `MSPeak.bin`, or in
+#' `MSProfile.bin` for profiles. Each profile starts with its first m/z and the step between points, as
+#' two doubles or two 32-bit floats, followed by the intensities as 32-bit
+#' floats or integers respectively. The points are spaced by the scan's
+#' `SamplingPeriod` rather than the stored step, which can be slightly smaller.
+#' Only spectra at MS level 1 can be read, and only from
+#' unit-resolution instruments such as single quadrupole GC-MS and LC-MS. The
+#' `TIC` and `BPC` come from the record of every scan, so they are also
+#' returned for runs whose spectra cannot be read, such as triple quadrupole
+#' MRM. For high-resolution spectra, try `parser = "rainbow"` with `centroid`
+#' or `hrms`.
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Agilent' `.D` directory.
@@ -153,7 +158,7 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table",
       error = function(e){
         msg <- conditionMessage(e)
         if (inherits(e, "agilent_ms_format_error")){
-          msg <- paste(msg, "Profile and high-resolution spectra may be",
+          msg <- paste(msg, "High-resolution spectra may be",
                        "readable with `parser = \"rainbow\"`, setting `centroid`",
                        "or `hrms` to `TRUE`.")
         }

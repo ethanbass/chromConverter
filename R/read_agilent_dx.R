@@ -240,7 +240,12 @@ read_agilent_ms <- function(scan_file, peak_file, xsd, what, format_out,
 #' Read the mass spectra of an 'Agilent' MS acquisition
 #'
 #' The types of a scan's values in `MSPeak.bin` depend on its spectrum format
-#' and bytes per point.
+#' and bytes per point. Scans with spectrum format 2 are profiles, read from
+#' the `MSProfile.bin` beside it. Each profile starts with its first m/z and
+#' the step between points, as two doubles or two 32-bit floats, followed by
+#' the intensities as 32-bit floats or integers respectively. The step is
+#' taken from the scan's `SamplingPeriod`, since the stored one can be
+#' slightly smaller.
 #' @param scan_file,peak_file Paths to `MSScan.bin` and `MSPeak.bin`.
 #' @param xsd Path to `MSScan.xsd`.
 #' @return A named list of the streams in `what`, with the range of their
@@ -251,11 +256,6 @@ read_agilent_msdata <- function(scan_file, peak_file, xsd, what,
   scans <- read_msscan_records(scan_file, xsd)
   rt <- scans$ScanTime
   if (any(what == "MS1")){
-    if (!file.exists(peak_file)){
-      stop(ms_format_error(paste(
-        "The spectra are stored as profiles ('MSProfile.bin'), which cannot be",
-        "read yet.")))
-    }
     ms1 <- scans$MSLevel == 1L
     if (!any(ms1)){
       stop("The file holds only scans above MS level 1, which cannot be read yet.",
@@ -267,27 +267,58 @@ read_agilent_msdata <- function(scan_file, peak_file, xsd, what,
     }
     sp <- scans[ms1, , drop = FALSE]
     k <- sp$PointCount
-    width <- ifelse(k > 0, sp$ByteCount / k, 8)
-    sizes <- mspeak_types[paste(sp$SpectrumFormatID, width, sep = ":")]
-    if (any(vapply(sizes, is.null, logical(1)))){
-      stop(ms_format_error(
-        "This 'MSPeak.bin' stores its spectra in a format that cannot be read yet."))
+    profile <- sp$SpectrumFormatID == 2L
+    header <- sp$ByteCount - 4 * k
+    profile_file <- sub("MSPeak\\.bin$", "MSProfile.bin", peak_file)
+    profile_error <- ms_format_error(paste(
+      "The spectra are stored as profiles ('MSProfile.bin') in a layout",
+      "that cannot be read yet."))
+    if (any(profile) && (!file.exists(profile_file) || is.null(sp$SamplingPeriod) ||
+                         !all(header[profile & k > 0] %in% c(8, 16)))){
+      stop(profile_error)
     }
-    if (any(sp$SpectrumOffset < 0 |
-            sp$SpectrumOffset + sp$ByteCount > file.size(peak_file))){
-      stop(ms_format_error(
-        "'MSScan.bin' points beyond the end of 'MSPeak.bin'."))
+    if (any(!profile)){
+      if (!file.exists(peak_file)){
+        stop(sprintf("'%s' could not be found.", basename(peak_file)),
+             call. = FALSE)
+      }
+      width <- ifelse(k > 0, sp$ByteCount / k, 8)
+      sizes <- mspeak_types[paste(sp$SpectrumFormatID, width, sep = ":")]
+      if (any(vapply(sizes[!profile], is.null, logical(1)))){
+        stop(ms_format_error(
+          "This 'MSPeak.bin' stores its spectra in a format that cannot be read yet."))
+      }
     }
-    con <- file(peak_file, "rb")
-    on.exit(close(con))
+    files <- ifelse(profile, profile_file, peak_file)
+    beyond <- sp$SpectrumOffset < 0 |
+      sp$SpectrumOffset + sp$ByteCount > file.size(files)
+    if (any(beyond)){
+      stop(ms_format_error(sprintf("'MSScan.bin' points beyond the end of '%s'.",
+                                   basename(files[which(beyond)[1]]))))
+    }
+    cons <- lapply(setNames(nm = unique(files)), file, open = "rb")
+    on.exit(lapply(cons, close))
     mz <- intensity <- vector("list", length(k))
     for (i in seq_along(k)){
+      if (k[i] == 0) next
+      con <- cons[[files[i]]]
       seek(con, sp$SpectrumOffset[i])
-      mz[[i]] <- readBin(con, "double", n = k[i], size = sizes[[i]][1],
-                         endian = "little")
-      intensity[[i]] <- readBin(con, if (sizes[[i]][2] < 0) "integer" else "double",
-                                n = k[i], size = abs(sizes[[i]][2]),
-                                endian = "little")
+      if (profile[i]){
+        axis <- readBin(con, "double", n = 2, size = header[i] / 2,
+                        endian = "little")
+        if (abs(axis[2] - sp$SamplingPeriod[i]) > 1e-3 * sp$SamplingPeriod[i]){
+          stop(profile_error)
+        }
+        mz[[i]] <- axis[1] + sp$SamplingPeriod[i] * (seq_len(k[i]) - 1)
+        intensity[[i]] <- readBin(con, if (header[i] == 8) "integer" else "double",
+                                  n = k[i], size = 4, endian = "little")
+      } else {
+        mz[[i]] <- readBin(con, "double", n = k[i], size = sizes[[i]][1],
+                           endian = "little")
+        intensity[[i]] <- readBin(con, if (sizes[[i]][2] < 0) "integer" else "double",
+                                  n = k[i], size = abs(sizes[[i]][2]),
+                                  endian = "little")
+      }
     }
     MS1 <- cbind(rt = rep.int(sp$ScanTime, k), mz = unlist(mz),
                  intensity = as.numeric(unlist(intensity)))
