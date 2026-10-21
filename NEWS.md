@@ -1,5 +1,9 @@
 ## chromConverter 0.11.2
 
+### New features
+
+* `call_rainbow` gains `centroid` and `hrms` arguments to read the centroid and profile mass spectra of 'MassHunter' `.d` directories, which 'rainbow' otherwise skips. See `?call_rainbow`.
+
 ### Bug fixes and other minor changes
 
 * 'OpenLab' `.dx` files whose injection volume unit is written with the Greek letter mu, rather than the micro sign, now report their injection volume.

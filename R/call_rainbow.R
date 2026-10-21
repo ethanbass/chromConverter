@@ -28,6 +28,10 @@
 #' `10^-precision`.
 #' @param sparse Logical. Whether to drop zero intensities from MS data.
 #' Applies only to `long` format. Defaults to `TRUE`.
+#' @param centroid,hrms Logical. Whether to read the centroided (`MSPeak.bin`)
+#' and/or profile (`MSProfile.bin`) mass spectra of an 'Agilent MassHunter'
+#' `.d` directory. Both default to `FALSE`, as in 'rainbow', so no mass spectra
+#' are read unless one is `TRUE`. Ignored for the `chemstation` formats.
 #' @author Ethan Bass
 #' @return A (nested) list of chromatograms, or a single chromatogram for the
 #' `chemstation` formats, in the class given by `format_out`. The list is
@@ -48,8 +52,16 @@ call_rainbow <- function(path,
                          read_metadata = TRUE,
                          metadata_format = c("chromconverter", "raw"),
                          collapse = TRUE, precision = 1, sparse = TRUE,
-                         bin_width = NULL){
+                         bin_width = NULL, centroid = FALSE, hrms = FALSE){
   format_in <- match.arg(format_in)
+  for (flag in list(centroid = centroid, hrms = hrms)){
+    if (!is.logical(flag) || length(flag) != 1 || is.na(flag)){
+      stop("`centroid` and `hrms` must each be `TRUE` or `FALSE`.", call. = FALSE)
+    }
+  }
+  if (hrms && format_in %in% c("agilent_d", "masshunter")){
+    reticulate::py_require(get_parser_reqs("rainbow_hrms"))
+  }
   rb <- check_rb_configuration(format_in)
   by <- match.arg(by, c("detector", "name"))
   format_out <- check_format_out(format_out)
@@ -72,8 +84,11 @@ call_rainbow <- function(path,
   if (format_in %in% c("chemstation")){
     by <- "single"
   }
-  x <- do.call(converter, c(list(path),
-                            rb_precision_args(precision, bin_width)))
+  args <- rb_precision_args(precision, bin_width)
+  if (format_in != "chemstation"){
+    args <- c(args, list(centroid = centroid, hrms = hrms))
+  }
+  x <- do.call(converter, c(list(path), args))
   if (by == "detector"){
     if (!is.null(what)){
       what_not_present <- which(!(what %in% names(x$by_detector)))

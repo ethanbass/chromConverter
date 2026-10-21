@@ -17,7 +17,9 @@ call_rainbow(
   collapse = TRUE,
   precision = 1,
   sparse = TRUE,
-  bin_width = NULL
+  bin_width = NULL,
+  centroid = FALSE,
+  hrms = FALSE
 )
 }
 \arguments{
@@ -57,6 +59,11 @@ Applies only to \code{long} format. Defaults to \code{TRUE}.}
 \code{precision} for grids that are not a power of ten (e.g. \code{0.5}). Defaults to
 \code{NULL}, in which case the grid is derived from \code{precision} as
 \code{10^-precision}.}
+
+\item{centroid, hrms}{Logical. Whether to read the centroided (\code{MSPeak.bin})
+and/or profile (\code{MSProfile.bin}) mass spectra of an 'Agilent MassHunter'
+\code{.d} directory. Both default to \code{FALSE}, as in 'rainbow', so no mass spectra
+are read unless one is \code{TRUE}. Ignored for the \code{chemstation} formats.}
 }
 \value{
 A (nested) list of chromatograms, or a single chromatogram for the

@@ -204,3 +204,23 @@ test_that("rb_precision_args maps `precision` onto rainbow's bin grid", {
   expect_equal(rb_precision_args(0), list(bin_width = 1,
                                           display_precision = 0L))
 })
+
+test_that("call_rainbow passes `centroid` and `hrms` to rainbow's `read()` only", {
+  seen <- NULL
+  capture <- function(path, ...){
+    seen <<- list(...)
+    stop("captured")
+  }
+  local_mocked_bindings(check_rb_configuration = function(...){
+    list(read = list(read = capture),
+         agilent = list(chemstation = list(parse_file = capture)))
+  })
+  expect_error(call_rainbow("x.d", format_in = "masshunter", centroid = TRUE),
+               "captured")
+  expect_identical(seen[c("centroid", "hrms")], list(centroid = TRUE, hrms = FALSE))
+  expect_error(call_rainbow("x.ms", format_in = "chemstation_ms", centroid = TRUE),
+               "captured")
+  expect_false(any(c("centroid", "hrms") %in% names(seen)))
+  expect_error(call_rainbow("x.d", format_in = "masshunter", centroid = NA),
+               "must each be `TRUE` or `FALSE`")
+})

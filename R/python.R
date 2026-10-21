@@ -5,6 +5,10 @@
 #' `check_aston_configuration`), so that 'Aston' and 'pandas' are only
 #' provisioned for the users who call `sp_converter`.
 #'
+#' 'python-lzf', which 'rainbow' needs only to decompress 'MassHunter' profile
+#' spectra, is declared lazily by `call_rainbow` when `hrms = TRUE`. It has no
+#' wheels, so installing it needs a C compiler.
+#'
 #' scipy is likewise absent, but for a different reason. 'Aston' imports
 #' `scipy.io.netcdf.NetCDFFile`, which was removed in scipy v1.14, but only
 #' from its generic `TraceFile` dispatcher. `sp_converter` uses
@@ -19,6 +23,7 @@ get_parser_reqs <- function(parser){
          "aston" = c("Aston", "pandas", "numpy"),
          "olefile" = "olefile",
          "rainbow" = c("numpy", "rainbow-api>=1.5.0"),
+         "rainbow_hrms" = "python-lzf",
          "default" = c("numpy", "olefile", "rainbow-api>=1.5.0"),
          "all" = c("Aston", "pandas", "numpy", "olefile",
                    "rainbow-api>=1.5.0"))
