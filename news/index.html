@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,9 +33,26 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.11.1/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.11.2" id="chromconverter-0112">chromConverter 0.11.2<a class="anchor" aria-label="anchor" href="#chromconverter-0112"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-11-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-11-2"></a></h3>
+<ul><li>Mass spectra, TIC and BPC are now read from ‘MassHunter’ <code>.d</code> directories by default, and from ‘OpenLab’ <code>.dx</code> files with <code>what = c("MS1", "TIC", "BPC")</code>. See <code><a href="../reference/read_agilent_d.html">?read_agilent_d</a></code>.</li>
+<li>
+<code>call_rainbow</code> gains <code>centroid</code> and <code>hrms</code> arguments to read the centroid and profile mass spectra of ‘MassHunter’ <code>.d</code> directories, which ‘rainbow’ otherwise skips. See <code><a href="../reference/call_rainbow.html">?call_rainbow</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-and-other-minor-changes-0-11-2">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-0-11-2"></a></h3>
+<ul><li>
+<code>read_chroms</code> now recognizes ‘Agilent’ <code>.d</code>, ‘OpenLab’ <code>.rslt</code>/<code>.sirslt</code> and ‘Waters’ <code>.raw</code> directories without <code>format_in</code>.</li>
+<li>‘OpenLab’ <code>.dx</code> files whose injection volume unit is written with the Greek letter mu, rather than the micro sign, now report their injection volume.</li>
+<li>
+<code>call_rainbow(by = "name")</code> no longer errors when ‘rainbow’ finds a trace with no detector type, and names files in their original case rather than upper case. Asking <code>what</code> for an absent detector now gives a clear warning.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.11.1" id="chromconverter-0111">chromConverter 0.11.1<a class="anchor" aria-label="anchor" href="#chromconverter-0111"></a></h2>
 <div class="section level3">

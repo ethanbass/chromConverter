@@ -1,5 +1,30 @@
 # Changelog
 
+## chromConverter 0.11.2
+
+### New features
+
+- Mass spectra, TIC and BPC are now read from ‘MassHunter’ `.d`
+  directories by default, and from ‘OpenLab’ `.dx` files with
+  `what = c("MS1", "TIC", "BPC")`. See
+  [`?read_agilent_d`](https://ethanbass.github.io/chromConverter/reference/read_agilent_d.md).
+- `call_rainbow` gains `centroid` and `hrms` arguments to read the
+  centroid and profile mass spectra of ‘MassHunter’ `.d` directories,
+  which ‘rainbow’ otherwise skips. See
+  [`?call_rainbow`](https://ethanbass.github.io/chromConverter/reference/call_rainbow.md).
+
+### Bug fixes and other minor changes
+
+- `read_chroms` now recognizes ‘Agilent’ `.d`, ‘OpenLab’
+  `.rslt`/`.sirslt` and ‘Waters’ `.raw` directories without `format_in`.
+- ‘OpenLab’ `.dx` files whose injection volume unit is written with the
+  Greek letter mu, rather than the micro sign, now report their
+  injection volume.
+- `call_rainbow(by = "name")` no longer errors when ‘rainbow’ finds a
+  trace with no detector type, and names files in their original case
+  rather than upper case. Asking `what` for an absent detector now gives
+  a clear warning.
+
 ## chromConverter 0.11.1
 
 ### New features

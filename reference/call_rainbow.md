@@ -18,7 +18,9 @@ call_rainbow(
   collapse = TRUE,
   precision = 1,
   sparse = TRUE,
-  bin_width = NULL
+  bin_width = NULL,
+  centroid = FALSE,
+  hrms = FALSE
 )
 ```
 
@@ -82,6 +84,15 @@ call_rainbow(
   Width of the m/z grid, in daltons. An alternative to `precision` for
   grids that are not a power of ten (e.g. `0.5`). Defaults to `NULL`, in
   which case the grid is derived from `precision` as `10^-precision`.
+
+- centroid, hrms:
+
+  Logical. Whether to read the centroided (`MSPeak.bin`) and/or profile
+  (`MSProfile.bin`) mass spectra of an 'Agilent MassHunter' `.d`
+  directory. Both default to `FALSE`, as in 'rainbow', so no mass
+  spectra are read unless one is `TRUE`. Like other mass spectra, they
+  are binned onto the m/z grid set by `precision` or `bin_width`, which
+  coarsens high-resolution data. Ignored for the `chemstation` formats.
 
 ## Value
 

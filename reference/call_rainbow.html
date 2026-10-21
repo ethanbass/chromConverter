@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Call 'rainbow' parsers</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.11.1/R/call_rainbow.R" class="external-link"><code>R/call_rainbow.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/call_rainbow.R" class="external-link"><code>R/call_rainbow.R</code></a></small>
       <div class="d-none name"><code>call_rainbow.Rd</code></div>
     </div>
 
@@ -56,7 +56,9 @@
 <span>  collapse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  precision <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  sparse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  bin_width <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  bin_width <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  centroid <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  hrms <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -123,6 +125,15 @@ Applies only to <code>long</code> format. Defaults to <code>TRUE</code>.</p></dd
 <code>precision</code> for grids that are not a power of ten (e.g. <code>0.5</code>). Defaults to
 <code>NULL</code>, in which case the grid is derived from <code>precision</code> as
 <code>10^-precision</code>.</p></dd>
+
+
+<dt id="arg-centroid-hrms">centroid, hrms<a class="anchor" aria-label="anchor" href="#arg-centroid-hrms"></a></dt>
+<dd><p>Logical. Whether to read the centroided (<code>MSPeak.bin</code>)
+and/or profile (<code>MSProfile.bin</code>) mass spectra of an 'Agilent MassHunter'
+<code>.d</code> directory. Both default to <code>FALSE</code>, as in 'rainbow', so no mass spectra
+are read unless one is <code>TRUE</code>. Like other mass spectra, they are binned onto
+the m/z grid set by <code>precision</code> or <code>bin_width</code>, which coarsens
+high-resolution data. Ignored for the <code>chemstation</code> formats.</p></dd>
 
 </dl></div>
     <div class="section level2">

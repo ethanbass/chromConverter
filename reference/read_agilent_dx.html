@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Agilent' DX files</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.11.1/R/read_agilent_dx.R" class="external-link"><code>R/read_agilent_dx.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_agilent_dx.R" class="external-link"><code>R/read_agilent_dx.R</code></a></small>
       <div class="d-none name"><code>read_agilent_dx.Rd</code></div>
     </div>
 
@@ -65,9 +65,10 @@
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>Whether to extract chromatograms (<code>chroms</code>), DAD data
-(<code>dad</code>) and/or auxiliary instrumental data (<code>instrument</code>), such as
-temperature, pressure or solvent composition. Accepts multiple arguments,
-and defaults to <code>chroms</code> and <code>dad</code>. When more than one is requested, any the archive does not contain
+(<code>dad</code>), auxiliary instrumental data (<code>instrument</code>), such as
+temperature, pressure or solvent composition, and/or mass spectra (<code>MS1</code>)
+with the total ion chromatogram (<code>TIC</code>) and base peak chromatogram (<code>BPC</code>).
+Accepts multiple arguments, and defaults to <code>chroms</code> and <code>dad</code>. When more than one is requested, any the archive does not contain
 are left out; a single one that is missing is an error.</p></dd>
 
 
@@ -105,7 +106,9 @@ element. Defaults to <code>TRUE</code>.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with one element per type in <code>what</code>, each a chromatogram or
 a list of chromatograms named by signal, in the format specified by
-<code>format_out</code> and <code>data_format</code>. With <code>collapse = TRUE</code>, a list of one
+<code>format_out</code> and <code>data_format</code>. Mass spectra and the <code>BPC</code> are always in
+long format, with <code>rt</code>, <code>mz</code> and <code>intensity</code> columns, and are returned as a
+<code>data.table</code> when <code>format_out</code> is <code>matrix</code>. With <code>collapse = TRUE</code>, a list of one
 element is replaced by that element.</p>
     </div>
     <div class="section level2">
@@ -114,6 +117,16 @@ element is replaced by that element.</p>
 deleted afterwards, and its <code>.ch</code>, <code>.uv</code> and <code>.it</code> files are read with
 <a href="read_chemstation_ch.html">read_chemstation_ch</a>, <a href="read_chemstation_uv.html">read_chemstation_uv</a> and an internal reader for
 <code>.it</code> files.</p>
+<p>The mass spectra of an MS injection are not in the archive. They are in the
+<code>.MSScan.bin</code> and <code>.MSPeak.bin</code> files of the same name beside it. The first
+is needed for <code>MS1</code>, <code>TIC</code> and <code>BPC</code>, the second for <code>MS1</code>. <code>MSScan.bin</code> holds one
+record per scan, laid out as the archive's <code>MSData/MSScan.xsd</code> describes,
+which gives the retention time, TIC and base peak of the scan and the
+location of its spectrum in <code>MSPeak.bin</code>. Each spectrum there is the scan's
+m/z values followed by as many intensities, as 32- or 64-bit floats or
+32-bit integers depending on the scan's spectrum format and size. Only scans
+at MS level 1 are read into <code>MS1</code>, while the <code>TIC</code> and <code>BPC</code> cover every
+scan.</p>
 <p>Where the archive holds an <code>injection.acmd</code> file, the <code>run_datetime</code> and
 <code>sample_injection_volume</code> attributes are taken from it. Its run time
 records the offset from UTC, while the <code>.ch</code> and <code>.uv</code> headers give only

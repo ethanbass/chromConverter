@@ -11,7 +11,7 @@ metadata parsed from the accompanying .acaml file."><meta property="og:image" co
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,7 @@ metadata parsed from the accompanying .acaml file."><meta property="og:image" co
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read files from 'Agilent' .rslt directories</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.11.1/R/read_agilent_rslt.R" class="external-link"><code>R/read_agilent_rslt.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_agilent_rslt.R" class="external-link"><code>R/read_agilent_rslt.R</code></a></small>
       <div class="d-none name"><code>read_agilent_rslt.Rd</code></div>
     </div>
 
@@ -74,9 +74,10 @@ metadata parsed from the accompanying <code>.acaml</code> file.</p>
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>Whether to extract chromatograms (<code>chroms</code>), DAD data
-(<code>dad</code>) and/or auxiliary instrumental data (<code>instrument</code>), such as
-temperature, pressure or solvent composition. Accepts multiple arguments,
-and defaults to <code>chroms</code> and <code>dad</code>. When more than one is requested, any the archive does not contain
+(<code>dad</code>), auxiliary instrumental data (<code>instrument</code>), such as
+temperature, pressure or solvent composition, and/or mass spectra (<code>MS1</code>)
+with the total ion chromatogram (<code>TIC</code>) and base peak chromatogram (<code>BPC</code>).
+Accepts multiple arguments, and defaults to <code>chroms</code> and <code>dad</code>. When more than one is requested, any the archive does not contain
 are left out; a single one that is missing is an error.</p></dd>
 
 

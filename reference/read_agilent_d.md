@@ -9,7 +9,7 @@ ignored.
 ``` r
 read_agilent_d(
   path,
-  what = c("dad", "chroms", "peak_table"),
+  what = c("dad", "chroms", "peak_table", "MS1", "TIC", "BPC"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -29,9 +29,14 @@ read_agilent_d(
   Whether to extract chromatograms (`chroms`), DAD data (`dad`), peak
   tables (`peak_table`) and/or instrument traces (`instrument`), such as
   pump pressure, flow, solvent composition and temperature, read from
-  `LCDIAG.REG`. Accepts multiple arguments, and defaults to `dad`,
-  `chroms` and `peak_table`. Types the directory does not contain are
-  left out, and it is an error if it contains none of them.
+  `LCDIAG.REG`, and/or mass spectra (`MS1`) with the total ion
+  chromatogram (`TIC`) and base peak chromatogram (`BPC`). Accepts
+  multiple arguments, and defaults to all of these but `instrument`.
+  Types the directory does not contain are left out, and it is an error
+  if it contains none of them. With the default, mass spectrometry data
+  that cannot be read are also left out, with a warning, if the
+  directory holds other data. The `TIC` and `BPC` are read from the scan
+  records, so they are returned even when the spectra cannot be.
 
 - format_out:
 
@@ -70,7 +75,9 @@ described in
 named by wavelength (e.g. `"254"`), and keep the report's name for the
 signal as `signal_descriptor`. They are read from `Result.xml` where the
 directory has one, since unlike `Report.TXT` it records where each peak
-starts and ends. Metadata are attached as
+starts and ends. Mass spectra and the `BPC` are always in long format,
+with `rt`, `mz` and `intensity` columns, and are returned as a
+`data.table` when `format_out` is `matrix`. Metadata are attached as
 [attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
 is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by
 that element.
@@ -81,6 +88,21 @@ Instrument traces are named from `LCDIAG.REG`, so the names differ
 between 'ChemStation' revisions and/or instruments (e.g.
 `"PMP1, Pressure"` and `"PMP1, PMP1A, Pressure"`). Parts of the file
 that cannot be read are skipped with a warning.
+
+Mass spectra are read from the `AcqData` folder of a 'MassHunter' `.d`
+directory. Its `MSScan.bin` and `MSScan.xsd` describe every scan, as in
+[read_agilent_dx](https://ethanbass.github.io/chromConverter/reference/read_agilent_dx.md),
+and the spectra are in `MSPeak.bin`, or in `MSProfile.bin` for profiles.
+Each profile starts with its first m/z and the step between points, as
+two doubles or two 32-bit floats, followed by the intensities as 32-bit
+floats or integers respectively. The points are spaced by the scan's
+`SamplingPeriod` rather than the stored step, which can be slightly
+smaller. Only spectra at MS level 1 can be read, and only from
+unit-resolution instruments such as single quadrupole GC-MS and LC-MS.
+The `TIC` and `BPC` come from the record of every scan, so they are also
+returned for runs whose spectra cannot be read, such as triple
+quadrupole MRM. For high-resolution spectra, try `parser = "rainbow"`
+with `centroid` or `hrms`.
 
 ## See also
 

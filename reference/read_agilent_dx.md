@@ -25,12 +25,13 @@ read_agilent_dx(
 
 - what:
 
-  Whether to extract chromatograms (`chroms`), DAD data (`dad`) and/or
+  Whether to extract chromatograms (`chroms`), DAD data (`dad`),
   auxiliary instrumental data (`instrument`), such as temperature,
-  pressure or solvent composition. Accepts multiple arguments, and
-  defaults to `chroms` and `dad`. When more than one is requested, any
-  the archive does not contain are left out; a single one that is
-  missing is an error.
+  pressure or solvent composition, and/or mass spectra (`MS1`) with the
+  total ion chromatogram (`TIC`) and base peak chromatogram (`BPC`).
+  Accepts multiple arguments, and defaults to `chroms` and `dad`. When
+  more than one is requested, any the archive does not contain are left
+  out; a single one that is missing is an error.
 
 - path_out:
 
@@ -65,8 +66,10 @@ read_agilent_dx(
 
 A list with one element per type in `what`, each a chromatogram or a
 list of chromatograms named by signal, in the format specified by
-`format_out` and `data_format`. With `collapse = TRUE`, a list of one
-element is replaced by that element.
+`format_out` and `data_format`. Mass spectra and the `BPC` are always in
+long format, with `rt`, `mz` and `intensity` columns, and are returned
+as a `data.table` when `format_out` is `matrix`. With `collapse = TRUE`,
+a list of one element is replaced by that element.
 
 ## Details
 
@@ -76,6 +79,17 @@ with
 [read_chemstation_ch](https://ethanbass.github.io/chromConverter/reference/read_chemstation_ch.md),
 [read_chemstation_uv](https://ethanbass.github.io/chromConverter/reference/read_chemstation_uv.md)
 and an internal reader for `.it` files.
+
+The mass spectra of an MS injection are not in the archive. They are in
+the `.MSScan.bin` and `.MSPeak.bin` files of the same name beside it.
+The first is needed for `MS1`, `TIC` and `BPC`, the second for `MS1`.
+`MSScan.bin` holds one record per scan, laid out as the archive's
+`MSData/MSScan.xsd` describes, which gives the retention time, TIC and
+base peak of the scan and the location of its spectrum in `MSPeak.bin`.
+Each spectrum there is the scan's m/z values followed by as many
+intensities, as 32- or 64-bit floats or 32-bit integers depending on the
+scan's spectrum format and size. Only scans at MS level 1 are read into
+`MS1`, while the `TIC` and `BPC` cover every scan.
 
 Where the archive holds an `injection.acmd` file, the `run_datetime` and
 `sample_injection_volume` attributes are taken from it. Its run time

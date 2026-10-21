@@ -30,12 +30,13 @@ read_agilent_rslt(
 
 - what:
 
-  Whether to extract chromatograms (`chroms`), DAD data (`dad`) and/or
+  Whether to extract chromatograms (`chroms`), DAD data (`dad`),
   auxiliary instrumental data (`instrument`), such as temperature,
-  pressure or solvent composition. Accepts multiple arguments, and
-  defaults to `chroms` and `dad`. When more than one is requested, any
-  the archive does not contain are left out; a single one that is
-  missing is an error.
+  pressure or solvent composition, and/or mass spectra (`MS1`) with the
+  total ion chromatogram (`TIC`) and base peak chromatogram (`BPC`).
+  Accepts multiple arguments, and defaults to `chroms` and `dad`. When
+  more than one is requested, any the archive does not contain are left
+  out; a single one that is missing is an error.
 
 - path_out:
 
