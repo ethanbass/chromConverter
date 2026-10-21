@@ -41,7 +41,7 @@ showtext::showtext_opts(dpi = 96)
 ## "Helvetica" or "Arial" (closest to the original), "Menlo", "Monaco" or
 ## "Andale Mono" (dotted or slashed zero, denser), "Courier New" (thin,
 ## serifed digits), "Krungthep" or "Silom" (heavy and much brighter),
-## "Optima" (light and airy). `inst/logo_fonts.R` renders a magnified patch
+## "Optima" (light and airy). `dev/logo_fonts.R` renders a magnified patch
 ## of the backdrop in each of a list of fonts, which is an easier way to
 ## choose than re-rendering the whole sticker.
 digit_fonts <- c("Helvetica", "Arial", "DejaVu Sans", "Andale Mono")
