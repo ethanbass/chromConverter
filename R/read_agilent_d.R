@@ -87,6 +87,11 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table",
   files <- files[what]
   files_found <- vapply(files, length, FUN.VALUE = numeric(1)) > 0
   if (!any(files_found)){
+    if (length(list.files(path, "^analysis\\.(tdf|tsf|baf|yep)$",
+                          ignore.case = TRUE)) > 0){
+      stop(sprintf("%s looks like a 'Bruker' .d directory, which cannot be read.",
+                   sQuote(path)), call. = FALSE)
+    }
     missing <- names(files)[!files_found]
     stop("No files found for any requested type(s): ",
          paste(missing, collapse = ", "),

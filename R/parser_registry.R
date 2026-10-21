@@ -352,6 +352,21 @@ format_is_dir <- function(format_in){
   isTRUE(format_lookup(format_in)$dir)
 }
 
+#' Format of a directory, matched by name against the directory formats
+#' @noRd
+dir_format <- function(path){
+  dirs <- names(Filter(function(entry) isTRUE(entry$dir), .chrom_formats))
+  hit <- dirs[vapply(dirs, function(fmt){
+    grepl(format_to_extension(fmt), basename(path), ignore.case = TRUE)
+  }, logical(1))]
+  if (length(hit) != 1){
+    stop(sprintf(paste("%s is a directory, not a file of a recognized format.",
+                       "Please specify `format_in` to search it for files."),
+                 sQuote(path)), call. = FALSE)
+  }
+  hit
+}
+
 #' Does the reader take the whole vector of files at once?
 #' @noRd
 format_is_batch <- function(format_in){

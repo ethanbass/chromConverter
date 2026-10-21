@@ -1669,6 +1669,21 @@ test_that("call_rainbow reads 'MassHunter' centroids with `centroid = TRUE`", {
   expect_true(all(abs(sort(rb$intensity) - sort(native$intensity)) < 1))
 })
 
+test_that("read_chroms identifies 'MassHunter' and 'OpenLab' directories", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  ms <- system.file("masshunter_gcms_sim.D", package = "chromConverterExtraTests")
+  rslt <- system.file("openlab_gcms.sirslt", package = "chromConverterExtraTests")
+  skip_if_not(dir.exists(ms) && nzchar(ms) && dir.exists(rslt) && nzchar(rslt))
+
+  expect_equal(get_filetype(rslt), "agilent_rslt")
+  expect_equal(names(read_chroms(ms, progress_bar = FALSE)[[1]]),
+               c("MS1", "TIC", "BPC"))
+  expect_equal(names(read_chroms(rslt, progress_bar = FALSE)),
+               "20220718 MOR47_1")
+})
+
 test_that("read_agilent_d keeps the TIC when the spectra are profiles", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

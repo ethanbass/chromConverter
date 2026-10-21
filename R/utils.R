@@ -158,6 +158,9 @@ format_2d_chromatogram <- function(rt, int, data_format, format_out){
 #' @noRd
 get_filetype <- function(path, out = c("format_in", "filetype")){
   out <- match.arg(out, c("format_in", "filetype"))
+  if (dir.exists(path)){
+    return(dir_format(path))
+  }
   f <- file(path, "rb")
   on.exit(close(f))
 

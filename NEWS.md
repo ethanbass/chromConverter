@@ -7,6 +7,7 @@
 
 ### Bug fixes and other minor changes
 
+* `read_chroms` now recognizes 'Agilent' `.d`, 'OpenLab' `.rslt`/`.sirslt` and 'Waters' `.raw` directories without `format_in`.
 * 'OpenLab' `.dx` files whose injection volume unit is written with the Greek letter mu, rather than the micro sign, now report their injection volume.
 
 ## chromConverter 0.11.1

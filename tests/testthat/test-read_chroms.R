@@ -1040,3 +1040,20 @@ test_that("Chromatotec peak tables drop whole-run totals in the chromatographr l
   expect_equal(y$area, c(10, 20))
   expect_true(all(is.na(y$height)))
 })
+
+test_that("read_chroms identifies a directory format without `format_in`", {
+  path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",
+                      package = "chromConverter")
+  expect_equal(get_filetype(path), "agilent_d")
+  expect_equal(read_chroms(path, progress_bar = FALSE),
+               read_chroms(path, format_in = "agilent_d", progress_bar = FALSE))
+  expect_error(read_chroms(dirname(path), progress_bar = FALSE),
+               "is a directory, not a file of a recognized format")
+})
+
+test_that("read_agilent_d recognizes a 'Bruker' .d directory", {
+  path <- file.path(withr::local_tempdir(), "sample.d")
+  dir.create(path)
+  file.create(file.path(path, "analysis.tdf"))
+  expect_error(read_agilent_d(path), "looks like a 'Bruker' .d directory")
+})
