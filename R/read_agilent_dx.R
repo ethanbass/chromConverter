@@ -129,7 +129,7 @@ read_acmd <- function(path){
     if (nzchar(val)) val else NA_character_
   }
   volume <- suppressWarnings(as.numeric(field("InjectionVolume")))
-  if (!isTRUE(field("InjectionVolumeUnits") %in% c("\u00b5L", "uL"))){
+  if (!isTRUE(field("InjectionVolumeUnits") %in% c("\u00b5L", "\u03bcL", "uL"))){
     volume <- NA_real_
   }
   list(run_datetime = parse_iso8601(field("RunDateTime")),
