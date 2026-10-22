@@ -262,7 +262,7 @@ read_qgd_fp <- function(path){
   xx <- lapply(seq_len(nrow(qgd_offsets)), function(i){
     seek(f, as.numeric(qgd_offsets[i, "offset"]))
     switch(qgd_offsets[i, "type"],
-           "character" = clean_vendor_string(readBin(f, what = "character")),
+           "character" = trimws(clean_vendor_string(readBin(f, what = "character"))),
            "integer" = readBin(f, what = "integer", size = 4)
     )
   })
@@ -280,13 +280,14 @@ read_qgd_fp <- function(path){
 #' @author Ethan Bass
 #' @noRd
 get_sz_qgd_offsets <- function(){
-  rbind(data.frame(field = "DataFileProperty.szVersion", offset = 4, type = "character"),
+  rbind(data.frame(field = "FileProperty.szVersion", offset = 4, type = "character"),
         c(field = "generated_by", offset = 20, type = "character"),
         c(field = "time_gen_low", offset = 52, type = "integer"),
         c(field = "time_gen_high", offset = 56, type = "integer"),
         c(field = "modified_by", offset = 60, type = "character"),
         c(field = "time_mod_low", offset = 92, type = "integer"),
         c(field = "time_mod_high", offset = 96, type = "integer"),
+        c(field = "DataFileProperty.szVersion", offset = 148, type = "character"),
         c(field = "SampleInfo.smpl_type", offset = 172, type = "character"),
         c(field = "SampleInfo.smpl_name", offset = 204, type = "character"),
         c(field = "SampleInfo.operator_name", offset = 300, type = "character"),
