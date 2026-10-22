@@ -235,6 +235,9 @@ configure_openchrom <- function(cli = c("null", "true", "false", "status"), path
     path_parser <- fs::path(path_parser, "Contents/MacOS/openchrom")
   }
   if (!file.exists(path_parser)){
+    if (!interactive()){
+      stop("OpenChrom not found at '", path_parser, "'.", call. = FALSE)
+    }
     warning("OpenChrom not found!", immediate. = TRUE)
     path_parser <- readline(prompt = "Please provide path to `OpenChrom` command line (v0.4)):")
     if (.Platform$OS.type == "windows"){

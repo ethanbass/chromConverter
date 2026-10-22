@@ -378,9 +378,16 @@ test_that("configure_thermo_parser does not save a path that doesn't exist", {
   skip_if(interactive())
   withr::local_envvar(R_USER_CONFIG_DIR = withr::local_tempdir())
   write_config_path("thermorawfileparser_path", "/nope.exe")
-  expect_error(suppressWarnings(configure_thermo_parser()), "not found")
+  expect_error(configure_thermo_parser(), "not found")
   expect_equal(read_config_path("thermorawfileparser_path", ""),
                normalizePath("/nope.exe", mustWork = FALSE))
+})
+
+test_that("configure_openchrom stops without prompting when OpenChrom is missing", {
+  skip_if(interactive())
+  withr::local_envvar(R_USER_CONFIG_DIR = withr::local_tempdir())
+  expect_error(configure_openchrom(path = "/nope"), "OpenChrom not found at '/nope'")
+  expect_equal(read_config_path("openchrom_path", ""), "")
 })
 
 test_that("write_openchrom_batchfile writes OutputEntries for OpenChrom 1.3", {
