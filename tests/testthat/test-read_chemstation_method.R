@@ -74,8 +74,8 @@ test_that("read_chemstation_method returns the gradient in long format", {
 test_that("read_chemstation_method finds the method in a `.D` directory", {
   d <- file.path(withr::local_tempdir(), "RUN.D")
   dir.create(file.path(d, "ACQ.M"), recursive = TRUE)
-  file.copy(list.files(extra_test_file("chemstation_orange_ACQ.M"),
-                       full.names = TRUE), file.path(d, "ACQ.M"))
+  path <- extra_test_file("chemstation_orange_ACQ.M")
+  file.copy(list.files(path, full.names = TRUE), file.path(d, "ACQ.M"))
   x <- read_chemstation_method(d, what = "pump")
   expect_equal(x$pump$flow_mL_min, 0.75)
 
@@ -84,8 +84,8 @@ test_that("read_chemstation_method finds the method in a `.D` directory", {
   expect_error(read_chemstation_method(empty), "no `ACQ.M` or `RUN.M`")
   pump_only <- file.path(withr::local_tempdir(), "PUMP.M")
   dir.create(pump_only)
-  file.copy(file.path(extra_test_file("chemstation_orange_ACQ.M"), "LPMP1.REG"),
-            pump_only)
+  path <- extra_test_file("chemstation_orange_ACQ.M")
+  file.copy(file.path(path, "LPMP1.REG"), pump_only)
   expect_error(read_chemstation_method(pump_only, what = "sampler"),
                "none of the requested modules")
   expect_warning(read_chemstation_method(pump_only, what = c("pump", "dad")),
@@ -113,9 +113,10 @@ test_that("read_chemstation_method reads RapidControl XML methods", {
 })
 
 test_that("register and RapidControl methods return the same fields", {
-  reg <- read_chemstation_method(extra_test_file("chemstation_orange_ACQ.M"))
-  rapid <- read_chemstation_method(
-    extra_test_file("chemstation_rapidcontrol_RUN.M"))
+  path <- extra_test_file("chemstation_orange_ACQ.M")
+  reg <- read_chemstation_method(path)
+  path <- extra_test_file("chemstation_rapidcontrol_RUN.M")
+  rapid <- read_chemstation_method(path)
   for (module in names(reg)){
     expect_named(rapid[[module]], names(reg[[module]]))
   }
@@ -126,13 +127,14 @@ test_that("register and RapidControl methods return the same fields", {
 test_that("read_chemstation_method warns about a data analysis method", {
   d <- file.path(withr::local_tempdir(), "DA.M")
   dir.create(d)
-  file.copy(list.files(extra_test_file("chemstation_orange_ACQ.M"),
-                       full.names = TRUE), d)
+  path <- extra_test_file("chemstation_orange_ACQ.M")
+  file.copy(list.files(path, full.names = TRUE), d)
   expect_warning(read_chemstation_method(d, what = "pump"), "data analysis")
 })
 
 test_that("read_chemstation_reg resolves repeated names and reads tables", {
-  path <- file.path(extra_test_file("chemstation_orange_ACQ.M"), "LPMP1.REG")
+  dir <- extra_test_file("chemstation_orange_ACQ.M")
+  path <- file.path(dir, "LPMP1.REG")
   x <- read_chemstation_reg(path)
   expect_false(any(grepl("^#@", x$conditions$key)))
   expect_true(all(paste0("CONTACT_", 1:4) %in% x$conditions$key))

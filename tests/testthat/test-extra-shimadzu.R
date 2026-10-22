@@ -1628,10 +1628,12 @@ test_that("read_qgd_ms_scan decodes intensities wider than 4 bytes", {
 })
 
 test_that("Shimadzu GCD and LCD peak tables carry the file's metadata", {
-  g <- read_shimadzu_gcd(extra_test_file("FS19_214.gcd"), what = "peak_table")
+  path <- extra_test_file("FS19_214.gcd")
+  g <- read_shimadzu_gcd(path, what = "peak_table")
   expect_equal(attr(g, "sample_name"), "FS19_214")
   expect_equal(attr(g, "instrument"), "GC-2014")
-  l <- read_shimadzu_lcd(extra_test_file("Anthocyanin.lcd"), what = "peak_table")
+  path <- extra_test_file("Anthocyanin.lcd")
+  l <- read_shimadzu_lcd(path, what = "peak_table")
   expect_equal(attr(l[[1]], "sample_name"), "Anthocyanin_2_MeOH")
 })
 
@@ -1690,27 +1692,32 @@ test_that("read_shimadzu_method reads an LC method", {
   expect_equal(pda$end_time_min, max(rt), tolerance = 1e-3)
   expect_equal(pda$channels$wavelength_nm, c(520, 254, 280, 250))
   # a program that starts later begins from the pump's initial concentration
-  y <- read_shimadzu_method(extra_test_file("shimadzu_qtof.lcd"), what = "pump")
+  path <- extra_test_file("shimadzu_qtof.lcd")
+  y <- read_shimadzu_method(path, what = "pump")
   expect_equal(y$pump$mode, "BGE")
   expect_equal(head(y$pump$gradient, 2),
                data.frame(time_min = c(0, 1), pct_B = c(5, 5)))
 })
 
 test_that("read_shimadzu_method reads mobile phases and the LC-MS interface", {
-  x <- read_shimadzu_method(extra_test_file("shimadzu_tlm_sim.lcd"))
+  path <- extra_test_file("shimadzu_tlm_sim.lcd")
+  x <- read_shimadzu_method(path)
   expect_named(x, c("pump", "column", "dad", "ms"))
   expect_equal(x$pump$solvents,
                data.frame(pump = "A", line = 1:2,
                           solvent = c("Water", "Acetonitrile")))
-  expect_null(read_shimadzu_method(extra_test_file("Anthocyanin.lcd"),
+  path <- extra_test_file("Anthocyanin.lcd")
+  expect_null(read_shimadzu_method(path,
                                    what = "pump")$pump$solvents)
   # the published method of the run (MSV000099582): DL 250 °C, heat block
   # 400 °C
-  y <- read_shimadzu_method(extra_test_file("shimadzu_tlm_mrm_multi.lcd"),
+  path <- extra_test_file("shimadzu_tlm_mrm_multi.lcd")
+  y <- read_shimadzu_method(path,
                             what = "ms")
   expect_equal(y$ms, list(dl_temperature_C = 250,
                           heat_block_temperature_C = 400))
-  expect_null(read_shimadzu_method(extra_test_file("shimadzu_qtof.lcd"))$ms)
+  path <- extra_test_file("shimadzu_qtof.lcd")
+  expect_null(read_shimadzu_method(path)$ms)
 })
 
 test_that("read_shimadzu_method reads the GC method of a GC-MS run", {
@@ -1777,40 +1784,48 @@ test_that("read_shimadzu_method reads the labelled method of a GC-2030 run", {
 })
 
 test_that("read_shimadzu_method rejects a file that is not a Shimadzu file", {
-  expect_error(read_shimadzu_method(extra_test_file("VARIAN1.CDF")),
+  path <- extra_test_file("VARIAN1.CDF")
+  expect_error(read_shimadzu_method(path),
                "not a 'Shimadzu' data file")
 })
 
 test_that("Shimadzu chromatograms carry their method's settings", {
-  gcd <- read_shimadzu_gcd(extra_test_file("FS19_214.gcd"))
+  path <- extra_test_file("FS19_214.gcd")
+  gcd <- read_shimadzu_gcd(path)
   expect_equal(attr(gcd, "method_params")$column$name, "DB-5")
   expect_null(attr(gcd, "method_params")$oven$program)
-  lcd <- read_shimadzu_lcd(extra_test_file("Anthocyanin.lcd"), what = "DAD")
+  path <- extra_test_file("Anthocyanin.lcd")
+  lcd <- read_shimadzu_lcd(path, what = "DAD")
   expect_equal(attr(lcd, "method_params")$pump$mode, "LPGE")
-  qgd <- read_shimadzu_qgd(extra_test_file("B4NF.7_C23.qgd"), what = "TIC")
+  path <- extra_test_file("B4NF.7_C23.qgd")
+  qgd <- read_shimadzu_qgd(path, what = "TIC")
   expect_equal(attr(qgd, "ms_params"),
                list(start_time_min = 4, end_time_min = 60,
                     ion_source_temperature_C = 200,
                     interface_temperature_C = NA_real_, event_time_s = 0.2))
-  x <- read_chroms(extra_test_file("FS19_214.gcd"), format_in = "shimadzu_gcd",
+  path <- extra_test_file("FS19_214.gcd")
+  x <- read_chroms(path, format_in = "shimadzu_gcd",
                    progress_bar = FALSE)
   expect_equal(extract_metadata(x, "method_params.column.name")[[2]], "DB-5")
 })
 
 test_that("read_peaklist reports the wavelength of Shimadzu peak tables", {
-  x <- read_peaklist(extra_test_file("shimadzuDAD_Anthocyanin.txt"),
+  path <- extra_test_file("shimadzuDAD_Anthocyanin.txt")
+  x <- read_peaklist(path,
                      format_in = "shimadzu_dad", progress_bar = FALSE)[[1]]
   # [PDA Multi Chromatogram(Ch1..Ch3)] record 524, 214 and 280 nm; AD2 none
   expect_equal(vapply(x[1:4], function(t) t$lambda[1], numeric(1)),
                c(NA, 524, 214, 280), ignore_attr = TRUE)
   expect_equal(attr(x[[2]], "sample_name"), "Anthocyanin_2_MeOH")
-  y <- read_peaklist(extra_test_file("multichannel_chrom.lcd"),
+  path <- extra_test_file("multichannel_chrom.lcd")
+  y <- read_peaklist(path,
                      format_in = "shimadzu_lcd", progress_bar = FALSE)[[1]]
   expect_equal(vapply(y, function(t) t$lambda[1], numeric(1)),
                c(260, 210, NA), ignore_attr = TRUE)
   expect_equal(attr(y[[1]], "channel_id"), "LC.1.1.DET.1.CH#1")
   # channels extracted from PDA data match the ASCII export of the same run
-  z <- read_peaklist(extra_test_file("Anthocyanin.lcd"),
+  path <- extra_test_file("Anthocyanin.lcd")
+  z <- read_peaklist(path,
                      format_in = "shimadzu_lcd", progress_bar = FALSE)[[1]]
   expect_equal(names(z), c("PT-LC.1.1.AD.2.CH#1", "524", "214", "280", "520"))
   expect_equal(attr(z[["524"]], "bandwidth"), 4)

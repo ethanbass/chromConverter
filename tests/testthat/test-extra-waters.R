@@ -123,11 +123,13 @@ test_that("read_waters_arw decodes 2D values exactly", {
 })
 
 test_that("Waters channel descriptions are not reported as detector ranges", {
-  x <- read_chroms(extra_test_file("waters_pda.arw"), format_in = "waters_arw",
+  path <- extra_test_file("waters_pda.arw")
+  x <- read_chroms(path, format_in = "waters_arw",
                    find_files = FALSE, progress_bar = FALSE)[[1]]
   expect_equal(attr(x, "detector_range"), c(210, 800))
   expect_equal(attr(x, "signal_descriptor"), "2998 (210-800)nm")
-  y <- read_chroms(extra_test_file("waters.arw"), format_in = "waters_arw",
+  path <- extra_test_file("waters.arw")
+  y <- read_chroms(path, format_in = "waters_arw",
                    find_files = FALSE, progress_bar = FALSE)[[1]]
   expect_true(is.na(attr(y, "detector_range")))
   expect_equal(attr(y, "signal_descriptor"), "2475ChA ex280/em350")

@@ -2,7 +2,8 @@
 # instrument writes independently of the register file.
 
 test_that("read_chemstation_reg reads column temperature and pump traces", {
-  x <- read_chemstation_reg(extra_test_file("chemstation_carotenoid_LCDIAG.REG"))$traces
+  path <- extra_test_file("chemstation_carotenoid_LCDIAG.REG")
+  x <- read_chemstation_reg(path)$traces
 
   expect_s3_class(x, "data.frame")
   expect_equal(colnames(x), c("trace", "unit", "time", "value"))
@@ -28,7 +29,8 @@ test_that("read_chemstation_reg reads column temperature and pump traces", {
 })
 
 test_that("read_chemstation_reg reads start/stop conditions", {
-  x <- read_chemstation_reg(extra_test_file("chemstation_carotenoid_LCDIAG.REG"))$conditions
+  path <- extra_test_file("chemstation_carotenoid_LCDIAG.REG")
+  x <- read_chemstation_reg(path)$conditions
   expect_equal(colnames(x), c("object", "key", "value"))
   pmp <- x[x$object == "PMP1, Start/Stop Conditions", ]
   # RUN.LOG: 41.2 bar at the start and 21.7 bar at the end
@@ -38,7 +40,8 @@ test_that("read_chemstation_reg reads start/stop conditions", {
 })
 
 test_that("read_chemstation_reg reads a ChemStation B.04 LCDIAG.REG", {
-  x <- read_chemstation_reg(extra_test_file("chemstation_B0402_LCDIAG.REG"))
+  path <- extra_test_file("chemstation_B0402_LCDIAG.REG")
+  x <- read_chemstation_reg(path)
   expect_named(x, c("traces", "conditions", "tables"))
 
   # this revision writes "PMP1 , Pressure"; the space is dropped
@@ -65,8 +68,8 @@ test_that("read_agilent_d returns LCDIAG.REG traces with what = 'instrument'", {
   d <- file.path(tempfile(), "sample.D")
   dir.create(d, recursive = TRUE)
   on.exit(unlink(dirname(d), recursive = TRUE))
-  file.copy(extra_test_file("chemstation_carotenoid_LCDIAG.REG"),
-            file.path(d, "LCDIAG.REG"))
+  path <- extra_test_file("chemstation_carotenoid_LCDIAG.REG")
+  file.copy(path, file.path(d, "LCDIAG.REG"))
 
   x <- read_agilent_d(d, what = "instrument")
   expect_named(x, c("THM1, Temperature (Left)", "PMP1, Pressure", "PMP1, Flow",
@@ -98,8 +101,8 @@ test_that("read_chemstation_reg drops the keys of objects it could not parse", {
     a$kv <- list(list(key = "DateTime", value = "x"))
     stop("boom")
   })
-  expect_warning(x <- read_chemstation_reg(
-    extra_test_file("chemstation_carotenoid_LCDIAG.REG")), "boom")
+  path <- extra_test_file("chemstation_carotenoid_LCDIAG.REG")
+  expect_warning(x <- read_chemstation_reg(path), "boom")
   expect_equal(nrow(x$conditions), 0)
 })
 
@@ -109,6 +112,7 @@ test_that("read_chemstation_reg keeps traces with the same title apart", {
   local_mocked_bindings(reg_read_mfc = function(b, offs){
     list(traces = list(tr, tr), conditions = list(), failed = NULL)
   })
-  x <- read_chemstation_reg(extra_test_file("chemstation_carotenoid_LCDIAG.REG"))
+  path <- extra_test_file("chemstation_carotenoid_LCDIAG.REG")
+  x <- read_chemstation_reg(path)
   expect_equal(unique(x$traces$trace), c("PMP1, Pressure", "PMP1, Pressure.1"))
 })
