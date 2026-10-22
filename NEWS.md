@@ -7,6 +7,7 @@
 
 ### Bug fixes and other minor changes
 
+* DAD spectra from 'OpenLab' `.dx` files and `.rslt`/`.sirslt` directories are now in mAU. To convert DAD data read by earlier versions, multiply it by its `intensity_multiplier` attribute.
 * `read_chroms` now recognizes 'Agilent' `.d`, 'OpenLab' `.rslt`/`.sirslt` and 'Waters' `.raw` directories without `format_in`.
 * 'OpenLab' `.dx` files whose injection volume unit is written with the Greek letter mu, rather than the micro sign, now report their injection volume.
 * `call_rainbow(by = "name")` no longer errors when 'rainbow' finds a trace with no detector type, and names files in their original case rather than upper case. Asking `what` for an absent detector now gives a clear warning.

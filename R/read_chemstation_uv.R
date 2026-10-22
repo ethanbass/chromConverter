@@ -82,6 +82,10 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
                     "31" = decode_uv_delta)
 
   data <- decode_array(f = f, nval = nval, ncol = n_lambdas)
+  if (file_version == "131_OL" &&
+      all(abs(data*scaling_value - round(data*scaling_value)) < 1e-3)){
+    scaling_value <- scaling_value^2
+  }
   if (scale){
     data <- data*scaling_value
   }

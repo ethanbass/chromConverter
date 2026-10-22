@@ -858,6 +858,12 @@ test_that("read_chroms can read 'Agilent' .dx files with OL130", {
   expect_equal(tail(get_times(x$chroms),1), 27, tolerance = .00001)
   expect_equal(tail(get_times(x$dad),1), 26.9946, tolerance = .00001)
 
+  # DAD intensities are in mAU, like the single-wavelength signals
+  sig254 <- x$chroms[["DAD1C,Sig=254,4  Ref=off"]][, 1]
+  dad254 <- rowMeans(x$dad[, c("252", "254", "256")])
+  peak <- sig254 > 0.2 * max(sig254)
+  expect_equal(stats::median(dad254[peak] / sig254[peak]), 1, tolerance = 0.01)
+
   # auxiliary instrumental data
   expect_equal(dim(x$instrument$`PMP1C,Solvent Ratio A`), c(32440.0, 1))
 
@@ -944,7 +950,8 @@ test_that("read_chroms can read 'Agilent' .sirslt directories", {
   expect_equal(head(s$chroms[[1]][, 1], 3),
                c(-0.6070137, -0.7395744, -0.8668900),
                tolerance = .0001, ignore_attr = TRUE)
-  expect_equal(s$dad[1, 1:3], c(-1056, -2985, -4263), ignore_attr = TRUE)
+  expect_equal(s$dad[1, 1:3], c(-1056, -2985, -4263) * 1000 * 2^-21,
+               ignore_attr = TRUE)
 
   # the .dx file inside the .sirslt directory is the source of the raw data
   expect_equal(basename(attr(s$chroms[[1]], "source_file")),
