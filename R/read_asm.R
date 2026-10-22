@@ -65,7 +65,8 @@ read_asm <- function(path, what = c("chroms", "MS1"),
     stop("No measurement documents could be found.")
   }
   file_meta <- list(file_version = xx$`$asm.manifest`,
-                    device = agg[["device system document"]])
+                    device = agg[["device system document"]],
+                    data_system = agg[["data system document"]])
   injections <- vapply(meas, `[[`, character(1), "injection")
   groups <- split(meas, factor(injections, levels = unique(injections)))
   samples <- lapply(groups, read_asm_injection, what = what,
@@ -454,6 +455,7 @@ get_asm_metadata <- function(m, file_meta, cube = NULL, units = NULL){
   c(list(file_version = file_meta$file_version),
     doc[!vapply(doc, is.list, logical(1))],
     list(`device system document` = flatten_asm(file_meta$device),
+         `data system document` = flatten_asm(file_meta$data_system),
          `sample document` = flatten_asm(get_doc("sample document")),
          `injection document` = flatten_asm(get_doc("injection document")),
          `chromatography column document` =

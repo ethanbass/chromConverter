@@ -245,6 +245,8 @@ meta_shimadzu_lcd <- function(meta, ctx){
        # the channel this trace was read from, which is also what names the
        # peak table that goes with it (`PT-LC.1.1.DET.1.CH#1`)
        channel_id = get_metadata_field(meta, "DSID", null_val = NULL),
+       software = unname(c(`1000` = "LabSolutions")[as.character(
+         get_metadata_field(meta, "DataFileProperty.software"))]),
        software_version = get_metadata_field(meta, "DataFileProperty.szVersion"),
        file_version = get_metadata_field(meta, "FileProperty.szVersion"),
        method = get_metadata_field(meta, "SampleInfoFile.methodfile"),
@@ -533,8 +535,8 @@ meta_asm <- function(meta, ctx){
        detector_y_unit = meta$detector_unit,
        detector_reference = asm_device_field(device_control,
                                              "reference wavelength setting$"),
-       software = NA,
-       software_version = NA,
+       software = meta$`data system document`$`software name` %||% NA,
+       software_version = meta$`data system document`$`software version` %||% NA,
        software_revision = NA,
        method = meta$`device method identifier` %||% NA,
        batch = NA,

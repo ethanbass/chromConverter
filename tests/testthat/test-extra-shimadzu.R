@@ -81,6 +81,7 @@ test_that("read_chroms can read 'Shimadzu' PDA files (ASCII and LCD)", {
   expect_equal(unique(x3$rt), as.numeric(rownames(x2)))
 
   # check metadata equivalence
+  expect_equal(attr(x, "software"), attr(x2, "software"))
   expect_equal(attr(x, "software_version"), attr(x2, "software_version"))
   expect_equal(attr(x, "method"), attr(x2, "method"))
   expect_equal(attr(x, "batch"), attr(x2, "batch"))
@@ -499,6 +500,7 @@ test_that("Shimadzu GCD parser works", {
   expect_equal(sum(x[, 1]), 281615360.29634726)
 
   # check metadata equivalence
+  expect_equal(attr(x, "software"), attr(txt, "software"))
   expect_equal(attr(x, "software_version"), attr(txt, "software_version"))
   expect_equal(attr(x, "method"), attr(txt, "method"))
   expect_equal(attr(x, "operator"), attr(txt, "operator"))
@@ -878,6 +880,27 @@ test_that("'Shimadzu' OLE files name the instrument from `SystemInformation`", {
   expect_equal(read_sz_system_info(path_qgd), list())
   expect_true(is.na(attr(read_shimadzu_qgd(path_qgd, what = "tic"),
                          "instrument")))
+})
+
+test_that("'Shimadzu' OLE files name the software that wrote them", {
+  skip_on_cran()
+  skip_if_missing_dependencies()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path_qtof <- system.file("shimadzu_qtof.lcd",
+                           package = "chromConverterExtraTests")
+  path_sim <- system.file("shimadzu_tlm_sim.lcd",
+                          package = "chromConverterExtraTests")
+  path_qgd <- system.file("B4NF.7_C23.qgd",
+                          package = "chromConverterExtraTests")
+  skip_if_not(all(file.exists(path_qtof, path_sim, path_qgd)))
+
+  expect_equal(attr(read_shimadzu_lcd(path_qtof, what = "tic"), "software"),
+               "LabSolutions")
+  expect_equal(attr(read_shimadzu_lcd(path_sim, what = "tic")[[1]], "software"),
+               "LabSolutions")
+  expect_true(is.na(attr(read_shimadzu_qgd(path_qgd, what = "tic"),
+                         "software")))
 })
 
 test_that("`SystemInformation` is unpacked once per read, not once per trace", {

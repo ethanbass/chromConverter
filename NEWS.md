@@ -10,6 +10,7 @@
 * DAD spectra from 'OpenLab' `.dx` files and `.rslt`/`.sirslt` directories are now in mAU. To convert DAD data read by earlier versions, multiply it by its `intensity_multiplier` attribute.
 * `read_chroms` now recognizes 'Agilent' `.d`, 'OpenLab' `.rslt`/`.sirslt` and 'Waters' `.raw` directories without `format_in`.
 * 'OpenLab' `.dx` files whose injection volume unit is written with the Greek letter mu, rather than the micro sign, now report their injection volume.
+* 'Shimadzu' `.lcd` and `.gcd` files and Allotrope (ASM) files now report the acquisition `software`, which `write_mzml` records in the mzML. ASM files also report `software_version`.
 * `call_rainbow(by = "name")` no longer errors when 'rainbow' finds a trace with no detector type, and names files in their original case rather than upper case. Asking `what` for an absent detector now gives a clear warning.
 
 ## chromConverter 0.11.1

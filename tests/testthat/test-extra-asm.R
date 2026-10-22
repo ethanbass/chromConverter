@@ -174,6 +174,7 @@ test_that("read_chroms splits ASM sequences into samples", {
   expect_equal(sum(x[[1]]$intensity), 2920.4099991074)
   expect_equal(attr(x[[1]], "sample_name"), "S0102")
   expect_equal(attr(x[[1]], "instrument"), "Alliance")
+  expect_equal(attr(x[[1]], "software"), "Waters Empower")
   expect_equal(attr(x[[1]], "run_datetime"),
                as.POSIXct("1997-09-17 17:03:14", tz = "UTC"))
 
@@ -193,6 +194,9 @@ test_that("read_chroms splits ASM sequences into samples", {
   expect_equal(attr(y[[2]][[1]], "run_datetime"),
                as.POSIXct("2023-09-01 11:52:56", tz = "UTC"))
   expect_equal(attr(y[[2]][[1]], "detector_model"), "G7117C")
+  expect_equal(attr(y[[2]][[1]], "software"), "OpenLabCDS")
+  expect_equal(attr(y[[2]][[1]], "software_version"),
+               "2.5 - Build  2.5.0-REL_2.5.0.842")
   expect_equal(attr(y[[2]][[1]], "wavelength"), 210)
 })
 
