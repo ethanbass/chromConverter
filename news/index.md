@@ -15,6 +15,9 @@
 
 ### Bug fixes and other minor changes
 
+- DAD spectra from ‘OpenLab’ `.dx` files and `.rslt`/`.sirslt`
+  directories are now in mAU. To convert DAD data read by earlier
+  versions, multiply it by its `intensity_multiplier` attribute.
 - `read_chroms` now recognizes ‘Agilent’ `.d`, ‘OpenLab’
   `.rslt`/`.sirslt` and ‘Waters’ `.raw` directories without `format_in`.
 - ‘OpenLab’ `.dx` files whose injection volume unit is written with the
