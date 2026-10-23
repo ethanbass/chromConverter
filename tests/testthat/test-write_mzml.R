@@ -634,3 +634,50 @@ test_that("read_mzml returns DAD data in the class `format_out` asks for", {
   expect_s3_class(read_mzml(f, what = "DAD", format_out = "data.table")$DAD,
                   "data.table")
 })
+
+test_that("read_mzml returns the same streams with mzR as with RaMS", {
+  skip_on_cran()
+  skip_if_not_installed("RaMS")
+  skip_if_not_installed("mzR")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  f <- write_dda(tmp)
+  mzr <- read_mzml(f, parser = "mzR", data_format = "long")
+  expect_named(mzr, c("MS1", "MS2", "BPC", "TIC", "DAD"))
+  # RaMS fails on the MS2 scan without a precursor, so MS2 is checked against
+  # what was written
+  rams <- read_mzml(f, what = c("MS1", "BPC", "TIC"), data_format = "long")
+  for (h in names(rams)){
+    expect_equal(as.data.frame(mzr[[h]]), as.data.frame(rams[[h]]),
+                 ignore_attr = TRUE)
+  }
+  ms2 <- dda_fixture()$MS2
+  expect_equal(mzr$MS2$rt, ms2$rt)
+  expect_equal(mzr$MS2$premz, ms2$precursor_mz)
+  expect_equal(mzr$MS2$fragmz, ms2$mz)
+  expect_equal(mzr$MS2$intensity, ms2$intensity)
+  expect_true(all(is.na(mzr$MS2$voltage)))
+  expect_equal(nrow(mzr$DAD), 0)
+
+  ms3 <- file.path(system.file("extdata", package = "RaMS"),
+                   "Blank_129I_1L_pos_20240207-MS3.mzML.gz")
+  expect_equal(read_mzml(ms3, parser = "mzR", what = "MS2")$MS2$voltage,
+               read_mzml(ms3, what = "MS2")$MS2$voltage)
+
+  dad <- data.frame(rt = c(3, 3, 4, 4), lambda = c(200, 210, 200, 210),
+                    intensity = 1:4)
+  attr(dad, "data_format") <- "long"
+  g <- write_mzml(list(DAD = dad), path_out = tmp, sample_name = "dad",
+                  show_progress = FALSE)
+  expect_equal(read_mzml(g, parser = "mzR", what = "DAD")$DAD,
+               read_mzml(g, what = "DAD")$DAD, ignore_attr = "parser")
+
+  expect_error(read_mzml(g, parser = "mzR", what = c("DAD", "metadata")),
+               "cannot read 'metadata'")
+  expect_error(read_mzml(g, parser = "mzR", what = c("everything", "metadata")),
+               "cannot read 'metadata'")
+  expect_named(read_mzml(g, parser = "mzR", what = c("DAD", "DAD")), "DAD")
+})

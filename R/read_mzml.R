@@ -2,28 +2,31 @@
 #'
 #' Extracts data from `mzML` files using parsers from either RaMS or mzR.
 #'
-#' The RaMS parser (default) returns a list with one element per stream in
+#' Both parsers return a list with one element per stream in
 #' `what`. Mass spectra are always long. With `data_format = "wide"` (the
 #' default), `TIC` and `BPC` are returned as 2D chromatograms of class
 #' `format_out`, and `DAD` as a wide chromatogram of class `format_out`; with
-#' `"long"`, every stream is a long `data.table`. The mzR parser returns only the DAD data, as a
-#' single chromatogram.
+#' `"long"`, every stream is a long `data.table`.
+#'
+#' The mzR parser reads files that RaMS cannot, such as those compressed with
+#' MS-Numpress. It returns only `MS1`, `MS2`, `BPC`, `TIC` and `DAD`, and no
+#' file metadata. Its `TIC` and `BPC` are the per-scan values recorded in the
+#' MS1 spectra.
 #'
 #' @name read_mzml
 #' @importFrom RaMS grabMSdata
 #' @inheritParams shared_params
 #' @param path Path to `.mzml` file.
 #' @param format_out Class of output. Either `matrix`, `data.frame`, or
-#' `data.table`. With RaMS, applies only to the `TIC` and `BPC` in wide
-#' format.
+#' `data.table`. Applies only to the `TIC`, `BPC` and `DAD` in wide format.
 #' @param parser What parser to use. Either `RaMS` or `mzR`.
 #' @param what What types of data to return (argument to [RaMS::grabMSdata]).
 #' Options include `MS1`, `MS2`, `BPC`, `TIC`, `DAD`, `chroms`, `metadata`, or
 #' `everything`. Defaults to all of them.
-#' @param verbose Argument to `grabMSdata` controlling verbosity.
-#' @param ... Additional arguments to `grabMSdata`.
-#' @return With RaMS, a named list of the streams in `what`. With mzR, a DAD
-#' chromatogram in the format specified by `format_out` and `data_format`.
+#' @param verbose Argument to `grabMSdata` controlling verbosity. Ignored by
+#' mzR.
+#' @param ... Additional arguments to `grabMSdata`. Ignored by mzR.
+#' @return A named list of the streams in `what`.
 #' @examples \dontrun{
 #' read_mzml("path/to/file.mzML")
 #' }
@@ -38,6 +41,7 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
                       verbose = FALSE,
                       ...){
   parser <- match.arg(parser, c("RaMS", "mzR"))
+  what_given <- !missing(what)
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   what <- match.arg(what, c("MS1","MS2", "BPC", "TIC", "DAD",
@@ -49,62 +53,105 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
   }
   if (parser == "RaMS"){
     data <- RaMS::grabMSdata(path, grab_what = what, verbosity = verbose, ...)
-    data <- lapply(data, function(x){
-      int_idx <- which(colnames(x) == "int")
-      if (length(int_idx) > 0)
-        colnames(x)[int_idx] <- "intensity"
-      x
-    })
-    if (data_format == "wide"){
-      data <- purrr::imap(data, function(x, h){
-        if (h %in% c("TIC", "BPC") && nrow(x) > 0){
-          format_2d_chromatogram(x$rt, x$intensity, data_format = "wide",
-                                 format_out = format_out)
-        } else if (h == "DAD" && nrow(x) > 0){
-          convert_chrom_format(reshape_chrom_wide(x), format_out = format_out)
-        } else{
-          x
-        }
-      })
-    }
-    # dispatch through `attach_metadata` like every other format, so the
-    # file properties RaMS recovered end up as attributes where
-    # `extract_metadata` and `print.chrom_list` can see them
-    meta <- rams_meta_to_list(data[["metadata"]])
-    data <- purrr::imap(data, function(x, h){
-      x <- attach_metadata(x, meta = meta, format_in = "mzml",
-                           format_out = format_out,
-                           data_format = ifelse(grepl("MS", h), "long",
-                                                data_format),
-                           parser = "RaMS", source_file = path,
-                           source_file_format = "mzML", scale = NULL)
-      if (h == "metadata")
-        class(x) <- c("chromconverter_metadata", class(x))
-      x
-      })
-  } else if (parser == "mzR"){
-    if (!requireNamespace("mzR", quietly = TRUE)) {
-      stop(
-        "The `mzR` package is not installed. Please install it from Bioconductor:
-        BiocManager::install('mzR')",
-        call. = FALSE)
-    }
-    x <- mzR::openMSfile(path)
-    info <- mzR::header(x)
-    UV_scans <- which(info$msLevel == 0)
-    rts <- info[UV_scans, "retentionTime"]
-    lambdas <- seq(info$scanWindowLowerLimit[UV_scans[1]],
-                   info$scanWindowUpperLimit[UV_scans[1]])
-    pks <- mzR::peaks(x)
-    data <- t(sapply(UV_scans, function(j) pks[[j]][,2]))
-    rownames(data) <- rts
-    colnames(data) <- lambdas
-    if (data_format == "long"){
-      data <- reshape_chrom(data)
-    }
-    data <- convert_chrom_format(data, format_out = format_out)
+  } else{
+    data <- read_mzml_mzr(path, what = what, explicit = what_given)
   }
+  data <- lapply(data, function(x){
+    int_idx <- which(colnames(x) == "int")
+    if (length(int_idx) > 0)
+      colnames(x)[int_idx] <- "intensity"
+    x
+  })
+  if (data_format == "wide"){
+    data <- purrr::imap(data, function(x, h){
+      if (h %in% c("TIC", "BPC") && nrow(x) > 0){
+        format_2d_chromatogram(x$rt, x$intensity, data_format = "wide",
+                               format_out = format_out)
+      } else if (h == "DAD" && nrow(x) > 0){
+        convert_chrom_format(reshape_chrom_wide(x), format_out = format_out)
+      } else{
+        x
+      }
+    })
+  }
+  # dispatch through `attach_metadata` like every other format, so the
+  # file properties RaMS recovered end up as attributes where
+  # `extract_metadata` and `print.chrom_list` can see them
+  meta <- rams_meta_to_list(data[["metadata"]])
+  data <- purrr::imap(data, function(x, h){
+    x <- attach_metadata(x, meta = meta, format_in = "mzml",
+                         format_out = format_out,
+                         data_format = ifelse(grepl("MS", h), "long",
+                                              data_format),
+                         parser = parser, source_file = path,
+                         source_file_format = "mzML", scale = NULL)
+    if (h == "metadata")
+      class(x) <- c("chromconverter_metadata", class(x))
+    x
+    })
   data
+}
+
+#' Read mzML streams with mzR
+#'
+#' Builds the same long tables, with the same columns, that `RaMS::grabMSdata`
+#' returns, so both parsers share the reshaping and metadata steps.
+#' @param path Path to the file.
+#' @param what Streams to return.
+#' @param explicit Whether the caller chose `what`. If not, streams mzR cannot
+#' read are dropped instead of raising an error.
+#' @return A named list of `data.table`s.
+#' @noRd
+read_mzml_mzr <- function(path, what, explicit = TRUE){
+  if (!requireNamespace("mzR", quietly = TRUE)) {
+    stop(
+      "The `mzR` package is not installed. Please install it from Bioconductor:
+      BiocManager::install('mzR')",
+      call. = FALSE)
+  }
+  supported <- c("MS1", "MS2", "BPC", "TIC", "DAD")
+  unsupported <- if (explicit) setdiff(what, c(supported, "everything"))
+  if (length(unsupported) > 0){
+    stop("The mzR parser cannot read ", paste(sQuote(unsupported, q = FALSE),
+                                              collapse = ", "),
+         ". Use `parser = \"RaMS\"` instead.", call. = FALSE)
+  }
+  what <- if (!explicit || "everything" %in% what) supported else unique(what)
+  x <- mzR::openMSfile(path)
+  on.exit(mzR::close(x))
+  info <- mzR::header(x)
+  rt <- info$retentionTime / 60
+  file <- basename(path)
+  spectra <- function(level, ...){
+    idx <- which(info$msLevel == level)
+    pks <- if (length(idx) == 1) list(mzR::peaks(x, idx)) else
+      if (length(idx) > 1) mzR::peaks(x, idx) else list()
+    n <- vapply(pks, nrow, integer(1))
+    m <- do.call(rbind, c(list(matrix(numeric(0), 0, 2)), pks))
+    extra <- lapply(list(...), function(col) rep(col[idx], n))
+    data.table::data.table(rt = rep(rt[idx], n), as.data.frame(extra),
+                           x = m[, 1], intensity = m[, 2],
+                           filename = rep(file, nrow(m)))
+  }
+  ms1 <- which(info$msLevel == 1)
+  summary_chrom <- function(values){
+    data.table::data.table(rt = rt[ms1], intensity = values[ms1],
+                           filename = rep(file, length(ms1)))
+  }
+  lapply(stats::setNames(nm = what), function(h){
+    switch(h,
+           MS1 = data.table::setnames(spectra(1), "x", "mz"),
+           MS2 = data.table::setcolorder(
+             data.table::setnames(spectra(2, premz = info$precursorMZ,
+                                          voltage = replace(
+                                            info$collisionEnergy,
+                                            info$collisionEnergy %in% 0, NA)),
+                                  "x", "fragmz"),
+             c("rt", "premz", "fragmz", "intensity", "voltage", "filename")),
+           TIC = summary_chrom(info$totIonCurrent),
+           BPC = summary_chrom(info$basePeakIntensity),
+           DAD = data.table::setnames(spectra(0), "x", "lambda"))
+  })
 }
 
 #' Flatten the file metadata returned by RaMS into a named list

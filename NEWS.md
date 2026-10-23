@@ -1,5 +1,9 @@
 ## chromConverter 0.11.2
 
+### Breaking changes
+
+* `read_mzml(parser = "mzR")` now returns a list of streams like the RaMS parser, adding MS1, MS2, TIC and BPC to DAD. The DAD chromatogram, now `$DAD`, has retention times in minutes rather than seconds, and takes its wavelengths from the spectra rather than the scan window, so DAD files without one, such as those `write_mzml` writes, can now be read.
+
 ### New features
 
 * Mass spectra, TIC and BPC are now read from 'MassHunter' `.d` directories by default, and from 'OpenLab' `.dx` files with `what = c("MS1", "TIC", "BPC")`. See `?read_agilent_d`.
