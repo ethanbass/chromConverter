@@ -681,3 +681,26 @@ test_that("read_mzml returns the same streams with mzR as with RaMS", {
                "cannot read 'metadata'")
   expect_named(read_mzml(g, parser = "mzR", what = c("DAD", "DAD")), "DAD")
 })
+
+test_that("mzR still rejects the PSI-MS software terms from psi-ms-CV#581", {
+  skip_on_cran()
+  skip_if_not_installed("mzR")
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+
+  f <- write_ms1_mzml(tmp, make_ms1())
+  txt <- sub('accession="MS:1000799" name="custom unreleased software tool"',
+             'accession="MS:1004032" name="chromConverter"', readLines(f),
+             fixed = TRUE)
+  writeLines(txt, f)
+
+  opened <- tryCatch({mzR::openMSfile(f); TRUE}, error = function(e) FALSE)
+  if (opened){
+    fail(paste("mzR now reads MS:1004032: rebase and merge the psi-ms-cv-terms",
+               "branch, and delete this test"))
+  } else {
+    succeed()
+  }
+})
