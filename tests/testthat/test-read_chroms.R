@@ -341,6 +341,23 @@ test_that("read_mzml works", {
   expect_equal(as.numeric(rownames(dad_wide[[1]])), unique(dad_long[[1]]$rt))
 })
 
+test_that("read_mzml extracts EICs with RaMS", {
+  skip_on_cran()
+  path <- list.files(system.file("extdata", package = "RaMS"),
+                     full.names = TRUE, pattern = "S30657.mzML.gz")
+  mz <- c(118.0865, 138.0550)
+  x <- read_mzml(path, what = c("EIC", "EIC_MS2", "TIC"), mz = mz, ppm = 5)
+  ref <- RaMS::grabMSdata(path, grab_what = c("EIC", "EIC_MS2"), mz = mz,
+                          ppm = 5, verbosity = 0)
+  expect_named(x, c("TIC", "EIC", "EIC_MS2"))
+  expect_gt(nrow(x$EIC), 0)
+  expect_gt(nrow(x$EIC_MS2), 0)
+  expect_equal(x$EIC$intensity, ref$EIC$int)
+  expect_equal(x$EIC_MS2$intensity, ref$EIC_MS2$int)
+  expect_equal(attr(x$EIC, "data_format"), "long")
+  expect_equal(attr(x$EIC_MS2, "data_format"), "long")
+})
+
 test_that("get_filetype fnc works as expected", {
   path_uv <- test_path("testdata/dad1.uv")
   expect_equal(get_filetype(path_uv), "chemstation_131")

@@ -3,7 +3,7 @@
 #' Extracts data from `mzML` files using parsers from either RaMS or mzR.
 #'
 #' Both parsers return a list with one element per stream in
-#' `what`. Mass spectra are always long. With `data_format = "wide"` (the
+#' `what`. Mass spectra and EICs are always long. With `data_format = "wide"` (the
 #' default), `TIC` and `BPC` are returned as 2D chromatograms of class
 #' `format_out`, and `DAD` as a wide chromatogram of class `format_out`; with
 #' `"long"`, every stream is a long `data.table`.
@@ -22,7 +22,9 @@
 #' @param parser What parser to use. Either `RaMS` or `mzR`.
 #' @param what What types of data to return (argument to [RaMS::grabMSdata]).
 #' Options include `MS1`, `MS2`, `BPC`, `TIC`, `DAD`, `chroms`, `metadata`, or
-#' `everything`. Defaults to all of them.
+#' `everything`. Defaults to all of them. `EIC` and `EIC_MS2` return
+#' extracted ion chromatograms from the MS1 or MS2 data for the masses given by
+#' the `mz` and `ppm` arguments of [RaMS::grabMSdata], passed through `...`.
 #' @param verbose Argument to `grabMSdata` controlling verbosity. Ignored by
 #' mzR.
 #' @param ... Additional arguments to `grabMSdata`. Ignored by mzR.
@@ -45,7 +47,8 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   what <- match.arg(what, c("MS1","MS2", "BPC", "TIC", "DAD",
-                            "chroms", "metadata", "everything"),
+                            "chroms", "metadata", "everything",
+                            "EIC", "EIC_MS2"),
                               several.ok = TRUE)
   if (all(c("MS1","MS2", "BPC", "TIC", "DAD",
             "chroms", "metadata", "everything") %in% what)){
@@ -81,7 +84,7 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
   data <- purrr::imap(data, function(x, h){
     x <- attach_metadata(x, meta = meta, format_in = "mzml",
                          format_out = format_out,
-                         data_format = ifelse(grepl("MS", h), "long",
+                         data_format = ifelse(grepl("MS|EIC", h), "long",
                                               data_format),
                          parser = parser, source_file = path,
                          source_file_format = "mzML", scale = NULL)

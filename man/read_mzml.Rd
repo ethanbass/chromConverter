@@ -26,7 +26,9 @@ read_mzml(
 
 \item{what}{What types of data to return (argument to \link[RaMS:grabMSdata]{RaMS::grabMSdata}).
 Options include \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC}, \code{DAD}, \code{chroms}, \code{metadata}, or
-\code{everything}. Defaults to all of them.}
+\code{everything}. Defaults to all of them. \code{EIC} and \code{EIC_MS2} return
+extracted ion chromatograms from the MS1 or MS2 data for the masses given by
+the \code{mz} and \code{ppm} arguments of \link[RaMS:grabMSdata]{RaMS::grabMSdata}, passed through \code{...}.}
 
 \item{verbose}{Argument to \code{grabMSdata} controlling verbosity. Ignored by
 mzR.}
@@ -41,7 +43,7 @@ Extracts data from \code{mzML} files using parsers from either RaMS or mzR.
 }
 \details{
 Both parsers return a list with one element per stream in
-\code{what}. Mass spectra are always long. With \code{data_format = "wide"} (the
+\code{what}. Mass spectra and EICs are always long. With \code{data_format = "wide"} (the
 default), \code{TIC} and \code{BPC} are returned as 2D chromatograms of class
 \code{format_out}, and \code{DAD} as a wide chromatogram of class \code{format_out}; with
 \code{"long"}, every stream is a long \code{data.table}.
