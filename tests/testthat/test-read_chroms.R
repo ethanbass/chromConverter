@@ -358,6 +358,53 @@ test_that("read_mzml extracts EICs with RaMS", {
   expect_equal(attr(x$EIC_MS2, "data_format"), "long")
 })
 
+test_that("read_mzml returns stored chromatograms as one 2D chromatogram each", {
+  skip_on_cran()
+  path <- list.files(system.file("extdata", package = "RaMS"),
+                     full.names = TRUE, pattern = "wk_chrom.mzML.gz")
+  long <- read_mzml(path, what = "chroms", data_format = "long")$chroms
+  wide <- read_mzml(path, what = "chroms")$chroms
+
+  expect_s3_class(long, "data.table")
+  expect_named(wide, unique(long$chrom_type))
+  srm <- long[long$chrom_type == names(wide)[3], ]
+  expect_equal(as.numeric(rownames(wide[[3]])), srm$rt)
+  expect_equal(unname(wide[[3]][, "intensity"]), srm$intensity)
+  expect_equal(attr(wide[[3]], "precursor_mz"), srm$target_mz[1])
+  expect_equal(attr(wide[[3]], "product_mz"), srm$product_mz[1])
+  expect_null(attr(wide[["TIC"]], "precursor_mz"))
+})
+
+test_that("read_mzml attaches the instrument, polarity and components", {
+  skip_on_cran()
+  files <- list.files(system.file("extdata", package = "RaMS"),
+                      full.names = TRUE)
+  uv <- read_mzml(grep("uv_test_mini.mzML", files, value = TRUE),
+                  what = c("TIC", "metadata"))$TIC
+  expect_equal(attr(uv, "instrument"),
+               "Thermo Fisher Scientific instrument model")
+  expect_equal(attr(uv, "ms_params"),
+               list(source = "electrospray ionization",
+                    analyzer = "mass analyzer type",
+                    detector = "inductive detector"))
+  # the file switches polarity, so neither is reported
+  expect_null(attr(uv, "polarity"))
+
+  pos <- read_mzml(grep("LB12HL_AB.mzML", files, value = TRUE),
+                   what = c("TIC", "metadata"))$TIC
+  expect_equal(attr(pos, "polarity"), "positive")
+  expect_true(is.na(attr(pos, "instrument")))
+  expect_null(attr(pos, "ms_params"))
+
+  mzxml <- read_mzml(grep("LB12HL_AB.mzXML", files, value = TRUE),
+                     what = c("TIC", "metadata"))$TIC
+  expect_equal(attr(mzxml, "instrument"), "Q Exactive")
+  expect_equal(attr(mzxml, "ms_params"),
+               list(source = "electrospray ionization",
+                    analyzer = "quadrupole",
+                    detector = "inductive detector"))
+})
+
 test_that("get_filetype fnc works as expected", {
   path_uv <- test_path("testdata/dad1.uv")
   expect_equal(get_filetype(path_uv), "chemstation_131")

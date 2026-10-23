@@ -619,17 +619,32 @@ meta_andi_ms <- function(meta, ctx){
 #' Field map for mzML files read by 'RaMS'
 #' @noRd
 meta_mzml <- function(meta, ctx){
-  # `meta` comes from `rams_meta_to_list`, which flattens the one-row table
+  # `meta` comes from `rams_meta_to_list`, which flattens the table
   # that `RaMS::grabMSdata` returns. `timestamp` is already a UTC `POSIXct`,
   # so it is not routed through `convert_timestamp`. `time_unit` is fixed
   # rather than read from the file: `RaMS:::grabSpectraRt` divides by 60
   # unless the file says minutes, so the values it returns are always minutes
   # whatever the file declared.
+  inst <- meta$inst_data
+  config <- meta$config_data
+  # from mzXML, RaMS returns the instrument as a named vector of its parts,
+  # repeated for each instrument configuration in the file
+  mzxml <- !is.null(names(inst))
+  parts <- if (mzxml){
+    lapply(split(unname(inst), names(inst)), function(v) unique(v[!is.na(v)]))
+  }
+  components <- if (mzxml){
+    list(source = parts$msIonisation, analyzer = parts$msMassAnalyzer,
+         detector = parts$msDetector)
+  } else if (is.data.frame(config)) split(config$name, config$type)
+  components <- components[intersect(c("source", "analyzer", "detector"),
+                                     names(components))]
+  components <- components[lengths(components) > 0]
   list(sample_name = fs::path_ext_remove(basename(ctx$source_file)),
        sample_id = NA,
        file_version = NA,
        file_type = NA,
-       instrument = NA,
+       instrument = (if (mzxml) parts$msModel else inst) %||% NA,
        detector = NA,
        detector_model = NA,
        detector_range = c(meta$lambda_lowest, meta$lambda_highest),
@@ -647,7 +662,11 @@ meta_mzml <- function(meta, ctx){
        time_range = c(meta$rt_start, meta$rt_end),
        time_interval = NA,
        time_unit = "Minutes",
-       intensity_multiplier = NA)
+       intensity_multiplier = NA,
+       polarity = if (length(meta$polarity) == 1) meta$polarity,
+       precursor_mz = meta$precursor_mz,
+       product_mz = meta$product_mz,
+       ms_params = if (length(components) > 0) components)
 }
 
 # --- external parsers --------------------------------------------------------
@@ -657,8 +676,8 @@ meta_mzml <- function(meta, ctx){
 #' `read_thermoraw` reads the mzML the parser writes and then annotates it from
 #' the `-metadata.txt` file written alongside it, so this map is applied on top
 #' of `meta_mzml`. The two overlap but neither is redundant: the mzML holds the
-#' instrument details, but 'RaMS' does not surface them, while the text file does
-#' not carry the wavelength range or polarity that it does.
+#' instrument details, but 'RaMS' surfaces only the model, while the text file
+#' does not carry the wavelength range or polarity that it does.
 #'
 #' Eight fields are set by both maps, so fields are read with `meta$x` rather
 #' than `get_metadata_field`: one that the text file omits yields `NULL`, which

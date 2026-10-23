@@ -18,7 +18,8 @@ read_mzml(
 \item{path}{Path to \code{.mzml} file.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
-\code{data.table}. Applies only to the \code{TIC}, \code{BPC} and \code{DAD} in wide format.}
+\code{data.table}. Applies only to the \code{TIC}, \code{BPC}, \code{DAD} and \code{chroms} in wide
+format.}
 
 \item{data_format}{Whether to return data in \code{wide} (default) or \code{long} format.}
 
@@ -47,6 +48,14 @@ Both parsers return a list with one element per stream in
 default), \code{TIC} and \code{BPC} are returned as 2D chromatograms of class
 \code{format_out}, and \code{DAD} as a wide chromatogram of class \code{format_out}; with
 \code{"long"}, every stream is a long \code{data.table}.
+
+The \code{chroms} stream holds the chromatograms stored in the file, such as the
+SIM and SRM traces of a triple quadrupole run. In wide format it is a list
+of 2D chromatograms named by their ID in the file (or \verb{Chromatogram 1},
+\verb{Chromatogram 2} and so on where it has none), each with the \code{precursor_mz}
+and \code{product_mz} it monitors as attributes. If any trace repeats a retention
+time, as in some malformed files, the whole stream is returned as the long
+\code{data.table} instead, with a warning.
 
 The mzR parser reads files that RaMS cannot, such as those compressed with
 MS-Numpress. It returns only \code{MS1}, \code{MS2}, \code{BPC}, \code{TIC} and \code{DAD}, and no

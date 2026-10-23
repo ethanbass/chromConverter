@@ -70,6 +70,18 @@ test_that("read_chroms can use 'OpenChrom' parsers", {
   expect_equal(dim(x$MS1), c(469732,4))
 })
 
+test_that("read_mzml returns chroms long when a trace repeats retention times", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+  path <- system.file("DCM1.mzML", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  expect_warning(x <- read_mzml(path, what = "chroms"),
+                 "repeated retention times")
+  expect_s3_class(x$chroms, "data.table")
+  expect_equal(attr(x$chroms, "data_format"), "long")
+})
+
 test_that("read_cdf function can read peak tables", {
   skip_on_cran()
   skip_if_not_installed("ncdf4")

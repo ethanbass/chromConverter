@@ -80,10 +80,15 @@ read_thermoraw <- function(path, path_out = NULL,
     # attach to the individual chromatograms as well as to the container:
     # `read_chroms` sorts on the container's `run_datetime`, while
     # `extract_metadata` and `print` see only the leaves.
-    x <- lapply(x, attach_metadata, meta = meta, format_in = metadata_format,
-                format_out = format_out, data_format = "long",
-                source_file = path,
-                source_file_format = "thermoraw")
+    attach_raw <- function(el){
+      if (is.list(el) && !is.data.frame(el)) return(lapply(el, attach_raw))
+      attach_metadata(el, meta = meta, format_in = metadata_format,
+                      format_out = format_out,
+                      data_format = attr(el, "data_format") %||% "long",
+                      source_file = path,
+                      source_file_format = "thermoraw")
+    }
+    x <- lapply(x, attach_raw)
     x <- attach_metadata(x, meta, format_in = metadata_format,
                          format_out = format_out, data_format = "long",
                          source_file = path,
