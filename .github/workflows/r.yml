@@ -45,16 +45,22 @@ jobs:
         # `Additional_repositories` from DESCRIPTION. The fixture package is
         # then pinned to GitHub below, because drat carries 0.4.9 and the
         # 'Shimadzu' mass spectrometry tests need fixtures added in 0.4.10.
+        # `entab` is pinned to GitHub too: the drat 0.3.1 predates the
+        # upstream fix for building on Windows under R >= 4.5.
         run: |
           writeLines('options(repos = c(entab = "https://ethanbass.github.io/drat/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
         shell: Rscript {0}
+
+      - name: Add the Rust target entab builds for on Windows
+        if: runner.os == 'Windows'
+        run: rustup target add x86_64-pc-windows-gnu
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
             any::rcmdcheck
             github::ethanbass/chromConverterExtraTests
-            ${{ runner.os == 'Windows' && 'entab=?ignore' || '' }}
+            github::bovee/entab/entab-r
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
