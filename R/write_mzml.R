@@ -334,7 +334,7 @@ write_mzml_header <- function(w, meta, n_scan, what = "MS1", indexed = TRUE,
     sprintf('<mzML xmlns="http://psi.hupo.org/ms/mzml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://psi.hupo.org/ms/mzml http://psi.hupo.org/ms/mzml" id="%s" version="1.1.0">\n',
             mzml_escape(sample_name)),
     '<cvList count="2">
-          <cv id="MS" fullName="Proteomics Standards Initiative Mass Spectrometry Ontology" version="4.1.0" URI="https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo"/>
+          <cv id="MS" fullName="Proteomics Standards Initiative Mass Spectrometry Ontology" version="4.2.7" URI="https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo"/>
           <cv id="UO" fullName="Unit Ontology" version="releases/2020-03-10" URI="http://data.bioontology.org/ontologies/UO"/>
       </cvList>\n',
   create_mzml_file_description(meta, what = what),
@@ -488,20 +488,46 @@ mzml_contact <- function(operator){
                  '\n        </contact>'), mzml_escape(operator))
 }
 
+#' Software cvParam for the acquisition software
+#'
+#' Names are matched as patterns because vendors decorate them (`Mustang
+#' ChemStation`, `MS Workstation (Upgrade)`). Anything unmatched is described
+#' by the parent term, with the recorded name as its value.
+#' @noRd
+mzml_software_param <- function(software){
+  terms <- list(ChemStation = c("MS:1004035", "ChemStation"),
+                "OpenLab ?CDS" = c("MS:1004036", "OpenLab CDS"),
+                LabSolutions = c("MS:1004033", "LabSolutions"),
+                GCMSsolution = c("MS:1004037", "GCMSsolution"),
+                "MS Workstation" = c("MS:1004034", "MS Workstation"),
+                Empower = c("MS:1001795", "Empower"),
+                Chromeleon = c("MS:1003964", "Chromeleon CDS"))
+  hit <- Find(function(pattern) grepl(pattern, software, ignore.case = TRUE),
+              names(terms))
+  if (is.null(hit)){
+    sprintf(paste0('<cvParam cvRef="MS" accession="MS:1001455" ',
+                   'name="acquisition software" value="%s"/>'),
+            mzml_escape(software))
+  } else {
+    sprintf('<cvParam cvRef="MS" accession="%s" name="%s"/>',
+            terms[[hit]][1], terms[[hit]][2])
+  }
+}
+
 #' Create mzml software list
 #' @noRd
 create_mzml_software_list <- function(meta){
   entries <- sprintf(
   '      <software id="chromConverter" version="%s">
-        <cvParam cvRef="MS" accession="MS:1000799" name="custom unreleased software tool" value="chromConverter R package"/>
+        <cvParam cvRef="MS" accession="MS:1004032" name="chromConverter"/>
       </software>', as.character(packageVersion("chromConverter")))
   acquisition <- mzml_value(meta[["software"]])
   if (!is.null(acquisition)){
     entries <- c(sprintf(
   '      <software id="acquisition" version="%s">
-        <cvParam cvRef="MS" accession="MS:1001455" name="acquisition software" value="%s"/>
+        %s
       </software>', mzml_escape(mzml_value(meta[["software_version"]]) %||% "unknown"),
-      mzml_escape(acquisition)), entries)
+      mzml_software_param(acquisition)), entries)
   }
   sprintf('  <softwareList count="%d">\n%s\n    </softwareList>',
           length(entries), paste(entries, collapse = "\n"))

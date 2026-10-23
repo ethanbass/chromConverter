@@ -487,7 +487,8 @@ test_that("write_mzml records the metadata the chromatogram carries", {
   # one polarity cvParam per spectrum
   expect_equal(lengths(regmatches(txt, gregexpr("MS:1000129", txt)))[[1]], 3)
   expect_match(txt, 'accession="MS:1000031" name="instrument model" value="LCMS-3030"')
-  expect_match(txt, 'accession="MS:1001455" name="acquisition software" value="LabSolutions"')
+  expect_match(txt, '<cvParam cvRef="MS" accession="MS:1004033" name="LabSolutions"/>',
+               fixed = TRUE)
   expect_match(txt, '<software id="acquisition" version="5.65">', fixed = TRUE)
   expect_match(txt, '<softwareList count="2">', fixed = TRUE)
   expect_match(txt, 'accession="MS:1000586" name="contact name" value="A. Chemist"')
@@ -510,6 +511,8 @@ test_that("write_mzml falls back where the chromatogram records nothing", {
   expect_match(txt, '<cvParam cvRef="MS" accession="MS:1000031" name="instrument model"/>',
                fixed = TRUE)
   expect_match(txt, '<softwareList count="1">', fixed = TRUE)
+  expect_match(txt, '<cvParam cvRef="MS" accession="MS:1004032" name="chromConverter"/>',
+               fixed = TRUE)
   # a format with no term of its own is described by the parent term
   expect_match(txt, 'accession="MS:1000560" name="mass spectrometer file format"')
   # and a missing `sample_id` cannot become the string "sNA"
@@ -682,25 +685,16 @@ test_that("read_mzml returns the same streams with mzR as with RaMS", {
   expect_named(read_mzml(g, parser = "mzR", what = c("DAD", "DAD")), "DAD")
 })
 
-test_that("mzR still rejects the PSI-MS software terms from psi-ms-CV#581", {
-  skip_on_cran()
-  skip_if_not_installed("mzR")
-
-  tmp <- tempfile()
-  dir.create(tmp)
-  on.exit(unlink(tmp, recursive = TRUE))
-
-  f <- write_ms1_mzml(tmp, make_ms1())
-  txt <- sub('accession="MS:1000799" name="custom unreleased software tool"',
-             'accession="MS:1004032" name="chromConverter"', readLines(f),
-             fixed = TRUE)
-  writeLines(txt, f)
-
-  opened <- tryCatch({mzR::openMSfile(f); TRUE}, error = function(e) FALSE)
-  if (opened){
-    fail(paste("mzR now reads MS:1004032: rebase and merge the psi-ms-cv-terms",
-               "branch, and delete this test"))
-  } else {
-    succeed()
-  }
+test_that("mzml_software_param maps vendor names to their CV terms", {
+  expect_equal(mzml_software_param("Mustang ChemStation"),
+               '<cvParam cvRef="MS" accession="MS:1004035" name="ChemStation"/>')
+  expect_equal(mzml_software_param("OpenLabCDS"),
+               '<cvParam cvRef="MS" accession="MS:1004036" name="OpenLab CDS"/>')
+  expect_equal(mzml_software_param("MS Workstation (Upgrade)"),
+               '<cvParam cvRef="MS" accession="MS:1004034" name="MS Workstation"/>')
+  expect_equal(mzml_software_param("Waters Empower"),
+               '<cvParam cvRef="MS" accession="MS:1001795" name="Empower"/>')
+  expect_equal(mzml_software_param("Acme <CDS>"),
+               paste0('<cvParam cvRef="MS" accession="MS:1001455" ',
+                      'name="acquisition software" value="Acme &lt;CDS&gt;"/>'))
 })
