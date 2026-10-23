@@ -47,9 +47,12 @@
 <div class="section level3">
 <h3 id="bug-fixes-and-other-minor-changes-0-11-2">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-0-11-2"></a></h3>
 <ul><li>DAD spectra from ‘OpenLab’ <code>.dx</code> files and <code>.rslt</code>/<code>.sirslt</code> directories are now in mAU. To convert DAD data read by earlier versions, multiply it by its <code>intensity_multiplier</code> attribute.</li>
+<li>Retention times of 2D chromatograms from ‘Shimadzu’ <code>.lcd</code> files are no longer about one sampling interval early (thanks to <a href="https://github.com/JustCoderWorld" class="external-link">@JustCoderWorld</a>, <a href="https://github.com/ethanbass/chromConverter/issues/55" class="external-link">#55</a>).</li>
 <li>
 <code>read_chroms</code> now recognizes ‘Agilent’ <code>.d</code>, ‘OpenLab’ <code>.rslt</code>/<code>.sirslt</code> and ‘Waters’ <code>.raw</code> directories without <code>format_in</code>.</li>
 <li>‘OpenLab’ <code>.dx</code> files whose injection volume unit is written with the Greek letter mu, rather than the micro sign, now report their injection volume.</li>
+<li>‘Shimadzu’ <code>.lcd</code> and <code>.gcd</code> files and Allotrope (ASM) files now report the acquisition <code>software</code>, which <code>write_mzml</code> records in the mzML. ASM files also report <code>software_version</code>.</li>
+<li>‘Shimadzu’ <code>.qgd</code> files now report the software release (e.g. <code>4.45</code>) as <code>software_version</code>. The file-format version they reported before is now <code>file_version</code>.</li>
 <li>
 <code>call_rainbow(by = "name")</code> no longer errors when ‘rainbow’ finds a trace with no detector type, and names files in their original case rather than upper case. Asking <code>what</code> for an absent detector now gives a clear warning.</li>
 </ul></div>
