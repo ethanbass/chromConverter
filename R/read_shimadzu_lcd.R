@@ -431,7 +431,7 @@ read_sz_lcd_2d <- function(path, format_out = "data.frame",
     data_item_exists <- check_stream(path,c('LSS Data Processing', '2D Data Item'))
     if (data_item_exists){
       DI <- read_sz_2DDI(path, idx = idx)
-      times <- seq(DI$DLT, DI$AT, length.out = nrow(dat))
+      times <- DI$DLT + DI$Rate * seq_len(nrow(dat))
       rownames(dat) <- times
       multiplier <- DI$detector.vf
     } else{

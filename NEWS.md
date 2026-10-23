@@ -8,6 +8,7 @@
 ### Bug fixes and other minor changes
 
 * DAD spectra from 'OpenLab' `.dx` files and `.rslt`/`.sirslt` directories are now in mAU. To convert DAD data read by earlier versions, multiply it by its `intensity_multiplier` attribute.
+* Retention times of 2D chromatograms from 'Shimadzu' `.lcd` files are no longer about one sampling interval early (thanks to @JustCoderWorld, #55).
 * `read_chroms` now recognizes 'Agilent' `.d`, 'OpenLab' `.rslt`/`.sirslt` and 'Waters' `.raw` directories without `format_in`.
 * 'OpenLab' `.dx` files whose injection volume unit is written with the Greek letter mu, rather than the micro sign, now report their injection volume.
 * 'Shimadzu' `.lcd` and `.gcd` files and Allotrope (ASM) files now report the acquisition `software`, which `write_mzml` records in the mzML. ASM files also report `software_version`.

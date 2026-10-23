@@ -146,8 +146,8 @@ test_that("read_chroms can read 2D chromatograms from 'Shimadzu' LCD files", {
   expect_equal(class(x1$AD2)[1], "matrix")
   expect_equal(dim(x1$AD2), c(30000, 1))
   expect_equal(x[-1,1], x1$AD2[,1], ignore_attr = TRUE)
-  expect_equal(as.numeric(rownames(x)[-1]), as.numeric(rownames(x1$AD2)),
-               tolerance = .0001)
+  expect_lt(max(abs(as.numeric(rownames(x)[-1]) -
+                      as.numeric(rownames(x1$AD2)))), 1e-5)
 
   # unscaled
   x2 <- read_chroms(path_lcd, format_in = "shimadzu_lcd", what = "chroms",
@@ -393,12 +393,10 @@ test_that("read_chroms can read multi-channel chromatograms from 'Shimadzu' LCD 
   expect_equal(sum(x[[3]]), 5520.9204898357493)
 
   # check retention times
-  expect_equal(as.numeric(rownames(x[[1]])),
-               as.numeric(rownames(x1[[1]]))[-1], tolerance = .001)
-  expect_equal(as.numeric(rownames(x[[2]])),
-               as.numeric(rownames(x1[[2]]))[-1], tolerance = .001)
-  expect_equal(as.numeric(rownames(x[[3]])),
-               as.numeric(rownames(x1[[3]]))[-1], tolerance = .001)
+  for (i in 1:3){
+    expect_lt(max(abs(as.numeric(rownames(x[[i]])) -
+                        as.numeric(rownames(x1[[i]]))[-1])), 1e-5)
+  }
 
   # check metadata equivalence
   expect_equal(attr(x[[1]], "software_version"), attr(x1[[1]], "software_version"))
