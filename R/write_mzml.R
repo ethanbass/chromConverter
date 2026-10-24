@@ -589,12 +589,12 @@ write_spectra <- function(w, data, what = c("MS1", "DAD"),
 
 #' Group a long-format table into scans
 #'
-#' Returns the retention time of each scan and an accessor for its rows.
-#' Reshaping emits all of the rows for one retention time together, so the
-#' scans are contiguous ranges and can be sliced directly; materializing them
-#' with `split()` would copy the whole table into a list of per-scan tables.
-#' Retention times that are *not* contiguous (the same time appearing in two
-#' separate blocks) fall back to `split()`, which gathers them.
+#' Returns the retention time of each scan and an accessor for its rows, as a
+#' list of columns. Reshaping emits all of the rows for one retention time
+#' together, so the scans are contiguous ranges and can be sliced directly;
+#' materializing them with `split()` would copy the whole table into a list of
+#' per-scan tables. Retention times that are *not* contiguous (the same time
+#' appearing in two separate blocks) fall back to `split()`, which gathers them.
 #'
 #' The keys are taken from the same grouping as the rows, so scan `i` and
 #' `keys[i]` cannot disagree.
@@ -604,16 +604,17 @@ write_spectra <- function(w, data, what = c("MS1", "DAD"),
 #' @noRd
 group_scans <- function(x, by = "rt"){
   key <- get_column(x, by)
+  cols <- as.list(x)
   runs <- rle(key)
   if (length(runs$values) == length(unique(key))){
     ends <- cumsum(runs$lengths)
     starts <- ends - runs$lengths + 1L
     list(keys = runs$values,
-         get_scan = function(i) x[starts[i]:ends[i]])
+         get_scan = function(i) lapply(cols, `[`, starts[i]:ends[i]))
   } else {
-    scan_list <- split(x, key)
-    list(keys = as.numeric(names(scan_list)),
-         get_scan = function(i) scan_list[[i]])
+    rows <- split(seq_along(key), key)
+    list(keys = as.numeric(names(rows)),
+         get_scan = function(i) lapply(cols, `[`, rows[[i]]))
   }
 }
 
@@ -758,7 +759,7 @@ write_ms_spectra <- function(w, roster, indexed = TRUE, idx_start = 0,
       parent_id = parent[i], polarity = info$polarity[i],
       centroided = centroided, compress = compress,
       tic = sum(scan_data$intensity),
-      bpc = if (nrow(scan_data) == 0) 0 else max(scan_data$intensity))
+      bpc = if (length(scan_data$intensity) == 0) 0 else max(scan_data$intensity))
     mz_write(w, spectrum_xml, "\n")
     if (indexed){
       list(id = ids[i], offset = offset)
@@ -836,7 +837,7 @@ mzml_precursor_list <- function(ms_level, precursor_mz, parent_id){
 #' @param scan The scan number (integer).
 #' @param index The scan index (integer).
 #' @param rt The retention time of the scan in minutes (numeric).
-#' @param scan_data: A `data.frame` or `data.table` containing the mass of each
+#' @param scan_data: A list or data frame containing the mass of each
 #' peak (in the `'mz'` column) and the intensity of each peak (in the
 #' `'intensity'` column).
 #' @param ms_level The MS level of the scan (integer).
@@ -859,7 +860,7 @@ create_mzml_ms_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
                                 compress = TRUE, tic = NULL, bpc = NULL) {
 
   # Encode mz and intensity data
-  if (nrow(scan_data) > 0){
+  if (length(scan_data$intensity) > 0){
     mz_encoded <- encode_data(scan_data$mz, compress = compress)
     int_encoded <- encode_data(scan_data$intensity, compress)
   } else{
@@ -906,7 +907,7 @@ create_mzml_ms_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
       </binaryDataArray>
     </binaryDataArrayList>
   </spectrum>',
-          scan, index, nrow(scan_data), spectrum_type, ms_level, peak_mode,
+          scan, index, length(scan_data$intensity), spectrum_type, ms_level, peak_mode,
           mzml_polarity_param(polarity), bpc, tic, mzml_scan_time_param(rt),
           mzml_precursor_list(ms_level, precursor_mz, parent_id),
           nchar(mz_encoded$base64), mz_encoded$compression_param, mz_encoded$base64,
@@ -922,7 +923,7 @@ create_mzml_ms_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
 #' @param scan The scan number (integer).
 #' @param index The scan index (integer).
 #' @param rt The retention time of the scan in minutes (numeric).
-#' @param scan_data: A `data.frame` or `data.table` containing the
+#' @param scan_data: A list or data frame containing the
 #' wavelength of each scan (in the `'lambda'` column) and the intensity of
 #' each scan (in the `'int'` column).
 #' @param tic Extra argument.
