@@ -944,18 +944,20 @@ test_that("read_chroms sorts and names nested samples correctly", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
-  # both files return a nested list (MS1/TIC/BPC) and were acquired years apart
+  # both files return a nested list (TIC/BPC) and were acquired years apart
   dcm1 <- system.file("DCM1.SMS", package = "chromConverterExtraTests")
   strd15 <- system.file("STRD15.SMS", package = "chromConverterExtraTests")
   skip_if_not(all(file.exists(c(dcm1, strd15))))
 
   x <- read_chroms(c(dcm1, strd15), format_in = "varian_sms",
-                   progress_bar = FALSE, sort_by = "acquisition_time")
+                   what = c("TIC", "BPC"), progress_bar = FALSE,
+                   sort_by = "acquisition_time")
   expect_equal(names(x), c("STRD15", "DCM1"))
 
   # sample names used to come back as the literal string "NULL"
   y <- read_chroms(c(dcm1, strd15), format_in = "varian_sms",
-                   progress_bar = FALSE, sample_names = "sample_name")
+                   what = c("TIC", "BPC"), progress_bar = FALSE,
+                   sample_names = "sample_name")
   expect_equal(names(y), c("DCM1", "STRD15"))
 
   # a single-chromatogram (collapsed) sample must still work

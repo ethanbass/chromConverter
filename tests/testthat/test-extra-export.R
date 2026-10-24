@@ -208,8 +208,8 @@ test_that("write_mzml writes MS1 and MS2 from a 'Shimadzu' .lcd file", {
   # is what `scan_info` counts and the spectra themselves do not
   n <- length(unique(unlist(lapply(x, function(i) attr(i, "scan_info")$scan))))
   txt <- paste(readLines(f, warn = FALSE), collapse = "\n")
-  expect_equal(sub(".*<spectrumList count=.([0-9]+).*", "\\1",
-                   gsub("\n", " ", txt)), as.character(n))
+  expect_equal(regmatches(txt, regexpr('(?<=<spectrumList count=")[0-9]+', txt,
+                                       perl = TRUE)), as.character(n))
 
   xx <- read_mzml(f, what = c("MS1", "MS2"))
   expect_named(xx, c("MS1", "MS2"))
@@ -218,6 +218,18 @@ test_that("write_mzml writes MS1 and MS2 from a 'Shimadzu' .lcd file", {
   # RaMS calls the precursor `premz` and the fragment `fragmz`
   expect_equal(sort(unique(xx$MS2$premz)), sort(unique(x$MS2$precursor_mz)))
   expect_equal(sort(xx$MS2$fragmz), sort(x$MS2$mz), tolerance = 1e-9)
+
+  # writing those columns back out used to leave the m/z array empty while the
+  # spectrum declared a `defaultArrayLength` for it
+  f2 <- write_mzml(xx, path_out = tmp, sample_name = "mzml_roundtrip",
+                   force = TRUE, show_progress = FALSE)
+  on.exit(unlink(f2), add = TRUE)
+
+  z <- read_mzml(f2, what = c("MS1", "MS2"))
+  expect_equal(nrow(z$MS1), nrow(xx$MS1))
+  expect_equal(nrow(z$MS2), nrow(xx$MS2))
+  expect_equal(sort(z$MS2$fragmz), sort(xx$MS2$fragmz))
+  expect_equal(sort(unique(z$MS2$premz)), sort(unique(xx$MS2$premz)))
 })
 
 test_that("write_mzml writes a file that holds MS2 and nothing else", {
@@ -250,33 +262,4 @@ test_that("write_mzml writes a file that holds MS2 and nothing else", {
   xx <- read_mzml(f, what = "MS2")
   expect_equal(sort(unique(xx$MS2$premz)), sort(unique(x$precursor_mz)))
   expect_equal(sort(xx$MS2$fragmz), sort(x$mz), tolerance = 1e-9)
-})
-
-test_that("write_mzml can write the MS2 spectra that read_mzml returns", {
-  skip_on_cran()
-  skip_if_missing_dependencies()
-  skip_if_not_installed("chromConverterExtraTests")
-
-  path <- system.file("shimadzu_qtof.lcd", package = "chromConverterExtraTests")
-  skip_if_not(file.exists(path))
-
-  tmp <- tempdir()
-  x <- suppressWarnings(read_shimadzu_lcd(path, what = "MS",
-                                          format_out = "data.frame"))
-  f <- write_mzml(x, path_out = tmp, force = TRUE, show_progress = FALSE)
-  on.exit(unlink(f))
-
-  # 'RaMS' names the precursor `premz` and the fragment `fragmz`, so writing
-  # its MS2 back out used to leave the m/z array empty while the spectrum
-  # declared a `defaultArrayLength` for it
-  y <- read_mzml(f, what = c("MS1", "MS2"))
-  f2 <- write_mzml(y, path_out = tmp, sample_name = "mzml_roundtrip",
-                   force = TRUE, show_progress = FALSE)
-  on.exit(unlink(f2), add = TRUE)
-
-  z <- read_mzml(f2, what = c("MS1", "MS2"))
-  expect_equal(nrow(z$MS1), nrow(y$MS1))
-  expect_equal(nrow(z$MS2), nrow(y$MS2))
-  expect_equal(sort(z$MS2$fragmz), sort(y$MS2$fragmz))
-  expect_equal(sort(unique(z$MS2$premz)), sort(unique(y$MS2$premz)))
 })

@@ -18,26 +18,16 @@ test_that("read_chroms can read 'Thermo' RAW files", {
   expect_equal(names(x), c("MS1", "MS2", "DAD", "BPC",
                            "TIC", "chroms", "metadata"))
 
-  # `format_out` is forwarded to `read_mzml`, which accepts all three classes
-  y <- read_chroms(path, progress_bar = FALSE, path_out = tmp,
-                   format_out = "data.table")[[1]]
-  expect_s3_class(y$TIC, "data.table")
-  expect_equal(attr(y$TIC, "format_out"), "data.table")
-})
-
-test_that("read_thermoraw reads files with dots in their names", {
-  skip_on_cran()
-  skip_on_ci()
-  skip_if_not_installed("chromConverterExtraTests")
-  skip_if_missing_thermorawfileparser()
-
-  path <- system.file("CirA.raw", package = "chromConverterExtraTests")
-  skip_if_not(file.exists(path))
+  # `format_out` is forwarded to `read_mzml`, which accepts all three classes.
+  # The copy has dots in its name, which `read_thermoraw` must also handle.
   dir <- withr::local_tempdir()
   dotted <- file.path(dir, "CirA.rep1.raw")
   file.copy(path, dotted)
-  x <- read_thermoraw(dotted, path_out = dir)
-  expect_equal(names(x), c("MS1", "MS2", "DAD", "BPC", "TIC", "chroms", "metadata"))
+  y <- read_chroms(dotted, progress_bar = FALSE, path_out = dir,
+                   format_out = "data.table")[[1]]
+  expect_equal(names(y), c("MS1", "MS2", "DAD", "BPC", "TIC", "chroms", "metadata"))
+  expect_s3_class(y$TIC, "data.table")
+  expect_equal(attr(y$TIC, "format_out"), "data.table")
 })
 
 test_that("read_chroms can use 'OpenChrom' parsers", {

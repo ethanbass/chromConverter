@@ -27,7 +27,8 @@ test_that("write_mzml records a correct fileChecksum", {
   bytes <- read_bytes(path)
   txt <- rawToChar(bytes)
 
-  checksum <- sub(".*<fileChecksum>([0-9a-f]+)</fileChecksum>.*", "\\1", txt)
+  checksum <- regmatches(txt, regexpr("(?<=<fileChecksum>)[0-9a-f]+", txt,
+                                       perl = TRUE))
   expect_match(checksum, "^[0-9a-f]{40}$")
 
   # the mzML checksum covers the file through the opening `fileChecksum` tag
@@ -48,7 +49,7 @@ expect_index_offsets_exact <- function(path, n_spectra, n_chromatograms = 0L){
 
   # <indexListOffset> must land on the <indexList> element
   index_list_offset <- as.numeric(
-    sub(".*<indexListOffset>([0-9]+)</indexListOffset>.*", "\\1", txt))
+    regmatches(txt, regexpr("(?<=<indexListOffset>)[0-9]+", txt, perl = TRUE)))
   expect_equal(index_list_offset, locate(bytes, "<indexList "))
 
   check_section <- function(name, n_expected){
@@ -145,7 +146,8 @@ test_that("write_mzml counts scans correctly for every input class", {
     path <- write_test_mzml(tmp, format_out = fmt)
     txt <- rawToChar(read_bytes(path))
     unlink(path)
-    as.numeric(sub('.*<spectrumList count="([0-9]+)".*', "\\1", txt))
+    as.numeric(regmatches(txt, regexpr('(?<=<spectrumList count=")[0-9]+', txt,
+                                       perl = TRUE)))
   }, FUN.VALUE = numeric(1))
 
   # 1944 time points in dad1.uv, regardless of how the data was read

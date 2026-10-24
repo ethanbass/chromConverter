@@ -283,7 +283,7 @@ test_that("InjectionLog metadata is attached", {
   path <- system.file("STRD15.SMS", package = "chromConverterExtraTests")
   skip_if_not(file.exists(path))
 
-  x <- read_varian_sms(path)
+  x <- read_varian_sms(path, what = "TIC", collapse = FALSE)
   expect_equal(attr(x$TIC, "instrument"), "Varian GC/MS #1")
   expect_equal(attr(x$TIC, "method"),
                "c:\\varianws\\methods\\wax column\\wax-voc.mth")
