@@ -90,7 +90,7 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
   # file properties RaMS recovered end up as attributes where
   # `extract_metadata` and `print.chrom_list` can see them
   meta <- rams_meta_to_list(data[["metadata"]])
-  attach <- function(x, meta, data_format){
+  add_mzml_meta <- function(x, meta, data_format){
     attach_metadata(x, meta = meta, format_in = "mzml",
                     format_out = format_out, data_format = data_format,
                     parser = parser, source_file = path,
@@ -102,20 +102,20 @@ read_mzml <- function(path, format_out = c("matrix", "data.frame", "data.table")
       if (any(vapply(traces, function(tr) anyDuplicated(tr$rt) > 0, logical(1)))){
         warning(sprintf("Chromatograms in '%s' have repeated retention times, so `chroms` is returned in long format.",
                         basename(path)), call. = FALSE)
-        return(attach(x, meta, "long"))
+        return(add_mzml_meta(x, meta, "long"))
       }
       chroms <- lapply(traces, function(tr){
         mz <- list(precursor_mz = tr$target_mz[1], product_mz = tr$product_mz[1])
-        attach(format_2d_chromatogram(tr$rt, tr$intensity, data_format = "wide",
-                                      format_out = format_out),
-               c(meta, mz[!is.na(mz)]), "wide")
+        add_mzml_meta(format_2d_chromatogram(tr$rt, tr$intensity, data_format = "wide",
+                                             format_out = format_out),
+                      c(meta, mz[!is.na(mz)]), "wide")
       })
       ids <- vapply(traces, function(tr) tr$chrom_type[1], character(1))
       names(chroms) <- ifelse(is.na(ids), paste("Chromatogram", seq_along(ids)),
                               ids)
       return(chroms)
     }
-    x <- attach(x, meta, ifelse(grepl("MS|EIC", h), "long", data_format))
+    x <- add_mzml_meta(x, meta, ifelse(grepl("MS|EIC", h), "long", data_format))
     if (h == "metadata")
       class(x) <- c("chromconverter_metadata", class(x))
     x

@@ -136,7 +136,7 @@ read_asm_injection <- function(meas, what, data_format, format_out,
   meas_names <- rep(NA_character_, length(meas))
   meas_names[rows] <- name_asm_chromatograms(meas[rows], cubes[rows])
 
-  add_meta <- function(x, m, cube, format_out, data_format, units = NULL){
+  add_asm_meta <- function(x, m, cube, format_out, data_format, units = NULL){
     if (!read_metadata) return(x)
     meta <- get_asm_metadata(m, file_meta, cube = cube, units = units)
     attach_metadata(x, meta, format_in = metadata_format,
@@ -154,7 +154,7 @@ read_asm_injection <- function(meas, what, data_format, format_out,
                             data_format = data_format, format_out = format_out)
       if (length(rows_2d) > 1 && format_out %in% c("data.frame", "data.table"))
         x$detector <- meas_names[i]
-      add_meta(x, meas[[i]], cubes_2d[i], format_out, data_format)
+      add_asm_meta(x, meas[[i]], cubes_2d[i], format_out, data_format)
     })
     names(chroms) <- meas_names[rows_2d]
     if (length(chroms) > 0) out$chroms <- chroms
@@ -165,7 +165,7 @@ read_asm_injection <- function(meas, what, data_format, format_out,
       x <- read_asm_ms_data(meas[[i]]$md[[cubes_3d[i]]],
                             format_out = table_format)
       if (!is.null(x)){
-        x <- add_meta(x, meas[[i]], cubes_3d[i], table_format, "long")
+        x <- add_asm_meta(x, meas[[i]], cubes_3d[i], table_format, "long")
       }
       x
     })
@@ -182,7 +182,7 @@ read_asm_injection <- function(meas, what, data_format, format_out,
       units <- attr(tab, "units")
       attr(tab, "units") <- NULL
       if (table_format == "data.table") tab <- data.table::as.data.table(tab)
-      add_meta(tab, meas[[i]], NULL, table_format, "long", units = units)
+      add_asm_meta(tab, meas[[i]], NULL, table_format, "long", units = units)
     })
     names(peaks) <- meas_names[rows]
     peaks <- Filter(Negate(is.null), peaks)
@@ -198,7 +198,7 @@ read_asm_injection <- function(meas, what, data_format, format_out,
       cs <- tr$cube[["cube-structure"]]
       units <- list(time = cs[["dimensions"]][[1]][["unit"]],
                     y = cs[["measures"]][[1]][["unit"]])
-      add_meta(x, tr$m, NULL, format_out, data_format, units = units)
+      add_asm_meta(x, tr$m, NULL, format_out, data_format, units = units)
     })
     if (length(instrument) > 0){
       out$instrument <- if (collapse) collapse_list(instrument) else instrument
