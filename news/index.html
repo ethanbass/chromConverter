@@ -39,10 +39,18 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.11.2" id="chromconverter-0112">chromConverter 0.11.2<a class="anchor" aria-label="anchor" href="#chromconverter-0112"></a></h2>
 <div class="section level3">
+<h3 id="breaking-changes-0-11-2">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-11-2"></a></h3>
+<ul><li>
+<code>read_mzml(parser = "mzR")</code> now returns a list of streams like the RaMS parser, adding MS1, MS2, TIC and BPC to DAD. The DAD chromatogram, now <code>$DAD</code>, has retention times in minutes rather than seconds, and takes its wavelengths from the spectra rather than the scan window, so DAD files without one, such as those <code>write_mzml</code> writes, can now be read.</li>
+<li>In wide format, <code>chroms</code> from mzML and ‘Thermo’ RAW files is now a list of 2D chromatograms, one per stored trace, with <code>precursor_mz</code> and <code>product_mz</code> attributes. Use <code>data_format = "long"</code> for the previous table.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="new-features-0-11-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-11-2"></a></h3>
 <ul><li>Mass spectra, TIC and BPC are now read from ‘MassHunter’ <code>.d</code> directories by default, and from ‘OpenLab’ <code>.dx</code> files with <code>what = c("MS1", "TIC", "BPC")</code>. See <code><a href="../reference/read_agilent_d.html">?read_agilent_d</a></code>.</li>
 <li>
 <code>call_rainbow</code> gains <code>centroid</code> and <code>hrms</code> arguments to read the centroid and profile mass spectra of ‘MassHunter’ <code>.d</code> directories, which ‘rainbow’ otherwise skips. See <code><a href="../reference/call_rainbow.html">?call_rainbow</a></code>.</li>
+<li>
+<code>read_mzml</code> now returns extracted ion chromatograms with <code>what = "EIC"</code> or <code>"EIC_MS2"</code>, for the masses given by <code>mz</code> and <code>ppm</code>. See <code><a href="../reference/read_mzml.html">?read_mzml</a></code>.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-and-other-minor-changes-0-11-2">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-0-11-2"></a></h3>
@@ -53,6 +61,8 @@
 <li>‘OpenLab’ <code>.dx</code> files whose injection volume unit is written with the Greek letter mu, rather than the micro sign, now report their injection volume.</li>
 <li>‘Shimadzu’ <code>.lcd</code> and <code>.gcd</code> files and Allotrope (ASM) files now report the acquisition <code>software</code>, which <code>write_mzml</code> records in the mzML. ASM files also report <code>software_version</code>.</li>
 <li>‘Shimadzu’ <code>.qgd</code> files now report the software release (e.g. <code>4.45</code>) as <code>software_version</code>. The file-format version they reported before is now <code>file_version</code>.</li>
+<li>mzML and mzXML files now report the <code>instrument</code>, <code>polarity</code>, and the ion source, analyzer and detector (as <code>ms_params</code>) recorded in the file.</li>
+<li>Wide-format chromatograms from ‘Thermo’ RAW files now have a <code>data_format</code> attribute of <code>"wide"</code> rather than <code>"long"</code>.</li>
 <li>
 <code>call_rainbow(by = "name")</code> no longer errors when ‘rainbow’ finds a trace with no detector type, and names files in their original case rather than upper case. Asking <code>what</code> for an absent detector now gives a clear warning.</li>
 </ul></div>

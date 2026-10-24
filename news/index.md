@@ -2,6 +2,19 @@
 
 ## chromConverter 0.11.2
 
+### Breaking changes
+
+- `read_mzml(parser = "mzR")` now returns a list of streams like the
+  RaMS parser, adding MS1, MS2, TIC and BPC to DAD. The DAD
+  chromatogram, now `$DAD`, has retention times in minutes rather than
+  seconds, and takes its wavelengths from the spectra rather than the
+  scan window, so DAD files without one, such as those `write_mzml`
+  writes, can now be read.
+- In wide format, `chroms` from mzML and ‘Thermo’ RAW files is now a
+  list of 2D chromatograms, one per stored trace, with `precursor_mz`
+  and `product_mz` attributes. Use `data_format = "long"` for the
+  previous table.
+
 ### New features
 
 - Mass spectra, TIC and BPC are now read from ‘MassHunter’ `.d`
@@ -12,6 +25,10 @@
   centroid and profile mass spectra of ‘MassHunter’ `.d` directories,
   which ‘rainbow’ otherwise skips. See
   [`?call_rainbow`](https://ethanbass.github.io/chromConverter/reference/call_rainbow.md).
+- `read_mzml` now returns extracted ion chromatograms with
+  `what = "EIC"` or `"EIC_MS2"`, for the masses given by `mz` and `ppm`.
+  See
+  [`?read_mzml`](https://ethanbass.github.io/chromConverter/reference/read_mzml.md).
 
 ### Bug fixes and other minor changes
 
@@ -33,6 +50,11 @@
 - ‘Shimadzu’ `.qgd` files now report the software release (e.g. `4.45`)
   as `software_version`. The file-format version they reported before is
   now `file_version`.
+- mzML and mzXML files now report the `instrument`, `polarity`, and the
+  ion source, analyzer and detector (as `ms_params`) recorded in the
+  file.
+- Wide-format chromatograms from ‘Thermo’ RAW files now have a
+  `data_format` attribute of `"wide"` rather than `"long"`.
 - `call_rainbow(by = "name")` no longer errors when ‘rainbow’ finds a
   trace with no detector type, and names files in their original case
   rather than upper case. Asking `what` for an absent detector now gives
