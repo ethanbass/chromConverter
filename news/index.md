@@ -1,5 +1,35 @@
 # Changelog
 
+## chromConverter 0.12.0
+
+- ‘Shimadzu’ `.qgd` files with MRM scans can now be read. The scans are
+  returned as `MS2`, with a `precursor_mz` column. See
+  [`?read_shimadzu_qgd`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_qgd.md).
+- Product ion and MRM spectra are now read by default from ‘MassHunter’
+  `.d` directories, as `MS2` with a `precursor_mz` column. See
+  [`?read_agilent_d`](https://ethanbass.github.io/chromConverter/reference/read_agilent_d.md).
+- Mass spectra, TIC and BPC from ‘MassHunter’ and ‘OpenLab’ files now
+  report their `polarity`, which `write_mzml` records in the mzML.
+- `write_mzml` now records the collision energy of MS2 spectra where it
+  is known, as for ‘MassHunter’ files or spectra read by `read_mzml`.
+  See
+  [`?write_mzml`](https://ethanbass.github.io/chromConverter/reference/write_mzml.md).
+- Profile spectra can now be read from ‘Thermo’ RAW files with
+  `centroid = FALSE`, which skips the vendor’s peak picking. See
+  [`?read_thermoraw`](https://ethanbass.github.io/chromConverter/reference/read_thermoraw.md).
+- ‘Shimadzu’ LCMS-IT-TOF `.lcd` files can now be read: MS1 and MS2
+  profile spectra, and a TIC per acquisition event. See
+  [`?read_shimadzu_lcd`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md).
+- ‘Shimadzu’ single quadrupole `.lcd` files, such as those from the
+  LCMS-2020, can now be read: centroided and profile MS1 spectra and a
+  TIC per acquisition event. See
+  [`?read_shimadzu_lcd`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md).
+- Paths starting with `~` now work for ‘Shimadzu’ files and in
+  `call_rainbow` and `call_entab`, including through `read_chroms`.
+- Mass spectra can now be read from ‘MassHunter’ `.d` directories whose
+  `MSScan.xsd` prefixes its type names with a namespace, which
+  previously gave an error.
+
 ## chromConverter 0.11.2
 
 CRAN release: 2026-10-25

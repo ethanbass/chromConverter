@@ -15,6 +15,7 @@ read_shimadzu_lcd(
   metadata_format = c("chromconverter", "raw"),
   scale = TRUE,
   sparse = TRUE,
+  centroided = TRUE,
   collapse = TRUE,
   peaktable_format = c("chromatographr", "original")
 )
@@ -44,8 +45,10 @@ read_shimadzu_lcd(
   otherwise `MS` for a file whose only detector is the mass
   spectrometer. The mass spectrometry streams are read from whichever
   container the file uses: `QTFL RawData` (centroided quadrupole
-  time-of-flight data) or `TLM Raw Data` (triple quadrupole full scan,
-  product-ion scan, MRM and SIM data).
+  time-of-flight data), `TLM Raw Data` (triple quadrupole full scan,
+  product-ion scan, MRM and SIM data), `TTFL Raw Data` (ion trap
+  time-of-flight profile data) or `Mass Raw Data` (centroided or profile
+  single quadrupole data).
 
 - format_out:
 
@@ -77,6 +80,12 @@ read_shimadzu_lcd(
   does. Defaults to `TRUE`. Applies only to triple quadrupole profile
   spectra, whose m/z grid is largely empty; ignored for every other
   stream.
+
+- centroided:
+
+  Logical. Whether to return the centroided single quadrupole scans
+  (`TRUE`, the default) or the profile scans (`FALSE`), which some
+  methods record as a separate event. Ignored for every other stream.
 
 - collapse:
 
@@ -143,13 +152,30 @@ dispatches over them:
   which documents the index, the scan header and the layout of each scan
   type. The total ion current is again held separately, in `TIC Data`.
 
+- **Ion trap time-of-flight mass spectra** (`TTFL Raw Data`): run-length
+  encoded profile scans from the LCMS-IT-TOF, with the mass axis
+  interpolated between the calibrant ions stored in the file. Read by
+  [`read_sz_ittof()`](https://ethanbass.github.io/chromConverter/reference/read_sz_ittof.md),
+  which documents the scan header, the encoding and the calibration. The
+  total ion current is read from the scan headers
+  ([`read_sz_ittof_tic()`](https://ethanbass.github.io/chromConverter/reference/read_sz_ittof_tic.md)).
+
+- **Single quadrupole mass spectra** (`Mass Raw Data`): centroided and
+  profile scans from instruments such as the LCMS-2020, located through
+  a spectrum index. Read by
+  [`read_sz_sq()`](https://ethanbass.github.io/chromConverter/reference/read_sz_sq.md),
+  which documents the scan header, the records and the approximate
+  profile m/z axis. The total ion current is held separately, in
+  `TIC Data`
+  ([`read_sz_sq_tic()`](https://ethanbass.github.io/chromConverter/reference/read_sz_sq_tic.md)).
+
 - **Peak tables** (`Peak Table`): integration results as reported by
   'LabSolutions', one stream per channel. Read by
   [`read_sz_tables()`](https://ethanbass.github.io/chromConverter/reference/read_sz_tables.md),
   which documents the two record layouts.
 
-The two mass spectrometry containers are mutually exclusive: a file
-holds one or the other, according to the instrument that wrote it.
+The mass spectrometry containers are mutually exclusive: a file holds
+one of them, according to the instrument that wrote it.
 
 A mass spectrometry run is divided into **acquisition events**: the scan
 functions defined by the method, each with its own polarity, MS level

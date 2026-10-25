@@ -9,7 +9,7 @@ ignored.
 ``` r
 read_agilent_d(
   path,
-  what = c("dad", "chroms", "peak_table", "MS1", "TIC", "BPC"),
+  what = c("dad", "chroms", "peak_table", "MS1", "MS2", "TIC", "BPC"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -29,7 +29,7 @@ read_agilent_d(
   Whether to extract chromatograms (`chroms`), DAD data (`dad`), peak
   tables (`peak_table`) and/or instrument traces (`instrument`), such as
   pump pressure, flow, solvent composition and temperature, read from
-  `LCDIAG.REG`, and/or mass spectra (`MS1`) with the total ion
+  `LCDIAG.REG`, and/or mass spectra (`MS1`, `MS2`) with the total ion
   chromatogram (`TIC`) and base peak chromatogram (`BPC`). Accepts
   multiple arguments, and defaults to all of these but `instrument`.
   Types the directory does not contain are left out, and it is an error
@@ -76,8 +76,12 @@ named by wavelength (e.g. `"254"`), and keep the report's name for the
 signal as `signal_descriptor`. They are read from `Result.xml` where the
 directory has one, since unlike `Report.TXT` it records where each peak
 starts and ends. Mass spectra and the `BPC` are always in long format,
-with `rt`, `mz` and `intensity` columns, and are returned as a
-`data.table` when `format_out` is `matrix`. Metadata are attached as
+with `rt`, `mz` and `intensity` columns, and a `precursor_mz` column
+before `mz` for `MS2`. They are returned as a `data.table` when
+`format_out` is `matrix`. Each table of spectra has a `scan_info`
+attribute with one row per scan, giving its `scan`, `rt`, `ms_level` and
+`polarity`, and for `MS2` its `precursor_mz` and `collision_energy`.
+Metadata are attached as
 [attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
 is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by
 that element.
@@ -97,12 +101,14 @@ Each profile starts with its first m/z and the step between points, as
 two doubles or two 32-bit floats, followed by the intensities as 32-bit
 floats or integers respectively. The points are spaced by the scan's
 `SamplingPeriod` rather than the stored step, which can be slightly
-smaller. Only spectra at MS level 1 can be read, and only from
-unit-resolution instruments such as single quadrupole GC-MS and LC-MS.
-The `TIC` and `BPC` come from the record of every scan, so they are also
-returned for runs whose spectra cannot be read, such as triple
-quadrupole MRM. For high-resolution spectra, try `parser = "rainbow"`
-with `centroid` or `hrms`.
+smaller. Spectra can be read only from unit-resolution instruments, such
+as single quadrupole GC-MS and LC-MS, and triple quadrupole LC-MS. `MS1`
+holds the scans at MS level 1 and `MS2` the product ion and MRM scans,
+each with the m/z it selected in the first quadrupole as `precursor_mz`.
+Neutral loss and precursor ion scans are skipped with a warning. The
+`TIC` and `BPC` come from the record of every scan, so they are also
+returned for runs whose spectra cannot be read. For high-resolution
+spectra, try `parser = "rainbow"` with `centroid` or `hrms`.
 
 ## See also
 

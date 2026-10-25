@@ -7,7 +7,7 @@ Reads 'Shimadzu GCMSsolution' `.qgd` GC-MS data files.
 ``` r
 read_shimadzu_qgd(
   path,
-  what = c("MS1", "TIC"),
+  what = c("MS1", "MS2", "TIC"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -24,8 +24,9 @@ read_shimadzu_qgd(
 
 - what:
 
-  What stream to get: current options are `MS1` and/or `TIC`. If a
-  stream is not specified, the function will return both streams.
+  What stream to get: current options are full scans (`MS1`), MRM scans
+  (`MS2`) and the `TIC`. If a stream is not specified, the function
+  returns all three.
 
 - format_out:
 
@@ -51,16 +52,17 @@ read_shimadzu_qgd(
 
 ## Value
 
-A list holding the `MS1` spectra and the `TIC`, or the one requested
-where `collapse` is `TRUE`. The TIC is returned in the format specified
-by `data_format` and `format_out`. If `data_format` is `wide`, it is
-returned with retention times as rows and a single column for the
-intensity. If `long` format is requested, two columns are returned: one
-for the retention time and one for the intensity. The `format_out`
-argument determines whether it is returned as a `matrix`, `data.frame`,
-or `data.table`. The spectra are always long, with columns `scan`, `rt`,
-`mz` and `intensity`, and a `matrix` resolves to a `data.table`.
-Metadata are attached as
+A list holding whichever of the requested spectra the file has (`MS1`,
+`MS2`) and the `TIC`, or the one requested where `collapse` is `TRUE`.
+The TIC is returned in the format specified by `data_format` and
+`format_out`. If `data_format` is `wide`, it is returned with retention
+times as rows and a single column for the intensity. If `long` format is
+requested, two columns are returned: one for the retention time and one
+for the intensity. The `format_out` argument determines whether it is
+returned as a `matrix`, `data.frame`, or `data.table`. The spectra are
+always long, with columns `scan`, `rt`, `mz` and `intensity`, plus
+`precursor_mz` before `mz` in the MRM spectra, and a `matrix` resolves
+to a `data.table`. Metadata are attached as
 [attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
 is `TRUE`.
 
@@ -75,7 +77,10 @@ milliseconds, and the TIC stream an array of 8-byte integers, one per
 retention time.
 
 The MS Raw Data stream holds one block per scan, located through the
-`Spectrum Index` stream. Each block begins with a 32-byte header:
+`Spectrum Index` stream. The index is an array of byte offsets, held as
+4-byte integers in some files and as 8-byte integers after a 2-byte
+header in others, such as the MRM files seen so far. Each block begins
+with a 32-byte header:
 
 - scan number (4-byte integer)
 
@@ -87,12 +92,22 @@ The MS Raw Data stream holds one block per scan, located through the
 
 - number of m/z values in the block (2-byte integer)
 
-- unknown (8 bytes)
+- MRM event number (2-byte integer)
 
-After the header, each m/z value is followed by its intensity. The m/z
+- number of MRM transitions in the block (2-byte integer)
+
+- unknown (4 bytes)
+
+In a full scan, each m/z value is followed by its intensity. The m/z
 values are 2-byte integers holding m/z times 20. Intensities are
 unsigned integers of the width given in the header, except that the top
 bit of a 4-byte intensity is dropped.
+
+An MRM scan leaves the width and the number of m/z values at zero and
+instead holds one record per transition: the precursor and product m/z,
+each stored like the m/z of a full scan, followed by an unsigned
+intensity. The header doesn't give the intensity width, so the reader
+works it out from the size of the block.
 
 ## See also
 

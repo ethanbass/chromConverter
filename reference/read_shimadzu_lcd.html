@@ -35,7 +35,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read 'Shimadzu' LCD</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.11.2/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_shimadzu_lcd.R" class="external-link"><code>R/read_shimadzu_lcd.R</code></a></small>
       <div class="d-none name"><code>read_shimadzu_lcd.Rd</code></div>
     </div>
 
@@ -55,6 +55,7 @@
 <span>  metadata_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromconverter"</span>, <span class="st">"raw"</span><span class="op">)</span>,</span>
 <span>  scale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  sparse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  centroided <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  collapse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  peaktable_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromatographr"</span>, <span class="st">"original"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -82,8 +83,10 @@ after the collision cell, and so is <code>MS1</code>.</p>
 <code>DAD</code> if there is a PDA stream, otherwise <code>chroms</code>, and otherwise <code>MS</code> for a
 file whose only detector is the mass spectrometer. The mass spectrometry
 streams are read from whichever container the file uses: <code>QTFL RawData</code>
-(centroided quadrupole time-of-flight data) or <code>TLM Raw Data</code> (triple
-quadrupole full scan, product-ion scan, MRM and SIM data).</p></dd>
+(centroided quadrupole time-of-flight data), <code>TLM Raw Data</code> (triple
+quadrupole full scan, product-ion scan, MRM and SIM data), <code>TTFL Raw Data</code>
+(ion trap time-of-flight profile data) or <code>Mass Raw Data</code> (centroided or
+profile single quadrupole data).</p></dd>
 
 
 <dt id="arg-format-out">format_out<a class="anchor" aria-label="anchor" href="#arg-format-out"></a></dt>
@@ -114,6 +117,12 @@ file. Defaults to <code>TRUE</code>.</p></dd>
 (excluding zeros), as <code><a href="call_rainbow.html">call_rainbow()</a></code> does. Defaults to <code>TRUE</code>. Applies
 only to triple quadrupole profile spectra, whose m/z grid is largely
 empty; ignored for every other stream.</p></dd>
+
+
+<dt id="arg-centroided">centroided<a class="anchor" aria-label="anchor" href="#arg-centroided"></a></dt>
+<dd><p>Logical. Whether to return the centroided single
+quadrupole scans (<code>TRUE</code>, the default) or the profile scans (<code>FALSE</code>), which
+some methods record as a separate event. Ignored for every other stream.</p></dd>
 
 
 <dt id="arg-collapse">collapse<a class="anchor" aria-label="anchor" href="#arg-collapse"></a></dt>
@@ -167,11 +176,21 @@ records located through a spectrum index, covering full scan, product-ion
 scan, MRM and SIM acquisitions. Read by <code><a href="read_sz_tlm.html">read_sz_tlm()</a></code>, which documents the
 index, the scan header and the layout of each scan type. The total ion
 current is again held separately, in <code>TIC Data</code>.</p></li>
+<li><p><strong>Ion trap time-of-flight mass spectra</strong> (<code>TTFL Raw Data</code>): run-length
+encoded profile scans from the LCMS-IT-TOF, with the mass axis interpolated
+between the calibrant ions stored in the file. Read by <code><a href="read_sz_ittof.html">read_sz_ittof()</a></code>,
+which documents the scan header, the encoding and the calibration. The total
+ion current is read from the scan headers (<code><a href="read_sz_ittof_tic.html">read_sz_ittof_tic()</a></code>).</p></li>
+<li><p><strong>Single quadrupole mass spectra</strong> (<code>Mass Raw Data</code>): centroided and
+profile scans from instruments such as the LCMS-2020, located through a
+spectrum index. Read by <code><a href="read_sz_sq.html">read_sz_sq()</a></code>, which documents the scan header,
+the records and the approximate profile m/z axis. The
+total ion current is held separately, in <code>TIC Data</code> (<code><a href="read_sz_sq_tic.html">read_sz_sq_tic()</a></code>).</p></li>
 <li><p><strong>Peak tables</strong> (<code>Peak Table</code>): integration results as reported by
 'LabSolutions', one stream per channel. Read by <code><a href="read_sz_tables.html">read_sz_tables()</a></code>, which
 documents the two record layouts.</p></li>
-</ul><p>The two mass spectrometry containers are mutually exclusive: a file holds
-one or the other, according to the instrument that wrote it.</p>
+</ul><p>The mass spectrometry containers are mutually exclusive: a file holds one of
+them, according to the instrument that wrote it.</p>
 <p>A mass spectrometry run is divided into <strong>acquisition events</strong>: the scan
 functions defined by the method, each with its own polarity, MS level and
 mass range, which the instrument cycles through as the run proceeds. The

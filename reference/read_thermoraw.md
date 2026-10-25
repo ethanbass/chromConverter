@@ -14,6 +14,7 @@ read_thermoraw(
   format_out = c("matrix", "data.frame", "data.table"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
+  centroid = TRUE,
   verbose = getOption("verbose")
 )
 ```
@@ -41,6 +42,13 @@ read_thermoraw(
 
   Format to output metadata. Either `chromconverter` (standardized field
   names) or `raw` (vendor field names, unmapped).
+
+- centroid:
+
+  Logical. Whether to centroid profile spectra with the vendor's peak
+  picking. Defaults to `TRUE`. Set it to `FALSE` to keep profile spectra
+  as acquired, which are about ten times larger. Spectra acquired in
+  centroid mode stay centroided either way.
 
 - verbose:
 

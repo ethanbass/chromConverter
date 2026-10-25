@@ -37,7 +37,7 @@ ignored."><meta property="og:image" content="https://ethanbass.github.io/chromCo
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Read files from 'Agilent ChemStation' .D directories</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/v0.11.2/R/read_agilent_d.R" class="external-link"><code>R/read_agilent_d.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ethanbass/chromConverter/blob/master/R/read_agilent_d.R" class="external-link"><code>R/read_agilent_d.R</code></a></small>
       <div class="d-none name"><code>read_agilent_d.Rd</code></div>
     </div>
 
@@ -51,7 +51,7 @@ ignored.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_agilent_d</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
-<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dad"</span>, <span class="st">"chroms"</span>, <span class="st">"peak_table"</span>, <span class="st">"MS1"</span>, <span class="st">"TIC"</span>, <span class="st">"BPC"</span><span class="op">)</span>,</span>
+<span>  what <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dad"</span>, <span class="st">"chroms"</span>, <span class="st">"peak_table"</span>, <span class="st">"MS1"</span>, <span class="st">"MS2"</span>, <span class="st">"TIC"</span>, <span class="st">"BPC"</span><span class="op">)</span>,</span>
 <span>  format_out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"matrix"</span>, <span class="st">"data.frame"</span>, <span class="st">"data.table"</span><span class="op">)</span>,</span>
 <span>  data_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wide"</span>, <span class="st">"long"</span><span class="op">)</span>,</span>
 <span>  read_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -72,7 +72,7 @@ ignored.</p>
 <dd><p>Whether to extract chromatograms (<code>chroms</code>), DAD data (<code>dad</code>),
 peak tables (<code>peak_table</code>) and/or instrument traces (<code>instrument</code>), such as
 pump pressure, flow, solvent composition and temperature, read from
-<code>LCDIAG.REG</code>, and/or mass spectra (<code>MS1</code>) with the total ion chromatogram
+<code>LCDIAG.REG</code>, and/or mass spectra (<code>MS1</code>, <code>MS2</code>) with the total ion chromatogram
 (<code>TIC</code>) and base peak chromatogram (<code>BPC</code>). Accepts multiple arguments, and
 defaults to all of these but <code>instrument</code>. Types the directory does not
 contain are left out, and it is an error if it contains none of them. With
@@ -119,8 +119,11 @@ Peak tables are returned in the <code>chromatographr</code> layout described in
 name for the signal as <code>signal_descriptor</code>. They are read from <code>Result.xml</code>
 where the directory has one, since unlike <code>Report.TXT</code> it records where each
 peak starts and ends. Mass spectra and the <code>BPC</code> are always in long format,
-with <code>rt</code>, <code>mz</code> and <code>intensity</code> columns, and are returned as a <code>data.table</code>
-when <code>format_out</code> is <code>matrix</code>.
+with <code>rt</code>, <code>mz</code> and <code>intensity</code> columns, and a <code>precursor_mz</code> column before
+<code>mz</code> for <code>MS2</code>. They are returned as a <code>data.table</code> when <code>format_out</code> is
+<code>matrix</code>. Each table of spectra has a <code>scan_info</code> attribute with one row per
+scan, giving its <code>scan</code>, <code>rt</code>, <code>ms_level</code> and <code>polarity</code>, and for <code>MS2</code> its
+<code>precursor_mz</code> and <code>collision_energy</code>.
 Metadata are attached as <a href="https://rdrr.io/r/base/attributes.html" class="external-link">attributes</a> if <code>read_metadata</code> is <code>TRUE</code>. With <code>collapse = TRUE</code>, a list of one element is replaced by that
 element.</p>
     </div>
@@ -137,12 +140,14 @@ directory. Its <code>MSScan.bin</code> and <code>MSScan.xsd</code> describe ever
 two doubles or two 32-bit floats, followed by the intensities as 32-bit
 floats or integers respectively. The points are spaced by the scan's
 <code>SamplingPeriod</code> rather than the stored step, which can be slightly smaller.
-Only spectra at MS level 1 can be read, and only from
-unit-resolution instruments such as single quadrupole GC-MS and LC-MS. The
-<code>TIC</code> and <code>BPC</code> come from the record of every scan, so they are also
-returned for runs whose spectra cannot be read, such as triple quadrupole
-MRM. For high-resolution spectra, try <code>parser = "rainbow"</code> with <code>centroid</code>
-or <code>hrms</code>.</p>
+Spectra can be read only from unit-resolution instruments, such as single
+quadrupole GC-MS and LC-MS, and triple quadrupole LC-MS. <code>MS1</code> holds the
+scans at MS level 1 and <code>MS2</code> the product ion and MRM scans, each with the
+m/z it selected in the first quadrupole as <code>precursor_mz</code>. Neutral loss and precursor ion scans
+are skipped with a warning. The <code>TIC</code> and <code>BPC</code> come from the record of
+every scan, so they are also returned for runs whose spectra cannot be read.
+For high-resolution spectra, try <code>parser = "rainbow"</code> with <code>centroid</code> or
+<code>hrms</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

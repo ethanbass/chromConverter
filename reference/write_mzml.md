@@ -102,9 +102,11 @@ retention time where neither has one. Each spectrum is then named for
 its scan (`scan=417`) rather than for its position in the list, which
 keeps the names unique across the levels. An MS2 spectrum carries the
 precursor it came from as `MS:1000744` ("selected ion m/z"), and a
-`spectrumRef` to the MS1 spectrum that precedes it. Collision energy,
-isolation window and precursor charge are not written, as no parser in
-the package reads them.
+`spectrumRef` to the MS1 spectrum that precedes it, and its collision
+energy as `MS:1000045` where it is known, from the `scan_info` attribute
+or a `collision_energy` (or `voltage`) column. The isolation window and
+precursor charge are not written, as no parser in the package reads
+them.
 
 Retention times are written in minutes (`UO:0000031`), as chromConverter
 reports them, rather than converted to seconds as
