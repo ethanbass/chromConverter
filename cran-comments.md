@@ -1,3 +1,5 @@
+This is an update from chromConverter 0.9.0, the version currently on CRAN.
+
 ## R CMD check results
 
 There were no ERRORs or WARNINGs. 
@@ -21,6 +23,10 @@ them is also described in the 'Description' field.
 
 The package has been checked on all environments listed below, and generates 
 only the single note described above.
+
+Local:
+
+    macOS Sonoma 14.7 (aarch64), R 4.6.1, R CMD check --as-cran
 
 GitHub actions:
 
