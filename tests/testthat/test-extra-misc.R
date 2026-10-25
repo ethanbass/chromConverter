@@ -30,6 +30,27 @@ test_that("read_chroms can read 'Thermo' RAW files", {
   expect_equal(attr(y$TIC, "format_out"), "data.table")
 })
 
+test_that("read_chroms can read profile spectra from 'Thermo' RAW files", {
+  skip_on_cran()
+  skip_on_ci()
+  skip_if_not_installed("chromConverterExtraTests")
+  skip_if_missing_thermorawfileparser()
+
+  path <- system.file("small.RAW", package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  dir <- withr::local_tempdir()
+  x <- read_chroms(path, parser = "thermoraw", progress_bar = FALSE,
+                   path_out = dir)[[1]]
+  y <- read_chroms(path, parser = "thermoraw", progress_bar = FALSE,
+                   path_out = dir, centroid = FALSE)[[1]]
+  expect_equal(nrow(x$MS1), 22627)
+  expect_equal(nrow(y$MS1), 279869)
+  expect_equal(nrow(x$MS2), 25344)
+  expect_equal(nrow(y$MS2), 25344)
+  expect_error(read_thermoraw(path, centroid = NA), "`centroid` must be")
+})
+
 test_that("read_chroms can use 'OpenChrom' parsers", {
   skip_on_cran()
   skip_on_ci()

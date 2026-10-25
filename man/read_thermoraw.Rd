@@ -10,6 +10,7 @@ read_thermoraw(
   format_out = c("matrix", "data.frame", "data.table"),
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
+  centroid = TRUE,
   verbose = getOption("verbose")
 )
 }
@@ -26,6 +27,11 @@ specified, a temporary directory is used and deleted afterwards.}
 
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 (standardized field names) or \code{raw} (vendor field names, unmapped).}
+
+\item{centroid}{Logical. Whether to centroid profile spectra with the vendor's
+peak picking. Defaults to \code{TRUE}. Set it to \code{FALSE} to keep profile spectra
+as acquired, which are about ten times larger. Spectra acquired in centroid
+mode stay centroided either way.}
 
 \item{verbose}{Logical. Whether to print output from ThermoRawFileParser to
 the console. Ignored on Windows, where the output is always printed.}

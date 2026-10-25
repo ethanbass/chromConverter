@@ -11,6 +11,10 @@
 #' @param path Path to 'Thermo' `.raw` file.
 #' @param path_out Path to directory to export `mzML` files. If `path_out` isn't
 #' specified, a temporary directory is used and deleted afterwards.
+#' @param centroid Logical. Whether to centroid profile spectra with the vendor's
+#' peak picking. Defaults to `TRUE`. Set it to `FALSE` to keep profile spectra
+#' as acquired, which are about ten times larger. Spectra acquired in centroid
+#' mode stay centroided either way.
 #' @param verbose Logical. Whether to print output from ThermoRawFileParser to
 #' the console. Ignored on Windows, where the output is always printed.
 #' @return A list of chromatograms, as returned by [read_mzml], in the format
@@ -35,7 +39,11 @@ read_thermoraw <- function(path, path_out = NULL,
                                           "data.table"),
                            read_metadata = TRUE,
                            metadata_format = c("chromconverter", "raw"),
+                           centroid = TRUE,
                            verbose = getOption("verbose")){
+  if (!is.logical(centroid) || length(centroid) != 1 || is.na(centroid)){
+    stop("`centroid` must be `TRUE` or `FALSE`.", call. = FALSE)
+  }
   format_out <- check_format_out(format_out)
   metadata_format <- check_metadata_format(metadata_format, "thermoraw")
   if(!file.exists(path)){
@@ -56,13 +64,15 @@ read_thermoraw <- function(path, path_out = NULL,
   if (.Platform$OS.type != "windows"){
     io <- shQuote(c(path.expand(parser_path), paste0("-i=", path),
                     paste0("-o=", path_out)))
-    system2("mono", args = c(io, "-a"), stdout = verbose)
+    system2("mono", args = c(io, "-a", if (!centroid) "-p"),
+            stdout = verbose)
     if (read_metadata){
       system2("mono", args = c(io, "-m=1"), stdout = verbose)
     }
   } else {
       shell(paste0(parser_path, " -i=", path,
-                                " -o=", path_out, " -a"))
+                                " -o=", path_out, " -a",
+                                if (!centroid) " -p"))
     if (read_metadata){
       shell(paste0(parser_path, " -i=", path,
                                 " -o=", path_out, " -m=1"))
