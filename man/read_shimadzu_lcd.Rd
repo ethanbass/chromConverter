@@ -34,8 +34,9 @@ If a stream is not specified, the richest one the file contains is returned:
 \code{DAD} if there is a PDA stream, otherwise \code{chroms}, and otherwise \code{MS} for a
 file whose only detector is the mass spectrometer. The mass spectrometry
 streams are read from whichever container the file uses: \verb{QTFL RawData}
-(centroided quadrupole time-of-flight data) or \verb{TLM Raw Data} (triple
-quadrupole full scan, product-ion scan, MRM and SIM data).}
+(centroided quadrupole time-of-flight data), \verb{TLM Raw Data} (triple
+quadrupole full scan, product-ion scan, MRM and SIM data) or \verb{TTFL Raw Data}
+(ion trap time-of-flight profile data).}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -106,13 +107,18 @@ records located through a spectrum index, covering full scan, product-ion
 scan, MRM and SIM acquisitions. Read by \code{\link[=read_sz_tlm]{read_sz_tlm()}}, which documents the
 index, the scan header and the layout of each scan type. The total ion
 current is again held separately, in \verb{TIC Data}.
+\item \strong{Ion trap time-of-flight mass spectra} (\verb{TTFL Raw Data}): run-length
+encoded profile scans from the LCMS-IT-TOF, with the mass axis interpolated
+between the calibrant ions stored in the file. Read by \code{\link[=read_sz_ittof]{read_sz_ittof()}},
+which documents the scan header, the encoding and the calibration. The total
+ion current is read from the scan headers (\code{\link[=read_sz_ittof_tic]{read_sz_ittof_tic()}}).
 \item \strong{Peak tables} (\verb{Peak Table}): integration results as reported by
 'LabSolutions', one stream per channel. Read by \code{\link[=read_sz_tables]{read_sz_tables()}}, which
 documents the two record layouts.
 }
 
-The two mass spectrometry containers are mutually exclusive: a file holds
-one or the other, according to the instrument that wrote it.
+The mass spectrometry containers are mutually exclusive: a file holds one of
+them, according to the instrument that wrote it.
 
 A mass spectrometry run is divided into \strong{acquisition events}: the scan
 functions defined by the method, each with its own polarity, MS level and

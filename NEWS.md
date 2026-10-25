@@ -2,6 +2,7 @@
 
 * 'Shimadzu' `.qgd` files with MRM scans can now be read. The scans are returned as `MS2`, with a `precursor_mz` column. See `?read_shimadzu_qgd`.
 * Profile spectra can now be read from 'Thermo' RAW files with `centroid = FALSE`, which skips the vendor's peak picking. See `?read_thermoraw`.
+* 'Shimadzu' LCMS-IT-TOF `.lcd` files can now be read: MS1 and MS2 profile spectra, and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 
 ## chromConverter 0.11.2
 

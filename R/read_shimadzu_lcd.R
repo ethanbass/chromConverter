@@ -26,12 +26,17 @@
 #' scan, MRM and SIM acquisitions. Read by [read_sz_tlm()], which documents the
 #' index, the scan header and the layout of each scan type. The total ion
 #' current is again held separately, in `TIC Data`.
+#' * **Ion trap time-of-flight mass spectra** (`TTFL Raw Data`): run-length
+#' encoded profile scans from the LCMS-IT-TOF, with the mass axis interpolated
+#' between the calibrant ions stored in the file. Read by [read_sz_ittof()],
+#' which documents the scan header, the encoding and the calibration. The total
+#' ion current is read from the scan headers ([read_sz_ittof_tic()]).
 #' * **Peak tables** (`Peak Table`): integration results as reported by
 #' 'LabSolutions', one stream per channel. Read by [read_sz_tables()], which
 #' documents the two record layouts.
 #'
-#' The two mass spectrometry containers are mutually exclusive: a file holds
-#' one or the other, according to the instrument that wrote it.
+#' The mass spectrometry containers are mutually exclusive: a file holds one of
+#' them, according to the instrument that wrote it.
 #'
 #' A mass spectrometry run is divided into **acquisition events**: the scan
 #' functions defined by the method, each with its own polarity, MS level and
@@ -56,8 +61,9 @@
 #' `DAD` if there is a PDA stream, otherwise `chroms`, and otherwise `MS` for a
 #' file whose only detector is the mass spectrometer. The mass spectrometry
 #' streams are read from whichever container the file uses: `QTFL RawData`
-#' (centroided quadrupole time-of-flight data) or `TLM Raw Data` (triple
-#' quadrupole full scan, product-ion scan, MRM and SIM data).
+#' (centroided quadrupole time-of-flight data), `TLM Raw Data` (triple
+#' quadrupole full scan, product-ion scan, MRM and SIM data) or `TTFL Raw Data`
+#' (ion trap time-of-flight profile data).
 #' @param sparse Logical. Whether to return mass spectra in sparse format
 #' (excluding zeros), as [call_rainbow()] does. Defaults to `TRUE`. Applies
 #' only to triple quadrupole profile spectra, whose m/z grid is largely
@@ -208,6 +214,11 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                        data_format = data_format,
                        read_metadata = read_metadata,
                        metadata_format = metadata_format)
+    } else if (identical(ms_format, "ittof")){
+      read_sz_ittof_tic(path, format_out = format_out,
+                        data_format = data_format,
+                        read_metadata = read_metadata,
+                        metadata_format = metadata_format)
     } else {
       stop("A mass spectrometry stream could not be detected.")
     }
@@ -225,6 +236,12 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                    read_metadata = read_metadata,
                    metadata_format = metadata_format,
                    scale = scale)
+    } else if (identical(ms_format, "ittof")){
+      read_sz_ittof(path, format_out = format_out,
+                    data_format = data_format, levels = levels,
+                    read_metadata = read_metadata,
+                    metadata_format = metadata_format,
+                    scale = scale)
     } else {
       stop("A mass spectrometry stream could not be detected.")
     }

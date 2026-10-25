@@ -659,6 +659,50 @@ test_that("read_shimadzu_qgd reads MRM scans", {
   expect_length(read_shimadzu_qgd(path, what = "MS1"), 0)
 })
 
+test_that("read_shimadzu_lcd reads 'Shimadzu' IT-TOF data", {
+  skip_if_missing_dependencies("olefile")
+  path <- extra_test_file("shimadzu_ittof.lcd")
+  expect_equal(get_sz_ms_format(path), "ittof")
+
+  x <- read_shimadzu_lcd(path, what = "MS", format_out = "data.table")
+  expect_named(x, c("MS1", "MS2"))
+  expect_named(x$MS1, c("scan", "rt", "mz", "intensity"))
+  expect_named(x$MS2, c("scan", "rt", "precursor_mz", "mz", "intensity"))
+  expect_equal(nrow(x$MS1), 1447357)
+  expect_equal(nrow(x$MS2), 42774)
+  expect_equal(range(x$MS1$mz), c(399.9811, 1500.0061), tolerance = 1e-7)
+
+  si <- attr(x$MS2, "scan_info")
+  expect_equal(si$precursor_mz[1:2], c(739.3226, 591.3104))
+  expect_equal(unique(si$event), 2:4)
+  expect_equal(unique(c(si$polarity, attr(x$MS1, "scan_info")$polarity)),
+               "positive")
+
+  # the vendor's TIC is the sum of the stored values times the multiplier
+  tic <- lapply(0:3, function(k){
+    v <- read_ole_uint32(path, c("TTFL Raw Data", paste("TIC Data", k)))
+    matrix(v[-(1:192)], ncol = 4L, byrow = TRUE)[, 1]
+  })
+  sums <- rbind(x$MS1[, c("scan", "intensity")],
+                x$MS2[, c("scan", "intensity")])
+  sums <- tapply(sums$intensity, sums$scan, sum)
+  info <- rbind(attr(x$MS1, "scan_info"), si)
+  info <- info[order(info$scan), ]
+  ours <- numeric(nrow(info))
+  ours[match(as.integer(names(sums)), info$scan)] <- sums
+  expect_equal(ours, unsplit(tic, info$event))
+
+  # Mascot Distiller's centroids of the first product-ion scan
+  mgf <- c(666.94875, 673.30751, 695.82522, 696.51644, 728.28753)
+  mz <- x$MS2$mz[x$MS2$scan == 1]
+  expect_true(all(vapply(mgf, function(m) min(abs(mz - m)), 0) < 0.01))
+
+  tic <- read_shimadzu_lcd(path, what = "TIC", format_out = "data.frame",
+                           data_format = "long")
+  expect_named(tic, paste("Event", 1:4))
+  expect_equal(nrow(tic[[1]]), 335)
+})
+
 test_that("Shimadzu times are converted correctly", {
   expect_equal(parse_shimadzu_tz("+05'30"), "Asia/Kolkata")
   expect_equal(parse_shimadzu_tz("UTC"), "UTC")
