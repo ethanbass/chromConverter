@@ -5,6 +5,7 @@
 * 'Shimadzu' LCMS-IT-TOF `.lcd` files can now be read: MS1 and MS2 profile spectra, and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 * 'Shimadzu' single quadrupole `.lcd` files, such as those from the LCMS-2020, can now be read: centroided and profile MS1 spectra and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 * Paths starting with `~` now work for 'Shimadzu' files and in `call_rainbow` and `call_entab`, including through `read_chroms`.
+* Mass spectra can now be read from 'MassHunter' `.d` directories whose `MSScan.xsd` prefixes its type names with a namespace, which previously gave an error.
 
 ## chromConverter 0.11.2
 

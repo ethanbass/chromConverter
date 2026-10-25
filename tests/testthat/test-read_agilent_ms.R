@@ -141,6 +141,16 @@ test_that("read_agilent_msdata reads both layouts of MSProfile.bin", {
                class = "agilent_ms_format_error")
 })
 
+test_that("read_msscan_layout follows type names with a namespace prefix", {
+  dir <- withr::local_tempdir()
+  fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2))
+  writeLines(sub('type="SpectrumParamsType"', 'type="mstns:SpectrumParamsType"',
+                 readLines(fx$xsd), fixed = TRUE), fx$xsd)
+  x <- read_agilent_msdata(fx$scan, fx$peak, fx$xsd, what = "MS1",
+                           format_out = "data.frame", data_format = "long")
+  expect_equal(x$MS1$intensity, c(150, 2214, 922, 486784, 4245))
+})
+
 test_that("read_agilent_msdata refuses what it cannot read", {
   read <- function(fx, what = "MS1"){
     read_agilent_msdata(fx$scan, fx$peak, fx$xsd, what = what,

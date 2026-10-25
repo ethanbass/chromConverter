@@ -432,7 +432,7 @@ read_msscan_layout <- function(xsd){
       el_type <- xml2::xml_attr(el, "type")
       if (el_type %in% names(sizes)){
         data.frame(name = xml2::xml_attr(el, "name"), type = el_type)
-      } else flatten(el_type)
+      } else flatten(sub("^[^:]*:", "", el_type))
     }))
   }
   layout <- flatten("ScanRecordType")
