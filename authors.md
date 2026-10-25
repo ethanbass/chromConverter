@@ -29,7 +29,7 @@ https://doi.org/10.5281/zenodo.6792521.
       title = {chromConverter: Chromatographic File Converter},
       author = {Ethan Bass},
       year = {2026},
-      note = {R package version 0.11.2},
+      note = {R package version 0.11.2.9000},
       doi = {10.5281/zenodo.6792521},
       url = {https://ethanbass.github.io/chromConverter/},
     }
