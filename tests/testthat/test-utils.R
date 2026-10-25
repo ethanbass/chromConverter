@@ -415,3 +415,15 @@ test_that("write_config_path saves relative paths as absolute paths", {
   expect_equal(read_config_path("thermorawfileparser_path", ""),
                normalizePath(file.path(dir, "parser.exe")))
 })
+
+test_that("format_amx_num ignores the OutDec option", {
+  withr::local_options(OutDec = ",")
+  expect_equal(format_amx_num(1.5), "1.5")
+  expect_equal(format_amx_num(100 / 3), "33.3333333333333")
+})
+
+test_that("check_amx_scalar rejects non-finite values", {
+  expect_error(check_amx_scalar(Inf, "flow"), "non-negative")
+  expect_error(check_amx_scalar(NA_real_, "flow"), "non-negative")
+  expect_null(check_amx_scalar(NULL, "flow"))
+})

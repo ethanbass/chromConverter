@@ -10,14 +10,17 @@
 #' solvent channel the template uses, and each row must add up to 100. The row
 #' at time zero sets the starting composition, and the other rows replace the
 #' composition steps in the pump timetable. Flow steps in the timetable are
-#' kept, and `gradient` cannot change them.
+#' kept, and `gradient` cannot change them. If the template has flow steps,
+#' drop the `flow_mL_min` column (or the `"flow"` rows in long format) from
+#' the table [read_agilent_amx()] returns.
 #'
 #' Setting `stop_time` also sets the run time of the method. The checksum of
 #' each edited part is recalculated. The `Agilent/ReportableInformation` part,
 #' which repeats the settings as formatted text, is not rewritten and still
 #' describes the template.
 #'
-#' The writer has only been tested on methods for a G7104C quaternary pump.
+#' The writer needs the 'zip' package, and has only been tested on
+#' methods for a G7104C quaternary pump.
 #'
 #' @param path Path to the template `.amx` file.
 #' @param path_out Path to write the new method.
@@ -54,8 +57,10 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
   check_amx_scalar(flow, "flow")
   check_amx_scalar(stop_time, "stop_time")
   check_amx_scalar(post_time, "post_time")
+  check_for_pkg("zip")
 
-  files <- unzip(path, list = TRUE)$Name
+  entries <- zip::zip_list(path)
+  files <- entries$filename
   pump_part <- grep("PumpDriver(?!.*\\.chk$)", files, perl = TRUE,
                     value = TRUE)
   if (length(pump_part) != 1){
@@ -63,12 +68,16 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
          ".", call. = FALSE)
   }
   props_part <- "MethodProperties/MethodProperties"
+  if (!props_part %in% files){
+    stop("The method has no `", props_part, "` part.", call. = FALSE)
+  }
 
   tmp <- temp_directory(path)
   on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
-  unzip(path, files = c(pump_part, props_part), exdir = tmp)
-  pump <- xml2::read_xml(fs::path(tmp, pump_part))
-  props <- xml2::read_xml(fs::path(tmp, props_part))
+  parts <- fs::path(tmp, "parts")
+  unzip(path, exdir = parts, setTimes = TRUE)
+  pump <- xml2::read_xml(fs::path(parts, pump_part))
+  props <- xml2::read_xml(fs::path(parts, props_part))
 
   if (!is.null(gradient)){
     set_amx_gradient(pump, gradient)
@@ -94,20 +103,11 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
             call. = FALSE)
   }
 
-  write_amx_part(pump, fs::path(tmp, pump_part))
-  write_amx_part(props, fs::path(tmp, props_part))
+  write_amx_part(pump, fs::path(parts, pump_part))
+  write_amx_part(props, fs::path(parts, props_part))
 
   out <- fs::path(tmp, "out.amx")
-  fs::file_copy(path, out)
-  owd <- setwd(tmp)
-  on.exit(setwd(owd), add = TRUE, after = FALSE)
-  changed <- c(pump_part, props_part)
-  status <- utils::zip(out, files = c(changed, paste0(changed, ".chk")),
-                       flags = "-X -D -q")
-  if (status != 0){
-    stop("The archive could not be written. `utils::zip` needs a zip ",
-         "program: see `?utils::zip`.", call. = FALSE)
-  }
+  zip_amx(entries, parts, out)
   fs::file_copy(out, path_out, overwrite = TRUE)
   invisible(path_out)
 }
@@ -116,7 +116,15 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
 #' @noRd
 set_amx_gradient <- function(doc, gradient){
   gradient <- as.data.frame(gradient)
+  if (nrow(gradient) == 0){
+    stop("`gradient` has no rows.", call. = FALSE)
+  }
   if ("channel" %in% names(gradient)){
+    if ("time_min" %in% names(gradient) &&
+        anyDuplicated(gradient[c("time_min", "channel")])){
+      stop("`gradient` has more than one percentage for a channel at the ",
+           "same time.", call. = FALSE)
+    }
     gradient <- as.data.frame(tidyr::pivot_wider(gradient,
                                                  names_from = "channel",
                                                  values_from = "percent",
@@ -143,11 +151,18 @@ set_amx_gradient <- function(doc, gradient){
 
   time <- gradient$time_min
   pct <- as.matrix(gradient[pct_cols])
-  if (!is.numeric(time) || anyNA(time) || any(time < 0) ||
+  if (!is.numeric(time) || !all(is.finite(time)) || any(time < 0) ||
       anyDuplicated(time)){
     stop("`time_min` must hold distinct, non-negative times.", call. = FALSE)
   }
-  if (!is.numeric(pct) || anyNA(pct) || any(pct < 0 | pct > 100)){
+  if (!is.numeric(pct)){
+    stop("Percentages must be numbers.", call. = FALSE)
+  }
+  if (anyNA(pct)){
+    stop("`gradient` needs a percentage for every channel at every time.",
+         call. = FALSE)
+  }
+  if (any(pct < 0 | pct > 100)){
     stop("Percentages must be between 0 and 100.", call. = FALSE)
   }
   if (any(abs(rowSums(pct) - 100) > 1e-6)){
@@ -231,13 +246,26 @@ write_amx_part <- function(doc, file){
 #' Format a number for an AMX part
 #' @noRd
 format_amx_num <- function(x){
-  format(x, digits = 15, scientific = FALSE, trim = TRUE)
+  format(x, digits = 15, scientific = FALSE, trim = TRUE, decimal.mark = ".")
+}
+
+#' Zip AMX parts in the template's order, storing the entries it stored
+#' @noRd
+zip_amx <- function(entries, root, zipfile){
+  stored <- entries$compressed_size == entries$uncompressed_size
+  runs <- cumsum(c(TRUE, diff(stored) != 0))
+  for (run in unique(runs)){
+    i <- runs == run
+    add <- if (run == 1) zip::zip else zip::zip_append
+    add(zipfile, entries$filename[i], root = root, include_directories = FALSE,
+        compression_level = if (stored[i][1]) 0 else 9)
+  }
 }
 
 #' Check a numeric AMX setting
 #' @noRd
 check_amx_scalar <- function(x, arg){
-  if (!is.null(x) && (!is.numeric(x) || length(x) != 1 || is.na(x) || x < 0)){
+  if (!is.null(x) && (!is.numeric(x) || length(x) != 1 || !is.finite(x) || x < 0)){
     stop("`", arg, "` must be a single non-negative number.", call. = FALSE)
   }
 }

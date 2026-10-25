@@ -58,7 +58,8 @@ Suggests:
     chromConverterExtraTests,
     withr,
     knitr,
-    rmarkdown
+    rmarkdown,
+    zip
 VignetteBuilder: knitr
 Encoding: UTF-8
 Language: en-US

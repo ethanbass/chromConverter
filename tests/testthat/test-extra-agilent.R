@@ -1425,10 +1425,13 @@ test_that("write_agilent_amx leaves an unedited method unchanged", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
-  for (file in c("Glucosinolates-XDB5.amx", "column_storage_ACN100.amx",
-                 "flow_rate_example.amx")){
-    path <- system.file(file, package = "chromConverterExtraTests")
-    skip_if_not(file.exists(path))
+  paths <- system.file(c("Glucosinolates-XDB5.amx",
+                         "column_storage_ACN100.amx",
+                         "flow_rate_example.amx"),
+                       package = "chromConverterExtraTests")
+  skip_if_not(length(paths) == 3)
+
+  for (path in paths){
     out <- write_agilent_amx(path, tempfile(fileext = ".amx"))
     expect_equal(unzip(out, list = TRUE)$Name, unzip(path, list = TRUE)$Name)
     expect_equal(unzip_amx(out), unzip_amx(path))
@@ -1542,7 +1545,21 @@ test_that("write_agilent_amx rejects an invalid gradient", {
   expect_error(write_agilent_amx(path, tempfile(),
                                  gradient = gradient[c(1, 1), ]),
                "distinct")
+  expect_error(write_agilent_amx(path, tempfile(),
+                                 gradient = gradient[0, ]),
+               "no rows")
+  expect_error(write_agilent_amx(path, tempfile(),
+                                 gradient = transform(gradient, time_min = c(0, Inf))),
+               "distinct, non-negative")
+  long <- data.frame(time_min = c(0, 0, 5), channel = c("A", "B", "A"),
+                     percent = c(90, 10, 100))
+  expect_error(write_agilent_amx(path, tempfile(), gradient = long),
+               "every channel at every time")
+  expect_error(write_agilent_amx(path, tempfile(), gradient = long[c(1, 1:3), ]),
+               "more than one percentage")
   expect_error(write_agilent_amx(path, tempfile(), stop_time = -1),
+               "non-negative")
+  expect_error(write_agilent_amx(path, tempfile(), flow = Inf),
                "non-negative")
 
   out <- tempfile(fileext = ".amx")
@@ -1550,6 +1567,37 @@ test_that("write_agilent_amx rejects an invalid gradient", {
   expect_error(write_agilent_amx(path, out), "force = TRUE")
   expect_no_error(write_agilent_amx(path, out, gradient = gradient,
                                     force = TRUE))
+})
+
+test_that("write_agilent_amx accepts a read-only template", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("Glucosinolates-XDB5.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  template <- tempfile(fileext = ".amx")
+  file.copy(path, template)
+  Sys.chmod(template, "444")
+  out <- write_agilent_amx(template, tempfile(fileext = ".amx"), flow = 1.2)
+  expect_equal(read_agilent_amx(out, what = "pump")$pump$flow_mL_min, 1.2)
+})
+
+test_that("write_agilent_amx errors on a template without MethodProperties", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("Glucosinolates-XDB5.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  tmp <- tempfile()
+  dir.create(tmp)
+  on.exit(unlink(tmp, recursive = TRUE))
+  no_props <- rezip_without(path, "^MethodProperties/", tmp)
+  expect_error(write_agilent_amx(no_props, tempfile()),
+               "no `MethodProperties/MethodProperties` part")
 })
 
 test_that("read_agilent_dx errors when asked for instrument data it lacks", {
