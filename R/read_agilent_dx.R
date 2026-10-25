@@ -226,6 +226,8 @@ read_agilent_ms <- function(scan_file, peak_file, xsd, what, format_out,
   meta <- read_agilent_ms_metadata(dirname(xsd))
   meta$time_range <- attr(ms, "time_range")
   purrr::imap(ms, function(x, h){
+    meta$polarity <- unique(attr(x, "scan_info")$polarity %||%
+                              attr(ms, "polarity"))
     attach_metadata(x, meta,
                     format_in = check_metadata_format(metadata_format,
                                                       "agilent_ms"),
@@ -240,7 +242,10 @@ read_agilent_ms <- function(scan_file, peak_file, xsd, what, format_out,
 #' Read the mass spectra of an 'Agilent' MS acquisition
 #'
 #' `MS2` holds the product ion and MRM scans, with the scan's `MzOfInterest`
-#' as `precursor_mz`. Neutral loss and precursor ion scans are skipped.
+#' as `precursor_mz`. Neutral loss and precursor ion scans are skipped. Each
+#' table of spectra has a `scan_info` attribute with one row per scan. Its
+#' `collision_energy` is the absolute value of the stored one, which is
+#' negative in negative ion mode.
 #' @param scan_file,peak_file Paths to `MSScan.bin` and `MSPeak.bin`.
 #' @param xsd Path to `MSScan.xsd`.
 #' @return A named list of the streams in `what`, with the range of their
@@ -250,6 +255,8 @@ read_agilent_msdata <- function(scan_file, peak_file, xsd, what,
                                 format_out, data_format){
   scans <- read_msscan_records(scan_file, xsd)
   rt <- scans$ScanTime
+  polarity <- rep_len(c("positive", "negative")[
+    match(scans$IonPolarity %||% NA, 0:1)], nrow(scans))
   levels <- intersect(c("MS1", "MS2"), what)
   if (length(levels) > 0){
     tandem <- scans$MSLevel == 2L &
@@ -270,12 +277,17 @@ read_agilent_msdata <- function(scan_file, peak_file, xsd, what,
     spectra <- Map(function(k, lvl){
       sp <- scans[k, , drop = FALSE]
       x <- read_mspeak_spectra(sp, peak_file)
+      info <- data.frame(scan = sp$ScanID, rt = sp$ScanTime,
+                         ms_level = as.integer(sp$MSLevel),
+                         polarity = polarity[k])
       if (lvl == "MS2"){
         x <- cbind(x[, "rt", drop = FALSE],
                    precursor_mz = rep.int(sp$MzOfInterest, sp$PointCount),
                    x[, c("mz", "intensity"), drop = FALSE])
+        info$precursor_mz <- sp$MzOfInterest
+        info$collision_energy <- abs(sp$CollisionEnergy %||% NA_real_)
       }
-      x
+      structure(x, scan_info = info)
     }, keep[found], levels[found])
   }
   if (any(what == "BPC")){
@@ -288,11 +300,14 @@ read_agilent_msdata <- function(scan_file, peak_file, xsd, what,
   }
   dat <- purrr::imap(c(if (length(levels) > 0) spectra,
                        mget(setdiff(what, levels)))[what], function(x, h){
-    if (h == "TIC") x else
-      convert_chrom_format(x, format_out = check_format_out_table(format_out),
-                           data_format = "long")
+    if (h == "TIC") return(x)
+    y <- convert_chrom_format(x, format_out = check_format_out_table(format_out),
+                              data_format = "long")
+    attr(y, "scan_info") <- attr(x, "scan_info")
+    y
   })
-  structure(dat, time_range = if (length(rt) > 0) range(rt) else NA)
+  structure(dat, time_range = if (length(rt) > 0) range(rt) else NA,
+            polarity = unique(polarity))
 }
 
 #' Read the spectra of a set of 'Agilent' MS scans

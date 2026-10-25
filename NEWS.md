@@ -2,6 +2,7 @@
 
 * 'Shimadzu' `.qgd` files with MRM scans can now be read. The scans are returned as `MS2`, with a `precursor_mz` column. See `?read_shimadzu_qgd`.
 * Product ion and MRM spectra are now read by default from 'MassHunter' `.d` directories, as `MS2` with a `precursor_mz` column. See `?read_agilent_d`.
+* Mass spectra, TIC and BPC from 'MassHunter' and 'OpenLab' files now report their `polarity`, which `write_mzml` records in the mzML.
 * Profile spectra can now be read from 'Thermo' RAW files with `centroid = FALSE`, which skips the vendor's peak picking. See `?read_thermoraw`.
 * 'Shimadzu' LCMS-IT-TOF `.lcd` files can now be read: MS1 and MS2 profile spectra, and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 * 'Shimadzu' single quadrupole `.lcd` files, such as those from the LCMS-2020, can now be read: centroided and profile MS1 spectra and a TIC per acquisition event. See `?read_shimadzu_lcd`.

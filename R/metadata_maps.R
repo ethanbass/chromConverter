@@ -164,6 +164,8 @@ meta_agilent_ms <- function(meta, ctx){
        detector_y_unit = NA,
        intensity_multiplier = 1,
        n_scans = get_metadata_field(meta, "NumOfScans"),
+       polarity = if (length(meta$polarity) == 1 && !is.na(meta$polarity))
+         meta$polarity,
        ms_params = list(serial_number = get_metadata_field(meta, "SerialNumber"),
                         firmware_version = get_metadata_field(meta, "FirmwareVersion")),
        parser = "chromconverter")

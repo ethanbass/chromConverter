@@ -1693,6 +1693,9 @@ test_that("read_agilent_d reads 'MassHunter' MS2 as 'ProteoWizard' does", {
   ours <- x$MS2[pi, on = c("scan", mz = "fragmz"), roll = "nearest"]
   expect_equal(ours$intensity, ours$int)
   expect_equal(ours$precursor_mz, ours$premz, tolerance = 1e-6)
+  info <- attr(x$MS2, "scan_info")
+  expect_equal(info$collision_energy[ours$scan], ours$voltage)
+  expect_equal(attr(x$MS2, "polarity"), "negative")
 
   srm <- ref$chroms[grepl("^SRM", ref$chroms$chrom_type), ]
   srm$scan <- scan_of(srm$rt)

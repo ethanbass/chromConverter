@@ -57,7 +57,9 @@ where the directory has one, since unlike \code{Report.TXT} it records where eac
 peak starts and ends. Mass spectra and the \code{BPC} are always in long format,
 with \code{rt}, \code{mz} and \code{intensity} columns, and a \code{precursor_mz} column before
 \code{mz} for \code{MS2}. They are returned as a \code{data.table} when \code{format_out} is
-\code{matrix}.
+\code{matrix}. Each table of spectra has a \code{scan_info} attribute with one row per
+scan, giving its \code{scan}, \code{rt}, \code{ms_level} and \code{polarity}, and for \code{MS2} its
+\code{precursor_mz} and \code{collision_energy}.
 Metadata are attached as \link{attributes} if \code{read_metadata} is \code{TRUE}. With \code{collapse = TRUE}, a list of one element is replaced by that
 element.
 }

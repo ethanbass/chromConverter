@@ -1,7 +1,10 @@
 write_msscan_fixture <- function(dir, spectra, rt, ms_level = rep(1L, length(spectra)),
                                  format_id = 1L, sizes = c(4, 4), profile = NA,
-                                 stored_step = NULL, scan_type = 1L, precursor = 0){
+                                 stored_step = NULL, scan_type = 1L, precursor = 0,
+                                 polarity = 0L, collision_energy = 0){
   scan_type <- rep_len(scan_type, length(spectra))
+  polarity <- rep_len(polarity, length(spectra))
+  collision_energy <- rep_len(collision_energy, length(spectra))
   precursor <- rep_len(precursor, length(spectra))
   profile <- rep_len(profile, length(spectra))
   format_id <- ifelse(is.na(profile), format_id, 2L)
@@ -13,11 +16,13 @@ write_msscan_fixture <- function(dir, spectra, rt, ms_level = rep(1L, length(spe
     '<xs:element name="ScanTime" type="xs:double"/>',
     '<xs:element name="MSLevel" type="xs:int"/>',
     '<xs:element name="ScanType" type="xs:int"/>',
+    '<xs:element name="IonPolarity" type="xs:int"/>',
     '<xs:element name="TIC" type="xs:double"/>',
     '<!-- <xs:element name="AbundanceLimit" type="xs:double"/> -->',
     '<xs:element name="BasePeakMZ" type="xs:double"/>',
     '<xs:element name="BasePeakValue" type="xs:double"/>',
     '<xs:element name="MzOfInterest" type="xs:double"/>',
+    '<xs:element name="CollisionEnergy" type="xs:double"/>',
     '<xs:element name="SamplingPeriod" type="xs:double"/>',
     '<xs:element name="SpectrumParamValues" type="SpectrumParamsType"/>',
     '</xs:sequence></xs:complexType>',
@@ -57,10 +62,11 @@ write_msscan_fixture <- function(dir, spectra, rt, ms_level = rep(1L, length(spe
     }
     writeBin(i, scan, size = 4, endian = "little")
     writeBin(rt[i], scan, size = 8, endian = "little")
-    writeBin(c(ms_level[i], scan_type[i]), scan, size = 4, endian = "little")
-    writeBin(c(sum(s$intensity), c(s$mz[which.max(s$intensity)], 0)[1],
-               max(s$intensity, 0), precursor[i], step), scan, size = 8,
+    writeBin(c(ms_level[i], scan_type[i], polarity[i]), scan, size = 4,
              endian = "little")
+    writeBin(c(sum(s$intensity), c(s$mz[which.max(s$intensity)], 0)[1],
+               max(s$intensity, 0), precursor[i], collision_energy[i], step),
+             scan, size = 8, endian = "little")
     writeBin(as.integer(c(format_id[i], offset, 0, n_bytes, length(s$mz))), scan,
              size = 4, endian = "little")
   }
@@ -175,11 +181,16 @@ test_that("read_agilent_msdata reads product ion and MRM scans as MS2", {
   dir <- withr::local_tempdir()
   fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2), ms_level = c(2L, 2L),
                              scan_type = 256L, precursor = c(309, 283),
-                             sizes = c(4, -4))
+                             sizes = c(4, -4), polarity = c(0L, 1L),
+                             collision_energy = c(15, -20))
   x <- read(fx)
   expect_named(x, "MS2")
   expect_equal(x$MS2$precursor_mz, rep(c(309, 283), c(3, 2)))
   expect_equal(x$MS2$intensity, c(150, 2214, 922, 486784, 4245))
+  info <- attr(x$MS2, "scan_info")
+  expect_equal(info$polarity, c("positive", "negative"))
+  expect_equal(info$collision_energy, c(15, 20))
+  expect_equal(attr(x, "polarity"), c("positive", "negative"))
 
   dir <- withr::local_tempdir()
   fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2), ms_level = c(2L, 2L),
