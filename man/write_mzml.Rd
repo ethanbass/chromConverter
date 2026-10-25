@@ -116,6 +116,7 @@ write_mzml(chrom[[1]], path_out = "path/to/directory")
 }
 \seealso{
 Other write functions:
+\code{\link[=write_agilent_amx]{write_agilent_amx()}},
 \code{\link[=write_andi_chrom]{write_andi_chrom()}},
 \code{\link[=write_andi_ms]{write_andi_ms()}},
 \code{\link[=write_chroms]{write_chroms()}}

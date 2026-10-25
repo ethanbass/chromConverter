@@ -60,6 +60,7 @@ write_chroms(chroms, path_out = tempdir(), export_format = "csv",
 }
 \seealso{
 Other write functions:
+\code{\link[=write_agilent_amx]{write_agilent_amx()}},
 \code{\link[=write_andi_chrom]{write_andi_chrom()}},
 \code{\link[=write_andi_ms]{write_andi_ms()}},
 \code{\link[=write_mzml]{write_mzml()}}

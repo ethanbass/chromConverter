@@ -1,5 +1,6 @@
 ## chromConverter (development version)
 
+* `write_agilent_amx` writes a copy of an 'OpenLab CDS' acquisition method with a new pump gradient, flow, stop time or post time. See `?write_agilent_amx`.
 * 'Shimadzu' `.qgd` files with MRM scans can now be read. The scans are returned as `MS2`, with a `precursor_mz` column. See `?read_shimadzu_qgd`.
 * Product ion and MRM spectra are now read by default from 'MassHunter' `.d` directories, as `MS2` with a `precursor_mz` column. See `?read_agilent_d`.
 * Mass spectra, TIC and BPC from 'MassHunter' and 'OpenLab' files now report their `polarity`, which `write_mzml` records in the mzML.

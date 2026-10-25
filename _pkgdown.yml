@@ -42,6 +42,7 @@ reference:
   - uv_converter
 - title: "Write functions"
   contents:
+  - write_agilent_amx
   - write_andi_chrom
   - write_andi_ms
   - write_mzml

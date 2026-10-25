@@ -1403,6 +1403,155 @@ test_that("read_agilent_amx drops a module the archive has no driver for", {
   expect_s3_class(x$pump$solvents, "data.table")
 })
 
+unzip_amx <- function(path){
+  dir <- tempfile()
+  unzip(path, exdir = dir)
+  files <- sort(list.files(dir, recursive = TRUE, all.files = TRUE))
+  stats::setNames(unname(tools::md5sum(file.path(dir, files))), files)
+}
+
+amx_checksums_valid <- function(path){
+  dir <- tempfile()
+  unzip(path, exdir = dir)
+  chk <- list.files(dir, "\\.chk$", recursive = TRUE, full.names = TRUE)
+  all(vapply(chk, function(f){
+    identical(readBin(f, "raw", 20),
+              digest::digest(file = sub("\\.chk$", "", f), algo = "sha1",
+                             raw = TRUE))
+  }, logical(1)))
+}
+
+test_that("write_agilent_amx leaves an unedited method unchanged", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  for (file in c("Glucosinolates-XDB5.amx", "column_storage_ACN100.amx",
+                 "flow_rate_example.amx")){
+    path <- system.file(file, package = "chromConverterExtraTests")
+    skip_if_not(file.exists(path))
+    out <- write_agilent_amx(path, tempfile(fileext = ".amx"))
+    expect_equal(unzip(out, list = TRUE)$Name, unzip(path, list = TRUE)$Name)
+    expect_equal(unzip_amx(out), unzip_amx(path))
+  }
+})
+
+test_that("write_agilent_amx writes a gradient and pump settings", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("Glucosinolates-XDB5.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  gradient <- data.frame(time_min = c(9.25, 0, 2.5),
+                         pct_A = c(5, 65, 65),
+                         pct_B = c(95, 35, 35))
+  out <- write_agilent_amx(path, tempfile(fileext = ".amx"),
+                           gradient = gradient, flow = 1.5,
+                           stop_time = 11.5, post_time = 3)
+  pump <- read_agilent_amx(out, what = "pump")$pump
+
+  expect_equal(pump$gradient,
+               gradient[order(gradient$time_min), ], ignore_attr = TRUE)
+  expect_equal(pump$solvents$percentage, c(65, 35))
+  expect_equal(pump$flow_mL_min, 1.5)
+  expect_equal(pump$stop_time_min, 11.5)
+  expect_equal(pump$post_time_min, 3)
+  expect_true(amx_checksums_valid(out))
+
+  dir <- tempfile()
+  unzip(out, "MethodProperties/MethodProperties", exdir = dir)
+  props <- xml2::read_xml(file.path(dir, "MethodProperties/MethodProperties"))
+  expect_equal(xml2::xml_text(xml2::xml_find_first(
+    props, "//*[local-name()='MethodRuntimeInSeconds']")), "690")
+
+  before <- unzip_amx(path)
+  after <- unzip_amx(out)
+  edited <- grepl("PumpDriver|MethodProperties", names(before))
+  expect_equal(after[!edited], before[!edited])
+
+  expect_warning(write_agilent_amx(path, tempfile(), gradient = gradient,
+                                   stop_time = 5),
+                 "runs past the stop time")
+})
+
+test_that("write_agilent_amx adds a gradient to an isocratic method", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("column_storage_ACN100.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  solvents <- read_agilent_amx(path, what = "pump")$pump$solvents$channel
+  expect_equal(solvents, c("A", "B"))
+  gradient <- data.frame(time_min = rep(c(0, 1, 6), each = 2),
+                         channel = c("A", "B"),
+                         percent = c(90, 10, 90, 10, 5, 95))
+  out <- write_agilent_amx(path, tempfile(fileext = ".amx"),
+                           gradient = gradient, post_time = 2)
+  pump <- read_agilent_amx(out, what = "pump", gradient_format = "long")$pump
+
+  expect_equal(pump$gradient, gradient, ignore_attr = TRUE)
+  expect_equal(pump$post_time_min, 2)
+  expect_true(amx_checksums_valid(out))
+})
+
+test_that("write_agilent_amx keeps the flow steps of the template", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("flow_rate_example.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  template <- read_agilent_amx(path, what = "pump", gradient_format = "long")
+  expect_error(write_agilent_amx(path, tempfile(),
+                                 gradient = template$pump$gradient),
+               "cannot change the flow")
+
+  gradient <- data.frame(time_min = c(0, 5), pct_A = c(90, 10),
+                         pct_B = c(10, 90))
+  out <- write_agilent_amx(path, tempfile(fileext = ".amx"),
+                           gradient = gradient)
+  x <- read_agilent_amx(out, what = "pump", gradient_format = "long")
+  flow <- function(g) g[g$channel == "flow", ]
+  expect_equal(flow(x$pump$gradient), flow(template$pump$gradient),
+               ignore_attr = TRUE)
+})
+
+test_that("write_agilent_amx rejects an invalid gradient", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("Glucosinolates-XDB5.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  gradient <- data.frame(time_min = c(0, 5), pct_A = c(90, 10),
+                         pct_B = c(10, 90))
+  expect_error(write_agilent_amx(path, tempfile(),
+                                 gradient = transform(gradient, pct_B = 20)),
+               "add up to 100")
+  expect_error(write_agilent_amx(path, tempfile(),
+                                 gradient = gradient[c("time_min", "pct_B")]),
+               "'pct_A', 'pct_B'")
+  expect_error(write_agilent_amx(path, tempfile(),
+                                 gradient = cbind(gradient, pct_C = 0)),
+               "'pct_A', 'pct_B'")
+  expect_error(write_agilent_amx(path, tempfile(),
+                                 gradient = gradient[c(1, 1), ]),
+               "distinct")
+  expect_error(write_agilent_amx(path, tempfile(), stop_time = -1),
+               "non-negative")
+
+  out <- tempfile(fileext = ".amx")
+  write_agilent_amx(path, out)
+  expect_error(write_agilent_amx(path, out), "force = TRUE")
+  expect_no_error(write_agilent_amx(path, out, gradient = gradient,
+                                    force = TRUE))
+})
+
 test_that("read_agilent_dx errors when asked for instrument data it lacks", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

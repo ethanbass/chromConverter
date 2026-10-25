@@ -65,6 +65,7 @@ write_andi_ms(chrom, path_out = "path/to/directory")
 }
 \seealso{
 Other write functions:
+\code{\link[=write_agilent_amx]{write_agilent_amx()}},
 \code{\link[=write_andi_chrom]{write_andi_chrom()}},
 \code{\link[=write_chroms]{write_chroms()}},
 \code{\link[=write_mzml]{write_mzml()}}
