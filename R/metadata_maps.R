@@ -276,6 +276,7 @@ meta_shimadzu_lcd <- function(meta, ctx){
        ms_level = get_metadata_field(meta, "ms_level", null_val = NULL),
        scan_type = get_metadata_field(meta, "scan_type", null_val = NULL),
        polarity = get_metadata_field(meta, "polarity", null_val = NULL),
+       centroided = get_metadata_field(meta, "centroided", null_val = NULL),
        precursor_mz = get_metadata_field(meta, "precursor_mz", null_val = NULL),
        product_mz = get_metadata_field(meta, "product_mz", null_val = NULL),
        mz_range = get_metadata_field(meta, "mz_range", null_val = NULL),

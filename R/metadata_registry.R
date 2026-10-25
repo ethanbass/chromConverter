@@ -204,7 +204,7 @@ validate_metadata_names <- function(attrs){
   "intensity_offset",
   # mass spectrometry
   "n_scans", "ms_params", "ms_level", "scan_type", "precursor_mz",
-  "product_mz", "mz_range",
+  "product_mz", "mz_range", "centroided",
   # the instrument settings of the method, as a list by module
   "method_params",
   # `metadata_format = "raw"` passes the vendor list through untouched

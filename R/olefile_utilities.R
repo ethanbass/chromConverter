@@ -150,14 +150,16 @@ read_ole_uint32 <- function(path, stream){
 
 #' Identify the mass spectrometry container in a 'Shimadzu' LCD file
 #'
-#' `.lcd` files hold mass spectrometry data in one of three mutually
-#' exclusive storages: `QTFL RawData` on quadrupole time-of-flight
-#' instruments, `TLM Raw Data` on the triple quadrupoles, or `TTFL Raw Data`
-#' on the LCMS-IT-TOF. Returns `NA` if none is present.
+#' `.lcd` files hold mass spectrometry data in one of four storages:
+#' `QTFL RawData` on quadrupole time-of-flight instruments, `TLM Raw Data` on
+#' the triple quadrupoles, `TTFL Raw Data` on the LCMS-IT-TOF, or
+#' `Mass Raw Data` on the single quadrupoles. Files from other instruments can
+#' also carry an empty `Mass Raw Data` storage, so each is tested for content.
+#' Returns `NA` if none holds data.
 #'
 #' @noRd
 get_sz_ms_format <- function(path, min_size = 1200){
-  # one handle for both checks: `check_stream` re-opens and re-parses the
+  # one handle for every check: `check_stream` re-opens and re-parses the
   # container's FAT for each name it is asked about
   ole <- ole_open(path)
   on.exit(ole$close(), add = TRUE)
@@ -168,6 +170,9 @@ get_sz_ms_format <- function(path, min_size = 1200){
   } else if (ole_stream_size(ole, c("TTFL Raw Data", "MS Raw Data")) >
              min_size){
     "ittof"
+  } else if (ole_stream_size(ole, c("Mass Raw Data", "MS Raw Data")) >
+             min_size){
+    "sq"
   } else NA_character_
 }
 

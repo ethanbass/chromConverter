@@ -13,6 +13,7 @@ read_shimadzu_lcd(
   metadata_format = c("chromconverter", "raw"),
   scale = TRUE,
   sparse = TRUE,
+  centroided = TRUE,
   collapse = TRUE,
   peaktable_format = c("chromatographr", "original")
 )
@@ -35,8 +36,9 @@ If a stream is not specified, the richest one the file contains is returned:
 file whose only detector is the mass spectrometer. The mass spectrometry
 streams are read from whichever container the file uses: \verb{QTFL RawData}
 (centroided quadrupole time-of-flight data), \verb{TLM Raw Data} (triple
-quadrupole full scan, product-ion scan, MRM and SIM data) or \verb{TTFL Raw Data}
-(ion trap time-of-flight profile data).}
+quadrupole full scan, product-ion scan, MRM and SIM data), \verb{TTFL Raw Data}
+(ion trap time-of-flight profile data) or \verb{Mass Raw Data} (centroided or
+profile single quadrupole data).}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -55,6 +57,10 @@ file. Defaults to \code{TRUE}.}
 (excluding zeros), as \code{\link[=call_rainbow]{call_rainbow()}} does. Defaults to \code{TRUE}. Applies
 only to triple quadrupole profile spectra, whose m/z grid is largely
 empty; ignored for every other stream.}
+
+\item{centroided}{Logical. Whether to return the centroided single
+quadrupole scans (\code{TRUE}, the default) or the profile scans (\code{FALSE}), which
+some methods record as a separate event. Ignored for every other stream.}
 
 \item{collapse}{Logical. Whether to collapse lists that only contain a single
 element. Defaults to \code{TRUE}.}
@@ -112,6 +118,11 @@ encoded profile scans from the LCMS-IT-TOF, with the mass axis interpolated
 between the calibrant ions stored in the file. Read by \code{\link[=read_sz_ittof]{read_sz_ittof()}},
 which documents the scan header, the encoding and the calibration. The total
 ion current is read from the scan headers (\code{\link[=read_sz_ittof_tic]{read_sz_ittof_tic()}}).
+\item \strong{Single quadrupole mass spectra} (\verb{Mass Raw Data}): centroided and
+profile scans from instruments such as the LCMS-2020, located through a
+spectrum index. Read by \code{\link[=read_sz_sq]{read_sz_sq()}}, which documents the scan header,
+the records and the approximate profile m/z axis. The
+total ion current is held separately, in \verb{TIC Data} (\code{\link[=read_sz_sq_tic]{read_sz_sq_tic()}}).
 \item \strong{Peak tables} (\verb{Peak Table}): integration results as reported by
 'LabSolutions', one stream per channel. Read by \code{\link[=read_sz_tables]{read_sz_tables()}}, which
 documents the two record layouts.

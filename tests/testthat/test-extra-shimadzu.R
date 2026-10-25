@@ -719,6 +719,76 @@ test_that("read_shimadzu_lcd scales IT-TOF scans by their own multiplier", {
   expect_equal(as.numeric(sums), unsplit(tic, info$event))
 })
 
+test_that("read_shimadzu_lcd can read 'Shimadzu' single quadrupole data", {
+  skip_if_missing_dependencies("olefile")
+  path <- extra_test_file("shimadzu_sq_mtbls1960.lcd")
+  x <- read_shimadzu_lcd(path, what = "MS1", format_out = "data.frame")
+  info <- attr(x, "scan_info")
+  expect_equal(nrow(info), 2400)
+  expect_equal(range(x$mz), c(200, 1000))
+  expect_false(any(tapply(x$mz, x$scan, is.unsorted)))
+
+  tic <- read_shimadzu_lcd(path, what = "TIC", data_format = "long",
+                           format_out = "data.frame")
+  expect_named(tic, c("Event 1", "Event 2"))
+  sums <- tapply(x$intensity, factor(x$scan, levels = info$scan), sum)
+  expect_equal(as.numeric(sums),
+               unsplit(lapply(tic, `[[`, "intensity"), info$event))
+  expect_equal(attr(tic[[1]], "polarity"), "positive")
+  expect_equal(attr(tic[[2]], "polarity"), "negative")
+
+  # rutin and kaempferol 3-O-rutinoside: [M+H]+ in event 1, [M-H]- in event 2
+  pol <- info$polarity[match(x$scan, info$scan)]
+  xic <- function(mz, polarity){
+    sum(x$intensity[abs(x$mz - mz) < 0.6 & pol == polarity &
+                      x$rt > 7.4 & x$rt < 9])
+  }
+  expect_gt(xic(609.15, "negative"), 5 * xic(609.15, "positive"))
+  expect_gt(xic(593.15, "negative"), 5 * xic(593.15, "positive"))
+  expect_gt(xic(611.16, "positive"), 5 * xic(609.15, "positive"))
+  expect_gt(xic(595.17, "positive"), 5 * xic(593.15, "positive"))
+})
+
+test_that("read_shimadzu_lcd can read 'Shimadzu' single quadrupole profile scans", {
+  skip_if_missing_dependencies("olefile")
+  path <- extra_test_file("shimadzu_sq_profile_zenodo18633076.lcd")
+  tic <- read_shimadzu_lcd(path, what = "TIC", data_format = "long",
+                           format_out = "data.frame")
+  sums <- function(x){
+    info <- attr(x, "scan_info")
+    tapply(x$intensity, factor(x$scan, levels = info$scan), sum)
+  }
+
+  x <- read_shimadzu_lcd(path, what = "MS1", format_out = "data.table")
+  info <- attr(x, "scan_info")
+  expect_equal(unique(info$event), 1:2)
+  expect_true(attr(x, "centroided"))
+  expect_equal(as.numeric(sums(x)),
+               unsplit(lapply(tic[1:2], `[[`, "intensity"), info$event))
+
+  x <- read_shimadzu_lcd(path, what = "MS1", format_out = "data.table",
+                         centroided = FALSE)
+  info <- attr(x, "scan_info")
+  expect_equal(unique(info$event), 3)
+  expect_false(attr(x, "centroided"))
+  expect_equal(nrow(info), 1140)
+  expect_equal(unique(info$n_points), 27776)
+  expect_equal(range(x$mz), c(150 - 12 * 1850/27749, 2000 + 14 * 1850/27749))
+  expect_equal(x$mz[13], 150)
+  expect_equal(round(as.numeric(sums(x))), tic[["Event 3"]]$intensity)
+
+  local_mocked_bindings(read_sq_mz_range = function(path) NULL)
+  expect_error(read_shimadzu_lcd(path, what = "MS1", centroided = FALSE),
+               "m/z range could not be read")
+})
+
+test_that("read_shimadzu_lcd rejects `centroided = FALSE` without profile scans", {
+  skip_if_missing_dependencies("olefile")
+  path <- extra_test_file("shimadzu_sq_mtbls1960.lcd")
+  expect_error(read_shimadzu_lcd(path, what = "MS1", centroided = FALSE),
+               "no profile scans")
+})
+
 test_that("Shimadzu times are converted correctly", {
   expect_equal(parse_shimadzu_tz("+05'30"), "Asia/Kolkata")
   expect_equal(parse_shimadzu_tz("UTC"), "UTC")

@@ -31,6 +31,11 @@
 #' between the calibrant ions stored in the file. Read by [read_sz_ittof()],
 #' which documents the scan header, the encoding and the calibration. The total
 #' ion current is read from the scan headers ([read_sz_ittof_tic()]).
+#' * **Single quadrupole mass spectra** (`Mass Raw Data`): centroided and
+#' profile scans from instruments such as the LCMS-2020, located through a
+#' spectrum index. Read by [read_sz_sq()], which documents the scan header,
+#' the records and the approximate profile m/z axis. The
+#' total ion current is held separately, in `TIC Data` ([read_sz_sq_tic()]).
 #' * **Peak tables** (`Peak Table`): integration results as reported by
 #' 'LabSolutions', one stream per channel. Read by [read_sz_tables()], which
 #' documents the two record layouts.
@@ -62,8 +67,12 @@
 #' file whose only detector is the mass spectrometer. The mass spectrometry
 #' streams are read from whichever container the file uses: `QTFL RawData`
 #' (centroided quadrupole time-of-flight data), `TLM Raw Data` (triple
-#' quadrupole full scan, product-ion scan, MRM and SIM data) or `TTFL Raw Data`
-#' (ion trap time-of-flight profile data).
+#' quadrupole full scan, product-ion scan, MRM and SIM data), `TTFL Raw Data`
+#' (ion trap time-of-flight profile data) or `Mass Raw Data` (centroided or
+#' profile single quadrupole data).
+#' @param centroided Logical. Whether to return the centroided single
+#' quadrupole scans (`TRUE`, the default) or the profile scans (`FALSE`), which
+#' some methods record as a separate event. Ignored for every other stream.
 #' @param sparse Logical. Whether to return mass spectra in sparse format
 #' (excluding zeros), as [call_rainbow()] does. Defaults to `TRUE`. Applies
 #' only to triple quadrupole profile spectra, whose m/z grid is largely
@@ -146,7 +155,7 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                                 read_metadata = TRUE,
                                 metadata_format = c("chromconverter", "raw"),
                                 scale = TRUE, sparse = TRUE,
-                                collapse = TRUE,
+                                centroided = TRUE, collapse = TRUE,
                                 peaktable_format = c("chromatographr",
                                                      "original")){
   format_out <- check_format_out(format_out)
@@ -219,6 +228,11 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                         data_format = data_format,
                         read_metadata = read_metadata,
                         metadata_format = metadata_format)
+    } else if (identical(ms_format, "sq")){
+      read_sz_sq_tic(path, format_out = format_out,
+                     data_format = data_format,
+                     read_metadata = read_metadata,
+                     metadata_format = metadata_format)
     } else {
       stop("A mass spectrometry stream could not be detected.")
     }
@@ -242,6 +256,12 @@ read_shimadzu_lcd <- function(path, what, format_out = c("matrix", "data.frame",
                     read_metadata = read_metadata,
                     metadata_format = metadata_format,
                     scale = scale)
+    } else if (identical(ms_format, "sq")){
+      read_sz_sq(path, format_out = format_out,
+                 data_format = data_format, levels = levels,
+                 centroided = centroided,
+                 read_metadata = read_metadata,
+                 metadata_format = metadata_format)
     } else {
       stop("A mass spectrometry stream could not be detected.")
     }
