@@ -118,43 +118,158 @@ def test_close_logs_errors():
     session.close()
 
 
-def test_main(tmp_path):
-    project = str(tmp_path)
-    touch(os.path.join(project, "Methods", "m1.amx"))
-    touch(os.path.join(project, "Methods", "p1.pmx"))
+class FakeSession:
+    project_path = None
     submitted = {}
+    skip = ()
 
-    class FakeSession:
-        def __init__(self, connection, instrument, project_path):
-            self.project_path = project
+    def __init__(self, connection, instrument, project):
+        pass
 
-        def submit(self, method, vial, result_dir, **kwargs):
-            submitted.update(kwargs, result_dir=result_dir)
-            now = time.time()
-            touch(os.path.join(result_dir, "set.rslt", "ours.dx"), now)
-            touch(os.path.join(project, "Results", "other.rslt", "other.dx"),
-                  now + 1)
-            return "r1"
+    def submit(self, method, vial, result_dir, **kwargs):
+        self.submitted.update(kwargs, result_dir=result_dir)
+        now = time.time()
+        name = kwargs.get("result_name") or "ours"
+        touch(os.path.join(result_dir, "set.rslt", name + ".dx"), now)
+        touch(os.path.join(self.project_path, "Results", "other.rslt",
+                           "other.dx"), now + 1)
+        return "r1"
 
-        def wait(self, run_id, timeout_s):
-            return "Completed"
+    def submit_sequence(self, rows, result_name, injector=None):
+        self.submitted.update(rows=rows, result_name=result_name)
+        now = time.time()
+        result_set = os.path.dirname(result_name)
+        for i, row in enumerate(rows):
+            if row["result_name"] in self.skip:
+                continue
+            touch(os.path.join(result_set, "set.rslt",
+                               row["result_name"] + ".dx"), now - i)
+        touch(os.path.join(self.project_path, "Results", "other.rslt",
+                           "001.dx"), now + 1)
+        return "s1"
 
-        def close(self):
-            pass
+    def wait(self, run_id, timeout_s):
+        return "Completed"
 
+    def close(self):
+        pass
+
+
+def run_main(project, argv, skip=()):
+    FakeSession.project_path = project
+    FakeSession.submitted = {}
+    FakeSession.skip = skip
     saved = ol.Session, ol.load_assemblies
     ol.Session, ol.load_assemblies = FakeSession, lambda agilent_dir: None
     out = io.StringIO()
     try:
         with contextlib.redirect_stdout(out):
-            code = ol.main(["m1", "--vial", "A1", "--instrument", "I",
-                            "--project", "P", "--processing-method", "p1"])
+            code = ol.main(argv + ["--instrument", "I", "--project", "P"])
     finally:
         ol.Session, ol.load_assemblies = saved
+    return code, out.getvalue().splitlines()
+
+
+def test_main(tmp_path):
+    project = str(tmp_path)
+    touch(os.path.join(project, "Methods", "m1.amx"))
+    touch(os.path.join(project, "Methods", "p1.pmx"))
+    code, out = run_main(project, ["m1", "--vial", "A1",
+                                   "--processing-method", "p1"])
     assert code == 0
-    assert out.getvalue().strip().endswith("ours.dx")
-    assert submitted["processing_method"] == \
+    assert len(out) == 1 and out[0].endswith("ours.dx")
+    assert FakeSession.submitted["processing_method"] == \
         os.path.abspath(os.path.join(project, "Methods", "p1.pmx"))
+
+
+def test_main_shared_folder(tmp_path):
+    project = str(tmp_path)
+    touch(os.path.join(project, "Methods", "m1.amx"))
+    touch(os.path.join(project, "Results", "batch", "set.rslt", "run0.dx"),
+          time.time() + 10)
+    code, out = run_main(project, ["m1", "--vial", "A1", "--result-path",
+                                   "batch", "--result-name", "run1"])
+    assert code == 0
+    assert out == [os.path.join(project, "Results", "batch", "set.rslt",
+                                "run1.dx")]
+
+
+def test_read_sequence(tmp_path):
+    project = str(tmp_path)
+    touch(os.path.join(project, "Methods", "m1.amx"))
+    touch(os.path.join(project, "Methods", "p1.pmx"))
+    csv_path = os.path.join(project, "runs.csv")
+    with open(csv_path, "w") as f:
+        f.write("method,vial,injection_volume,result_name\n"
+                "m1,A1,5,\n"
+                "m1, A2 ,,blank\n")
+    rows = ol.read_sequence(csv_path, project,
+                            {"injection_volume": 10.0, "processing_method": "p1"})
+    assert [r["vial"] for r in rows] == ["A1", "A2"]
+    assert [r["injection_volume"] for r in rows] == [5.0, 10.0]
+    assert [r["result_name"] for r in rows] == ["001", "blank"]
+    assert rows[1]["processing_method"].endswith("p1.pmx")
+    with open(csv_path, "w", encoding="utf-8-sig") as f:
+        f.write("Method, Vial\nm1,A1\n,\n")
+    assert len(ol.read_sequence(csv_path, project, {})) == 1
+    for text, message in (
+            ("method,vial,volume\nm1,A1,5\n", "Unknown columns"),
+            ("method\nm1\n", "needs a method and a vial"),
+            ("method,vial,result_name\nm1,A1,x\nm1,A2,X\n", "must differ"),
+            ("method,vial,injection_volume\nm1,A1,5uL\n", "not a number"),
+            ("method,vial,result_name\nm1,A1,<D>-x\n", "< or >"),
+            ("method,vial\n", "no rows")):
+        with open(csv_path, "w") as f:
+            f.write(text)
+        try:
+            ol.read_sequence(csv_path, project, {})
+        except ol.SubmitError as e:
+            assert message in str(e), (message, str(e))
+        else:
+            raise AssertionError("expected SubmitError for " + repr(text))
+
+
+def test_main_sequence(tmp_path):
+    project = str(tmp_path)
+    touch(os.path.join(project, "Methods", "m1.amx"))
+    csv_path = os.path.join(project, "runs.csv")
+    with open(csv_path, "w") as f:
+        f.write("method,vial\nm1,A1\nm1,A2\n")
+    code, out = run_main(project, ["--sequence", csv_path,
+                                   "--result-path", "batch"])
+    assert code == 0
+    assert FakeSession.submitted["result_name"] == \
+        os.path.join(project, "Results", "batch", "<D>")
+    assert [os.path.relpath(f, project) for f in out] == [
+        os.path.join("Results", "batch", "set.rslt", "001.dx"),
+        os.path.join("Results", "batch", "set.rslt", "002.dx")]
+
+
+def test_main_sequence_missing_row(tmp_path):
+    project = str(tmp_path)
+    touch(os.path.join(project, "Methods", "m1.amx"))
+    csv_path = os.path.join(project, "runs.csv")
+    with open(csv_path, "w") as f:
+        f.write("method,vial\nm1,A1\nm1,A2\nm1,A3\n")
+    code, out = run_main(project, ["--sequence", csv_path], skip={"002"})
+    assert code == 1
+    assert [os.path.basename(f) for f in out] == ["001.dx", "", "003.dx"]
+
+
+def test_parse_args():
+    base = ["--instrument", "I", "--project", "P"]
+    for argv in ([], ["m1", "--sequence", "s.csv"], ["m1"],
+                 ["m1", "--vial", "A1", "--result-name", "<D>-x"]):
+        try:
+            with contextlib.redirect_stderr(io.StringIO()):
+                ol.parse_args(argv + base)
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError("expected an error for {}".format(argv))
+    args = ol.parse_args(["--sequence", "s.csv", "--result-name", "<D>-x"]
+                         + base)
+    assert args.result_name == "<D>-x"
 
 
 if __name__ == "__main__":
