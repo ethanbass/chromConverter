@@ -126,6 +126,7 @@ read_chroms <- function(paths,
   sample_names <- match.arg(sample_names, c("basename", "sample_name"))
   sort_by <- match.arg(sort_by, c("auto", "none", "acquisition_time",
                                    "file_time"))
+  paths <- path.expand(paths)
   if (!is.null(dat)){
     warning("The `dat` argument is deprecated and will be removed in a future ",
             "version. Use `c()` on the returned `chrom_list` objects instead, ",

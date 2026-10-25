@@ -28,7 +28,7 @@ sp_converter <- function(path, format_out = c("matrix", "data.frame", "data.tabl
   data_format <- check_data_format(data_format, format_out)
   metadata_format <- check_metadata_format(metadata_format, "masshunter_dad")
   trace_file <- check_aston_configuration()
-  x <- trace_file$agilent_uv$AgilentDAD(path)
+  x <- trace_file$agilent_uv$AgilentDAD(path.expand(path))
   x <- setNames(data.frame(x$data$values,
                            row.names = x$data$index), x$data$columns)
   if (data_format == "long"){

@@ -67,6 +67,7 @@ call_openchrom <- function(files, path_out = NULL, format_in,
   if (length(files) == 0){
     stop("Files not found.")
   }
+  files <- path.expand(files)
   if (missing(format_in)){
     stop("Format must be specified. The options are `msd` for mass spectrometry,
     `csd` for flame ionization (FID), or `wsd` for DAD/UV data.")}

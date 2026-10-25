@@ -22,7 +22,7 @@ export_stream <- function(path, stream, path_out, remove_null_bytes = FALSE,
     }
     path_out <- fs::path_expand(path_out)
   }
-  found <- py_export_stream()(path, as.list(stream), path_out,
+  found <- py_export_stream()(path.expand(path), as.list(stream), path_out,
                               remove_null_bytes)
   if (!found){
     if (verbose){
@@ -96,8 +96,7 @@ check_streams <- function(path, what = c("pda", "chroms", "tic", "peaks",
                           boolean = FALSE,
                           min_size = 1200){
   what <- match.arg(what, c("pda", "chroms", "tic", "peaks", "qtof", ""))
-  olefile <- py_import("olefile")
-  ole <- olefile$OleFileIO(path)
+  ole <- ole_open(path)
   on.exit(ole$close(), add = TRUE)
   if (what == "pda"){
     pda_exists <- ole$get_size("PDA 3D Raw Data/3D Raw Data") > min_size
@@ -160,8 +159,7 @@ read_ole_uint32 <- function(path, stream){
 get_sz_ms_format <- function(path, min_size = 1200){
   # one handle for both checks: `check_stream` re-opens and re-parses the
   # container's FAT for each name it is asked about
-  olefile <- py_import("olefile")
-  ole <- olefile$OleFileIO(path)
+  ole <- ole_open(path)
   on.exit(ole$close(), add = TRUE)
   if (ole_stream_size(ole, c("QTFL RawData", "Centroid Data")) > min_size){
     "qtof"
@@ -178,12 +176,17 @@ get_sz_ms_format <- function(path, min_size = 1200){
 
 check_stream <- function(path, stream = NULL,
                           boolean = FALSE, min_size = 552){
-  olefile <- py_import("olefile")
-  ole <- olefile$OleFileIO(path)
+  ole <- ole_open(path)
   on.exit(ole$close(), add = TRUE)
   ole_stream_size(ole, stream) > min_size
 }
 
+
+#' Open an OLE file with olefile
+#' @noRd
+ole_open <- function(path){
+  py_import("olefile")$OleFileIO(path.expand(path))
+}
 
 #' List OLE streams
 #' @author Ethan Bass
@@ -191,8 +194,7 @@ check_stream <- function(path, stream = NULL,
 
 ole_list_streams <- function(path, pattern = NULL, ignore.case = FALSE,
                              min_size = 552){
-  olefile <- py_import("olefile")
-  ole <- olefile$OleFileIO(path)
+  ole <- ole_open(path)
   on.exit(ole$close(), add = TRUE)
   streams <- ole$listdir()
   if (!is.null(pattern)){

@@ -90,7 +90,7 @@ call_rainbow <- function(path,
   if (format_in != "chemstation"){
     args <- c(args, list(centroid = centroid, hrms = hrms))
   }
-  x <- do.call(converter, c(list(path), args))
+  x <- do.call(converter, c(list(path.expand(path)), args))
   if (by == "detector"){
     if (!is.null(what)){
       what_not_present <- setdiff(what, names(x$by_detector))

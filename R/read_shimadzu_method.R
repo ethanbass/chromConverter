@@ -312,8 +312,7 @@ sz_mobile_phases <- function(method, format_out){
 #' `NULL` if the file has no such record.
 #' @noRd
 sz_lcms_interface <- function(path){
-  olefile <- py_import("olefile")
-  ole <- olefile$OleFileIO(path)
+  ole <- ole_open(path)
   entries <- vapply(ole$listdir(), paste, "", collapse = "/")
   ole$close()
   streams <- grep("^GUMM_Information/ShimadzuLCMS[^/]*/(GUC\\.1\\.METHOD|GUM\\.METHOD)$",
@@ -352,8 +351,7 @@ sz_qgd_method <- function(path, what, format_out){
   guc <- c("GCMS Configuration", "GUC_GC2", "ShimadzuGC.1")
   method <- sz_method_xml(path, c(guc, "GUC.1.METHOD"))
   config <- if (!is.null(method)) sz_method_xml(path, c(guc, "GUC.1.CONFIG"))
-  olefile <- py_import("olefile")
-  ole <- olefile$OleFileIO(path)
+  ole <- ole_open(path)
   on.exit(ole$close(), add = TRUE)
   read <- function(stream){
     if (!ole$exists(stream)) return(NULL)

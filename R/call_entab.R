@@ -30,7 +30,7 @@ call_entab <- function(path, data_format = c("wide", "long"),
 
   metadata_format <- check_metadata_format(metadata_format,
                                            entab_metadata_tag(format_in))
-  r <- entab::Reader(path)
+  r <- entab::Reader(path.expand(path))
   file_format <- r$parser()
   x <- entab::as.data.frame(r)
   if (grepl("dad$|uv$", file_format)){
