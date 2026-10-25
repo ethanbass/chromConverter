@@ -111,11 +111,11 @@ def local_path(uri):
         return unquote(uri.AbsolutePath)
 
 
-def resolve_method_path(method, project_path):
+def resolve_method_path(method, project_path, ext=".amx"):
     if not os.path.isabs(method):
         method = os.path.join(project_path, "Methods", method)
-    if not method.lower().endswith(".amx"):
-        method += ".amx"
+    if not method.lower().endswith(ext):
+        method += ext
     method = os.path.abspath(method)
     if not os.path.exists(method):
         raise SubmitError("Method not found: {}".format(method))
@@ -139,7 +139,7 @@ def pick_injector(sources, wanted=None):
 
 
 def find_result(result_dir, since):
-    files = [f for f in glob.glob(os.path.join(result_dir, "**", "*.dx"),
+    files = [f for f in glob.glob(os.path.join(glob.escape(result_dir), "**", "*.dx"),
                                   recursive=True)
              if os.path.getmtime(f) >= since]
     return max(files, key=os.path.getmtime) if files else None
@@ -177,14 +177,21 @@ class Session:
         self.controller.RunRecordCollectionChanged += self._on_collection
 
         log("connecting to {} ({})".format(instrument, project))
-        self.controller.EstablishConnection(
-            connection, ticket, "{}".format(instruments[instrument]),
-            "{}".format(projects[project]))
-        if not self._ready.wait(timeout_s):
-            raise SubmitError("Timed out connecting to the instrument.")
-        while not self.controller.IsConnected:
-            time.sleep(0.1)
-        time.sleep(1)
+        deadline = time.time() + timeout_s
+        try:
+            self.controller.EstablishConnection(
+                connection, ticket, "{}".format(instruments[instrument]),
+                "{}".format(projects[project]))
+            if not self._ready.wait(timeout_s):
+                raise SubmitError("Timed out connecting to the instrument.")
+            while not self.controller.IsConnected:
+                if time.time() > deadline:
+                    raise SubmitError("Timed out connecting to the instrument.")
+                time.sleep(0.1)
+            time.sleep(1)
+        except BaseException:
+            self.close()
+            raise
 
     def _on_initialized(self, source, args):
         self._ready.set()
@@ -238,10 +245,16 @@ class Session:
             time.sleep(poll_s)
 
     def close(self):
-        self.controller.AppInitialized -= self._on_initialized
-        self.controller.RunRecordChanged -= self._on_record
-        self.controller.RunRecordCollectionChanged -= self._on_collection
-        self.controller.Disconnect()
+        try:
+            self.controller.AppInitialized -= self._on_initialized
+            self.controller.RunRecordChanged -= self._on_record
+            self.controller.RunRecordCollectionChanged -= self._on_collection
+        except Exception as e:
+            log("error removing event handlers: {}".format(e))
+        try:
+            self.controller.Disconnect()
+        except Exception as e:
+            log("error disconnecting: {}".format(e))
 
 
 def parse_args(argv):
@@ -263,7 +276,10 @@ def parse_args(argv):
                         "the project's Methods folder")
     p.add_argument("--result-path",
                    help="results folder, absolute or relative to the "
-                        "project's Results folder")
+                        "project's Results folder. The newest .dx file in it "
+                        "is taken as this run's, so no other run should write "
+                        "there (default: a new folder named after the "
+                        "submission time)")
     p.add_argument("--result-name", help="result file name")
     p.add_argument("--injector",
                    help="injection source; defaults to HipAls or the only one")
@@ -290,10 +306,11 @@ def main(argv=None):
         method = resolve_method_path(args.method, session.project_path)
         processing = None
         if args.processing_method is not None:
-            processing = os.path.abspath(os.path.join(
-                session.project_path, "Methods", args.processing_method))
-        result_dir = os.path.join(session.project_path, "Results",
-                                  args.result_path or "")
+            processing = resolve_method_path(
+                args.processing_method, session.project_path, ".pmx")
+        result_dir = os.path.abspath(os.path.join(
+            session.project_path, "Results",
+            args.result_path or time.strftime("olsubmit_%Y%m%d_%H%M%S")))
         submitted_at = time.time()
         run_id = session.submit(method, args.vial, result_dir,
                                 injector=args.injector,

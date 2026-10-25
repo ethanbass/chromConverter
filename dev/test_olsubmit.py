@@ -3,6 +3,8 @@
     python test_olsubmit.py
 """
 
+import contextlib
+import io
 import os
 import sys
 import tempfile
@@ -21,7 +23,8 @@ def touch(path, mtime=None):
         os.utime(path, (mtime, mtime))
 
 
-def test_find_assembly(tmp):
+def test_find_assembly(tmp_path):
+    tmp = str(tmp_path)
     gac = os.path.join(tmp, "gac")
     for folder in ("GAC_32", "GAC_MSIL"):
         touch(os.path.join(gac, folder, "A.B", "v4.0_2.7.0.0__x", "A.B.dll"))
@@ -48,11 +51,15 @@ def test_pick_injector():
             raise AssertionError("expected SubmitError")
 
 
-def test_resolve_method_path(tmp):
+def test_resolve_method_path(tmp_path):
+    tmp = str(tmp_path)
     method = os.path.join(tmp, "Methods", "sub", "m1.amx")
     touch(method)
     assert ol.resolve_method_path("sub/m1", tmp) == os.path.abspath(method)
     assert ol.resolve_method_path(method, "/elsewhere") == method
+    touch(os.path.join(tmp, "Methods", "p1.pmx"))
+    assert ol.resolve_method_path("p1", tmp, ".pmx") == \
+        os.path.abspath(os.path.join(tmp, "Methods", "p1.pmx"))
     try:
         ol.resolve_method_path("missing.amx", tmp)
     except ol.SubmitError:
@@ -61,7 +68,8 @@ def test_resolve_method_path(tmp):
         raise AssertionError("expected SubmitError")
 
 
-def test_find_result(tmp):
+def test_find_result(tmp_path):
+    tmp = os.path.join(str(tmp_path), "Demo [2026]")
     now = time.time()
     touch(os.path.join(tmp, "set.rslt", "old.dx"), now - 100)
     touch(os.path.join(tmp, "set.rslt", "new.dx"), now)
@@ -93,6 +101,60 @@ def test_wait():
 
     session.events = deque([[record("r1", "Acquiring")]])
     assert session.wait("r1", timeout_s=0.05, poll_s=0.01) is None
+
+
+def test_close_logs_errors():
+    class Event:
+        def __isub__(self, handler):
+            raise RuntimeError("handler not found")
+
+    def disconnect():
+        raise RuntimeError("pipe closed")
+
+    session = object.__new__(ol.Session)
+    session.controller = SimpleNamespace(
+        AppInitialized=Event(), RunRecordChanged=Event(),
+        RunRecordCollectionChanged=Event(), Disconnect=disconnect)
+    session.close()
+
+
+def test_main(tmp_path):
+    project = str(tmp_path)
+    touch(os.path.join(project, "Methods", "m1.amx"))
+    touch(os.path.join(project, "Methods", "p1.pmx"))
+    submitted = {}
+
+    class FakeSession:
+        def __init__(self, connection, instrument, project_path):
+            self.project_path = project
+
+        def submit(self, method, vial, result_dir, **kwargs):
+            submitted.update(kwargs, result_dir=result_dir)
+            now = time.time()
+            touch(os.path.join(result_dir, "set.rslt", "ours.dx"), now)
+            touch(os.path.join(project, "Results", "other.rslt", "other.dx"),
+                  now + 1)
+            return "r1"
+
+        def wait(self, run_id, timeout_s):
+            return "Completed"
+
+        def close(self):
+            pass
+
+    saved = ol.Session, ol.load_assemblies
+    ol.Session, ol.load_assemblies = FakeSession, lambda agilent_dir: None
+    out = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(out):
+            code = ol.main(["m1", "--vial", "A1", "--instrument", "I",
+                            "--project", "P", "--processing-method", "p1"])
+    finally:
+        ol.Session, ol.load_assemblies = saved
+    assert code == 0
+    assert out.getvalue().strip().endswith("ours.dx")
+    assert submitted["processing_method"] == \
+        os.path.abspath(os.path.join(project, "Methods", "p1.pmx"))
 
 
 if __name__ == "__main__":
