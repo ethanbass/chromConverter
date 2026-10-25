@@ -431,6 +431,50 @@ test_that("write_mzml writes spectra named as 'RaMS' names them", {
   expect_no_error(xml2::read_xml(f))
 })
 
+test_that("write_mzml writes the collision energy of MS2 spectra", {
+  tmp <- withr::local_tempdir()
+  energies <- function(f){
+    txt <- paste(readLines(f, warn = FALSE), collapse = "\n")
+    regmatches(txt, gregexpr('(?<=name="collision energy" value=")[0-9.]+',
+                             txt, perl = TRUE))[[1]]
+  }
+  ms2 <- data.frame(rt = c(0.2, 0.2, 0.3, 0.5), precursor_mz = 200,
+                    mz = c(50, 60, 40, 70), intensity = c(5, 6, 7, 8))
+  attr(ms2, "data_format") <- "long"
+
+  # from `scan_info`, matched on retention time
+  x <- ms2
+  attr(x, "scan_info") <- data.frame(scan = 1:3, rt = c(0.2, 0.3, 0.5),
+                                     collision_energy = c(0, 20, NA))
+  f <- write_mzml(list(MS2 = x), path_out = tmp, sample_name = "info",
+                  force = TRUE, show_progress = FALSE)
+  expect_equal(energies(f), c("0", "20"))
+
+  # set aside where it does not cover every spectrum
+  attr(x, "scan_info") <- attr(x, "scan_info")[1:2, ]
+  f <- write_mzml(list(MS2 = x), path_out = tmp, sample_name = "partial",
+                  force = TRUE, show_progress = FALSE)
+  expect_length(energies(f), 0)
+  expect_equal(read_mzml(f, what = "MS2")$MS2$fragmz, ms2$mz)
+
+  # and where two of its scans share a retention time
+  attr(x, "scan_info") <- data.frame(scan = 1:4, rt = c(0.2, 0.2, 0.3, 0.5),
+                                     collision_energy = 10)
+  f <- write_mzml(list(MS2 = x), path_out = tmp, sample_name = "shared",
+                  force = TRUE, show_progress = FALSE)
+  expect_length(energies(f), 0)
+  expect_equal(read_mzml(f, what = "MS2")$MS2$fragmz, ms2$mz)
+
+  # from a `voltage` column, as `read_mzml` returns it
+  x <- ms2
+  x$voltage <- c(35, 35, 25, 30)
+  f <- write_mzml(list(MS2 = x), path_out = tmp, sample_name = "voltage",
+                  force = TRUE, show_progress = FALSE)
+  expect_equal(energies(f), c("35", "25", "30"))
+  skip_if_not_installed("RaMS")
+  expect_equal(read_mzml(f, what = "MS2")$MS2$voltage, x$voltage)
+})
+
 test_that("write_mzml refuses a table it cannot build a spectrum from", {
   local_reproducible_output()
   # a missing column used to encode as an empty binary array, leaving the

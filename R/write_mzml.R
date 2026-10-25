@@ -15,9 +15,10 @@
 #' scan (`scan=417`) rather than for its position in the list, which keeps the
 #' names unique across the levels. An MS2 spectrum carries the
 #' precursor it came from as `MS:1000744` ("selected ion m/z"), and a
-#' `spectrumRef` to the MS1 spectrum that precedes it. Collision energy,
-#' isolation window and precursor charge are not written, as no parser in the
-#' package reads them.
+#' `spectrumRef` to the MS1 spectrum that precedes it, and its collision energy
+#' as `MS:1000045` where it is known, from the `scan_info` attribute or a
+#' `collision_energy` (or `voltage`) column. The isolation window and precursor
+#' charge are not written, as no parser in the package reads them.
 #'
 #' Retention times are written in minutes (`UO:0000031`), as chromConverter
 #' reports them, rather than converted to seconds as [write_andi_ms] does.
@@ -633,7 +634,8 @@ prepare_spectra <- function(x, what){
     attr(x, "data_format") <- "long"
   }
   if (what != "DAD"){
-    aliases <- c(fragmz = "mz", premz = "precursor_mz")
+    aliases <- c(fragmz = "mz", premz = "precursor_mz",
+                 voltage = "collision_energy")
     hits <- intersect(names(aliases), names(x))
     hits <- hits[!aliases[hits] %in% names(x)]
     if (length(hits) > 0){
@@ -657,7 +659,8 @@ prepare_spectra <- function(x, what){
 #' @param data Named list of chromatograms.
 #' @param what Which of `MS1` and `MS2` to include.
 #' @return `info`, one row per spectrum with `scan`, `rt`, `ms_level`,
-#' `polarity` and `precursor_mz`, and `get_scan`, an accessor for its peaks.
+#' `polarity`, `precursor_mz` and `collision_energy`, and `get_scan`, an
+#' accessor for its peaks.
 #' @author Ethan Bass
 #' @noRd
 ms_scan_roster <- function(data, what){
@@ -670,18 +673,20 @@ ms_scan_roster <- function(data, what){
     by <- if ("scan" %in% names(x)) "scan" else "rt"
     grp <- group_scans(x, by = by)
     lvl_n <- as.integer(sub("MS", "", lvl))
-    if (!is.null(info) && nrow(info) > 0 && by == "scan"){
+    if (!is.null(info) && nrow(info) > 0 && !is.null(info[[by]]) &&
+        !anyDuplicated(info[[by]]) && all(grp$keys %in% info[[by]])){
       info <- as.data.frame(info)
-      info <- data.frame(key = info$scan, rt = info$rt, ms_level = lvl_n,
+      info <- data.frame(key = info[[by]], rt = info$rt, ms_level = lvl_n,
                          polarity = info$polarity %||% default_polarity,
-                         precursor_mz = info$precursor_mz %||% NA_real_)
+                         precursor_mz = info$precursor_mz %||% NA_real_,
+                         collision_energy = info$collision_energy %||% NA_real_)
     } else {
       # `match` rather than the first row of each group: `group_scans` sorts
       # the keys when it has to fall back on `split`
       rt <- get_column(x, "rt")[match(grp$keys, get_column(x, by))]
       info <- data.frame(key = grp$keys, rt = rt, ms_level = lvl_n,
                          polarity = default_polarity,
-                         precursor_mz = NA_real_)
+                         precursor_mz = NA_real_, collision_energy = NA_real_)
     }
     info$j <- match(info$key, grp$keys)
     list(info = info, by = by, get_scan = grp$get_scan, empty = x[0])
@@ -753,9 +758,15 @@ write_ms_spectra <- function(w, roster, indexed = TRUE, idx_start = 0,
       precursor <- unique(scan_data$precursor_mz)
       if (length(precursor) != 1) precursor <- NA_real_
     }
+    energy <- info$collision_energy[i]
+    if (is.na(energy) && !is.null(scan_data$collision_energy)){
+      energy <- unique(scan_data$collision_energy)
+      if (length(energy) != 1) energy <- NA_real_
+    }
     spectrum_xml <- create_mzml_ms_spectrum(
       scan_data = scan_data, scan = info$scan[i], index = i + idx_start - 1,
       rt = info$rt[i], ms_level = info$ms_level[i], precursor_mz = precursor,
+      collision_energy = energy,
       parent_id = parent[i], polarity = info$polarity[i],
       centroided = centroided, compress = compress,
       tic = sum(scan_data$intensity),
@@ -805,14 +816,21 @@ mzml_polarity_param <- function(polarity){
 #'
 #' `activation` is required by the schema even where nothing is recorded about
 #' it, so the parent term is written rather than a specific method: no parser
-#' in the package reads a dissociation method or a collision energy.
+#' in the package reads a dissociation method.
 #' @noRd
-mzml_precursor_list <- function(ms_level, precursor_mz, parent_id){
+mzml_precursor_list <- function(ms_level, precursor_mz, parent_id,
+                                collision_energy = NA_real_){
   if (ms_level <= 1 || length(precursor_mz) != 1 || is.na(precursor_mz)){
     return("")
   }
   ref <- if (length(parent_id) == 1 && !is.na(parent_id)){
     sprintf(' spectrumRef="%s"', parent_id)
+  } else ""
+  energy <- if (length(collision_energy) == 1 && !is.na(collision_energy)){
+    sprintf(paste0('\n          <cvParam cvRef="MS" accession="MS:1000045" ',
+                   'name="collision energy" value="%s" unitCvRef="UO" ',
+                   'unitAccession="UO:0000266" unitName="electronvolt"/>'),
+            as.character(collision_energy))
   } else ""
   sprintf('
     <precursorList count="1">
@@ -823,10 +841,10 @@ mzml_precursor_list <- function(ms_level, precursor_mz, parent_id){
           </selectedIon>
         </selectedIonList>
         <activation>
-          <cvParam cvRef="MS" accession="MS:1000044" name="dissociation method"/>
+          <cvParam cvRef="MS" accession="MS:1000044" name="dissociation method"/>%s
         </activation>
       </precursor>
-    </precursorList>', ref, as.character(precursor_mz))
+    </precursorList>', ref, as.character(precursor_mz), energy)
 }
 
 #' Create mzML mass spectrum node
@@ -842,6 +860,7 @@ mzml_precursor_list <- function(ms_level, precursor_mz, parent_id){
 #' `'intensity'` column).
 #' @param ms_level The MS level of the scan (integer).
 #' @param precursor_mz The m/z selected for fragmentation, or `NA`.
+#' @param collision_energy The collision energy in eV, or `NA`.
 #' @param parent_id The `id` of the spectrum the precursor was selected from,
 #' or `NA`.
 #' @param polarity `"positive"`, `"negative"`, or `NA`.
@@ -855,6 +874,7 @@ mzml_precursor_list <- function(ms_level, precursor_mz, parent_id){
 
 create_mzml_ms_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
                                 precursor_mz = NA_real_,
+                                collision_energy = NA_real_,
                                 parent_id = NA_character_,
                                 polarity = NA_character_, centroided = TRUE,
                                 compress = TRUE, tic = NULL, bpc = NULL) {
@@ -909,7 +929,8 @@ create_mzml_ms_spectrum <- function(scan_data, scan, index, rt, ms_level = 1,
   </spectrum>',
           scan, index, length(scan_data$intensity), spectrum_type, ms_level, peak_mode,
           mzml_polarity_param(polarity), bpc, tic, mzml_scan_time_param(rt),
-          mzml_precursor_list(ms_level, precursor_mz, parent_id),
+          mzml_precursor_list(ms_level, precursor_mz, parent_id,
+                              collision_energy),
           nchar(mz_encoded$base64), mz_encoded$compression_param, mz_encoded$base64,
           nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64)
 }

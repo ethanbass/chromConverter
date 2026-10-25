@@ -1685,6 +1685,11 @@ test_that("read_agilent_d reads 'MassHunter' MS2 as 'ProteoWizard' does", {
                       format_out = "data.table", data_format = "long")
   ref <- RaMS::grabMSdata(paste0(path, ".mzML"), grab_what = c("MS2", "chroms"),
                           verbosity = 0)
+  f <- write_mzml(x, path_out = dir, what = c("MS1", "MS2"),
+                  show_progress = FALSE)
+  back <- read_mzml(f, what = "MS2", data_format = "long")$MS2
+  expect_equal(back$voltage[!duplicated(back$rt)],
+               attr(x$MS2, "scan_info")$collision_energy)
   x$MS2$scan <- match(x$MS2$rt, unique(x$MS2$rt))
   scan_of <- function(rt) match(round(rt, 5), round(unique(x$MS2$rt), 5))
 
