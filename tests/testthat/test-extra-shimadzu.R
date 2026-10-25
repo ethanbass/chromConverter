@@ -703,6 +703,22 @@ test_that("read_shimadzu_lcd reads 'Shimadzu' IT-TOF data", {
   expect_equal(nrow(tic[[1]]), 335)
 })
 
+test_that("read_shimadzu_lcd scales IT-TOF scans by their own multiplier", {
+  skip_if_missing_dependencies("olefile")
+  path <- extra_test_file("shimadzu_ittof_pxd025121.lcd")
+  expect_gt(sum(read_ittof_scans(path)$header[, "multiplier"] != 128), 0)
+
+  x <- sz_read_ms(path)
+  info <- attr(x, "scan_info")
+  tic <- lapply(0:1, function(k){
+    v <- read_ole_uint32(path, c("TTFL Raw Data", paste("TIC Data", k)))
+    matrix(v[-(1:192)], ncol = 4L, byrow = TRUE)[, 1]
+  })
+  sums <- tapply(x$intensity, factor(x$scan, levels = info$scan), sum)
+  sums[is.na(sums)] <- 0
+  expect_equal(as.numeric(sums), unsplit(tic, info$event))
+})
+
 test_that("Shimadzu times are converted correctly", {
   expect_equal(parse_shimadzu_tz("+05'30"), "Asia/Kolkata")
   expect_equal(parse_shimadzu_tz("UTC"), "UTC")

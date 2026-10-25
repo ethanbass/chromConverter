@@ -63,6 +63,14 @@ jobs:
             github::bovee/entab/entab-r
           needs: check
 
+      - name: Cache test fixtures downloaded from public archives
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/chromconverter-fixtures
+          key: fixtures-${{ runner.os }}-${{ hashFiles('tests/testthat/fixtures.csv') }}
+
       - uses: r-lib/actions/check-r-package@v2
+        env:
+          CHROMCONVERTER_FIXTURES: ${{ runner.temp }}/chromconverter-fixtures
         with:
           upload-snapshots: true

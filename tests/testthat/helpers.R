@@ -55,9 +55,46 @@ skip_if_missing_openchrom <- function() {
 
 extra_test_file <- function(name){
   skip_on_cran()
+  remote <- utils::read.csv(test_path("fixtures.csv"))
+  if (name %in% remote$name){
+    return(remote_test_file(remote[remote$name == name, ]))
+  }
   skip_if_not_installed("chromConverterExtraTests")
   path <- system.file(name, package = "chromConverterExtraTests")
   skip_if_not(file.exists(path), paste(name, "could not be found."))
+  path
+}
+
+# Fixtures in `fixtures.csv` are downloaded from their public archive rather
+# than shipped in chromConverterExtraTests, and cached in
+# `CHROMCONVERTER_FIXTURES` (CI restores this directory between runs). A failed
+# download skips locally but fails on CI, so coverage is not lost silently.
+remote_test_file <- function(entry){
+  dir <- Sys.getenv("CHROMCONVERTER_FIXTURES",
+                    tools::R_user_dir("chromConverter", "cache"))
+  path <- file.path(dir, entry$name)
+  if (file.exists(path) && unname(tools::md5sum(path)) == entry$md5){
+    return(path)
+  }
+  dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+  tmp <- tempfile(tmpdir = dir)
+  on.exit(unlink(tmp), add = TRUE)
+  ok <- tryCatch({
+    withr::with_options(list(timeout = max(600, getOption("timeout"))),
+                        utils::download.file(entry$url, tmp, mode = "wb",
+                                             quiet = TRUE))
+    TRUE
+  }, error = function(e) FALSE, warning = function(w) FALSE)
+  if (!ok){
+    msg <- paste(entry$name, "could not be downloaded from", entry$url)
+    if (nzchar(Sys.getenv("CI"))) stop(msg, call. = FALSE)
+    skip(msg)
+  }
+  if (unname(tools::md5sum(tmp)) != entry$md5){
+    stop(entry$name, " does not match its checksum in fixtures.csv.",
+         call. = FALSE)
+  }
+  file.rename(tmp, path)
   path
 }
 
