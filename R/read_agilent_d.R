@@ -16,19 +16,21 @@
 #' two doubles or two 32-bit floats, followed by the intensities as 32-bit
 #' floats or integers respectively. The points are spaced by the scan's
 #' `SamplingPeriod` rather than the stored step, which can be slightly smaller.
-#' Only spectra at MS level 1 can be read, and only from
-#' unit-resolution instruments such as single quadrupole GC-MS and LC-MS. The
-#' `TIC` and `BPC` come from the record of every scan, so they are also
-#' returned for runs whose spectra cannot be read, such as triple quadrupole
-#' MRM. For high-resolution spectra, try `parser = "rainbow"` with `centroid`
-#' or `hrms`.
+#' Spectra can be read only from unit-resolution instruments, such as single
+#' quadrupole GC-MS and LC-MS, and triple quadrupole LC-MS. `MS1` holds the
+#' scans at MS level 1 and `MS2` the product ion and MRM scans, each with the
+#' m/z it selected in the first quadrupole as `precursor_mz`. Neutral loss and precursor ion scans
+#' are skipped with a warning. The `TIC` and `BPC` come from the record of
+#' every scan, so they are also returned for runs whose spectra cannot be read.
+#' For high-resolution spectra, try `parser = "rainbow"` with `centroid` or
+#' `hrms`.
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Agilent' `.D` directory.
 #' @param what Whether to extract chromatograms (`chroms`), DAD data (`dad`),
 #' peak tables (`peak_table`) and/or instrument traces (`instrument`), such as
 #' pump pressure, flow, solvent composition and temperature, read from
-#' `LCDIAG.REG`, and/or mass spectra (`MS1`) with the total ion chromatogram
+#' `LCDIAG.REG`, and/or mass spectra (`MS1`, `MS2`) with the total ion chromatogram
 #' (`TIC`) and base peak chromatogram (`BPC`). Accepts multiple arguments, and
 #' defaults to all of these but `instrument`. Types the directory does not
 #' contain are left out, and it is an error if it contains none of them. With
@@ -48,8 +50,9 @@
 #' name for the signal as `signal_descriptor`. They are read from `Result.xml`
 #' where the directory has one, since unlike `Report.TXT` it records where each
 #' peak starts and ends. Mass spectra and the `BPC` are always in long format,
-#' with `rt`, `mz` and `intensity` columns, and are returned as a `data.table`
-#' when `format_out` is `matrix`.
+#' with `rt`, `mz` and `intensity` columns, and a `precursor_mz` column before
+#' `mz` for `MS2`. They are returned as a `data.table` when `format_out` is
+#' `matrix`.
 #' Metadata are attached as [attributes] if `read_metadata` is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by that
 #' element.
 #' @examples
@@ -64,14 +67,14 @@
 #' @export
 
 read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table",
-                                          "MS1", "TIC", "BPC"),
+                                          "MS1", "MS2", "TIC", "BPC"),
                            format_out = c("matrix", "data.frame", "data.table"),
                            data_format = c("wide", "long"),
                            read_metadata = TRUE,
                            metadata_format = c("chromconverter", "raw"),
                            collapse = TRUE){
   default_what <- missing(what)
-  ms_types <- c("MS1", "TIC", "BPC")
+  ms_types <- c("MS1", "MS2", "TIC", "BPC")
   what <- ifelse(toupper(what) %in% ms_types, toupper(what), tolower(what))
   what <- match.arg(what, c("dad", "chroms", "peak_table", "instrument",
                             ms_types), several.ok = TRUE)
@@ -88,7 +91,8 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table",
     c(ms_files[2], fs::path(path, "AcqData", "MSProfile.bin"))))
   files[intersect(what, c("TIC", "BPC"))] <- list(
     if (has_scans) ms_files else character())
-  files[intersect(what, "MS1")] <- list(if (has_spectra) ms_files else character())
+  files[intersect(what, c("MS1", "MS2"))] <- list(
+    if (has_spectra) ms_files else character())
   files <- files[what]
   files_found <- vapply(files, length, FUN.VALUE = numeric(1)) > 0
   if (!any(files_found)){
@@ -148,8 +152,10 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table",
   ms <- list()
   ms_what <- intersect(what, ms_types)
   failed <- character()
-  for (types in Filter(length, list(setdiff(ms_what, "MS1"),
-                                    intersect(ms_what, "MS1")))){
+  absent <- character()
+  for (types in Filter(length, list(setdiff(ms_what, c("MS1", "MS2")),
+                                    intersect(ms_what, "MS1"),
+                                    intersect(ms_what, "MS2")))){
     ms <- c(ms, tryCatch(
       read_agilent_ms(ms_files[1], ms_files[2], ms_files[3], what = types,
                       format_out = format_out, data_format = data_format,
@@ -157,6 +163,12 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table",
                       metadata_format = metadata_format, source_file = path),
       error = function(e){
         msg <- conditionMessage(e)
+        if (inherits(e, "agilent_ms_absent")){
+          what <<- setdiff(what, types)
+          ms_what <<- setdiff(ms_what, types)
+          absent <<- c(absent, msg)
+          return(NULL)
+        }
         if (inherits(e, "agilent_ms_format_error")){
           msg <- paste(msg, "High-resolution spectra may be",
                        "readable with `parser = \"rainbow\"`, setting `centroid`",
@@ -169,7 +181,7 @@ read_agilent_d <- function(path, what = c("dad", "chroms", "peak_table",
   }
   what <- setdiff(what, setdiff(ms_what, names(ms)))
   if (length(what) == 0){
-    stop(failed[1], call. = FALSE)
+    stop(c(failed, absent)[1], call. = FALSE)
   }
   if (length(failed) > 0){
     warning("Left out ", paste(sQuote(setdiff(ms_what, names(ms))), collapse = ", "),

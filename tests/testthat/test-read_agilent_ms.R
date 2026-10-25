@@ -1,6 +1,8 @@
 write_msscan_fixture <- function(dir, spectra, rt, ms_level = rep(1L, length(spectra)),
                                  format_id = 1L, sizes = c(4, 4), profile = NA,
-                                 stored_step = NULL){
+                                 stored_step = NULL, scan_type = 1L, precursor = 0){
+  scan_type <- rep_len(scan_type, length(spectra))
+  precursor <- rep_len(precursor, length(spectra))
   profile <- rep_len(profile, length(spectra))
   format_id <- ifelse(is.na(profile), format_id, 2L)
   xsd <- file.path(dir, "MSScan.xsd")
@@ -10,10 +12,12 @@ write_msscan_fixture <- function(dir, spectra, rt, ms_level = rep(1L, length(spe
     '<xs:element name="ScanID" type="xs:int"/>',
     '<xs:element name="ScanTime" type="xs:double"/>',
     '<xs:element name="MSLevel" type="xs:int"/>',
+    '<xs:element name="ScanType" type="xs:int"/>',
     '<xs:element name="TIC" type="xs:double"/>',
     '<!-- <xs:element name="AbundanceLimit" type="xs:double"/> -->',
     '<xs:element name="BasePeakMZ" type="xs:double"/>',
     '<xs:element name="BasePeakValue" type="xs:double"/>',
+    '<xs:element name="MzOfInterest" type="xs:double"/>',
     '<xs:element name="SamplingPeriod" type="xs:double"/>',
     '<xs:element name="SpectrumParamValues" type="SpectrumParamsType"/>',
     '</xs:sequence></xs:complexType>',
@@ -53,9 +57,10 @@ write_msscan_fixture <- function(dir, spectra, rt, ms_level = rep(1L, length(spe
     }
     writeBin(i, scan, size = 4, endian = "little")
     writeBin(rt[i], scan, size = 8, endian = "little")
-    writeBin(ms_level[i], scan, size = 4, endian = "little")
+    writeBin(c(ms_level[i], scan_type[i]), scan, size = 4, endian = "little")
     writeBin(c(sum(s$intensity), c(s$mz[which.max(s$intensity)], 0)[1],
-               max(s$intensity, 0), step), scan, size = 8, endian = "little")
+               max(s$intensity, 0), precursor[i], step), scan, size = 8,
+             endian = "little")
     writeBin(as.integer(c(format_id[i], offset, 0, n_bytes, length(s$mz))), scan,
              size = 4, endian = "little")
   }
@@ -151,15 +156,70 @@ test_that("read_msscan_layout follows type names with a namespace prefix", {
   expect_equal(x$MS1$intensity, c(150, 2214, 922, 486784, 4245))
 })
 
+test_that("read_agilent_msdata reads product ion and MRM scans as MS2", {
+  read <- function(fx){
+    read_agilent_msdata(fx$scan, fx$peak, fx$xsd, what = c("MS1", "MS2"),
+                        format_out = "data.frame", data_format = "long")
+  }
+  dir <- withr::local_tempdir()
+  fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2), ms_level = c(1L, 2L),
+                             scan_type = c(1L, 512L), precursor = c(0, 609.3),
+                             format_id = 3L, sizes = c(4, -4))
+  x <- read(fx)
+  expect_equal(x$MS1$intensity, c(150, 2214, 922))
+  expect_named(x$MS2, c("rt", "precursor_mz", "mz", "intensity"))
+  expect_equal(x$MS2$precursor_mz, c(609.3, 609.3))
+  expect_equal(x$MS2$intensity, c(486784, 4245))
+
+  # 8-byte points of spectrum format 1 hold integer intensities in MRM scans
+  dir <- withr::local_tempdir()
+  fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2), ms_level = c(2L, 2L),
+                             scan_type = 256L, precursor = c(309, 283),
+                             sizes = c(4, -4))
+  x <- read(fx)
+  expect_named(x, "MS2")
+  expect_equal(x$MS2$precursor_mz, rep(c(309, 283), c(3, 2)))
+  expect_equal(x$MS2$intensity, c(150, 2214, 922, 486784, 4245))
+
+  dir <- withr::local_tempdir()
+  fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2), ms_level = c(2L, 2L),
+                             scan_type = 512L, precursor = 609.3)
+  expect_equal(read(fx)$MS2$intensity, c(150, 2214, 922, 486784, 4245))
+})
+
+test_that("read_agilent_d keeps MS1 where the MS2 spectra cannot be read", {
+  local_reproducible_output()
+  path <- file.path(withr::local_tempdir(), "run.d")
+  dir.create(file.path(path, "AcqData"), recursive = TRUE)
+  write_msscan_fixture(file.path(path, "AcqData"), spectra, rt = c(1, 2),
+                       ms_level = c(1L, 2L), scan_type = c(1L, 512L),
+                       format_id = c(1L, 5L))
+  expect_warning(x <- read_agilent_d(path, format_out = "data.frame"),
+                 "Left out 'MS2'")
+  expect_named(x, c("MS1", "TIC", "BPC"))
+  expect_equal(x$MS1$intensity, c(150, 2214, 922))
+  expect_error(read_agilent_d(path, what = "MS2"), "cannot be read yet")
+
+  path <- file.path(withr::local_tempdir(), "run.d")
+  dir.create(file.path(path, "AcqData"), recursive = TRUE)
+  write_msscan_fixture(file.path(path, "AcqData"), spectra, rt = c(1, 2))
+  expect_no_warning(x <- read_agilent_d(path, format_out = "data.frame"))
+  expect_named(x, c("MS1", "TIC", "BPC"))
+  expect_error(read_agilent_d(path, what = "MS2"), "no MS2 scans")
+})
+
 test_that("read_agilent_msdata refuses what it cannot read", {
   read <- function(fx, what = "MS1"){
     read_agilent_msdata(fx$scan, fx$peak, fx$xsd, what = what,
                         format_out = "data.frame", data_format = "long")
   }
   dir <- withr::local_tempdir()
-  fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2), ms_level = c(1L, 2L))
-  expect_warning(x <- read(fx), "1 scans above MS level 1")
+  fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2), ms_level = c(1L, 2L),
+                             scan_type = c(1L, 2048L))
+  expect_warning(x <- read(fx, c("MS1", "MS2")), "Skipped 1 scans")
+  expect_named(x, "MS1")
   expect_equal(unique(x$MS1$rt), 1)
+  expect_error(suppressWarnings(read(fx, "MS2")), "no MS2 scans")
 
   dir <- withr::local_tempdir()
   fx <- write_msscan_fixture(dir, spectra, rt = c(1, 2), format_id = 2L)

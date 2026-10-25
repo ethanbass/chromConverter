@@ -6,7 +6,7 @@
 \usage{
 read_agilent_d(
   path,
-  what = c("dad", "chroms", "peak_table", "MS1", "TIC", "BPC"),
+  what = c("dad", "chroms", "peak_table", "MS1", "MS2", "TIC", "BPC"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -20,7 +20,7 @@ read_agilent_d(
 \item{what}{Whether to extract chromatograms (\code{chroms}), DAD data (\code{dad}),
 peak tables (\code{peak_table}) and/or instrument traces (\code{instrument}), such as
 pump pressure, flow, solvent composition and temperature, read from
-\code{LCDIAG.REG}, and/or mass spectra (\code{MS1}) with the total ion chromatogram
+\code{LCDIAG.REG}, and/or mass spectra (\code{MS1}, \code{MS2}) with the total ion chromatogram
 (\code{TIC}) and base peak chromatogram (\code{BPC}). Accepts multiple arguments, and
 defaults to all of these but \code{instrument}. Types the directory does not
 contain are left out, and it is an error if it contains none of them. With
@@ -55,8 +55,9 @@ Peak tables are returned in the \code{chromatographr} layout described in
 name for the signal as \code{signal_descriptor}. They are read from \code{Result.xml}
 where the directory has one, since unlike \code{Report.TXT} it records where each
 peak starts and ends. Mass spectra and the \code{BPC} are always in long format,
-with \code{rt}, \code{mz} and \code{intensity} columns, and are returned as a \code{data.table}
-when \code{format_out} is \code{matrix}.
+with \code{rt}, \code{mz} and \code{intensity} columns, and a \code{precursor_mz} column before
+\code{mz} for \code{MS2}. They are returned as a \code{data.table} when \code{format_out} is
+\code{matrix}.
 Metadata are attached as \link{attributes} if \code{read_metadata} is \code{TRUE}. With \code{collapse = TRUE}, a list of one element is replaced by that
 element.
 }
@@ -78,12 +79,14 @@ directory. Its \code{MSScan.bin} and \code{MSScan.xsd} describe every scan, as i
 two doubles or two 32-bit floats, followed by the intensities as 32-bit
 floats or integers respectively. The points are spaced by the scan's
 \code{SamplingPeriod} rather than the stored step, which can be slightly smaller.
-Only spectra at MS level 1 can be read, and only from
-unit-resolution instruments such as single quadrupole GC-MS and LC-MS. The
-\code{TIC} and \code{BPC} come from the record of every scan, so they are also
-returned for runs whose spectra cannot be read, such as triple quadrupole
-MRM. For high-resolution spectra, try \code{parser = "rainbow"} with \code{centroid}
-or \code{hrms}.
+Spectra can be read only from unit-resolution instruments, such as single
+quadrupole GC-MS and LC-MS, and triple quadrupole LC-MS. \code{MS1} holds the
+scans at MS level 1 and \code{MS2} the product ion and MRM scans, each with the
+m/z it selected in the first quadrupole as \code{precursor_mz}. Neutral loss and precursor ion scans
+are skipped with a warning. The \code{TIC} and \code{BPC} come from the record of
+every scan, so they are also returned for runs whose spectra cannot be read.
+For high-resolution spectra, try \code{parser = "rainbow"} with \code{centroid} or
+\code{hrms}.
 }
 \examples{
 path <- system.file("extdata", "benzoxazinoid_standards", "BENZOS_250PPM.D",

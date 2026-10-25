@@ -1648,43 +1648,58 @@ test_that("read_agilent_d reads integer intensities from 'MassHunter' SIM scans"
   expect_true(all(abs(x$MS1$mz - 609.3) < 0.01))
 })
 
-test_that("read_agilent_d reads 'MassHunter' profile spectra", {
+test_that("read_agilent_d reads 'MassHunter' product ion profile spectra", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")
 
-  src <- system.file("masshunter.d", "AcqData", package = "chromConverterExtraTests")
+  src <- system.file("masshunter.d", package = "chromConverterExtraTests")
   skip_if_not(dir.exists(src) && nzchar(src))
 
-  # the run's 49 scans are product-ion scans
-  expect_error(read_agilent_d(dirname(src), what = "MS1"),
-               "only scans above MS level 1")
-
-  path <- file.path(withr::local_tempdir(), "profile.d")
-  acq <- file.path(path, "AcqData")
-  dir.create(acq, recursive = TRUE)
-  file.copy(list.files(src, full.names = TRUE), acq)
-  layout <- read_msscan_layout(file.path(acq, "MSScan.xsd"))
-  level <- layout[layout$name == "MSLevel", ]
-  con <- file(file.path(acq, "MSScan.bin"), "r+b")
-  seek(con, 88)
-  start <- readBin(con, "integer", size = 4, endian = "little")
-  for (i in seq_len(49) - 1){
-    seek(con, start + i * sum(layout$size) + level$offset, rw = "write")
-    writeBin(1L, con, size = level$size, endian = "little")
-  }
-  close(con)
-
-  x <- read_agilent_d(path, what = c("MS1", "TIC", "BPC"),
+  expect_error(read_agilent_d(src, what = "MS1"), "no MS1 scans")
+  x <- read_agilent_d(src, what = c("MS1", "MS2", "TIC", "BPC"),
                       format_out = "data.frame", data_format = "long")
-  expect_equal(nrow(x$MS1), 49 * 5121)
-  expect_equal(range(x$MS1$mz), c(100, 612))
-  expect_equal(rowsum(x$MS1$intensity, x$MS1$rt, reorder = FALSE)[, 1],
+  expect_named(x, c("MS2", "TIC", "BPC"))
+  expect_equal(nrow(x$MS2), 49 * 5121)
+  expect_equal(unique(x$MS2$precursor_mz), 611.3, tolerance = 1e-6)
+  expect_equal(range(x$MS2$mz), c(100, 612))
+  expect_equal(rowsum(x$MS2$intensity, x$MS2$rt, reorder = FALSE)[, 1],
                x$TIC$intensity, tolerance = 1e-5, ignore_attr = TRUE)
-  top <- vapply(split(seq_len(nrow(x$MS1)), x$MS1$rt), function(i){
-    i[which.max(x$MS1$intensity[i])]
+  top <- vapply(split(seq_len(nrow(x$MS2)), x$MS2$rt), function(i){
+    i[which.max(x$MS2$intensity[i])]
   }, numeric(1))
-  expect_equal(x$MS1$intensity[top], x$BPC$intensity, tolerance = 1e-6)
-  expect_equal(x$MS1$mz[top], x$BPC$mz, tolerance = 1e-6)
+  expect_equal(x$MS2$intensity[top], x$BPC$intensity, tolerance = 1e-6)
+  expect_equal(x$MS2$mz[top], x$BPC$mz, tolerance = 1e-6)
+})
+
+test_that("read_agilent_d reads 'MassHunter' MS2 as 'ProteoWizard' does", {
+  skip_if_not_installed("RaMS")
+  archive <- extra_test_file("pwiz_agilent_test_data.tar.bz2")
+  name <- "Reader_Agilent_Test.data/Thyrxox 5 TS Diff Scan B"
+  dir <- withr::local_tempdir()
+  utils::untar(archive, files = paste0(name, c(".d", ".mzML")), exdir = dir)
+  path <- file.path(dir, name)
+
+  # MS1 profile scans, product ion profile scans, and MRM scans with integer
+  # intensities in spectrum format 1
+  x <- read_agilent_d(paste0(path, ".d"), what = c("MS1", "MS2"),
+                      format_out = "data.table", data_format = "long")
+  ref <- RaMS::grabMSdata(paste0(path, ".mzML"), grab_what = c("MS2", "chroms"),
+                          verbosity = 0)
+  x$MS2$scan <- match(x$MS2$rt, unique(x$MS2$rt))
+  scan_of <- function(rt) match(round(rt, 5), round(unique(x$MS2$rt), 5))
+
+  pi <- ref$MS2
+  pi$scan <- scan_of(pi$rt)
+  ours <- x$MS2[pi, on = c("scan", mz = "fragmz"), roll = "nearest"]
+  expect_equal(ours$intensity, ours$int)
+  expect_equal(ours$precursor_mz, ours$premz, tolerance = 1e-6)
+
+  srm <- ref$chroms[grepl("^SRM", ref$chroms$chrom_type), ]
+  srm$scan <- scan_of(srm$rt)
+  ours <- x$MS2[srm, on = c("scan", mz = "product_mz"), roll = "nearest"]
+  expect_false(anyNA(srm$scan))
+  expect_equal(ours$intensity, ours$int)
+  expect_equal(ours$precursor_mz, ours$target_mz, tolerance = 1e-6)
 })
 
 test_that("call_rainbow reads 'MassHunter' centroids with `centroid = TRUE`", {
