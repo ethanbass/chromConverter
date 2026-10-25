@@ -2,6 +2,8 @@
 
 ## chromConverter 0.11.2
 
+CRAN release: 2026-10-25
+
 ### Breaking changes
 
 - `read_mzml(parser = "mzR")` now returns a list of streams like the
