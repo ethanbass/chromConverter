@@ -641,6 +641,24 @@ test_that("Shimadzu QGD parser works", {
 })
 
 
+test_that("read_shimadzu_qgd reads MRM scans", {
+  skip_if_missing_dependencies("olefile")
+  path <- extra_test_file("shimadzu_qgd_mrm.qgd")
+  x <- read_shimadzu_qgd(path, format_out = "data.table")
+  expect_named(x, c("MS2", "TIC"))
+  expect_named(x$MS2, c("scan", "rt", "precursor_mz", "mz", "intensity"))
+  expect_equal(nrow(x$MS2), 2 * 84420)
+  expect_equal(x$MS2$precursor_mz[1:4], c(160.1, 175.1, 160.1, 89.1))
+  expect_equal(x$MS2$mz[1:4], c(58, 58, 59, 59))
+  expect_equal(x$MS2$intensity[1:4], c(496, 494, 507, 13380))
+  expect_equal(as.numeric(tapply(x$MS2$intensity, x$MS2$scan, sum)),
+               x$TIC$intensity, ignore_attr = TRUE)
+  # TMS derivatives fragment to m/z 73 and 147
+  expect_equal(names(sort(table(x$MS2$mz), decreasing = TRUE))[1:2],
+               c("73", "147.1"))
+  expect_length(read_shimadzu_qgd(path, what = "MS1"), 0)
+})
+
 test_that("Shimadzu times are converted correctly", {
   expect_equal(parse_shimadzu_tz("+05'30"), "Asia/Kolkata")
   expect_equal(parse_shimadzu_tz("UTC"), "UTC")
@@ -1646,6 +1664,28 @@ test_that("read_qgd_ms_scan decodes intensities wider than 4 bytes", {
   expect_equal(x[, "intensity"], c(1, 2^33 + 5))
   expect_equal(x[, "mz"], c(50, 51))
   expect_equal(attr(x, "unvalidated_width"), 5)
+})
+
+test_that("read_qgd_ms_scan decodes MRM transitions", {
+  skip_on_cran()
+  q1 <- c(160.1, 219)
+  q3 <- c(73, 147.1)
+  int <- c(70000, 12)
+  header <- c(writeBin(c(7L, 60000L, 0L, 0L, 0L), raw(), size = 4,
+                       endian = "little"),
+              writeBin(c(0L, 0L, 103L, 2L), raw(), size = 2,
+                       endian = "little"),
+              writeBin(0L, raw(), size = 4, endian = "little"))
+  records <- unlist(lapply(1:2, function(i){
+    c(writeBin(as.integer(round(c(q1[i], q3[i]) * 20)), raw(), size = 2,
+               endian = "little"),
+      as.raw((int[i] %/% 256^(0:2)) %% 256))
+  }))
+  x <- read_qgd_block(c(header, records))
+  expect_equal(attr(x, "ms_level"), 2L)
+  expect_equal(x[, "precursor_mz"], q1)
+  expect_equal(x[, "mz"], q3)
+  expect_equal(x[, "intensity"], int)
 })
 
 test_that("Shimadzu GCD and LCD peak tables carry the file's metadata", {

@@ -6,7 +6,7 @@
 \usage{
 read_shimadzu_qgd(
   path,
-  what = c("MS1", "TIC"),
+  what = c("MS1", "MS2", "TIC"),
   format_out = c("matrix", "data.frame", "data.table"),
   data_format = c("wide", "long"),
   read_metadata = TRUE,
@@ -17,8 +17,9 @@ read_shimadzu_qgd(
 \arguments{
 \item{path}{Path to 'Shimadzu' \code{.qgd} file.}
 
-\item{what}{What stream to get: current options are \code{MS1} and/or \code{TIC}. If a
-stream is not specified, the function will return both streams.}
+\item{what}{What stream to get: current options are full scans (\code{MS1}), MRM
+scans (\code{MS2}) and the \code{TIC}. If a stream is not specified, the function
+returns all three.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -34,15 +35,17 @@ stream is not specified, the function will return both streams.}
 element. Defaults to \code{TRUE}.}
 }
 \value{
-A list holding the \code{MS1} spectra and the \code{TIC}, or the one requested
-where \code{collapse} is \code{TRUE}. The TIC is returned in the format specified by
+A list holding whichever of the requested spectra the file has
+(\code{MS1}, \code{MS2}) and the \code{TIC}, or the one requested where \code{collapse} is
+\code{TRUE}. The TIC is returned in the format specified by
 \code{data_format} and \code{format_out}. If \code{data_format} is \code{wide}, it is returned
 with retention times as rows and a single column for the intensity. If
 \code{long} format is requested, two columns are returned: one for the retention
 time and one for the intensity. The \code{format_out} argument determines
 whether it is returned as a \code{matrix}, \code{data.frame}, or \code{data.table}. The
 spectra are always long, with columns
-\code{scan}, \code{rt}, \code{mz} and \code{intensity}, and a \code{matrix} resolves to a
+\code{scan}, \code{rt}, \code{mz} and \code{intensity}, plus \code{precursor_mz} before \code{mz} in the
+MRM spectra, and a \code{matrix} resolves to a
 \code{data.table}. Metadata are attached as \link{attributes} if \code{read_metadata} is
 \code{TRUE}.
 }
@@ -58,20 +61,31 @@ array of 4-byte integers giving the time of each scan in milliseconds, and
 the TIC stream an array of 8-byte integers, one per retention time.
 
 The MS Raw Data stream holds one block per scan, located through the
-\verb{Spectrum Index} stream. Each block begins with a 32-byte header:
+\verb{Spectrum Index} stream. The index is an array of byte offsets, held as
+4-byte integers in some files and as 8-byte integers after a 2-byte header in
+others, such as the MRM files seen so far. Each block begins with a 32-byte
+header:
 \itemize{
 \item scan number (4-byte integer)
 \item retention time in milliseconds (4-byte integer)
 \item unknown (12 bytes)
 \item number of bytes in each intensity value (2-byte integer)
 \item number of m/z values in the block (2-byte integer)
-\item unknown (8 bytes)
+\item MRM event number (2-byte integer)
+\item number of MRM transitions in the block (2-byte integer)
+\item unknown (4 bytes)
 }
 
-After the header, each m/z value is followed by its intensity. The m/z
-values are 2-byte integers holding m/z times 20. Intensities are unsigned
-integers of the width given in the header, except that the top bit of a
-4-byte intensity is dropped.
+In a full scan, each m/z value is followed by its intensity. The m/z values
+are 2-byte integers holding m/z times 20. Intensities are unsigned integers
+of the width given in the header, except that the top bit of a 4-byte
+intensity is dropped.
+
+An MRM scan leaves the width and the number of m/z values at zero and
+instead holds one record per transition: the precursor and product m/z, each
+stored like the m/z of a full scan, followed by an unsigned intensity. The
+header doesn't give the intensity width, so the reader works it out from
+the size of the block.
 }
 \examples{
 \dontrun{

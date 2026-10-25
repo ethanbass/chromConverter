@@ -10,33 +10,47 @@
 #' the TIC stream an array of 8-byte integers, one per retention time.
 #'
 #' The MS Raw Data stream holds one block per scan, located through the
-#' `Spectrum Index` stream. Each block begins with a 32-byte header:
+#' `Spectrum Index` stream. The index is an array of byte offsets, held as
+#' 4-byte integers in some files and as 8-byte integers after a 2-byte header in
+#' others, such as the MRM files seen so far. Each block begins with a 32-byte
+#' header:
 #' * scan number (4-byte integer)
 #' * retention time in milliseconds (4-byte integer)
 #' * unknown (12 bytes)
 #' * number of bytes in each intensity value (2-byte integer)
 #' * number of m/z values in the block (2-byte integer)
-#' * unknown (8 bytes)
+#' * MRM event number (2-byte integer)
+#' * number of MRM transitions in the block (2-byte integer)
+#' * unknown (4 bytes)
 #'
-#' After the header, each m/z value is followed by its intensity. The m/z
-#' values are 2-byte integers holding m/z times 20. Intensities are unsigned
-#' integers of the width given in the header, except that the top bit of a
-#' 4-byte intensity is dropped.
+#' In a full scan, each m/z value is followed by its intensity. The m/z values
+#' are 2-byte integers holding m/z times 20. Intensities are unsigned integers
+#' of the width given in the header, except that the top bit of a 4-byte
+#' intensity is dropped.
+#'
+#' An MRM scan leaves the width and the number of m/z values at zero and
+#' instead holds one record per transition: the precursor and product m/z, each
+#' stored like the m/z of a full scan, followed by an unsigned intensity. The
+#' header doesn't give the intensity width, so the reader works it out from
+#' the size of the block.
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Shimadzu' `.qgd` file.
-#' @param what What stream to get: current options are `MS1` and/or `TIC`. If a
-#' stream is not specified, the function will return both streams.
+#' @param what What stream to get: current options are full scans (`MS1`), MRM
+#' scans (`MS2`) and the `TIC`. If a stream is not specified, the function
+#' returns all three.
 #' @inherit generic_return_2D return
-#' @return A list holding the `MS1` spectra and the `TIC`, or the one requested
-#' where `collapse` is `TRUE`. The TIC is returned in the format specified by
+#' @return A list holding whichever of the requested spectra the file has
+#' (`MS1`, `MS2`) and the `TIC`, or the one requested where `collapse` is
+#' `TRUE`. The TIC is returned in the format specified by
 #' `data_format` and `format_out`. If `data_format` is `wide`, it is returned
 #' with retention times as rows and a single column for the intensity. If
 #' `long` format is requested, two columns are returned: one for the retention
 #' time and one for the intensity. The `format_out` argument determines
 #' whether it is returned as a `matrix`, `data.frame`, or `data.table`. The
 #' spectra are always long, with columns
-#' `scan`, `rt`, `mz` and `intensity`, and a `matrix` resolves to a
+#' `scan`, `rt`, `mz` and `intensity`, plus `precursor_mz` before `mz` in the
+#' MRM spectra, and a `matrix` resolves to a
 #' `data.table`. Metadata are attached as [attributes] if `read_metadata` is
 #' `TRUE`.
 #' @examples \dontrun{
@@ -46,7 +60,7 @@
 #' @family 'Shimadzu' parsers
 #' @export
 
-read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
+read_shimadzu_qgd <- function(path, what = c("MS1", "MS2", "TIC"),
                               format_out = c("matrix", "data.frame",
                                              "data.table"),
                               data_format = c("wide", "long"),
@@ -55,18 +69,20 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
                               collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
-  what <- match.arg(toupper(what), c("MS1", "TIC"), several.ok = TRUE)
+  what <- match.arg(toupper(what), c("MS1", "MS2", "TIC"), several.ok = TRUE)
   metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
   check_py_module("olefile")
 
+  dat <- list()
+  if (any(c("MS1", "MS2") %in% what)){
+    ms <- read_qgd_ms_stream(path, format_out = check_format_out_table(format_out))
+    dat <- ms[intersect(c("MS1", "MS2"), what)]
+    dat <- dat[lengths(dat) > 0]
+  }
   if ("TIC" %in% what){
-    TIC <- read_qgd_tic(path, format_out = format_out,
-                        data_format = data_format)
+    dat$TIC <- read_qgd_tic(path, format_out = format_out,
+                            data_format = data_format)
   }
-  if ("MS1" %in% what){
-    MS1 <- read_qgd_ms_stream(path, format_out = check_format_out_table(format_out))
-  }
-  dat <- mget(what)
   if (read_metadata){
     meta <- try(read_qgd_fp(path))
     meta$time.unit <- "Minutes"
@@ -74,10 +90,9 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "TIC"),
     dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = metadata_format,
                       source_file = path, source_file_format = "shimadzu_qgd",
-                      data_format = ifelse(h == "MS1", "long", data_format),
-                      format_out = ifelse(h == "MS1",
-                                          check_format_out_table(format_out),
-                                          format_out))
+                      data_format = ifelse(h == "TIC", data_format, "long"),
+                      format_out = ifelse(h == "TIC", format_out,
+                                          check_format_out_table(format_out)))
     })
   }
   if (collapse){
@@ -123,15 +138,23 @@ read_qgd_ms_scan <- function(f, offsets, scan_no){
   scan <- header[1]
   rt <- header[2]
 
-  # number of bytes in intensity value & number of values in block
-  header <- readBin(f, "integer", size = 2, endian = "little", n = 2)
+  # number of bytes in intensity value & number of values in block, then the
+  # MRM event and number of transitions
+  header <- readBin(f, "integer", size = 2, endian = "little", n = 4)
   n_bytes <- header[1]
   nval <- header[2]
+  n_transitions <- header[4]
 
-  readBin(f, "integer", size = 4, endian = "little", n = 2) #skip
+  readBin(f, "integer", size = 4, endian = "little", n = 1) #skip
+
+  actual_block_size <- offsets[scan_no+1] - offsets[scan_no]
+  if (n_bytes == 0 && nval == 0 && n_transitions > 0){
+    return(read_qgd_mrm_scan(f, scan = scan, rt = rt, n = n_transitions,
+                             data_size = actual_block_size - 32,
+                             scan_no = scan_no))
+  }
 
   expected_block_size <- 32 + nval * (2 + n_bytes)
-  actual_block_size <- offsets[scan_no+1] - offsets[scan_no]
   if (expected_block_size != actual_block_size){
     data_size <- actual_block_size - 32
     n_bytes <- match(data_size, nval * (2 + 1:5))
@@ -154,34 +177,73 @@ read_qgd_ms_scan <- function(f, offsets, scan_no){
   mz <- readBin(as.vector(block[1:2, , drop = FALSE]), what = "integer",
                 size = 2, endian = "little", n = nval)
 
-  if (n_bytes > 4){
-    intensity <- colSums(matrix(as.numeric(block[3:record_size, , drop = FALSE]),
-                                nrow = n_bytes) * 256^(0:(n_bytes - 1)))
-    out <- matrix(c(rep.int(scan, nval), rep.int(rt/60000, nval), mz/20,
-                    intensity), nrow = nval, ncol = 4,
-                  dimnames = list(NULL, c("scan", "rt", "mz", "intensity")))
-    attr(out, "unvalidated_width") <- n_bytes
-    return(out)
-  }
+  intensity <- decode_qgd_intensity(block[3:record_size, , drop = FALSE])
 
+  out <- matrix(c(rep.int(scan, nval), rep.int(rt/60000, nval), mz/20,
+                  intensity), nrow = nval, ncol = 4,
+                dimnames = list(NULL, c("scan", "rt", "mz", "intensity")))
+  if (n_bytes > 4){
+    attr(out, "unvalidated_width") <- n_bytes
+  }
+  attr(out, "ms_level") <- 1L
+  out
+}
+
+#' Read 'Shimadzu' QGD MRM scan
+#'
+#' Reads the `n` transitions of an MRM scan, each a precursor m/z and a product
+#' m/z (2-byte integers holding m/z times 20) followed by an intensity. The
+#' intensity width is not in the header, so it is worked out from the size of
+#' the block.
+#' @noRd
+read_qgd_mrm_scan <- function(f, scan, rt, n, data_size, scan_no){
+  n_bytes <- data_size/n - 4
+  if (n_bytes %% 1 != 0 || !n_bytes %in% 1:8){
+    stop(sprintf("Cannot resolve MRM record size at scan `%d`.", scan_no))
+  }
+  record_size <- 4L + n_bytes
+  block <- matrix(readBin(f, what = "raw", n = n * record_size),
+                  nrow = record_size, ncol = n)
+  mz <- readBin(as.vector(block[1:4, , drop = FALSE]), what = "integer",
+                size = 2, endian = "little", n = 2 * n, signed = FALSE)
+  dim(mz) <- c(2L, n)
+  intensity <- decode_qgd_intensity(block[5:record_size, , drop = FALSE])
+  out <- matrix(c(rep.int(scan, n), rep.int(rt/60000, n), mz[1, ]/20,
+                  mz[2, ]/20, intensity), nrow = n, ncol = 5,
+                dimnames = list(NULL, c("scan", "rt", "precursor_mz", "mz",
+                                        "intensity")))
+  if (n_bytes > 4){
+    attr(out, "unvalidated_width") <- n_bytes
+  }
+  attr(out, "ms_level") <- 2L
+  out
+}
+
+#' Decode 'Shimadzu' QGD intensities
+#'
+#' @param x Raw matrix with one column per intensity, least significant byte
+#' first.
+#' @return Unsigned intensities. The top bit of a 4-byte intensity is dropped.
+#' @noRd
+decode_qgd_intensity <- function(x){
+  n_bytes <- nrow(x)
+  if (n_bytes > 4){
+    return(colSums(matrix(as.numeric(x), nrow = n_bytes) *
+                     256^(0:(n_bytes - 1))))
+  }
   # we have to add a byte of 00s for odd numbers of bytes because R can't deal
   # with integers that have odd numbers of bytes
   nb <- ifelse(n_bytes %% 2 == 1, n_bytes + 1L, n_bytes)
   signed <- ifelse(n_bytes == 2, FALSE, TRUE)
-  intensity <- block[3:record_size, , drop = FALSE]
   if (nb > n_bytes){
-    intensity <- rbind(intensity,
-                       matrix(as.raw(0x00), nrow = nb - n_bytes, ncol = nval))
+    x <- rbind(x, matrix(as.raw(0x00), nrow = nb - n_bytes, ncol = ncol(x)))
   }
-  intensity <- readBin(as.vector(intensity), what = "integer", size = nb,
-                       endian = "little", n = nval, signed = signed)
+  intensity <- readBin(as.vector(x), what = "integer", size = nb,
+                       endian = "little", n = ncol(x), signed = signed)
   if (n_bytes == 4){
     intensity <- bitwAnd(intensity, 0x7FFFFFFF)
   }
-
-  matrix(c(rep.int(scan, nval), rep.int(rt/60000, nval), mz/20, intensity),
-         nrow = nval, ncol = 4,
-         dimnames = list(NULL, c("scan", "rt", "mz", "intensity")))
+  intensity
 }
 
 #' Read 'Shimadzu QGD' retention times
@@ -239,9 +301,13 @@ read_qgd_ms_stream <- function(path, format_out = "data.frame"){
                     paste(sort(unique(unlist(widths[odd]))), collapse = "/"),
                     odd[1]), call. = FALSE)
   }
-  dat <- do.call(rbind, xx)
-  dat <- convert_chrom_format(dat, format_out = format_out)
-  dat
+  level <- vapply(xx, attr, "ms_level", FUN.VALUE = integer(1))
+  dat <- lapply(c(MS1 = 1L, MS2 = 2L), function(lvl){
+    if (!any(level == lvl)) return(NULL)
+    convert_chrom_format(do.call(rbind, xx[level == lvl]),
+                         format_out = format_out)
+  })
+  dat[lengths(dat) > 0]
 }
 
 
@@ -305,8 +371,11 @@ get_spectrum_offsets <- function(path){
   on.exit(unlink_stream(path_spectrum_index), add = TRUE)
   f <- file(path_spectrum_index, "rb")
   on.exit(close(f), add = TRUE)
-  n_scans <- file.info(path_spectrum_index)$size/4
-  offsets <- readBin(f, what = "integer", size = 4, endian = "little",
-                     n = n_scans)
-  offsets
+  size <- file.info(path_spectrum_index)$size
+  if (size %% 8 == 2){
+    readBin(f, what = "raw", n = 2)
+    return(readBin(f, what = "integer", size = 8, endian = "little",
+                   n = (size - 2)/8))
+  }
+  readBin(f, what = "integer", size = 4, endian = "little", n = size/4)
 }

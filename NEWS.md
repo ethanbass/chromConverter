@@ -1,3 +1,7 @@
+## chromConverter 0.12.0
+
+* 'Shimadzu' `.qgd` files with MRM scans can now be read. The scans are returned as `MS2`, with a `precursor_mz` column. See `?read_shimadzu_qgd`.
+
 ## chromConverter 0.11.2
 
 ### Breaking changes
