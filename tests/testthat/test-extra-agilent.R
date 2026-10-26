@@ -1438,6 +1438,43 @@ test_that("write_agilent_amx leaves an unedited method unchanged", {
   }
 })
 
+zip_headers <- function(path){
+  x <- readBin(path, "raw", file.size(path))
+  u16 <- function(i){
+    readBin(x[i + 0:1], "integer", size = 2, signed = FALSE, endian = "little")
+  }
+  u32 <- function(i) readBin(x[i + 0:3], "integer", size = 4, endian = "little")
+  cd <- grepRaw(as.raw(c(0x50, 0x4b, 0x01, 0x02)), x, all = TRUE)
+  local <- vapply(cd, function(p) u32(p + 42) + 1, numeric(1))
+  data.frame(made_by = vapply(cd, function(p) u16(p + 4), numeric(1)),
+             needed = vapply(cd, function(p) u16(p + 6), numeric(1)),
+             utf8 = vapply(cd, function(p) bitwAnd(u16(p + 8), 0x800) > 0,
+                           logical(1)),
+             attributes = vapply(cd, function(p) u32(p + 38), numeric(1)),
+             local_needed = vapply(local, function(p) u16(p + 4), numeric(1)),
+             local_utf8 = vapply(local, function(p){
+               bitwAnd(u16(p + 6), 0x800) > 0
+             }, logical(1)))
+}
+
+test_that("write_agilent_amx writes zip headers OpenLab can read", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("Glucosinolates-XDB5.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(nzchar(path))
+
+  out <- write_agilent_amx(path, tempfile(fileext = ".amx"), flow = 0.5)
+  h <- zip_headers(out)
+  expect_true(all(h$made_by == 45))
+  expect_true(all(h$needed %in% c(10, 20)))
+  expect_equal(h$local_needed, h$needed)
+  expect_false(any(h$utf8 | h$local_utf8))
+  expect_true(all(h$attributes == 0))
+  expect_true(all(zip_headers(path)$needed %in% c(10, 20)))
+})
+
 test_that("write_agilent_amx writes a gradient and pump settings", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

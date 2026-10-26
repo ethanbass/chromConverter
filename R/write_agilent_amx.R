@@ -301,6 +301,41 @@ zip_amx <- function(entries, root, zipfile){
     add(zipfile, entries$filename[i], root = root, include_directories = FALSE,
         compression_level = if (stored[i][1]) 0 else 9)
   }
+  set_amx_zip_headers(zipfile)
+}
+
+#' Rewrite the zip header fields that OpenLab's package reader checks
+#'
+#' Writes them as OpenLab does: made by DOS, version 4.5; version needed 1.0
+#' for stored entries and 2.0 for deflated ones; no UTF-8 flag; no file
+#' attributes.
+#' @noRd
+set_amx_zip_headers <- function(zipfile){
+  x <- readBin(zipfile, "raw", file.size(zipfile))
+  u16 <- function(i){
+    readBin(x[i + 0:1], "integer", size = 2, signed = FALSE, endian = "little")
+  }
+  u32 <- function(i) readBin(x[i + 0:3], "integer", size = 4, endian = "little")
+  put <- function(i, value, size = 2){
+    x[i + seq_len(size) - 1] <<- writeBin(as.integer(value), raw(), size = size,
+                                          endian = "little")
+  }
+  eocd <- utils::tail(grepRaw(as.raw(c(0x50, 0x4b, 0x05, 0x06)), x,
+                              all = TRUE), 1)
+  p <- u32(eocd + 16) + 1
+  for (k in seq_len(u16(eocd + 10))){
+    needed <- if (u16(p + 10) == 8) 20 else 10
+    flags <- bitwAnd(u16(p + 8), 0xF7FF)
+    put(p + 4, 45)
+    put(p + 6, needed)
+    put(p + 8, flags)
+    put(p + 38, 0, size = 4)
+    local <- u32(p + 42) + 1
+    put(local + 4, needed)
+    put(local + 6, flags)
+    p <- p + 46 + u16(p + 28) + u16(p + 30) + u16(p + 32)
+  }
+  writeBin(x, zipfile)
 }
 
 #' Check a numeric AMX setting
