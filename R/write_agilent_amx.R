@@ -7,12 +7,15 @@
 #' @details
 #' `gradient` takes the table that [read_agilent_amx()] returns as
 #' `pump$gradient`, in wide or long format. It needs a percentage for every
-#' solvent channel the template uses, and each row must add up to 100. The row
-#' at time zero sets the starting composition, and the other rows replace the
-#' composition steps in the pump timetable. Flow steps in the timetable are
-#' kept, and `gradient` cannot change them. If the template has flow steps,
-#' drop the `flow_mL_min` column (or the `"flow"` rows in long format) from
-#' the table [read_agilent_amx()] returns.
+#' solvent channel the template uses, and each row must add up to 100. It
+#' must have a row at time zero, which sets the starting composition. The
+#' other rows replace the composition steps in the pump timetable. Flow steps
+#' in the timetable are kept, and `gradient` cannot change them. If the
+#' template has flow steps, drop the `flow_mL_min` column (or the `"flow"` rows
+#' in long format) from the table [read_agilent_amx()] returns.
+#'
+#' Setting `flow` gives a constant flow rate and removes the template's flow
+#' steps.
 #'
 #' `temperature` sets both sides of the column compartment, and the template
 #' must already control the temperature. A template whose compartment is set
@@ -97,6 +100,8 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
   }
   if (!is.null(flow)){
     set_amx_value(pump, "/PumpMethod/Flow", flow)
+    steps <- xml2::xml_find_all(pump, "/PumpMethod/Timetable/TimetableEntry")
+    xml2::xml_remove(steps[xml2::xml_attr(steps, "type") == "ChangeFlowType"])
   }
   if (!is.null(stop_time)){
     set_amx_time(pump, "StopTime", stop_time)
@@ -150,7 +155,8 @@ set_amx_gradient <- function(doc, gradient){
   }
   if (any(c("flow_mL_min", "pct_flow") %in% names(gradient))){
     stop("`gradient` cannot change the flow. Drop its flow column to keep ",
-         "the flow steps in the template.", call. = FALSE)
+         "the flow steps in the template, or set `flow` for a constant flow.",
+         call. = FALSE)
   }
 
   solvents <- xml2::xml_find_all(doc,
@@ -189,16 +195,17 @@ set_amx_gradient <- function(doc, gradient){
   ord <- order(time)
   time <- time[ord]
   pct <- pct[ord, , drop = FALSE]
-
-  if (length(time) > 0 && time[1] == 0){
-    for (i in which(used)){
-      node <- xml2::xml_find_first(solvents[[i]], "./Percentage")
-      xml2::xml_text(node) <- format_amx_num(pct[1, paste0("pct_",
-                                                           channels[i])])
-    }
-    time <- time[-1]
-    pct <- pct[-1, , drop = FALSE]
+  if (time[1] != 0){
+    stop("`gradient` needs a row at time 0 for the starting composition.",
+         call. = FALSE)
   }
+
+  for (i in which(used)){
+    node <- xml2::xml_find_first(solvents[[i]], "./Percentage")
+    xml2::xml_text(node) <- format_amx_num(pct[1, paste0("pct_", channels[i])])
+  }
+  time <- time[-1]
+  pct <- pct[-1, , drop = FALSE]
 
   timetable <- xml2::xml_find_first(doc, "/PumpMethod/Timetable")
   if (inherits(timetable, "xml_missing")){

@@ -49,12 +49,15 @@ settings are copied unchanged from the template.
 \details{
 \code{gradient} takes the table that \code{\link[=read_agilent_amx]{read_agilent_amx()}} returns as
 \code{pump$gradient}, in wide or long format. It needs a percentage for every
-solvent channel the template uses, and each row must add up to 100. The row
-at time zero sets the starting composition, and the other rows replace the
-composition steps in the pump timetable. Flow steps in the timetable are
-kept, and \code{gradient} cannot change them. If the template has flow steps,
-drop the \code{flow_mL_min} column (or the \code{"flow"} rows in long format) from
-the table \code{\link[=read_agilent_amx]{read_agilent_amx()}} returns.
+solvent channel the template uses, and each row must add up to 100. It
+must have a row at time zero, which sets the starting composition. The
+other rows replace the composition steps in the pump timetable. Flow steps
+in the timetable are kept, and \code{gradient} cannot change them. If the
+template has flow steps, drop the \code{flow_mL_min} column (or the \code{"flow"} rows
+in long format) from the table \code{\link[=read_agilent_amx]{read_agilent_amx()}} returns.
+
+Setting \code{flow} gives a constant flow rate and removes the template's flow
+steps.
 
 \code{temperature} sets both sides of the column compartment, and the template
 must already control the temperature. A template whose compartment is set

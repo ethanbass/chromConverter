@@ -1521,6 +1521,15 @@ test_that("write_agilent_amx keeps the flow steps of the template", {
   flow <- function(g) g[g$channel == "flow", ]
   expect_equal(flow(x$pump$gradient), flow(template$pump$gradient),
                ignore_attr = TRUE)
+
+  out <- write_agilent_amx(path, tempfile(fileext = ".amx"), flow = 0.8)
+  x <- read_agilent_amx(out, what = "pump", gradient_format = "long")$pump
+  expect_equal(x$flow_mL_min, 0.8)
+  expect_false("flow" %in% x$gradient$channel)
+  expect_equal(x$gradient[x$gradient$channel != "flow", ],
+               template$pump$gradient[template$pump$gradient$channel != "flow", ],
+               ignore_attr = TRUE)
+  expect_true(amx_checksums_valid(out))
 })
 
 test_that("write_agilent_amx sets the column temperature", {
@@ -1581,6 +1590,9 @@ test_that("write_agilent_amx rejects an invalid gradient", {
   expect_error(write_agilent_amx(path, tempfile(),
                                  gradient = transform(gradient, time_min = c(0, Inf))),
                "distinct, non-negative")
+  expect_error(write_agilent_amx(path, tempfile(),
+                                 gradient = transform(gradient, time_min = c(1, 5))),
+               "row at time 0")
   long <- data.frame(time_min = c(0, 0, 5), channel = c("A", "B", "A"),
                      percent = c(90, 10, 100))
   expect_error(write_agilent_amx(path, tempfile(), gradient = long),
