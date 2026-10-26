@@ -1523,6 +1523,36 @@ test_that("write_agilent_amx keeps the flow steps of the template", {
                ignore_attr = TRUE)
 })
 
+test_that("write_agilent_amx sets the column temperature", {
+  skip_on_cran()
+  skip_if_not_installed("chromConverterExtraTests")
+
+  path <- system.file("Glucosinolates-XDB5.amx",
+                      package = "chromConverterExtraTests")
+  skip_if_not(file.exists(path))
+
+  out <- write_agilent_amx(path, tempfile(fileext = ".amx"),
+                           temperature = 32.5)
+  temps <- read_agilent_amx(out, what = "comp")$column$temp_controls
+  expect_equal(temps$temperature_C, c(32.5, 32.5))
+  expect_true(amx_checksums_valid(out))
+
+  before <- unzip_amx(path)
+  after <- unzip_amx(out)
+  edited <- grepl("ColumnCompDriver", names(before))
+  expect_equal(sum(edited), 2)
+  expect_equal(after[!edited], before[!edited])
+  expect_false(any(after[edited] == before[edited]))
+
+  uncontrolled <- system.file("column_storage_ACN100.amx",
+                              package = "chromConverterExtraTests")
+  skip_if_not(file.exists(uncontrolled))
+  expect_error(write_agilent_amx(uncontrolled, tempfile(), temperature = 30),
+               "does not control the temperature")
+  expect_error(write_agilent_amx(path, tempfile(), temperature = NA_real_),
+               "non-negative")
+})
+
 test_that("write_agilent_amx rejects an invalid gradient", {
   skip_on_cran()
   skip_if_not_installed("chromConverterExtraTests")

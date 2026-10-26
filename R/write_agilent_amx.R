@@ -1,8 +1,8 @@
 #' Write Agilent AMX method file
 #'
 #' Writes a copy of an 'OpenLab CDS' acquisition method (`.amx`) with a new
-#' pump gradient, flow, stop time or post time. All other settings are copied
-#' unchanged from the template.
+#' pump gradient, flow, stop time, post time or column temperature. All other
+#' settings are copied unchanged from the template.
 #'
 #' @details
 #' `gradient` takes the table that [read_agilent_amx()] returns as
@@ -14,13 +14,17 @@
 #' drop the `flow_mL_min` column (or the `"flow"` rows in long format) from
 #' the table [read_agilent_amx()] returns.
 #'
+#' `temperature` sets both sides of the column compartment, and the template
+#' must already control the temperature. A template whose compartment is set
+#' to "Not Controlled" gives an error.
+#'
 #' Setting `stop_time` also sets the run time of the method. The checksum of
 #' each edited part is recalculated. The `Agilent/ReportableInformation` part,
 #' which repeats the settings as formatted text, is not rewritten and still
 #' describes the template.
 #'
 #' The writer needs the 'zip' package, and has only been tested on
-#' methods for a G7104C quaternary pump.
+#' methods for a G7104C quaternary pump and a G7116A column compartment.
 #'
 #' @param path Path to the template `.amx` file.
 #' @param path_out Path to write the new method.
@@ -32,6 +36,8 @@
 #' template's value.
 #' @param post_time Pump post time in minutes. `NULL` (default) keeps the
 #' template's value.
+#' @param temperature Column temperature in degrees Celsius. `NULL` (default)
+#' keeps the template's value.
 #' @param force Whether to overwrite `path_out` if it exists. Defaults to
 #' `FALSE`.
 #' @return Invisibly returns `path_out`.
@@ -47,7 +53,7 @@
 #' @export
 write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
                               stop_time = NULL, post_time = NULL,
-                              force = FALSE){
+                              temperature = NULL, force = FALSE){
   path <- fs::path_expand(path)
   path_out <- fs::path_expand(path_out)
   if (fs::file_exists(path_out) && !force){
@@ -57,6 +63,7 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
   check_amx_scalar(flow, "flow")
   check_amx_scalar(stop_time, "stop_time")
   check_amx_scalar(post_time, "post_time")
+  check_amx_scalar(temperature, "temperature")
   check_for_pkg("zip")
 
   entries <- zip::zip_list(path)
@@ -66,6 +73,12 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
   if (length(pump_part) != 1){
     stop("Expected one pump driver in the method, found ", length(pump_part),
          ".", call. = FALSE)
+  }
+  comp_part <- grep("ColumnCompDriver(?!.*\\.chk$)", files, perl = TRUE,
+                    value = TRUE)
+  if (!is.null(temperature) && length(comp_part) != 1){
+    stop("Expected one column compartment in the method, found ",
+         length(comp_part), ".", call. = FALSE)
   }
   props_part <- "MethodProperties/MethodProperties"
   if (!props_part %in% files){
@@ -105,6 +118,11 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
 
   write_amx_part(pump, fs::path(parts, pump_part))
   write_amx_part(props, fs::path(parts, props_part))
+  if (!is.null(temperature)){
+    comp <- xml2::read_xml(fs::path(parts, comp_part))
+    set_amx_temperature(comp, temperature)
+    write_amx_part(comp, fs::path(parts, comp_part))
+  }
 
   out <- fs::path(tmp, "out.amx")
   zip_amx(entries, parts, out)
@@ -217,6 +235,22 @@ set_amx_time <- function(doc, what, value){
     node <- xml2::xml_add_child(section, paste0(what, "Value"))
   }
   xml2::xml_text(node) <- format_amx_num(value)
+}
+
+#' Set the temperature of both sides of an AMX column compartment
+#' @noRd
+set_amx_temperature <- function(doc, temperature){
+  nodes <- xml2::xml_find_all(
+    doc, paste0("/ColumnCompMethod/*[self::LeftTemperatureControl or ",
+                "self::RightTemperatureControl]",
+                "[TemperatureControlMode = 'TemperatureSet']/Temperature")
+  )
+  if (length(nodes) != 2){
+    stop("The template's column compartment does not control the ",
+         "temperature of both sides. Set a temperature in the template.",
+         call. = FALSE)
+  }
+  xml2::xml_text(nodes) <- format_amx_num(temperature)
 }
 
 #' Set the text of an existing AMX node

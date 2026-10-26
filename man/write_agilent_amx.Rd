@@ -11,6 +11,7 @@ write_agilent_amx(
   flow = NULL,
   stop_time = NULL,
   post_time = NULL,
+  temperature = NULL,
   force = FALSE
 )
 }
@@ -31,6 +32,9 @@ template's value.}
 \item{post_time}{Pump post time in minutes. \code{NULL} (default) keeps the
 template's value.}
 
+\item{temperature}{Column temperature in degrees Celsius. \code{NULL} (default)
+keeps the template's value.}
+
 \item{force}{Whether to overwrite \code{path_out} if it exists. Defaults to
 \code{FALSE}.}
 }
@@ -39,8 +43,8 @@ Invisibly returns \code{path_out}.
 }
 \description{
 Writes a copy of an 'OpenLab CDS' acquisition method (\code{.amx}) with a new
-pump gradient, flow, stop time or post time. All other settings are copied
-unchanged from the template.
+pump gradient, flow, stop time, post time or column temperature. All other
+settings are copied unchanged from the template.
 }
 \details{
 \code{gradient} takes the table that \code{\link[=read_agilent_amx]{read_agilent_amx()}} returns as
@@ -52,13 +56,17 @@ kept, and \code{gradient} cannot change them. If the template has flow steps,
 drop the \code{flow_mL_min} column (or the \code{"flow"} rows in long format) from
 the table \code{\link[=read_agilent_amx]{read_agilent_amx()}} returns.
 
+\code{temperature} sets both sides of the column compartment, and the template
+must already control the temperature. A template whose compartment is set
+to "Not Controlled" gives an error.
+
 Setting \code{stop_time} also sets the run time of the method. The checksum of
 each edited part is recalculated. The \code{Agilent/ReportableInformation} part,
 which repeats the settings as formatted text, is not rewritten and still
 describes the template.
 
 The writer needs the 'zip' package, and has only been tested on
-methods for a G7104C quaternary pump.
+methods for a G7104C quaternary pump and a G7116A column compartment.
 }
 \examples{
 \dontrun{
