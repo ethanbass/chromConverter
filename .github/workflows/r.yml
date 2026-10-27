@@ -18,12 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'release', locale: 'fr_FR.UTF-8', env: 'LANG=fr_FR.UTF-8 LANGUAGE=en'}
+          - {os: macos-latest,   r: 'release', locale: 'fr_FR.UTF-8', env: 'LC_ALL= LANG=fr_FR.UTF-8 LANGUAGE=en'}
           # mirrors the CRAN M1mac additional checks
-          - {os: macos-latest,   r: 'devel', locale: 'en_GB.UTF-8', env: 'LANG=en_GB.UTF-8 LC_COLLATE=C TZ=Europe/London'}
+          - {os: macos-latest,   r: 'devel', locale: 'en_GB.UTF-8', env: 'LC_ALL= LANG=en_GB.UTF-8 LC_COLLATE=C TZ=Europe/London'}
           - {os: windows-latest, r: 'release', locale: 'French_France.utf8', env: 'LC_ALL=French_France.utf8 LANGUAGE=en'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: 'release', locale: 'fr_FR.UTF-8', env: 'LANG=fr_FR.UTF-8 LANGUAGE=en'}
+          - {os: ubuntu-latest,   r: 'release', locale: 'fr_FR.UTF-8', env: 'LC_ALL= LANG=fr_FR.UTF-8 LANGUAGE=en'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
 
     env:
@@ -67,6 +67,7 @@ jobs:
       - name: Check that the locale took effect
         if: matrix.config.locale
         run: |
+          print(Sys.getenv(c("LC_ALL", "LANG", "LC_TIME", "LC_COLLATE")))
           print(Sys.getlocale())
           stopifnot(Sys.getlocale("LC_TIME") == "${{ matrix.config.locale }}")
           pm <- as.POSIXct("1:23:19 PM", format = "%I:%M:%S %p", tz = "UTC")
