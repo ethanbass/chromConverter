@@ -12,16 +12,18 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }}) ${{ matrix.config.locale }}
 
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
+          - {os: macos-latest,   r: 'release', locale: 'fr_FR.UTF-8', env: 'LC_ALL= LC_CTYPE= LANG=fr_FR.UTF-8 LANGUAGE=en'}
+          # mirrors the locale of the CRAN M1mac additional checks
+          - {os: macos-latest,   r: 'release', locale: 'en_GB.UTF-8', env: 'LC_ALL= LC_CTYPE=en_GB.UTF-8 LANG=en_GB.UTF-8 LC_COLLATE=C TZ=Europe/London'}
+          - {os: windows-latest, r: 'release', locale: 'French_France.utf8', env: 'LC_ALL=French_France.utf8 LANGUAGE=en'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
-          - {os: ubuntu-latest,   r: 'release'}
+          - {os: ubuntu-latest,   r: 'release', locale: 'fr_FR.UTF-8', env: 'LC_ALL= LC_CTYPE= LANG=fr_FR.UTF-8 LANGUAGE=en'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
 
     env:
@@ -39,6 +41,13 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Set the locale
+        if: matrix.config.locale
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then sudo locale-gen ${{ matrix.config.locale }}; fi
+          for kv in ${{ matrix.config.env }}; do echo "$kv" >> "$GITHUB_ENV"; done
+
       - name: Add drat repo
         # both `entab` and `chromConverterExtraTests` are Suggests that live
         # in the drat repo rather than on CRAN, and pak does not read
@@ -54,6 +63,17 @@ jobs:
       - name: Add the Rust target entab builds for on Windows
         if: runner.os == 'Windows'
         run: rustup target add x86_64-pc-windows-gnu
+
+      - name: Check that the locale took effect
+        if: matrix.config.locale
+        run: |
+          print(Sys.getenv(c("LC_ALL", "LC_CTYPE", "LANG", "LC_TIME", "LC_COLLATE", "TZ")))
+          print(Sys.getlocale())
+          stopifnot(Sys.getlocale("LC_TIME") == "${{ matrix.config.locale }}")
+          pm <- as.POSIXct("1:23:19 PM", format = "%I:%M:%S %p", tz = "UTC")
+          cat("::notice::1:23:19 PM parses as", format(pm, "%H:%M:%S"),
+              "under", Sys.getlocale("LC_TIME"), "\n")
+        shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
