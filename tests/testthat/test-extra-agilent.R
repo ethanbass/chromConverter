@@ -2065,3 +2065,14 @@ test_that("Agilent UV files report their time range in every output format", {
     }
   }
 })
+
+test_that("read_chroms reads 'Agilent' MS files with its default formats", {
+  path <- extra_test_file("chemstation_MSD.MS")
+  x <- read_chroms(path, parser = "chromconverter", progress_bar = FALSE)[[1]]
+  expect_named(x, c("MS1", "BPC", "TIC"))
+  expect_s3_class(x$MS1, "data.table")
+  expect_equal(colnames(x$MS1), c("rt", "mz", "intensity"))
+  expect_equal(nrow(x$MS1), 95471)
+  expect_true(is.matrix(x$TIC))
+  expect_equal(attr(x$TIC, "data_format"), "wide")
+})

@@ -106,7 +106,8 @@ read_chemstation_ms <- function(path, what = c("MS1", "BPC", "TIC"),
 
   dat <- mget(what)
   dat <- purrr::imap(dat, function(x, h){
-    convert_chrom_format(x, data_format = data_format,
+    convert_chrom_format(x, data_format = ifelse(h != "TIC", "long",
+                                                 data_format),
                          format_out = ifelse(h != "TIC",
                                              check_format_out_table(format_out),
                                              format_out))
