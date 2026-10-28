@@ -105,7 +105,7 @@ parse_shimadzu_ascii_datetime <- function(x){
       c(month_first, iso, day_first)
     }
     for (format in formats){
-      parsed <- as.POSIXct(x[i], format = format, tz = "UTC")
+      parsed <- with_c_time(as.POSIXct(x[i], format = format, tz = "UTC"))
       if (!is.na(parsed)){
         out[i] <- parsed
         break
@@ -958,6 +958,18 @@ parse_iso8601 <- function(x){
   out
 }
 
+#' Evaluate `expr` with `LC_TIME` set to "C"
+#'
+#' Vendor files write month names and AM/PM in English, which `%b` and `%p`
+#' only match in an English `LC_TIME`.
+#' @noRd
+with_c_time <- function(expr){
+  old <- Sys.getlocale("LC_TIME")
+  on.exit(Sys.setlocale("LC_TIME", old))
+  Sys.setlocale("LC_TIME", "C")
+  expr
+}
+
 #' Convert date-time string to POSIXct
 #' @author Ethan Bass
 #' @noRd
@@ -969,7 +981,7 @@ convert_timestamp <- function(string, datetime_formats){
     return(parse_iso8601(string))
   }
   tryCatch({
-    as.POSIXct(string, tz = "UTC", tryFormats = datetime_formats)
+    with_c_time(as.POSIXct(string, tz = "UTC", tryFormats = datetime_formats))
   }, error = function(cond){
     warning("Run date-time could not be converted to POSIXct format, returning string instead.")
     string

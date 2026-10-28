@@ -256,6 +256,33 @@ test_that("'Shimadzu' ASCII date-times are read in any locale's format", {
   expect_equal(attr(parse_shimadzu_ascii_datetime("29-03-2022 10:12:19"), "tzone"), "UTC")
 })
 
+test_that("month names and AM/PM are read in a non-English locale", {
+  old <- Sys.getlocale("LC_TIME")
+  withr::defer(Sys.setlocale("LC_TIME", old))
+  french <- c("fr_FR.UTF-8", "fr_FR", "French_France.1252")
+  set <- vapply(french, function(l){
+    nzchar(suppressWarnings(Sys.setlocale("LC_TIME", l)))
+  }, logical(1))
+  skip_if_not(any(set), "no French locale installed")
+  Sys.setlocale("LC_TIME", french[set][1])
+  fr <- Sys.getlocale("LC_TIME")
+  skip_if_not(is.na(as.POSIXct("13-Oct-15, 13:23:19",
+                               format = "%d-%b-%y, %H:%M:%S", tz = "UTC")) ||
+                is.na(as.POSIXct("10/13/2015 1:23:19 PM",
+                                 format = "%m/%d/%Y %I:%M:%S %p", tz = "UTC")),
+              "this platform parses English dates in French")
+
+  expect_equal(format(parse_shimadzu_ascii_datetime("4/26/2021 11:01:11 PM"),
+                      "%Y-%m-%d %H:%M:%S"), "2021-04-26 23:01:11")
+  expect_equal(convert_timestamp("13-Oct-15, 13:23:19",
+                                 c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p")),
+               as.POSIXct("2015-10-13 13:23:19", tz = "UTC"))
+  expect_equal(convert_timestamp("10/13/2015 1:23:19 PM",
+                                 c("%d-%b-%y, %H:%M:%S", "%m/%d/%Y %I:%M:%S %p")),
+               as.POSIXct("2015-10-13 13:23:19", tz = "UTC"))
+  expect_equal(Sys.getlocale("LC_TIME"), fr)
+})
+
 test_that("to_valid_utf8 repairs only the strings that need it", {
   ok <- c("plain", "caf\u00e9", NA)
   expect_identical(to_valid_utf8(ok), ok)
