@@ -1833,6 +1833,16 @@ test_that("read_qgd_ms_scan decodes 2-byte intensities as unsigned", {
   expect_null(attr(x, "unvalidated_width"))
 })
 
+test_that("read_qgd_ms_scan drops the top bit of 4-byte intensities", {
+  skip_on_cran()
+  block <- qgd_scan_block(4, mz = c(82.05, 83), int = c(2^31 + 6986020, 100))
+  # the header understates the width, as in the file attached to issue #44
+  block[21:22] <- writeBin(1L, raw(), size = 2, endian = "little")
+  x <- read_qgd_block(block)
+  expect_equal(x[, "intensity"], c(6986020, 100))
+  expect_null(attr(x, "unvalidated_width"))
+})
+
 test_that("read_qgd_ms_scan decodes intensities wider than 4 bytes", {
   skip_on_cran()
   x <- read_qgd_block(qgd_scan_block(5, mz = c(50, 51), int = c(1, 2^33 + 5)))
