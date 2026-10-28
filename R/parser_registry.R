@@ -21,6 +21,10 @@
 #   dir      The "file" is really a directory.
 #   batch    The reader takes the whole vector of files at once, rather than
 #            being applied file by file.
+#   meta_reader  Function that reads only the file-level metadata, used by
+#            `read_chroms(metadata_only = TRUE)`, named for the parser it
+#            stands in for. Formats without one are read in full and their
+#            metadata extracted.
 #   internal Names that `read_chroms` accepts but does not advertise: the
 #            version-specific ones, which come from `get_filetype` rather than
 #            from the user, and legacy spellings kept for compatibility.
@@ -41,6 +45,7 @@
   ),
   agilent_dx = list(
     ext = "\\.dx$", reader = "read_agilent_dx",
+    meta_reader = c(chromconverter = "read_agilent_dx_metadata"),
     parsers = "chromconverter",
     aliases = c("openlab_dx")
   ),
@@ -57,6 +62,7 @@
   ),
   cdf = list(
     ext = "\\.cdf$", reader = "read_cdf",
+    meta_reader = c(chromconverter = "read_cdf_metadata"),
     parsers = "chromconverter",
     # `read_cdf` reads both ANDI MS and ANDI chrom, so the standard's name is
     # exactly as broad as the extension it is an alias for
@@ -128,12 +134,14 @@
 
   chemstation_uv = list(
     ext = "\\.uv$", reader = "read_chemstation_uv",
+    meta_reader = c(chromconverter = "read_chemstation_uv_metadata"),
     parsers = c("chromconverter", "entab", "rainbow"),
     aliases = "chemstation_131",
     internal = "chemstation_131"
   ),
   chemstation_31 = list(
     ext = "\\.uv$", reader = "read_chemstation_uv",
+    meta_reader = c(chromconverter = "read_chemstation_uv_metadata"),
     parsers = c("chromconverter", "entab"),
     internal = TRUE
   ),
@@ -150,6 +158,7 @@
   ),
   chromeleon_uv = list(
     ext = "\\.txt$", reader = "read_chromeleon",
+    meta_reader = c(chromconverter = "read_chromeleon_file_metadata"),
     parsers = "chromconverter"
   ),
   csd = list(
@@ -174,10 +183,12 @@
   ),
   mzml = list(
     ext = "\\.mzml$", reader = "read_mzml",
+    meta_reader = c(chromconverter = "read_mzml_metadata"),
     parsers = "chromconverter"
   ),
   mzxml = list(
     ext = "\\.mzxml$", reader = "read_mzml",
+    meta_reader = c(chromconverter = "read_mzml_metadata"),
     parsers = "chromconverter"
   ),
   other = list(
@@ -186,40 +197,49 @@
   ),
   shimadzu_ascii = list(
     ext = "\\.txt$", reader = "read_shimadzu",
+    meta_reader = c(chromconverter = "read_shimadzu_ascii_metadata"),
     parsers = "chromconverter"
   ),
   shimadzu_dad = list(
     ext = "\\.txt$", reader = "read_shimadzu",
+    meta_reader = c(chromconverter = "read_shimadzu_ascii_metadata"),
     parsers = "chromconverter",
     fixed = list(include = "dad")
   ),
   shimadzu_fid = list(
     ext = "\\.txt$", reader = "read_shimadzu",
+    meta_reader = c(chromconverter = "read_shimadzu_ascii_metadata"),
     parsers = "chromconverter",
     fixed = list(include = "fid")
   ),
   shimadzu_gcd = list(
     ext = "\\.gcd$", reader = "read_shimadzu_gcd",
+    meta_reader = c(chromconverter = "read_sz_file_metadata"),
     parsers = "chromconverter"
   ),
   shimadzu_lcd = list(
     ext = "\\.lcd$", reader = "read_shimadzu_lcd",
+    meta_reader = c(chromconverter = "read_sz_file_metadata"),
     parsers = "chromconverter"
   ),
   shimadzu_qgd = list(
     ext = "\\.qgd$", reader = "read_shimadzu_qgd",
+    meta_reader = c(chromconverter = "read_sz_file_metadata"),
     parsers = "chromconverter"
   ),
   thermoraw = list(
     ext = "\\.raw$",
+    meta_reader = c(thermoraw = "read_thermoraw_metadata"),
     parsers = c("thermoraw", "entab")
   ),
   varian_sms = list(
     ext = "\\.sms$", reader = "read_varian_sms",
+    meta_reader = c(chromconverter = "read_varian_sms_metadata"),
     parsers = "chromconverter"
   ),
   waters_arw = list(
     ext = "\\.arw$", reader = "read_waters_arw",
+    meta_reader = c(chromconverter = "read_waters_arw_metadata"),
     parsers = "chromconverter"
   ),
   waters_raw = list(
@@ -402,13 +422,21 @@ reader_for <- function(format_in, parser){
 #' `format_in`, which collide with formals of `read_mzml` and `read_shimadzu`
 #' respectively; `format_in` is supplied explicitly to the parsers that need it.
 #' @param dots Named list of additional arguments to the reader.
+#' @param metadata_only Whether to use the format's `meta_reader` for `parser`,
+#' if it has one, in which case `dots` it does not take are dropped silently.
 #' @return A function of one argument (a path, or a vector of paths for readers
 #' flagged `batch`).
 #' @noRd
-build_converter <- function(format_in, parser, opts = list(), dots = list()){
+build_converter <- function(format_in, parser, opts = list(), dots = list(),
+                            metadata_only = FALSE){
   fn_name <- reader_for(format_in, parser)
+  meta_reader <- unname(format_entry(format_in)$meta_reader[parser])
+  use_meta_reader <- metadata_only && length(meta_reader) == 1 &&
+    !is.na(meta_reader)
+  if (use_meta_reader) fn_name <- meta_reader
   fn <- get(fn_name, envir = asNamespace("chromConverter"))
   nms <- names(formals(fn))
+  if (use_meta_reader) dots <- dots[intersect(names(dots), nms)]
 
   args <- c(opts[intersect(names(opts), nms)], format_entry(format_in)$fixed)
   if ("..." %in% nms){
@@ -427,4 +455,14 @@ build_converter <- function(format_in, parser, opts = list(), dots = list()){
   }
   if (length(extra) > 0) args[names(extra)] <- extra
   function(path) do.call(fn, c(list(path), args))
+}
+
+#' Empty matrix carrying a file's metadata
+#'
+#' What the `meta_reader` of a format returns in place of the chromatograms.
+#' @param meta,... Passed to `attach_metadata`.
+#' @noRd
+metadata_stub <- function(meta, ...){
+  attach_metadata(matrix(numeric(0), 0, 0), meta, format_out = NA,
+                  data_format = NA, ...)
 }

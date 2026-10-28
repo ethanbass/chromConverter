@@ -59,34 +59,15 @@ read_thermoraw <- function(path, path_out = NULL,
   if(!dir.exists(path_out)){
     stop("Export directory not found. Please check `path_out` argument and try again.")
   }
-  parser_path <- configure_thermo_parser()
-  verbose <- switch(as.character(verbose), "TRUE" = "")
-  if (.Platform$OS.type != "windows"){
-    io <- shQuote(c(path.expand(parser_path), paste0("-i=", path),
-                    paste0("-o=", path_out)))
-    system2("mono", args = c(io, "-a", if (!centroid) "-p"),
-            stdout = verbose)
-    if (read_metadata){
-      system2("mono", args = c(io, "-m=1"), stdout = verbose)
-    }
-  } else {
-      shell(paste0(parser_path, " -i=", path,
-                                " -o=", path_out, " -a",
-                                if (!centroid) " -p"))
-    if (read_metadata){
-      shell(paste0(parser_path, " -i=", path,
-                                " -o=", path_out, " -m=1"))
-    }
+  run_thermo_parser(path, path_out, c("-a", if (!centroid) "-p"), verbose)
+  if (read_metadata){
+    run_thermo_parser(path, path_out, "-m=1", verbose)
   }
   base_name <- fs::path_ext_remove(basename(path))
   new_path <- fs::path(path_out, base_name, ext = "mzML")
   x <- read_mzml(new_path, format_out)
   if (read_metadata){
-    meta_path <- fs::path(path_out, paste0(base_name, "-metadata"), ext = "txt")
-    meta <- strsplit(readLines(meta_path), "=", fixed = TRUE)
-    meta <- do.call(rbind, meta)
-    rownames(meta) <- meta[,1]
-    meta <- as.list(meta[,-1])
+    meta <- read_thermo_metadata_txt(path, path_out)
     # attach to the individual chromatograms as well as to the container:
     # `read_chroms` sorts on the container's `run_datetime`, while
     # `extract_metadata` and `print` see only the leaves.
@@ -105,6 +86,62 @@ read_thermoraw <- function(path, path_out = NULL,
                 source_file_format = "thermoraw")
   }
   x
+}
+
+#' Run ThermoRawFileParser on a file
+#' @param args Arguments other than the input and output paths.
+#' @noRd
+run_thermo_parser <- function(path, path_out, args, verbose){
+  parser_path <- configure_thermo_parser()
+  verbose <- switch(as.character(verbose), "TRUE" = "")
+  if (.Platform$OS.type != "windows"){
+    io <- shQuote(c(path.expand(parser_path), paste0("-i=", path),
+                    paste0("-o=", path_out)))
+    system2("mono", args = c(io, args), stdout = verbose)
+  } else {
+    shell(paste(parser_path, paste0("-i=", path), paste0("-o=", path_out),
+                paste(args, collapse = " ")))
+  }
+}
+
+#' Parse the metadata file ThermoRawFileParser writes with `-m=1`
+#' @noRd
+read_thermo_metadata_txt <- function(path, path_out){
+  base_name <- fs::path_ext_remove(basename(path))
+  meta_path <- fs::path(path_out, paste0(base_name, "-metadata"), ext = "txt")
+  meta <- strsplit(readLines(meta_path), "=", fixed = TRUE)
+  meta <- do.call(rbind, meta)
+  rownames(meta) <- meta[,1]
+  as.list(meta[,-1])
+}
+
+#' Read the metadata of a 'Thermo' RAW file without its data
+#'
+#' Run on its own, the `-m=1` option of ThermoRawFileParser writes only the
+#' metadata file.
+#' @noRd
+read_thermoraw_metadata <- function(path, path_out = NULL,
+                                    metadata_format = c("chromconverter",
+                                                        "raw"),
+                                    verbose = getOption("verbose")){
+  metadata_format <- check_metadata_format(metadata_format, "thermoraw")
+  if (!file.exists(path)){
+    stop("File not found. Check path.")
+  }
+  path <- fs::path_expand(path)
+  if (is.null(path_out)){
+    path_out <- temp_directory(path)
+    on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
+  } else{
+    path_out <- fs::path_expand(path_out)
+  }
+  if (!dir.exists(path_out)){
+    stop("Export directory not found. Please check `path_out` argument and try again.")
+  }
+  run_thermo_parser(path, path_out, "-m=1", verbose)
+  metadata_stub(read_thermo_metadata_txt(path, path_out),
+                format_in = metadata_format, source_file = path,
+                source_file_format = "thermoraw")
 }
 
 #' Find ThermoRawFileParser

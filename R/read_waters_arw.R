@@ -59,3 +59,20 @@ read_waters_arw <- function(path, format_out = c("matrix", "data.frame", "data.t
   }
   x
 }
+
+#' Read the metadata of a 'Waters' `.arw` file without its data
+#' @noRd
+read_waters_arw_metadata <- function(path,
+                                     metadata_format = c("chromconverter",
+                                                         "raw")){
+  metadata_format <- check_metadata_format(metadata_format, "waters_arw")
+  if (!grepl('"', readLines(path, n = 1, encoding = "latin1"))){
+    return(matrix(numeric(0), 0, 0))
+  }
+  meta <- try(read_waters_metadata(path))
+  if (inherits(meta, "try-error")){
+    return(matrix(numeric(0), 0, 0))
+  }
+  metadata_stub(meta, format_in = metadata_format, parser = "chromconverter",
+                source_file = path, source_file_format = "waters_arw")
+}

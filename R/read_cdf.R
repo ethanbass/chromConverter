@@ -217,6 +217,44 @@ read_andi_chrom <- function(path, format_out = c("matrix", "data.frame",
   data
 }
 
+#' Metadata of an ANDI MS file
+#' @noRd
+andi_ms_metadata <- function(nc){
+  meta <- ncdf4::ncatt_get(nc, varid = 0)
+  meta$detector <- "MS"
+  meta$raw_data_time_units <- "Minutes"
+  meta$raw_data_mass_units <- meta$raw_data_mass_units %||%
+    nc_var_att(nc, "mass_values", "units") %||% meta$mass_axis_units
+  meta$detector_y_unit <- meta$detector_y_unit %||%
+    nc_var_att(nc, "intensity_values", "units") %||% meta$intensity_axis_units
+  meta
+}
+
+#' Read the metadata of an ANDI file without its data
+#' @noRd
+read_cdf_metadata <- function(path,
+                              metadata_format = c("chromconverter", "raw")){
+  check_for_pkg("ncdf4")
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  nc <- ncdf4::nc_open(path)
+  on.exit(ncdf4::nc_close(nc))
+  if ("ordinate_values" %in% names(nc$var)){
+    meta <- ncdf4::ncatt_get(nc, varid = 0)
+    meta$retention_unit <- "Minutes"
+    format_in <- "andi_chrom"
+  } else if (all(c("intensity_values", "mass_values",
+                   "scan_index") %in% names(nc$var))){
+    meta <- andi_ms_metadata(nc)
+    format_in <- "andi_ms"
+  } else {
+    stop("The format of the provided cdf file could not be recognized.")
+  }
+  metadata_stub(meta, format_in = check_metadata_format(metadata_format,
+                                                        format_in),
+                parser = "chromconverter", source_file = path,
+                source_file_format = format_in)
+}
+
 #' Attribute of an ANDI MS variable, or `NULL` where the file has none
 #' @noRd
 nc_var_att <- function(nc, var, att){
@@ -320,13 +358,7 @@ read_andi_ms <- function(path,
   }
   data <- mget(what)
   if (read_metadata){
-    meta <- ncdf4::ncatt_get(nc, varid = 0)
-    meta$detector <- "MS"
-    meta$raw_data_time_units <- "Minutes"
-    meta$raw_data_mass_units <- meta$raw_data_mass_units %||%
-      nc_var_att(nc, "mass_values", "units") %||% meta$mass_axis_units
-    meta$detector_y_unit <- meta$detector_y_unit %||%
-      nc_var_att(nc, "intensity_values", "units") %||% meta$intensity_axis_units
+    meta <- andi_ms_metadata(nc)
     data <- purrr::imap(data, function(x, h){
       attach_metadata(x, meta = meta, format_in = metadata_format,
                       format_out = ifelse(h == "MS1",

@@ -2021,3 +2021,24 @@ test_that("read_peaklist reports the wavelength of Shimadzu peak tables", {
   expect_equal(names(z), c("PT-LC.1.1.AD.2.CH#1", "524", "214", "280", "520"))
   expect_equal(attr(z[["524"]], "bandwidth"), 4)
 })
+
+test_that("read_metadata reads only the file-level metadata of Shimadzu files", {
+  skip_if_missing_dependencies()
+  files <- c(shimadzu_lcd = "Anthocyanin.lcd",
+             shimadzu_lcd = "shimadzu_tlm_dda.lcd", shimadzu_gcd = "FS19_214.gcd",
+             shimadzu_qgd = "shimadzu_qgd_mrm.qgd",
+             shimadzu_dad = "shimadzuDAD_Anthocyanin.txt",
+             shimadzu_ascii = "multichannel_chrom.txt")
+  for (i in seq_along(files)){
+    name <- files[[i]]
+    path <- extra_test_file(name)
+    format_in <- names(files)[i]
+    fast <- read_metadata(path, format_in = format_in, progress_bar = FALSE)
+    full <- suppressWarnings(extract_metadata(
+      read_chroms(path, format_in = format_in, progress_bar = FALSE)))
+    expect_equal(nrow(fast), 1)
+    expect_true(all(names(fast) %in% names(full)), label = name)
+    expect_equal(fast, full[names(fast)], label = name)
+    expect_false("wavelength" %in% names(fast), label = name)
+  }
+})

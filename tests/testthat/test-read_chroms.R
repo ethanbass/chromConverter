@@ -1123,3 +1123,30 @@ test_that("read_agilent_d recognizes a 'Bruker' .d directory", {
   file.create(file.path(path, "analysis.tdf"))
   expect_error(read_agilent_d(path), "looks like a 'Bruker' .d directory")
 })
+
+test_that("read_metadata reads other formats in full and returns their metadata", {
+  path <- system.file("extdata", "benzoxazinoid_standards",
+                      package = "chromConverter")
+  full <- read_chroms(path, format_in = "chemstation_ch", pattern = "dad1A",
+                      parser = "chromconverter", progress_bar = FALSE)
+  meta <- read_metadata(path, format_in = "chemstation_ch", pattern = "dad1A",
+                        parser = "chromconverter", progress_bar = FALSE)
+  expect_equal(meta, extract_metadata(full))
+  what <- c("sample_name", "run_datetime")
+  expect_equal(read_metadata(path, format_in = "chemstation_ch",
+                             pattern = "dad1A", parser = "chromconverter",
+                             what = what, format_out = "data.table",
+                             progress_bar = FALSE),
+               extract_metadata(full, what = what, format_out = "data.table"))
+})
+
+test_that("read_metadata returns an empty table when no file can be read", {
+  path <- withr::local_tempfile(fileext = ".ch")
+  writeLines("not a chromatogram", path)
+  expect_warning(meta <- read_metadata(path, format_in = "chemstation_ch",
+                                       parser = "chromconverter",
+                                       progress_bar = FALSE),
+                 "could not be interpreted")
+  expect_s3_class(meta, "data.frame")
+  expect_equal(nrow(meta), 0)
+})

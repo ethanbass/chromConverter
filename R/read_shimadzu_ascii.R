@@ -189,6 +189,39 @@ ms_list_to_dataframe <- function(x){
   as.data.frame(do.call(rbind, ms))
 }
 
+#' Sections of a 'Shimadzu' ASCII export that describe the whole file
+#' @noRd
+sz_ascii_file_sections <- c("[Header]", "[File Information]",
+                            "[Sample Information]", "[Original Files]",
+                            "[File Description]", "[Configuration]")
+
+#' Read the metadata of a 'Shimadzu' ASCII export without its data
+#'
+#' Reads lines in blocks until it reaches a section other than the ones
+#' describing the whole file, which come first.
+#' @noRd
+read_shimadzu_ascii_metadata <- function(path, include = NULL,
+                                         metadata_format = c("chromconverter",
+                                                             "raw")){
+  metadata_format <- check_metadata_format(metadata_format,
+                                           if (identical(include, "dad")){
+                                             "shimadzu_dad"
+                                           } else "shimadzu_chrom")
+  con <- file(path, "r")
+  on.exit(close(con))
+  x <- character()
+  repeat {
+    block <- readLines(con, n = 200)
+    x <- c(x, block)
+    sections <- grep("^\\[.*\\]$", x, value = TRUE)
+    if (length(block) == 0 || !all(sections %in% sz_ascii_file_sections)) break
+  }
+  sep <- substr(x[grep("Output Date", x)[1]], 12, 12)
+  metadata_stub(read_shimadzu_metadata(x, sep = sep),
+                format_in = metadata_format, parser = "chromconverter",
+                source_file = path, source_file_format = "shimadzu_ascii")
+}
+
 #' Read 'Shimadzu' Metadata
 #' This function is called internally by `read_shimadzu`.
 #' @author Ethan Bass
@@ -198,9 +231,7 @@ read_shimadzu_metadata <- function(x, met = NULL, sep){
   headings <- grep("\\[*\\]", x)
   names(headings) <- x[headings]
 
-  idx <- which(x[headings] %in% c("[Header]", "[File Information]",
-                                  "[Sample Information]", "[Original Files]",
-                                  "[File Description]", "[Configuration]") )
+  idx <- which(x[headings] %in% sz_ascii_file_sections)
   meta_start <- headings[min(idx)]
   meta_end <- headings[max(idx) + 1]
   meta <- x[(meta_start + 1):(meta_end - 1)]

@@ -32,6 +32,17 @@ test_that("every registry entry is well formed", {
                     label = sprintf("%s fixed args are formals of %s", key, fn))
       }
     }
+    for (parser in names(entry$meta_reader)){
+      fn <- entry$meta_reader[[parser]]
+      expect_true(parser %in% entry$parsers,
+                  label = sprintf("%s metadata reader %s is for one of its parsers",
+                                  key, fn))
+      expect_true(exists(fn, envir = ns, mode = "function"),
+                  label = sprintf("%s metadata reader %s exists", key, fn))
+      expect_true(all(names(entry$fixed) %in%
+                        names(formals(get(fn, envir = ns)))),
+                  label = sprintf("%s fixed args are formals of %s", key, fn))
+    }
   }
 })
 

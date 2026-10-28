@@ -28,8 +28,7 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
   if (!is.null(decimal_mark)){
     decimal_mark <- match.arg(decimal_mark, c(".", ","))
   }
-  xx <- readLines(path)
-  xx <- remove_unicode_chars(xx)
+  xx <- remove_unicode_chars(read_chromeleon_header(path))
   start <- tail(grep("Data:", xx), 1)
   x <- read.csv(path, skip = start, sep = "\t", row.names = NULL,
                 check.names = FALSE)
@@ -72,6 +71,46 @@ read_chromeleon <- function(path, format_out = c("matrix", "data.frame",
     }
   }
   x
+}
+
+#' Read the lines of a 'Chromeleon' export up to its data
+#'
+#' The header ends at the line naming the data (`Chromatogram Data:` or
+#' `Raw Data:`). The lines are read in blocks until one ends in `Data:`, so the
+#' block holding it may also contain the first rows of data.
+#' @noRd
+read_chromeleon_header <- function(path){
+  con <- file(path, "r")
+  on.exit(close(con))
+  xx <- character()
+  repeat {
+    block <- readLines(con, n = 200)
+    xx <- c(xx, block)
+    if (length(block) == 0 || any(grepl("Data:\\s*$", block))) break
+  }
+  xx
+}
+
+#' Read the metadata of a 'Chromeleon' export without its data
+#' @noRd
+read_chromeleon_file_metadata <- function(path,
+                                          metadata_format = c("chromconverter",
+                                                              "raw"),
+                                          decimal_mark = NULL){
+  metadata_format <- check_metadata_format(metadata_format, "chromeleon")
+  meta <- try(read_chromeleon_metadata(
+    remove_unicode_chars(read_chromeleon_header(path))))
+  if (inherits(meta, "try-error")){
+    return(matrix(numeric(0), 0, 0))
+  }
+  if (is.null(decimal_mark)){
+    decimal_mark <- if (isTRUE(grepl(",", meta$`Dilution Factor`))) "," else "."
+  }
+  if (decimal_mark == ","){
+    meta <- lapply(meta, function(x) gsub(",", ".", x))
+  }
+  metadata_stub(meta, format_in = metadata_format, parser = "chromconverter",
+                source_file = path, source_file_format = "chromeleon")
 }
 
 #' @name read_chromeleon_metadata

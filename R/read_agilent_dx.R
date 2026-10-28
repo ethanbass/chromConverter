@@ -168,19 +168,64 @@ read_agilent_dx <- function (path,  what = c("chroms", "dad"), path_out = NULL,
 #' @return A named list of metadata fields, `NA` where the file has none.
 #' @noRd
 read_acmd <- function(path){
+  acmd_metadata(read_acmd_fields(path))
+}
+
+#' Read the fields of `injection.acmd` that hold a single value
+#' @return A named list of strings, `NA` where a field is empty.
+#' @noRd
+read_acmd_fields <- function(path){
   info <- xml2::xml_find_first(xml2::read_xml(path),
                                "./*[local-name()='InjectionInfo']")
-  field <- function(name){
-    node <- xml2::xml_find_first(info, sprintf("./*[local-name()='%s']", name))
-    val <- if (is.na(node)) "" else trimws(xml2::xml_text(node))
-    if (nzchar(val)) val else NA_character_
-  }
+  nodes <- xml2::xml_children(info)
+  nodes <- nodes[xml2::xml_length(nodes) == 0]
+  vals <- trimws(xml2::xml_text(nodes))
+  vals[!nzchar(vals)] <- NA_character_
+  stats::setNames(as.list(vals), xml2::xml_name(nodes))
+}
+
+#' Run time and injection volume from the fields of `injection.acmd`
+#' @noRd
+acmd_metadata <- function(fields){
+  field <- function(name) fields[[name]] %||% NA_character_
   volume <- suppressWarnings(as.numeric(field("InjectionVolume")))
   if (!isTRUE(field("InjectionVolumeUnits") %in% c("\u00b5L", "\u03bcL", "uL"))){
     volume <- NA_real_
   }
   list(run_datetime = parse_iso8601(field("RunDateTime")),
        sample_injection_volume = volume)
+}
+
+#' Read the metadata of an 'OpenLab' `.dx` archive without its data
+#'
+#' Reads `injection.acmd` alone, which records the fields that describe the
+#' whole injection. Those of the individual traces, such as `detector` or
+#' `time_range`, are left out. An archive without `injection.acmd` is read in
+#' full.
+#' @noRd
+read_agilent_dx_metadata <- function(path,
+                                     metadata_format = c("chromconverter",
+                                                         "raw")){
+  metadata_format <- match.arg(metadata_format, c("chromconverter", "raw"))
+  acmd <- grep("^injection\\.acmd$", unzip(path, list = TRUE)$Name,
+               ignore.case = TRUE, value = TRUE)
+  if (length(acmd) == 0){
+    return(read_agilent_dx(path, metadata_format = metadata_format))
+  }
+  fields <- read_acmd_fields(unz(path, acmd[1]))
+  attrs <- if (metadata_format == "raw"){
+    list(metadata = fields)
+  } else {
+    c(list(sample_name = fields[["SampleName"]],
+           sample_position = fields[["Location"]],
+           operator = fields[["RunOperator"]],
+           method = fields[["AcquisitionMethod"]]),
+      acmd_metadata(fields))
+  }
+  attrs <- attrs[!vapply(attrs, function(v) length(v) == 1 && is.na(v),
+                         logical(1))]
+  finalize_metadata(matrix(numeric(0), 0, 0), attrs,
+                    list(source_file = path, parser = "chromconverter"))
 }
 
 #' Attach `injection.acmd` metadata to a trace read from the archive

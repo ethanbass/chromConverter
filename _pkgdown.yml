@@ -5,6 +5,7 @@ reference:
 - title: "Core functions"
   contents:
   - read_chroms
+  - read_metadata
   - read_peaklist
   - extract_metadata
   - add_metadata

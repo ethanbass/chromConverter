@@ -895,6 +895,27 @@ read_sz_file_properties <- function(path){
   c(meta, read_sz_system_info(path), sz_method_metadata(path))
 }
 
+#' Read the file-level metadata of a 'Shimadzu' OLE container
+#'
+#' The metadata-only reader that `read_chroms(metadata_only = TRUE)` uses for
+#' `.lcd`, `.gcd` and `.qgd` files. Returns an empty matrix carrying the
+#' attributes that describe the whole file. Fields belonging to individual
+#' traces, such as `detector` or `wavelength`, are not read.
+#' @noRd
+read_sz_file_metadata <- function(path,
+                                  metadata_format = c("chromconverter", "raw")){
+  metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
+  check_py_module("olefile")
+  ext <- tolower(fs::path_ext(path))
+  meta <- if (ext == "qgd"){
+    c(read_qgd_fp(path), time.unit = "Minutes", sz_method_metadata(path))
+  } else read_sz_file_properties(path)
+  x <- metadata_stub(meta, format_in = metadata_format, source_file = path,
+                     source_file_format = paste0("shimadzu_", ext))
+  attr(x, "detector_model") <- NULL
+  x
+}
+
 #' Read Shimadzu File Properties RAW
 #' @noRd
 read_sz_file_properties_raw <- function(path){

@@ -37,6 +37,54 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
   f <- file(path, "rb")
   on.exit(close(f))
 
+  hdr <- read_cs_uv_header(f)
+  file_version <- hdr$file_version
+  nval <- hdr$nval
+  scaling_value <- hdr$scaling_value
+  lambdas <- hdr$lambdas
+  n_lambdas <- length(lambdas)
+
+  # BODY
+  seek(f, where = hdr$offsets$data_start, origin = "start")
+
+  # Read data and populate arrays
+  decode_array <- switch(file_version, "131_OL" = decode_uv_array,
+                    "131_LC" = decode_uv_delta,
+                    "31" = decode_uv_delta)
+
+  data <- decode_array(f = f, nval = nval, ncol = n_lambdas)
+  if (file_version == "131_OL" &&
+      all(abs(data*scaling_value - round(data*scaling_value)) < 1e-3)){
+    scaling_value <- scaling_value^2
+  }
+  if (scale){
+    data <- data*scaling_value
+  }
+  colnames(data) <- lambdas
+
+  if (data_format == "long"){
+    data <- reshape_chrom_long(data)
+  }
+  data <- convert_chrom_format(data, format_out = format_out,
+                               data_format = data_format)
+
+  if (read_metadata){
+    meta <- cs_uv_metadata(path, hdr,
+                           time_range = as.numeric(c(head(rownames(data), 1),
+                                                     tail(rownames(data), 1))),
+                           scaling_value = scaling_value)
+    data <- attach_metadata(data, meta, format_in = metadata_format,
+                    data_format = data_format, format_out = format_out,
+                    parser = "chromconverter", source_file = source_file,
+                    source_file_format = paste0("chemstation_", file_version),
+                    scale = scale)
+  }
+  data
+}
+
+#' Read the header of an 'Agilent' UV file
+#' @noRd
+read_cs_uv_header <- function(f){
   file_version <- read_cs_string(f)
   seek(f, 348, "start")
   file_type_code <- paste(file_type_name = readBin(f, "character", n = 2),
@@ -69,66 +117,71 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
   lambda_end <- wave_info[2] %/% 20
   delta_lambda <- wave_info[3] %/% 20
 
-  # Compute wavelengths and number of wavelengths
-  lambdas <- seq(lambda_start, lambda_end, by = delta_lambda)
-  n_lambdas <- length(lambdas)
-
-  # BODY
-  seek(f, where = offsets$data_start, origin = "start")
-
-  # Read data and populate arrays
-  decode_array <- switch(file_version, "131_OL" = decode_uv_array,
-                    "131_LC" = decode_uv_delta,
-                    "31" = decode_uv_delta)
-
-  data <- decode_array(f = f, nval = nval, ncol = n_lambdas)
-  if (file_version == "131_OL" &&
-      all(abs(data*scaling_value - round(data*scaling_value)) < 1e-3)){
-    scaling_value <- scaling_value^2
-  }
-  if (scale){
-    data <- data*scaling_value
-  }
-  colnames(data) <- lambdas
-
-  if (data_format == "long"){
-    data <- reshape_chrom_long(data)
-  }
-  data <- convert_chrom_format(data, format_out = format_out,
-                               data_format = data_format)
-
-  if (read_metadata){
-    metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
-    if (!inherits(metadata_from_file, "try-error")){
-      meta <- c(meta, metadata_from_file)
-    }
-    meta$signal <- as.numeric(c(lambda_start, lambda_end))
-    meta$time_range = as.numeric(c(head(rownames(data), 1), tail(rownames(data), 1)))
-    meta$intensity_multiplier <- scaling_value
-    meta$detector <- "DAD"
-    meta$detector_x_unit <- "nm"
-    data <- attach_metadata(data, meta, format_in = metadata_format,
-                    data_format = data_format, format_out = format_out,
-                    parser = "chromconverter", source_file = source_file,
-                    source_file_format = paste0("chemstation_", file_version),
-                    scale = scale)
-  }
-  data
+  list(file_version = file_version, offsets = offsets, meta = meta,
+       nval = nval, scaling_value = scaling_value,
+       lambda_range = c(lambda_start, lambda_end),
+       lambdas = seq(lambda_start, lambda_end, by = delta_lambda))
 }
 
-#' Decode 'Agilent' delta-encoded DAD array
-#' @author Ethan Bass
+#' Metadata of an 'Agilent' UV file
 #' @noRd
-decode_uv_delta <- function(f, nval, ncol){
+cs_uv_metadata <- function(path, hdr, time_range, scaling_value){
+  meta <- hdr$meta
+  metadata_from_file <- try(read_chemstation_metadata(path), silent = TRUE)
+  if (!inherits(metadata_from_file, "try-error")){
+    meta <- c(meta, metadata_from_file)
+  }
+  meta$signal <- as.numeric(hdr$lambda_range)
+  meta$time_range <- time_range
+  meta$intensity_multiplier <- scaling_value
+  meta$detector <- "DAD"
+  meta$detector_x_unit <- "nm"
+  meta
+}
+
+#' Read the metadata of an 'Agilent' UV file without its data
+#'
+#' The records of a delta-encoded file are walked to find the times of the first
+#' and last spectra. The scaling of a `131_OL` file depends on its data, which
+#' are read in full.
+#' @noRd
+read_chemstation_uv_metadata <- function(path,
+                                         metadata_format = c("chromconverter",
+                                                             "raw"),
+                                         scale = TRUE){
+  f <- file(path, "rb")
+  on.exit(close(f))
+  hdr <- read_cs_uv_header(f)
+  if (hdr$file_version == "131_OL"){
+    x <- read_chemstation_uv(path, metadata_format = metadata_format,
+                             scale = scale)
+    x <- transfer_metadata(matrix(numeric(0), 0, 0), x)
+    attr(x, "format_out") <- NULL
+    attr(x, "data_format") <- NULL
+    return(x)
+  }
+  metadata_format <- check_metadata_format(metadata_format, "chemstation")
+  seek(f, where = hdr$offsets$data_start, origin = "start")
+  times <- read_uv_delta_index(f, hdr$nval)$times / 60000
+  meta <- cs_uv_metadata(path, hdr, time_range = times[c(1, hdr$nval)],
+                         scaling_value = hdr$scaling_value)
+  metadata_stub(meta, format_in = metadata_format, parser = "chromconverter",
+                source_file = path,
+                source_file_format = paste0("chemstation_", hdr$file_version),
+                scale = scale)
+}
+
+#' Locate the records of an 'Agilent' delta-encoded DAD array
+#' @noRd
+read_uv_delta_index <- function(f, nval){
   start <- seek(f, NA, "current")
   seek(f, 0, "end")
   fsize <- seek(f, NA, "current")
   seek(f, start, "start")
 
   rw <- readBin(f, "raw", n = fsize - start)
-  n16 <- length(rw) %/% 2L
-  v <- readBin(rw, "integer", n = n16, size = 2, signed = TRUE, endian = "little")
-  u <- readBin(rw, "integer", n = n16, size = 2, signed = FALSE, endian = "little")
+  v <- readBin(rw, "integer", n = length(rw) %/% 2L, size = 2, signed = TRUE,
+               endian = "little")
 
   starts <- integer(nval)
   lens <- integer(nval)
@@ -141,6 +194,21 @@ decode_uv_delta <- function(f, nval, ncol){
 
   tidx <- rep(starts * 2L + 4L, each = 4L) + rep(1:4, nval)
   times <- readBin(rw[tidx], "integer", n = nval, size = 4, endian = "little")
+  list(rw = rw, v = v, starts = starts, lens = lens, times = times)
+}
+
+#' Decode 'Agilent' delta-encoded DAD array
+#' @author Ethan Bass
+#' @noRd
+decode_uv_delta <- function(f, nval, ncol){
+  index <- read_uv_delta_index(f, nval)
+  rw <- index$rw
+  v <- index$v
+  u <- readBin(rw, "integer", n = length(rw) %/% 2L, size = 2, signed = FALSE,
+               endian = "little")
+  starts <- index$starts
+  lens <- index$lens
+  times <- index$times
 
   nslots <- lens %/% 2L - 11L
   idx <- sequence(nslots, from = starts + 12L)

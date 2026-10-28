@@ -188,3 +188,67 @@ test_that("get_filetype works as expected", {
                                         package="chromConverterExtraTests")),
                "agilent_dx")
 })
+
+test_that("read_metadata reads slow formats without their data", {
+  files <- c(chromeleon_uv = "chromeleon_3D.txt", waters_arw = "waters_pda.arw",
+             varian_sms = "DCM1.SMS", chemstation_uv = "chemstation_31.uv",
+             chemstation_uv = "openlab_131.uv", mzml = "STRD15.mzML",
+             cdf = "HP_MS.CDF", cdf = "VARIAN1.CDF",
+             agilent_dx = "MeOH1.dx", agilent_dx = "agilent.dx")
+  for (i in seq_along(files)){
+    path <- extra_test_file(files[[i]])
+    fast <- read_metadata(path, format_in = names(files)[i],
+                          progress_bar = FALSE)
+    full <- suppressWarnings(extract_metadata(
+      read_chroms(path, format_in = names(files)[i], parser = "chromconverter",
+                  progress_bar = FALSE)))
+    expect_true(all(names(fast) %in% names(full)), label = files[[i]])
+    expect_equal(fast, full[names(fast)], label = files[[i]])
+  }
+})
+
+test_that("read_metadata reads Thermo RAW files without their data", {
+  skip_if_missing_thermorawfileparser()
+  path <- extra_test_file("CirA.raw")
+  tmp <- withr::local_tempdir()
+  fast <- read_metadata(path, format_in = "thermoraw", progress_bar = FALSE)
+  full <- extract_metadata(read_chroms(path, format_in = "thermoraw",
+                                       path_out = tmp, progress_bar = FALSE))
+  expect_true(all(names(fast) %in% names(full)))
+  expect_equal(fast, full[names(fast)])
+})
+
+test_that("read_metadata reads an OpenLab .dx archive without injection.acmd", {
+  skip_if_not_installed("zip")
+  path <- extra_test_file("agilent.dx")
+  dir <- withr::local_tempdir()
+  utils::unzip(path, exdir = file.path(dir, "contents"))
+  files <- setdiff(list.files(file.path(dir, "contents"), recursive = TRUE),
+                   "injection.acmd")
+  copy <- file.path(dir, "agilent.dx")
+  zip::zip(copy, files, root = file.path(dir, "contents"))
+  fast <- read_metadata(copy, format_in = "agilent_dx", progress_bar = FALSE)
+  full <- extract_metadata(read_chroms(copy, format_in = "agilent_dx",
+                                       progress_bar = FALSE))
+  expect_equal(fast, full)
+  expect_equal(fast$sample_name, "STD_1_1mM-1MKHCO3")
+})
+
+test_that("read_chromeleon finds the data after a long header mentioning data", {
+  path <- extra_test_file("chromeleon_comma.txt")
+  x <- readLines(path, warn = FALSE)
+  filler <- c("Comment\tsee Raw Data: none",
+              sprintf("Field %d\tvalue", seq_len(250)))
+  long <- withr::local_tempfile(fileext = ".txt")
+  writeLines(c(x[1:3], filler, x[-(1:3)]), long)
+  expect_equal(read_chromeleon(long), read_chromeleon(path),
+               ignore_attr = TRUE)
+  fast <- read_metadata(long, format_in = "chromeleon_uv",
+                        progress_bar = FALSE)
+  full <- extract_metadata(read_chroms(long, format_in = "chromeleon_uv",
+                                       progress_bar = FALSE))
+  expect_equal(fast, full[names(fast)])
+  expect_equal(fast$sample_name,
+               read_metadata(path, format_in = "chromeleon_uv",
+                             progress_bar = FALSE)$sample_name)
+})

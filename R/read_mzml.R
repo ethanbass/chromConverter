@@ -212,3 +212,12 @@ rams_meta_to_list <- function(meta){
   })
   out[!vapply(out, function(v) all(is.na(v)), logical(1))]
 }
+
+#' Read the metadata of an mzML or mzXML file without its data
+#' @noRd
+read_mzml_metadata <- function(path){
+  meta <- RaMS::grabMSdata(path, grab_what = "metadata", verbosity = FALSE)
+  metadata_stub(rams_meta_to_list(meta[["metadata"]]), format_in = "mzml",
+                parser = "RaMS", source_file = path,
+                source_file_format = "mzML")
+}

@@ -117,6 +117,117 @@ read_chroms <- function(paths,
                         sort_by = c("auto", "none", "acquisition_time",
                                     "file_time"),
                         dat = NULL, ...){
+  read_chroms_impl(paths = paths, format_in = format_in,
+                   find_files = find_files, pattern = pattern, parser = parser,
+                   format_out = format_out, data_format = data_format,
+                   path_out = path_out, export_format = export_format,
+                   force = force, read_metadata = read_metadata,
+                   metadata_format = metadata_format,
+                   progress_bar = progress_bar, cl = cl, verbose = verbose,
+                   sample_names = sample_names, sort_by = sort_by, dat = dat,
+                   ...)
+}
+
+#' Read the metadata of chromatograms
+#'
+#' Reads the metadata of chromatogram files into a table, without returning
+#' the chromatograms. It takes the same paths and formats as [read_chroms] and
+#' gives the table that [extract_metadata] would give for the chromatograms
+#' `read_chroms` returns.
+#'
+#' The formats that are slow to read in full are read without decoding the
+#' data: 'Agilent' `.uv`, 'Chromeleon', 'OpenLab' `.dx`, 'Shimadzu' `.lcd`,
+#' `.gcd`, `.qgd` and ASCII, 'Thermo' RAW, 'Varian' SMS and 'Waters' `.arw`
+#' files, and ANDI (`.cdf`), mzML and mzXML. 'OpenLab' 131 `.uv` files are the
+#' exception: their scaling is worked out from the data, so they are decoded in
+#' full. Other formats are read in full and their metadata extracted.
+#'
+#' The 'OpenLab' `.dx` and 'Shimadzu' formats report only the fields that
+#' describe the whole file, leaving out those of its traces, such as
+#' `detector` or `wavelength`. 'Thermo' RAW files leave out the fields that
+#' come from the mzML they are converted to, such as `detector_range`.
+#'
+#' If `parser` is not given, each format is read with the parser that can skip
+#' the data, which for `.uv` files is `chromconverter` even where 'Entab' is
+#' installed.
+#' @inheritParams read_chroms
+#' @inheritParams extract_metadata
+#' @param format_out Class of the table. Either `data.frame`, `data.table` or
+#' `tibble`.
+#' @param ... Additional arguments to the parser. Arguments that a format's
+#' metadata reader does not take are ignored.
+#' @return A `data.frame`, `data.table` or `tibble` with one row per sample
+#' and one column per metadata field, as described in [extract_metadata]. A
+#' table with no rows if none of the files could be read.
+#' @examples
+#' path <- system.file("extdata", "benzoxazinoid_standards",
+#'                     package = "chromConverter")
+#' read_metadata(path, format_in = "chemstation_ch", pattern = "dad1A",
+#'               parser = "chromconverter", progress_bar = FALSE,
+#'               what = c("sample_name", "run_datetime", "method"))
+#' @author Ethan Bass
+#' @export
+read_metadata <- function(paths,
+                          format_in = supported_formats(),
+                          find_files,
+                          pattern = NULL,
+                          parser = c("", "chromconverter", "aston", "entab",
+                                     "thermoraw", "openchrom", "rainbow"),
+                          what = chrom_metadata_fields(),
+                          format_out = c("data.frame", "data.table", "tibble"),
+                          metadata_format = c("chromconverter", "raw"),
+                          collapse = FALSE, expand = FALSE, digits = NULL,
+                          progress_bar, cl = 1,
+                          verbose = getOption("verbose"),
+                          sample_names = c("basename", "sample_name"),
+                          sort_by = c("auto", "none", "acquisition_time",
+                                      "file_time"),
+                          ...){
+  format_out <- match.arg(format_out, c("data.frame", "data.table", "tibble"))
+  path_out <- tempfile("chromConverter_")
+  dir.create(path_out)
+  on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
+  chroms <- read_chroms_impl(paths = paths, format_in = format_in,
+                             find_files = find_files, pattern = pattern,
+                             parser = parser, path_out = path_out,
+                             metadata_format = metadata_format,
+                             progress_bar = progress_bar, cl = cl,
+                             verbose = verbose, sample_names = sample_names,
+                             sort_by = sort_by, metadata_only = TRUE, ...)
+  if (length(chroms) == 0){
+    return(switch(format_out, data.frame = data.frame(),
+                  data.table = data.table::data.table(),
+                  tibble = tibble::tibble()))
+  }
+  extract_metadata(chroms, what = what, format_out = format_out,
+                   collapse = collapse, expand = expand, digits = digits)
+}
+
+#' Read chromatograms, or only their metadata
+#'
+#' The body of [read_chroms] and [read_metadata]. With `metadata_only = TRUE`,
+#' each format is read with its `meta_reader` where it has one (see
+#' `R/parser_registry.R`).
+#' @noRd
+read_chroms_impl <- function(paths,
+                             format_in = supported_formats(),
+                             find_files,
+                             pattern = NULL,
+                             parser = c("", "chromconverter", "aston", "entab",
+                                        "thermoraw", "openchrom", "rainbow"),
+                             format_out = "matrix",
+                             data_format = "wide",
+                             path_out = NULL,
+                             export_format = c("", "csv", "chemstation_csv",
+                                               "cdf", "mzml", "animl", "arw"),
+                             force = FALSE,
+                             read_metadata = TRUE,
+                             metadata_format = "chromconverter",
+                             progress_bar, cl = 1,
+                             verbose = getOption("verbose"),
+                             sample_names = "basename",
+                             sort_by = "auto",
+                             dat = NULL, metadata_only = FALSE, ...){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
   parser <- match.arg(tolower(parser), c("", "chromconverter", "aston","entab",
@@ -148,7 +259,10 @@ read_chroms <- function(paths,
   }
   format_in <- match.arg(tolower(format_in), supported_formats())
   format_in <- canonical_format(format_in)
-  if (parser == ""){
+  fast_parser <- if (metadata_only) names(format_entry(format_in)$meta_reader)
+  if (parser == "" && length(fast_parser) == 1){
+    parser <- fast_parser
+  } else if (parser == ""){
     parser <- check_parser(format_in, find = TRUE)
     if (is.na(parser)) stop(sprintf(
       "Parser could not be identified for format %s", format_in))
@@ -171,7 +285,7 @@ read_chroms <- function(paths,
     stop("Cannot locate files. None of the supplied paths exist.")
   }
   export <- export_format != "" || parser == "openchrom" ||
-    format_in == "thermoraw"
+    (format_in == "thermoraw" && !metadata_only)
   if (export){
     if (is.null(path_out)){
       path_out <- set_temp_directory()
@@ -204,7 +318,8 @@ read_chroms <- function(paths,
                                     export_format = export_format,
                                     return_paths = export_format == "animl")),
                  opts)
-  converter <- build_converter(format_in, parser, opts = opts, dots = list(...))
+  converter <- build_converter(format_in, parser, opts = opts, dots = list(...),
+                               metadata_only = metadata_only)
 
   if (is.null(pattern)){
     pattern <- format_to_extension(format_in)

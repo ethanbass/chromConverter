@@ -122,14 +122,7 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
       offsets <- read_varian_offsets(f)
     }
 
-    meta <- utils::modifyList(meta, read_varian_injection_log(f, offsets))
-
-    # the SamplePrep section is the more specific source for the sample name
-    prep_offset <- offsets[grep("SamplePrep", offsets$name), "start"]
-    seek(f, prep_offset)
-    meta$sample_name <-  readBin(f, "character")
-
-    meta <- read_mod_metadata(f, offsets, meta)
+    meta <- read_varian_file_metadata(f, offsets, meta)
 
     dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = "varian_sms",
@@ -144,6 +137,33 @@ read_varian_sms <- function(path, what = c("MS1", "TIC", "BPC"),
     dat <- collapse_list(dat)
   }
   dat
+}
+
+#' Read the metadata of a 'Varian' SMS file
+#'
+#' Adds the injection log, the sample name and the instrument settings to the
+#' `meta` read from the MSData header.
+#' @noRd
+read_varian_file_metadata <- function(f, offsets, meta){
+  meta <- utils::modifyList(meta, read_varian_injection_log(f, offsets))
+
+  # the SamplePrep section is the more specific source for the sample name
+  prep_offset <- offsets[grep("SamplePrep", offsets$name), "start"]
+  seek(f, prep_offset)
+  meta$sample_name <-  readBin(f, "character")
+
+  read_mod_metadata(f, offsets, meta)
+}
+
+#' Read the metadata of a 'Varian' SMS file without its data
+#' @noRd
+read_varian_sms_metadata <- function(path){
+  f <- file(path, "rb")
+  on.exit(close(f))
+  offsets <- read_varian_offsets(f)
+  meta <- read_varian_file_metadata(f, offsets, read_varian_msdata_header(f))
+  metadata_stub(meta, format_in = "varian_sms", source_file = path,
+                source_file_format = "varian_sms")
 }
 
 #' Read 'Varian' Mod Attribute metadata
