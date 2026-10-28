@@ -676,6 +676,31 @@ test_that("read_shimadzu_qgd reads MRM scans", {
   expect_equal(ours$intensity.x, ours$intensity.y)
 })
 
+test_that("read_shimadzu_qgd splits full scans from MRM scans", {
+  skip_if_missing_dependencies("olefile")
+  path <- extra_test_file("shimadzu_qgd_mixed_mtbls11411.qgd")
+  x <- read_shimadzu_qgd(path, format_out = "data.table")
+  expect_named(x, c("MS1", "MS2", "TIC"))
+  ms1 <- attr(x$MS1, "scan_info")
+  ms2 <- attr(x$MS2, "scan_info")
+  expect_equal(c(nrow(ms1), nrow(ms2)), c(4633, 91800))
+  expect_equal(unique(ms1$scan_type), "scan")
+  expect_equal(unique(ms2$scan_type), "MRM")
+  totals <- tapply(c(x$MS1$intensity, x$MS2$intensity),
+                   c(x$MS1$scan, x$MS2$scan), sum)
+  expect_equal(as.numeric(names(totals)), seq_len(nrow(x$TIC)) - 1)
+  expect_equal(as.numeric(totals), x$TIC$intensity, ignore_attr = TRUE)
+
+  skip_if_not_installed("RaMS")
+  f <- write_mzml(x, path_out = withr::local_tempdir(), show_progress = FALSE)
+  back <- read_mzml(f, what = c("MS1", "chroms"), data_format = "long",
+                    format_out = "data.table")
+  expect_equal(nrow(back$MS1), nrow(x$MS1))
+  srm <- back$chroms[grepl("SRM", back$chroms$chrom_type), ]
+  expect_equal(nrow(srm), nrow(x$MS2))
+  expect_equal(sum(srm$intensity), sum(x$MS2$intensity))
+})
+
 test_that("read_shimadzu_lcd reads 'Shimadzu' IT-TOF data", {
   skip_if_missing_dependencies("olefile")
   path <- extra_test_file("shimadzu_ittof.lcd")
