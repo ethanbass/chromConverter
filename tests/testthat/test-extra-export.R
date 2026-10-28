@@ -253,13 +253,11 @@ test_that("write_mzml writes a file that holds MS2 and nothing else", {
   txt <- paste(readLines(f, warn = FALSE), collapse = "\n")
 
   expect_false(grepl('name="ms level" value="1"', txt))
-  expect_match(txt, 'accession="MS:1000580" name="MSn spectrum"')
-  # an MRM record carries a Q1 per transition rather than one for the scan, so
-  # the precursor is taken from the spectrum where every transition shares it
-  n_scan <- length(unique(attr(x, "scan_info")$scan))
-  expect_length(gregexpr("<precursorList ", txt, fixed = TRUE)[[1]], n_scan)
+  expect_match(txt, '<spectrumList count="0"', fixed = TRUE)
+  expect_match(txt, 'name="selected reaction monitoring chromatogram"',
+               fixed = TRUE)
 
-  xx <- read_mzml(f, what = "MS2")
-  expect_equal(sort(unique(xx$MS2$premz)), sort(unique(x$precursor_mz)))
-  expect_equal(sort(xx$MS2$fragmz), sort(x$mz), tolerance = 1e-9)
+  xx <- read_mzml(f, what = "chroms", data_format = "long")$chroms
+  expect_equal(sort(unique(xx$target_mz)), sort(unique(x$precursor_mz)))
+  expect_equal(sort(xx$product_mz), sort(x$mz), tolerance = 1e-9)
 })

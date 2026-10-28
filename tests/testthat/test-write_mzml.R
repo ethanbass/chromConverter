@@ -475,6 +475,51 @@ test_that("write_mzml writes the collision energy of MS2 spectra", {
   expect_equal(read_mzml(f, what = "MS2")$MS2$voltage, x$voltage)
 })
 
+test_that("write_mzml writes MRM scans as one SRM chromatogram per transition", {
+  tmp <- withr::local_tempdir()
+  # scans 1 and 3 are MRM scans of two transitions, one of whose product m/z
+  # drifts between them; scan 2 is a product-ion scan, with its precursor
+  # missing from one row
+  ms2 <- data.frame(scan = rep(1:3, each = 2),
+                    rt = rep(c(0.1, 0.2, 0.3), each = 2),
+                    precursor_mz = c(160.1, 175.1, 300, NA, 160.1, 175.1),
+                    mz = c(58, 58.0031, 120, 150, 58, 58),
+                    intensity = 1:6)
+  attr(ms2, "data_format") <- "long"
+  attr(ms2, "scan_info") <- data.frame(
+    scan = 1:3, rt = c(0.1, 0.2, 0.3), ms_level = 2L, polarity = "positive",
+    precursor_mz = c(NA, 300, NA), collision_energy = c(NA, 20, NA),
+    scan_type = c("MRM", "product ion scan", "MRM"))
+  unrecorded <- ms2
+  attr(unrecorded, "scan_info") <- NULL
+  # a file holding only MS2 comes back as a bare table
+  bare <- ms2
+  attr(bare, "detector") <- "MS"
+
+  for (x in list(list(MS2 = ms2), list(MS2 = unrecorded), bare)){
+    f <- write_mzml(x, path_out = tmp, sample_name = "mrm",
+                    force = TRUE, show_progress = FALSE)
+    txt <- paste(readLines(f, warn = FALSE), collapse = "\n")
+    expect_match(txt, '<spectrumList count="1"', fixed = TRUE)
+    expect_equal(regmatches(txt, gregexpr('(?<=<chromatogram id=")[^"]+', txt,
+                                          perl = TRUE))[[1]],
+                 paste0(if (!identical(x, list(MS2 = unrecorded))) "+ ",
+                        c("SRM SIC Q1=160.1 Q3=58", "SRM SIC Q1=175.1 Q3=58")))
+    expect_match(txt, 'name="selected reaction monitoring chromatogram"',
+                 fixed = TRUE)
+    expect_index_offsets_exact(f, n_spectra = 1, n_chromatograms = 2)
+    expect_no_error(xml2::read_xml(f))
+  }
+
+  skip_if_not_installed("RaMS")
+  back <- read_mzml(f, what = c("MS2", "chroms"), data_format = "long",
+                    format_out = "data.frame")
+  expect_equal(back$MS2$fragmz, c(120, 150))
+  expect_equal(back$chroms$intensity, c(1, 5, 2, 6))
+  expect_equal(back$chroms$target_mz, c(160.1, 160.1, 175.1, 175.1))
+  expect_equal(back$chroms$product_mz, rep(58, 4))
+})
+
 test_that("write_mzml refuses a table it cannot build a spectrum from", {
   local_reproducible_output()
   # a missing column used to encode as an empty binary array, leaving the

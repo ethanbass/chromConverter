@@ -53,7 +53,9 @@
 #' with `rt`, `mz` and `intensity` columns, and a `precursor_mz` column before
 #' `mz` for `MS2`. They are returned as a `data.table` when `format_out` is
 #' `matrix`. Each table of spectra has a `scan_info` attribute with one row per
-#' scan, giving its `scan`, `rt`, `ms_level` and `polarity`, and for `MS2` its
+#' scan, giving its `scan`, `rt`, `ms_level`, `polarity` and `scan_type`
+#' (`"scan"`, `"SIM"`, `"MRM"` or `"product ion scan"`, and `NA` for any other
+#' type), and for `MS2` its
 #' `precursor_mz` and `collision_energy`.
 #' Metadata are attached as [attributes] if `read_metadata` is `TRUE`. With `collapse = TRUE`, a list of one element is replaced by that
 #' element.

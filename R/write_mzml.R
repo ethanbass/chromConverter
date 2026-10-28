@@ -20,13 +20,23 @@
 #' `collision_energy` (or `voltage`) column. The isolation window and precursor
 #' charge are not written, as no parser in the package reads them.
 #'
+#' MRM scans are written to the `chromatogramList` instead, as one selected
+#' reaction monitoring chromatogram (`MS:1001473`) per transition, with its
+#' precursor and product m/z as the targets of their isolation windows, as
+#' 'msconvert' writes them. A scan is taken to be MRM where the `scan_type`
+#' column of the `scan_info` attribute says so, or, where it records no type,
+#' where the scan holds more than one `precursor_mz`. Precursor or product m/z
+#' values that lie within 0.005 of the next value up are taken to be the same
+#' transition. Read them back with `read_mzml(what = "chroms")`.
+#'
 #' Retention times are written in minutes (`UO:0000031`), as chromConverter
 #' reports them, rather than converted to seconds as [write_andi_ms] does.
 #'
 #' The streams to write come from the names of `data`, so a bare chromatogram
 #' has to say what it holds through its `detector` attribute: `UV` and `DAD`
 #' are written as a DAD stream, and `MS` as `MS1`, or as `MS2` where the table
-#' also carries an `ms_level` attribute above 1. Any other `detector`,
+#' also carries an `ms_level` attribute above 1, or a `scan_info` attribute
+#' whose scans are all above level 1. Any other `detector`,
 #' including a missing or `NA` one (which is how several parsers report an
 #' unknown detector), is an error: the function stops rather than guess, and
 #' asks for a named list instead.
@@ -114,7 +124,9 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
     detector <- streams[[detector]]
     # a file holding one level and nothing else comes back as a bare table, so
     # the detector alone would send an MRM or product-ion run to MS1
-    if (identical(detector, "MS1") && isTRUE(attr(data, "ms_level") > 1)){
+    level <- attr(data, "ms_level") %||% attr(data, "scan_info")$ms_level
+    if (identical(detector, "MS1") && length(level) > 0 &&
+        isTRUE(all(level > 1))){
       detector <- "MS2"
     }
     data <- setNames(list(data), detector)
@@ -182,8 +194,14 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   n_scan <- sum(vapply(counted, function(i){
     tryCatch(n_spectra(data, i), error = function(cond) NA_real_)
   }, numeric(1)), na.rm = TRUE)
-  if (!is.null(roster)) n_scan <- n_scan + nrow(roster$info)
-  write_mzml_header(w, meta = meta, n_scan = n_scan, what = what,
+  srm <- roster$srm
+  content <- what
+  if (!is.null(roster)){
+    n_scan <- n_scan + nrow(roster$info)
+    if (!any(roster$info$ms_level > 1)) content <- setdiff(content, "MS2")
+    if (length(srm) > 0) content <- c(content, "SRM")
+  }
+  write_mzml_header(w, meta = meta, n_scan = n_scan, what = content,
                     indexed = indexed, instrument_info = instrument_info,
                     sample_name = sample_name)
   spectrum_indices <- c()
@@ -214,12 +232,9 @@ write_mzml <- function(data, path_out, sample_name = NULL, what = NULL,
   }
 
   mz_write(w, '  </spectrumList>\n') # close spectrumList
-  if (any(what %in% c("TIC","BPC"))){
-    chrom_indices <- write_mzml_chromlist(w, data,
-                                         what = what[what %in% c("TIC", "BPC")],
-                                         indexed = indexed, compress = compress,
-                                         verbose = verbose)
-  } else chrom_indices <- NULL
+  chrom_indices <- write_mzml_chromlist(w, data, what = what, srm = srm,
+                                        indexed = indexed, compress = compress,
+                                        verbose = verbose)
   mz_write(w, '   </run>\n  </mzML>\n')
   if (indexed){
     index_count <- 0
@@ -407,6 +422,10 @@ create_mzml_file_description <- function(meta, what = "MS1"){
   if ("MS2" %in% what){
     content <- c(content,
       '<cvParam cvRef="MS" accession="MS:1000580" name="MSn spectrum"/>')
+  }
+  if ("SRM" %in% what){
+    content <- c(content,
+      '<cvParam cvRef="MS" accession="MS:1001473" name="selected reaction monitoring chromatogram"/>')
   }
   sprintf(
   '  <fileDescription>
@@ -679,17 +698,22 @@ ms_scan_roster <- function(data, what){
       info <- data.frame(key = info[[by]], rt = info$rt, ms_level = lvl_n,
                          polarity = info$polarity %||% default_polarity,
                          precursor_mz = info$precursor_mz %||% NA_real_,
-                         collision_energy = info$collision_energy %||% NA_real_)
+                         collision_energy = info$collision_energy %||% NA_real_,
+                         scan_type = info$scan_type %||% NA_character_)
     } else {
       # `match` rather than the first row of each group: `group_scans` sorts
       # the keys when it has to fall back on `split`
       rt <- get_column(x, "rt")[match(grp$keys, get_column(x, by))]
       info <- data.frame(key = grp$keys, rt = rt, ms_level = lvl_n,
                          polarity = default_polarity,
-                         precursor_mz = NA_real_, collision_energy = NA_real_)
+                         precursor_mz = NA_real_, collision_energy = NA_real_,
+                         scan_type = NA_character_)
     }
     info$j <- match(info$key, grp$keys)
-    list(info = info, by = by, get_scan = grp$get_scan, empty = x[0])
+    mrm <- is_mrm_scan(x, info, by)
+    srm <- if (any(mrm)) srm_traces(x, info[mrm, , drop = FALSE], by)
+    list(info = info[!mrm, , drop = FALSE], by = by, get_scan = grp$get_scan,
+         empty = x[0], srm = srm)
   })
   names(parts) <- lvls
 
@@ -720,7 +744,97 @@ ms_scan_roster <- function(data, what){
        get_scan = function(i){
          p <- parts[[info$part[i]]]
          if (is.na(info$j[i])) p$empty else p$get_scan(info$j[i])
-       })
+       },
+       srm = unlist(lapply(parts, function(p) p$srm), recursive = FALSE,
+                    use.names = FALSE))
+}
+
+#' Which scans of a stream are MRM
+#'
+#' A scan is MRM where its `scan_type` says so. Where the type is not recorded,
+#' a scan whose rows hold more than one precursor m/z is taken to be MRM, since
+#' no other scan type selects more than one precursor.
+#' @param x The stream, as returned by `prepare_spectra`.
+#' @param info One row per scan, keyed by `key`.
+#' @param by The column of `x` that `key` refers to.
+#' @noRd
+is_mrm_scan <- function(x, info, by){
+  mrm <- info$scan_type %in% "MRM"
+  unknown <- is.na(info$scan_type)
+  if (any(unknown) && "precursor_mz" %in% names(x)){
+    pairs <- unique(data.frame(key = get_column(x, by),
+                               precursor_mz = get_column(x, "precursor_mz")))
+    pairs <- pairs[!is.na(pairs$precursor_mz), , drop = FALSE]
+    mixed <- pairs$key[duplicated(pairs$key)]
+    mrm <- mrm | (unknown & info$key %in% mixed)
+  }
+  mrm
+}
+
+#' Gather the MRM scans of a stream into one trace per transition
+#' @param x The stream, as returned by `prepare_spectra`.
+#' @param info The rows of the roster for the MRM scans.
+#' @param by The column of `x` that `info$key` refers to.
+#' @return A list of traces, each a list with the `id` to write, its
+#' `polarity`, `precursor_mz`, `product_mz` and `collision_energy`, and the
+#' `rt` and `intensity` of its points in order of retention time.
+#' @noRd
+srm_traces <- function(x, info, by){
+  key <- get_column(x, by)
+  rows <- which(key %in% info$key)
+  i <- match(key[rows], info$key)
+  energy <- info$collision_energy[i]
+  if ("collision_energy" %in% names(x)){
+    energy <- ifelse(is.na(energy), get_column(x, "collision_energy")[rows],
+                     energy)
+  }
+  pts <- data.frame(polarity = info$polarity[i],
+                    precursor_mz = snap_mz(get_column(x, "precursor_mz")[rows]),
+                    product_mz = snap_mz(get_column(x, "mz")[rows]),
+                    collision_energy = energy,
+                    rt = get_column(x, "rt")[rows],
+                    intensity = get_column(x, "intensity")[rows])
+  transition <- c("polarity", "precursor_mz", "product_mz", "collision_energy")
+  # pasted rather than split on the columns, which would drop the rows of any
+  # transition with an `NA` among them
+  group <- do.call(paste, c(pts[transition], sep = "\r"))
+  groups <- split(pts, factor(group, levels = unique(group)))
+  traces <- lapply(groups, function(g){
+    g <- g[order(g$rt), , drop = FALSE]
+    c(as.list(g[1, transition]), list(rt = g$rt, intensity = g$intensity))
+  })
+  ids <- vapply(traces, function(tr){
+    polarity <- andi_ms_polarity(tr$polarity)
+    sign <- if (is.null(polarity)) "" else
+      if (polarity == "Positive Polarity") "+ " else "- "
+    sprintf("%sSRM SIC Q1=%s Q3=%s", sign, as.character(tr$precursor_mz),
+            as.character(tr$product_mz))
+  }, character(1))
+  # the same transition can be monitored at more than one collision energy
+  dup <- duplicated(ids) | duplicated(ids, fromLast = TRUE)
+  ids[dup] <- paste0(ids[dup], " CE=",
+                     vapply(traces[dup], function(tr)
+                       as.character(tr$collision_energy), character(1)))
+  unname(Map(function(tr, id) c(list(id = id), tr), traces, ids))
+}
+
+#' Merge the m/z values of a transition that drift between scans
+#'
+#' 'MassHunter' stores the m/z of a transition as a float that can change in
+#' the third decimal between scans, which would split one transition into
+#' several traces. Sorted values no more than `tol` apart are chained into one
+#' group and replaced by its most common value. The default is finer than the m/z grid of any parser in the
+#' package.
+#' @noRd
+snap_mz <- function(mz, tol = 0.005){
+  u <- sort(unique(mz))
+  if (length(u) < 2) return(mz)
+  cluster <- cumsum(c(TRUE, diff(u) > tol))
+  counts <- tabulate(match(mz, u), length(u))
+  best <- vapply(split(seq_along(u), cluster), function(k){
+    u[k][which.max(counts[k])]
+  }, numeric(1))
+  unname(best[cluster[match(mz, u)]])
 }
 
 #' Write the mass spectra of every level as one spectrumList
@@ -826,12 +940,7 @@ mzml_precursor_list <- function(ms_level, precursor_mz, parent_id,
   ref <- if (length(parent_id) == 1 && !is.na(parent_id)){
     sprintf(' spectrumRef="%s"', parent_id)
   } else ""
-  energy <- if (length(collision_energy) == 1 && !is.na(collision_energy)){
-    sprintf(paste0('\n          <cvParam cvRef="MS" accession="MS:1000045" ',
-                   'name="collision energy" value="%s" unitCvRef="UO" ',
-                   'unitAccession="UO:0000266" unitName="electronvolt"/>'),
-            as.character(collision_energy))
-  } else ""
+  energy <- mzml_collision_energy_param(collision_energy)
   sprintf('
     <precursorList count="1">
       <precursor%s>
@@ -845,6 +954,16 @@ mzml_precursor_list <- function(ms_level, precursor_mz, parent_id,
         </activation>
       </precursor>
     </precursorList>', ref, as.character(precursor_mz), energy)
+}
+
+#' Collision energy cvParam
+#' @noRd
+mzml_collision_energy_param <- function(collision_energy){
+  if (length(collision_energy) != 1 || is.na(collision_energy)) return("")
+  sprintf(paste0('\n          <cvParam cvRef="MS" accession="MS:1000045" ',
+                 'name="collision energy" value="%s" unitCvRef="UO" ',
+                 'unitAccession="UO:0000266" unitName="electronvolt"/>'),
+          as.character(collision_energy))
 }
 
 #' Create mzML mass spectrum node
@@ -997,36 +1116,38 @@ create_mzml_dad_spectrum <- function(scan_data, scan, index, rt, tic = NULL,
 }
 
 #' Write mzML chromList
+#' @param srm Traces of MRM scans, as returned by `srm_traces`, written after
+#' the `TIC` and `BPC`.
 #' @author Ethan Bass
 #' @noRd
-write_mzml_chromlist <- function(w, data, what = c("TIC", "BPC"),
+write_mzml_chromlist <- function(w, data, what = c("TIC", "BPC"), srm = NULL,
                                  indexed = TRUE, compress = TRUE,
                                  verbose = getOption("verbose")){
-  chroms <- match.arg(toupper(what), c("TIC", "BPC"), several.ok = TRUE)
-  if (length(chroms) > 0){
-    chrom_index <- vector("list", length(chroms))
-    mz_write(w, sprintf('    <chromatogramList count="%d" defaultDataProcessingRef="chromConverter_processing">\n',
-                length(chroms)))
-    c_index <- 0
-    if (any(chroms == "TIC")){
-      if (indexed){
-        chrom_index[[c_index + 1]] <- list(id = "TIC", offset = w$pos)
-      }
-      write_mzml_chrom(w = w, data = data, index = c_index, what = "TIC",
-                       compress = compress, verbose = verbose)
-      c_index <- c_index + 1
-    }
-    if (any(chroms == "BPC")){
-      if (indexed){
-        # `idRef` must reference the element's `id`, which is the name
-        chrom_index[[c_index + 1]] <- list(id = "BPC", offset = w$pos)
-      }
-      write_mzml_chrom(w = w, data = data, index = c_index, what = "BPC",
-                       compress = compress, verbose = verbose)
-      c_index <- c_index + 1
-    }
-    mz_write(w, '      </chromatogramList>\n')
+  chroms <- intersect(c("TIC", "BPC"), toupper(what))
+  n <- length(chroms) + length(srm)
+  if (n == 0) return(NULL)
+  chrom_index <- vector("list", n)
+  mz_write(w, sprintf('    <chromatogramList count="%d" defaultDataProcessingRef="chromConverter_processing">\n',
+              n))
+  for (i in seq_along(chroms)){
+    # `idRef` must reference the element's `id`, which is the name
+    chrom_index[[i]] <- list(id = chroms[i], offset = w$pos)
+    write_mzml_chrom(w = w, data = data, index = i - 1, what = chroms[i],
+                     compress = compress, verbose = verbose)
   }
+  if (verbose && length(srm) > 0){
+    message(sprintf("Writing %d SRM chromatograms.", length(srm)))
+  }
+  for (i in seq_along(srm)){
+    k <- length(chroms) + i
+    chrom_index[[k]] <- list(id = srm[[i]]$id, offset = w$pos)
+    mz_write(w, mzml_chromatogram(id = srm[[i]]$id, index = k - 1,
+                                  rt = srm[[i]]$rt,
+                                  intensity = srm[[i]]$intensity,
+                                  params = mzml_srm_params(srm[[i]]),
+                                  compress = compress))
+  }
+  mz_write(w, '      </chromatogramList>\n')
   chrom_index
 }
 
@@ -1044,14 +1165,22 @@ write_mzml_chrom <- function(w, index, data, what = c("TIC", "BPC"),
   if (!inherits(cdata, "data.frame")){
     cdata <- as.data.frame(cdata)
   }
-  array_length <- nrow(cdata)
-  rt_encoded <- encode_data(cdata$rt, compress = compress)
-  int_encoded <- encode_data(cdata$intensity, compress = compress)
-  id <- what
   cv_param <- switch(what, "TIC" = '<cvParam cvRef="MS" accession="MS:1000235" name="total ion current chromatogram" value=""/>',
                      "BPC" = '<cvParam cvRef="MS" accession="MS:1000628" name="basepeak chromatogram" value=""/>')
+  mz_write(w, mzml_chromatogram(id = what, index = index, rt = cdata$rt,
+                                intensity = cdata$intensity,
+                                params = cv_param, compress = compress))
+}
 
-  mz_write(w, sprintf('<chromatogram id="%s" index="%d" defaultArrayLength="%d">
+#' mzML chromatogram node
+#' @param params The XML that describes the chromatogram, written before its
+#' arrays.
+#' @noRd
+mzml_chromatogram <- function(id, index, rt, intensity, params,
+                              compress = TRUE){
+  rt_encoded <- encode_data(rt, compress = compress)
+  int_encoded <- encode_data(intensity, compress = compress)
+  sprintf('<chromatogram id="%s" index="%d" defaultArrayLength="%d">
       %s
         <binaryDataArrayList count="2">
             <binaryDataArray encodedLength="%d">
@@ -1067,9 +1196,40 @@ write_mzml_chrom <- function(w, index, data, what = c("TIC", "BPC"),
         <binary>%s</binary>
       </binaryDataArray>
     </binaryDataArrayList>
-        </chromatogram>\n', id, index, array_length, cv_param,
-              nchar(rt_encoded$base64), rt_encoded$compression_param, rt_encoded$base64,
-              nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64))
+        </chromatogram>\n', id, index, length(rt), params,
+          nchar(rt_encoded$base64), rt_encoded$compression_param, rt_encoded$base64,
+          nchar(int_encoded$base64), int_encoded$compression_param, int_encoded$base64)
+}
+
+#' Parameters of an SRM chromatogram
+#'
+#' The precursor and product are written as the targets of their isolation
+#' windows, as 'msconvert' writes them.
+#' @param trace One trace, as returned by `srm_traces`.
+#' @noRd
+mzml_srm_params <- function(trace){
+  isolation <- paste0('<cvParam cvRef="MS" accession="MS:1000827" ',
+                      'name="isolation window target m/z" value="%s" ',
+                      'unitCvRef="MS" unitAccession="MS:1000040" ',
+                      'unitName="m/z"/>')
+  sprintf('<cvParam cvRef="MS" accession="MS:1001473" name="selected reaction monitoring chromatogram" value=""/>%s
+        <precursor>
+          <isolationWindow>
+            %s
+          </isolationWindow>
+          <activation>
+            <cvParam cvRef="MS" accession="MS:1000044" name="dissociation method"/>%s
+          </activation>
+        </precursor>
+        <product>
+          <isolationWindow>
+            %s
+          </isolationWindow>
+        </product>',
+          mzml_polarity_param(trace$polarity),
+          sprintf(isolation, as.character(trace$precursor_mz)),
+          mzml_collision_energy_param(trace$collision_energy),
+          sprintf(isolation, as.character(trace$product_mz)))
 }
 
 #' Encode mzml data

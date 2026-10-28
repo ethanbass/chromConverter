@@ -1961,11 +1961,14 @@ test_that("read_agilent_d reads 'MassHunter' MS2 as 'ProteoWizard' does", {
                       format_out = "data.table", data_format = "long")
   ref <- RaMS::grabMSdata(paste0(path, ".mzML"), grab_what = c("MS2", "chroms"),
                           verbosity = 0)
+  info <- attr(x$MS2, "scan_info")
+  expect_equal(sum(info$scan_type == "MRM"), 571)
+  expect_equal(sum(info$scan_type == "product ion scan"), 151)
   f <- write_mzml(x, path_out = dir, what = c("MS1", "MS2"),
                   show_progress = FALSE)
-  back <- read_mzml(f, what = "MS2", data_format = "long")$MS2
-  expect_equal(back$voltage[!duplicated(back$rt)],
-               attr(x$MS2, "scan_info")$collision_energy)
+  back <- read_mzml(f, what = c("MS2", "chroms"), data_format = "long")
+  expect_equal(back$MS2$voltage[!duplicated(back$MS2$rt)],
+               info$collision_energy[info$scan_type == "product ion scan"])
   x$MS2$scan <- match(x$MS2$rt, unique(x$MS2$rt))
   scan_of <- function(rt) match(round(rt, 5), round(unique(x$MS2$rt), 5))
 
@@ -1978,12 +1981,23 @@ test_that("read_agilent_d reads 'MassHunter' MS2 as 'ProteoWizard' does", {
   expect_equal(info$collision_energy[ours$scan], ours$voltage)
   expect_equal(attr(x$MS2, "polarity"), "negative")
 
-  srm <- ref$chroms[grepl("^SRM", ref$chroms$chrom_type), ]
+  srm <- ref$chroms[grepl("SRM", ref$chroms$chrom_type), ]
+  expect_equal(nrow(srm), 4568)
   srm$scan <- scan_of(srm$rt)
   ours <- x$MS2[srm, on = c("scan", mz = "product_mz"), roll = "nearest"]
   expect_false(anyNA(srm$scan))
   expect_equal(ours$intensity, ours$int)
   expect_equal(ours$precursor_mz, ours$target_mz, tolerance = 1e-6)
+
+  # 'msconvert' writes each of the 8 transitions twice
+  written <- data.table::as.data.table(back$chroms)
+  written <- written[grepl("SRM", written$chrom_type), ]
+  expect_equal(length(unique(written$chrom_type)), 8)
+  written$scan <- scan_of(written$rt)
+  joined <- srm[written, on = c("scan", "product_mz"), roll = "nearest"]
+  expect_equal(nrow(joined), sum(info$scan_type == "MRM") * 4)
+  expect_equal(joined$intensity, joined$int)
+  expect_equal(joined$i.target_mz, joined$target_mz, tolerance = 1e-6)
 })
 
 test_that("call_rainbow reads 'MassHunter' centroids with `centroid = TRUE`", {

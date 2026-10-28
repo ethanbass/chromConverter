@@ -657,6 +657,21 @@ test_that("read_shimadzu_qgd reads MRM scans", {
   expect_equal(names(sort(table(x$MS2$mz), decreasing = TRUE))[1:2],
                c("73", "147.1"))
   expect_length(read_shimadzu_qgd(path, what = "MS1"), 0)
+  info <- attr(x$MS2, "scan_info")
+  expect_equal(nrow(info), 84420)
+  expect_equal(unique(info$scan_type), "MRM")
+
+  skip_if_not_installed("RaMS")
+  f <- write_mzml(x, path_out = withr::local_tempdir(), show_progress = FALSE)
+  back <- read_mzml(f, what = c("MS2", "chroms"), data_format = "long",
+                    format_out = "data.table")
+  expect_equal(nrow(back$MS2), 0)
+  srm <- back$chroms[grepl("SRM", back$chroms$chrom_type), ]
+  expect_equal(length(unique(srm$chrom_type)), 719)
+  ours <- merge(x$MS2, srm, by.x = c("rt", "precursor_mz", "mz"),
+                by.y = c("rt", "target_mz", "product_mz"))
+  expect_equal(nrow(ours), nrow(x$MS2))
+  expect_equal(ours$intensity.x, ours$intensity.y)
 })
 
 test_that("read_shimadzu_lcd reads 'Shimadzu' IT-TOF data", {
@@ -838,12 +853,15 @@ test_that("read_shimadzu_lcd can read 'Shimadzu' TLM (triple quadrupole) data", 
   # per-scan summary, describing the level it is attached to
   scan_info <- attr(x, "scan_info")
   expect_s3_class(scan_info, "data.frame")
-  expect_equal(dim(scan_info), c(4793, 7))
+  expect_equal(dim(scan_info), c(4793, 8))
   expect_equal(names(scan_info), c("scan", "rt", "event", "ms_level",
-                                   "polarity", "precursor_mz", "n_points"))
+                                   "scan_type", "polarity", "precursor_mz",
+                                   "n_points"))
   expect_equal(unique(scan_info$ms_level), 1)
+  expect_equal(unique(scan_info$scan_type), "scan")
   expect_equal(nrow(attr(ms$MS2, "scan_info")), 273)
   expect_equal(unique(attr(ms$MS2, "scan_info")$ms_level), 2)
+  expect_equal(unique(attr(ms$MS2, "scan_info")$scan_type), "product ion scan")
   expect_equal(sort(unique(c(scan_info$event,
                              attr(ms$MS2, "scan_info")$event))), 1:4)
   expect_equal(as.vector(table(scan_info$polarity)), c(2396, 2397))

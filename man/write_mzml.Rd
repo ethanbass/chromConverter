@@ -81,13 +81,23 @@ as \code{MS:1000045} where it is known, from the \code{scan_info} attribute or a
 \code{collision_energy} (or \code{voltage}) column. The isolation window and precursor
 charge are not written, as no parser in the package reads them.
 
+MRM scans are written to the \code{chromatogramList} instead, as one selected
+reaction monitoring chromatogram (\code{MS:1001473}) per transition, with its
+precursor and product m/z as the targets of their isolation windows, as
+'msconvert' writes them. A scan is taken to be MRM where the \code{scan_type}
+column of the \code{scan_info} attribute says so, or, where it records no type,
+where the scan holds more than one \code{precursor_mz}. Precursor or product m/z
+values that lie within 0.005 of the next value up are taken to be the same
+transition. Read them back with \code{read_mzml(what = "chroms")}.
+
 Retention times are written in minutes (\code{UO:0000031}), as chromConverter
 reports them, rather than converted to seconds as \link{write_andi_ms} does.
 
 The streams to write come from the names of \code{data}, so a bare chromatogram
 has to say what it holds through its \code{detector} attribute: \code{UV} and \code{DAD}
 are written as a DAD stream, and \code{MS} as \code{MS1}, or as \code{MS2} where the table
-also carries an \code{ms_level} attribute above 1. Any other \code{detector},
+also carries an \code{ms_level} attribute above 1, or a \code{scan_info} attribute
+whose scans are all above level 1. Any other \code{detector},
 including a missing or \code{NA} one (which is how several parsers report an
 unknown detector), is an error: the function stops rather than guess, and
 asks for a named list instead.

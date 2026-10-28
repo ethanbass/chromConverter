@@ -42,7 +42,8 @@ A named list holding whichever of the requested \code{levels} the file
 has, each a long table with columns \code{scan}, \code{rt} (minutes), \code{mz} and
 \code{intensity}, and a \code{precursor_mz} column before \code{mz} where the scans carry
 one. A per-scan summary
-(retention time, event, MS level, polarity, precursor m/z, point count) is
+(retention time, event, MS level, scan type, polarity, precursor m/z, point
+count) is
 attached to each as a \code{scan_info} attribute.
 }
 \description{

@@ -46,7 +46,9 @@ whether it is returned as a \code{matrix}, \code{data.frame}, or \code{data.tabl
 spectra are always long, with columns
 \code{scan}, \code{rt}, \code{mz} and \code{intensity}, plus \code{precursor_mz} before \code{mz} in the
 MRM spectra, and a \code{matrix} resolves to a
-\code{data.table}. Metadata are attached as \link{attributes} if \code{read_metadata} is
+\code{data.table}. Each table of spectra has a \code{scan_info} attribute with one row
+per scan, giving its \code{scan}, \code{rt}, \code{ms_level} and \code{scan_type} (\code{"scan"} or
+\code{"MRM"}). Metadata are attached as \link{attributes} if \code{read_metadata} is
 \code{TRUE}.
 }
 \description{

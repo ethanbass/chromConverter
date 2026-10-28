@@ -6,6 +6,9 @@
 * Product ion and MRM spectra are now read by default from 'MassHunter' `.d` directories, as `MS2` with a `precursor_mz` column. See `?read_agilent_d`.
 * Mass spectra, TIC and BPC from 'MassHunter' and 'OpenLab' files now report their `polarity`, which `write_mzml` records in the mzML.
 * `write_mzml` now records the collision energy of MS2 spectra where it is known, as for 'MassHunter' files or spectra read by `read_mzml`. See `?write_mzml`.
+* `write_mzml` now writes MRM scans as one selected reaction monitoring chromatogram per transition. Previously they were MS2 spectra, and scans monitoring several precursors lost them. See `?write_mzml`.
+* Spectra from 'MassHunter' and 'Shimadzu' triple quadrupole `.lcd` files now give each scan's type, such as `"MRM"`, in `scan_info$scan_type`. 'Shimadzu' `.qgd` spectra now have a `scan_info` attribute too.
+* Data from 'Shimadzu' `.qgd` files now report `"MS"` as their `detector`, so `write_mzml` accepts them without wrapping them in a named list.
 * Profile spectra can now be read from 'Thermo' RAW files with `centroid = FALSE`, which skips the vendor's peak picking. See `?read_thermoraw`.
 * 'Shimadzu' LCMS-IT-TOF `.lcd` files can now be read: MS1 and MS2 profile spectra, and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 * 'Shimadzu' single quadrupole `.lcd` files, such as those from the LCMS-2020, can now be read: centroided and profile MS1 spectra and a TIC per acquisition event. See `?read_shimadzu_lcd`.

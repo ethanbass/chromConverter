@@ -289,6 +289,7 @@ read_agilent_ms <- function(scan_file, peak_file, xsd, what, format_out,
 #' `MS2` holds the product ion and MRM scans, with the scan's `MzOfInterest`
 #' as `precursor_mz`. Neutral loss and precursor ion scans are skipped. Each
 #' table of spectra has a `scan_info` attribute with one row per scan. Its
+#' `scan_type` is named from the scan's `ScanType` code, and its
 #' `collision_energy` is the absolute value of the stored one, which is
 #' negative in negative ion mode.
 #' @param scan_file,peak_file Paths to `MSScan.bin` and `MSPeak.bin`.
@@ -324,7 +325,9 @@ read_agilent_msdata <- function(scan_file, peak_file, xsd, what,
       x <- read_mspeak_spectra(sp, peak_file)
       info <- data.frame(scan = sp$ScanID, rt = sp$ScanTime,
                          ms_level = as.integer(sp$MSLevel),
-                         polarity = polarity[k])
+                         polarity = polarity[k],
+                         scan_type = rep_len(agilent_scan_type(sp$ScanType),
+                                             nrow(sp)))
       if (lvl == "MS2"){
         x <- cbind(x[, "rt", drop = FALSE],
                    precursor_mz = rep.int(sp$MzOfInterest, sp$PointCount),
@@ -353,6 +356,17 @@ read_agilent_msdata <- function(scan_file, peak_file, xsd, what,
   })
   structure(dat, time_range = if (length(rt) > 0) range(rt) else NA,
             polarity = unique(polarity))
+}
+
+#' Name the scan type of 'Agilent' MS scans
+#'
+#' @param code The `ScanType` of each scan in `MSScan.bin`.
+#' @return `"scan"`, `"SIM"`, `"MRM"` or `"product ion scan"`, the names
+#' `read_sz_tlm` uses, or `NA` for any other code.
+#' @noRd
+agilent_scan_type <- function(code){
+  unname(c("1" = "scan", "2" = "SIM", "256" = "MRM",
+           "512" = "product ion scan")[as.character(code %||% NA)])
 }
 
 #' Read the spectra of a set of 'Agilent' MS scans

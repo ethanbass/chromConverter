@@ -51,7 +51,9 @@
 #' spectra are always long, with columns
 #' `scan`, `rt`, `mz` and `intensity`, plus `precursor_mz` before `mz` in the
 #' MRM spectra, and a `matrix` resolves to a
-#' `data.table`. Metadata are attached as [attributes] if `read_metadata` is
+#' `data.table`. Each table of spectra has a `scan_info` attribute with one row
+#' per scan, giving its `scan`, `rt`, `ms_level` and `scan_type` (`"scan"` or
+#' `"MRM"`). Metadata are attached as [attributes] if `read_metadata` is
 #' `TRUE`.
 #' @examples \dontrun{
 #' read_shimadzu_qgd("path/to/file.qgd")
@@ -86,6 +88,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "MS2", "TIC"),
   if (read_metadata){
     meta <- try(read_qgd_fp(path))
     meta$time.unit <- "Minutes"
+    meta$DETN <- "MS"
     meta <- c(meta, sz_method_metadata(path))
     dat <- purrr::imap(dat, function(x, h){
       attach_metadata(x, meta, format_in = metadata_format,
@@ -304,8 +307,13 @@ read_qgd_ms_stream <- function(path, format_out = "data.frame"){
   level <- vapply(xx, attr, "ms_level", FUN.VALUE = integer(1))
   dat <- lapply(c(MS1 = 1L, MS2 = 2L), function(lvl){
     if (!any(level == lvl)) return(NULL)
-    convert_chrom_format(do.call(rbind, xx[level == lvl]),
-                         format_out = format_out)
+    x <- do.call(rbind, xx[level == lvl])
+    first <- !duplicated(x[, "scan"])
+    info <- data.frame(scan = x[first, "scan"], rt = x[first, "rt"],
+                       ms_level = lvl,
+                       scan_type = c("scan", "MRM")[lvl])
+    structure(convert_chrom_format(x, format_out = format_out),
+              scan_info = info)
   })
   dat[lengths(dat) > 0]
 }

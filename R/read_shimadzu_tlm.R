@@ -69,7 +69,8 @@
 #' has, each a long table with columns `scan`, `rt` (minutes), `mz` and
 #' `intensity`, and a `precursor_mz` column before `mz` where the scans carry
 #' one. A per-scan summary
-#' (retention time, event, MS level, polarity, precursor m/z, point count) is
+#' (retention time, event, MS level, scan type, polarity, precursor m/z, point
+#' count) is
 #' attached to each as a `scan_info` attribute.
 #' @author Ethan Bass
 #' @md
@@ -275,6 +276,7 @@ tlm_scan_info <- function(header){
     rt = header[, "rt"]/60000,
     event = header[, "event"],
     ms_level = sz_tlm_ms_level(scan_type),
+    scan_type = unname(sz_tlm_scan_type(scan_type)),
     polarity = tlm_polarity(header[, "polarity"]),
     precursor_mz = precursor,
     n_points = header[, "n_points"])
