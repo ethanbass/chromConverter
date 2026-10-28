@@ -11,6 +11,7 @@
 * 'Shimadzu' single quadrupole `.lcd` files, such as those from the LCMS-2020, can now be read: centroided and profile MS1 spectra and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 * Paths starting with `~` now work for 'Shimadzu' files and in `call_rainbow` and `call_entab`, including through `read_chroms`.
 * Mass spectra can now be read from 'MassHunter' `.d` directories whose `MSScan.xsd` prefixes its type names with a namespace, which previously gave an error.
+* The `time_range` of DAD data from 'Agilent' `.uv`, `.D`, `.dx` and `.rslt` files is now correct in long format and as a `data.table`. Previously it held row numbers.
 
 ## chromConverter 0.11.2
 

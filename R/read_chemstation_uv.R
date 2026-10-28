@@ -61,6 +61,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
     data <- data*scaling_value
   }
   colnames(data) <- lambdas
+  time_range <- as.numeric(c(head(rownames(data), 1), tail(rownames(data), 1)))
 
   if (data_format == "long"){
     data <- reshape_chrom_long(data)
@@ -69,9 +70,7 @@ read_chemstation_uv <- function(path, format_out = c("matrix", "data.frame",
                                data_format = data_format)
 
   if (read_metadata){
-    meta <- cs_uv_metadata(path, hdr,
-                           time_range = as.numeric(c(head(rownames(data), 1),
-                                                     tail(rownames(data), 1))),
+    meta <- cs_uv_metadata(path, hdr, time_range = time_range,
                            scaling_value = scaling_value)
     data <- attach_metadata(data, meta, format_in = metadata_format,
                     data_format = data_format, format_out = format_out,

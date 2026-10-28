@@ -2051,3 +2051,17 @@ test_that("read_agilent_dx explains where the mass spectra are read from", {
   expect_length(list.files(path_out, recursive = TRUE), 0)
   expect_error(read_agilent_dx(path, what = "MS1"), "agilent.MSPeak.bin")
 })
+
+test_that("Agilent UV files report their time range in every output format", {
+  path <- extra_test_file("chemstation_31.uv")
+  expected <- attr(read_chemstation_uv(path), "time_range")
+  expect_equal(expected, c(0.000333, 31.99), tolerance = 1e-3)
+  for (format_out in c("data.frame", "data.table")){
+    for (data_format in c("wide", "long")){
+      x <- read_chemstation_uv(path, format_out = format_out,
+                               data_format = data_format)
+      expect_equal(attr(x, "time_range"), expected,
+                   label = paste(format_out, data_format))
+    }
+  }
+})
