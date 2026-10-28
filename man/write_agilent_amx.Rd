@@ -29,8 +29,8 @@ value.}
 \item{stop_time}{Pump stop time in minutes. \code{NULL} (default) keeps the
 template's value.}
 
-\item{post_time}{Pump post time in minutes. \code{NULL} (default) keeps the
-template's value.}
+\item{post_time}{Pump post time in minutes, at least 0.01. \code{0} turns the
+post time off. \code{NULL} (default) keeps the template's value.}
 
 \item{temperature}{Column temperature in degrees Celsius. \code{NULL} (default)
 keeps the template's value.}
@@ -47,6 +47,14 @@ pump gradient, flow, stop time, post time or column temperature. All other
 settings are copied unchanged from the template.
 }
 \details{
+The writer has only been tested on methods for a G7104C quaternary pump
+and a G7116A column compartment. Other modules may lay out their methods
+differently. If the writer fails on one of your methods, or writes one that
+OpenLab will not load, please
+\href{https://github.com/ethanbass/chromConverter/issues}{open an issue} and
+attach the template. Open each written method in OpenLab and check its
+settings before you run it.
+
 \code{gradient} takes the table that \code{\link[=read_agilent_amx]{read_agilent_amx()}} returns as
 \code{pump$gradient}, in wide or long format. It needs a percentage for every
 solvent channel the template uses, and each row must add up to 100. It
@@ -68,8 +76,7 @@ each edited part is recalculated. The \code{Agilent/ReportableInformation} part,
 which repeats the settings as formatted text, is not rewritten and still
 describes the template.
 
-The writer needs the 'zip' package, and has only been tested on
-methods for a G7104C quaternary pump and a G7116A column compartment.
+The writer needs the 'zip' package.
 }
 \examples{
 \dontrun{

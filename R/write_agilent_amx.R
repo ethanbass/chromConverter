@@ -4,6 +4,14 @@
 #' pump gradient, flow, stop time, post time or column temperature. All other
 #' settings are copied unchanged from the template.
 #'
+#' The writer has only been tested on methods for a G7104C quaternary pump
+#' and a G7116A column compartment. Other modules may lay out their methods
+#' differently. If the writer fails on one of your methods, or writes one that
+#' OpenLab will not load, please
+#' [open an issue](https://github.com/ethanbass/chromConverter/issues) and
+#' attach the template. Open each written method in OpenLab and check its
+#' settings before you run it.
+#'
 #' @details
 #' `gradient` takes the table that [read_agilent_amx()] returns as
 #' `pump$gradient`, in wide or long format. It needs a percentage for every
@@ -26,8 +34,7 @@
 #' which repeats the settings as formatted text, is not rewritten and still
 #' describes the template.
 #'
-#' The writer needs the 'zip' package, and has only been tested on
-#' methods for a G7104C quaternary pump and a G7116A column compartment.
+#' The writer needs the 'zip' package.
 #'
 #' @param path Path to the template `.amx` file.
 #' @param path_out Path to write the new method.
@@ -37,8 +44,8 @@
 #' value.
 #' @param stop_time Pump stop time in minutes. `NULL` (default) keeps the
 #' template's value.
-#' @param post_time Pump post time in minutes. `NULL` (default) keeps the
-#' template's value.
+#' @param post_time Pump post time in minutes, at least 0.01. `0` turns the
+#' post time off. `NULL` (default) keeps the template's value.
 #' @param temperature Column temperature in degrees Celsius. `NULL` (default)
 #' keeps the template's value.
 #' @param force Whether to overwrite `path_out` if it exists. Defaults to
@@ -66,6 +73,9 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
   check_amx_scalar(flow, "flow")
   check_amx_scalar(stop_time, "stop_time")
   check_amx_scalar(post_time, "post_time")
+  if (!is.null(post_time) && post_time > 0 && post_time < 0.01){
+    stop("`post_time` must be 0 (off) or at least 0.01 min.", call. = FALSE)
+  }
   check_amx_scalar(temperature, "temperature")
   check_for_pkg("zip")
 
@@ -108,7 +118,11 @@ write_agilent_amx <- function(path, path_out, gradient = NULL, flow = NULL,
     set_amx_value(props, "//*[local-name()='MethodRuntimeInSeconds']",
                   round(stop_time * 60))
   }
-  if (!is.null(post_time)){
+  if (!is.null(post_time) && post_time == 0){
+    set_amx_value(pump, "/PumpMethod/PostTime/PostTimeMode", "PostTime_Off")
+    xml2::xml_remove(xml2::xml_find_all(pump,
+                                        "/PumpMethod/PostTime/PostTimeValue"))
+  } else if (!is.null(post_time)){
     set_amx_time(pump, "PostTime", post_time)
   }
 

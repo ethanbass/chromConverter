@@ -1513,6 +1513,18 @@ test_that("write_agilent_amx writes a gradient and pump settings", {
   expect_warning(write_agilent_amx(path, tempfile(), gradient = gradient,
                                    stop_time = 5),
                  "runs past the stop time")
+
+  out <- write_agilent_amx(path, tempfile(fileext = ".amx"), post_time = 0)
+  dir <- tempfile()
+  unzip(out, exdir = dir)
+  files <- list.files(dir, recursive = TRUE, full.names = TRUE)
+  xml <- xml2::read_xml(grep("PumpDriver(?!.*\\.chk$)", files, perl = TRUE,
+                             value = TRUE))
+  expect_equal(xml2::xml_text(xml2::xml_find_first(
+    xml, "/PumpMethod/PostTime/PostTimeMode")), "PostTime_Off")
+  expect_length(xml2::xml_find_all(xml, "/PumpMethod/PostTime/PostTimeValue"), 0)
+  expect_true(is.na(read_agilent_amx(out, what = "pump")$pump$post_time_min))
+  expect_true(amx_checksums_valid(out))
 })
 
 test_that("write_agilent_amx adds a gradient to an isocratic method", {
@@ -1640,6 +1652,8 @@ test_that("write_agilent_amx rejects an invalid gradient", {
                "non-negative")
   expect_error(write_agilent_amx(path, tempfile(), flow = Inf),
                "non-negative")
+  expect_error(write_agilent_amx(path, tempfile(), post_time = 0.005),
+               "at least 0.01")
 
   out <- tempfile(fileext = ".amx")
   write_agilent_amx(path, out)
