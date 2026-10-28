@@ -897,7 +897,7 @@ read_sz_file_properties <- function(path){
 
 #' Read the file-level metadata of a 'Shimadzu' OLE container
 #'
-#' The metadata-only reader that `read_chroms(metadata_only = TRUE)` uses for
+#' The metadata-only reader that `read_metadata()` uses for
 #' `.lcd`, `.gcd` and `.qgd` files. Returns an empty matrix carrying the
 #' attributes that describe the whole file. Fields belonging to individual
 #' traces, such as `detector` or `wavelength`, are not read.

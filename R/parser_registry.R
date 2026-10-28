@@ -22,7 +22,7 @@
 #   batch    The reader takes the whole vector of files at once, rather than
 #            being applied file by file.
 #   meta_reader  Function that reads only the file-level metadata, used by
-#            `read_chroms(metadata_only = TRUE)`, named for the parser it
+#            `read_metadata()`, named for the parser it
 #            stands in for. Formats without one are read in full and their
 #            metadata extracted.
 #   internal Names that `read_chroms` accepts but does not advertise: the
