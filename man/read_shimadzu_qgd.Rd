@@ -19,7 +19,8 @@ read_shimadzu_qgd(
 
 \item{what}{What stream to get: current options are full scans (\code{MS1}), MRM
 scans (\code{MS2}) and the \code{TIC}. If a stream is not specified, the function
-returns all three.}
+returns all three. A level asked for by name that the file doesn't hold is
+left out with a warning.}
 
 \item{format_out}{Class of output. Either \code{matrix}, \code{data.frame}, or
 \code{data.table}.}
@@ -81,13 +82,15 @@ header:
 In a full scan, each m/z value is followed by its intensity. The m/z values
 are 2-byte integers holding m/z times 20. Intensities are unsigned integers
 of the width given in the header, except that the top bit of a 4-byte
-intensity is dropped.
+intensity is dropped, since it appears to flag a saturated value, as it does
+in 'Shimadzu' triple quadrupole \code{.lcd} files.
 
 An MRM scan leaves the width and the number of m/z values at zero and
 instead holds one record per transition: the precursor and product m/z, each
-stored like the m/z of a full scan, followed by an unsigned intensity. The
-header doesn't give the intensity width, so the reader works it out from
-the size of the block.
+stored like the m/z of a full scan, followed by an intensity, an unsigned
+integer whose top bit is dropped when it is 4 bytes wide. No MRM file with
+4-byte intensities has been seen. The header doesn't give the intensity
+width, so the reader works it out from the size of the block.
 }
 \examples{
 \dontrun{

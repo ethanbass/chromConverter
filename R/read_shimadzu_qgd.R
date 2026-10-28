@@ -26,19 +26,22 @@
 #' In a full scan, each m/z value is followed by its intensity. The m/z values
 #' are 2-byte integers holding m/z times 20. Intensities are unsigned integers
 #' of the width given in the header, except that the top bit of a 4-byte
-#' intensity is dropped.
+#' intensity is dropped, since it appears to flag a saturated value, as it does
+#' in 'Shimadzu' triple quadrupole `.lcd` files.
 #'
 #' An MRM scan leaves the width and the number of m/z values at zero and
 #' instead holds one record per transition: the precursor and product m/z, each
-#' stored like the m/z of a full scan, followed by an unsigned intensity. The
-#' header doesn't give the intensity width, so the reader works it out from
-#' the size of the block.
+#' stored like the m/z of a full scan, followed by an intensity, an unsigned
+#' integer whose top bit is dropped when it is 4 bytes wide. No MRM file with
+#' 4-byte intensities has been seen. The header doesn't give the intensity
+#' width, so the reader works it out from the size of the block.
 #'
 #' @inheritParams shared_params
 #' @param path Path to 'Shimadzu' `.qgd` file.
 #' @param what What stream to get: current options are full scans (`MS1`), MRM
 #' scans (`MS2`) and the `TIC`. If a stream is not specified, the function
-#' returns all three.
+#' returns all three. A level asked for by name that the file doesn't hold is
+#' left out with a warning.
 #' @inherit generic_return_2D return
 #' @return A list holding whichever of the requested spectra the file has
 #' (`MS1`, `MS2`) and the `TIC`, or the one requested where `collapse` is
@@ -71,6 +74,7 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "MS2", "TIC"),
                               collapse = TRUE){
   format_out <- check_format_out(format_out)
   data_format <- check_data_format(data_format, format_out)
+  named <- if (missing(what)) character(0) else toupper(what)
   what <- match.arg(toupper(what), c("MS1", "MS2", "TIC"), several.ok = TRUE)
   metadata_format <- check_metadata_format(metadata_format, "shimadzu_lcd")
   check_py_module("olefile")
@@ -80,6 +84,11 @@ read_shimadzu_qgd <- function(path, what = c("MS1", "MS2", "TIC"),
     ms <- read_qgd_ms_stream(path, format_out = check_format_out_table(format_out))
     dat <- ms[intersect(c("MS1", "MS2"), what)]
     dat <- dat[lengths(dat) > 0]
+    absent <- setdiff(intersect(named, c("MS1", "MS2")), names(dat))
+    if (length(absent) > 0){
+      warning(sprintf("%s data not found.",
+                      paste(absent, collapse = " and ")), call. = FALSE)
+    }
   }
   if ("TIC" %in% what){
     dat$TIC <- read_qgd_tic(path, format_out = format_out,

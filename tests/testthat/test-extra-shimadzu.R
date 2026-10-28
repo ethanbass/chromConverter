@@ -644,7 +644,7 @@ test_that("Shimadzu QGD parser works", {
 test_that("read_shimadzu_qgd reads MRM scans", {
   skip_if_missing_dependencies("olefile")
   path <- extra_test_file("shimadzu_qgd_mrm.qgd")
-  x <- read_shimadzu_qgd(path, format_out = "data.table")
+  expect_no_warning(x <- read_shimadzu_qgd(path, format_out = "data.table"))
   expect_named(x, c("MS2", "TIC"))
   expect_named(x$MS2, c("scan", "rt", "precursor_mz", "mz", "intensity"))
   expect_equal(nrow(x$MS2), 2 * 84420)
@@ -656,7 +656,9 @@ test_that("read_shimadzu_qgd reads MRM scans", {
   # TMS derivatives fragment to m/z 73 and 147
   expect_equal(names(sort(table(x$MS2$mz), decreasing = TRUE))[1:2],
                c("73", "147.1"))
-  expect_length(read_shimadzu_qgd(path, what = "MS1"), 0)
+  expect_warning(ms1 <- read_shimadzu_qgd(path, what = "MS1"),
+                 "MS1 data not found")
+  expect_length(ms1, 0)
   info <- attr(x$MS2, "scan_info")
   expect_equal(nrow(info), 84420)
   expect_equal(unique(info$scan_type), "MRM")
