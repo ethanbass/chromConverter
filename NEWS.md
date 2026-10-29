@@ -1,24 +1,43 @@
 ## chromConverter (development version)
 
+### New features
+
+#### Instrument methods
+
 * `write_agilent_amx` writes a copy of an 'OpenLab CDS' acquisition method with a new pump gradient, flow, stop time, post time or column temperature. See `?write_agilent_amx`.
-* `read_metadata` reads the metadata of chromatogram files into a table, skipping the data for most formats that are slow to read. See `?read_metadata`.
+
+#### Metadata
+
+* `read_metadata` now reads the metadata of chromatogram files into a table, skipping the data for most formats that are slow to read. See `?read_metadata`.
+
+#### File formats
+
 * 'Shimadzu' `.qgd` files with MRM scans can now be read. The scans are returned as `MS2`, with a `precursor_mz` column. See `?read_shimadzu_qgd`.
 * Product ion and MRM spectra are now read by default from 'MassHunter' `.d` directories, as `MS2` with a `precursor_mz` column. See `?read_agilent_d`.
-* Mass spectra, TIC and BPC from 'MassHunter' and 'OpenLab' files now report their `polarity`, which `write_mzml` records in the mzML.
-* `write_mzml` now records the collision energy of MS2 spectra where it is known, as for 'MassHunter' files or spectra read by `read_mzml`. See `?write_mzml`.
-* `write_mzml` now writes MRM scans as one selected reaction monitoring chromatogram per transition. Previously they were MS2 spectra, and scans monitoring several precursors lost them. See `?write_mzml`.
-* Spectra from 'MassHunter' and 'Shimadzu' triple quadrupole `.lcd` files now give each scan's type, such as `"MRM"`, in `scan_info$scan_type`. 'Shimadzu' `.qgd` spectra now have a `scan_info` attribute too.
-* Data from 'Shimadzu' `.qgd` files now report `"MS"` as their `detector`, so `write_mzml` accepts them without wrapping them in a named list.
 * Profile spectra can now be read from 'Thermo' RAW files with `centroid = FALSE`, which skips the vendor's peak picking. See `?read_thermoraw`.
 * 'Shimadzu' LCMS-IT-TOF `.lcd` files can now be read: MS1 and MS2 profile spectra, and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 * 'Shimadzu' single quadrupole `.lcd` files, such as those from the LCMS-2020, can now be read: centroided and profile MS1 spectra and a TIC per acquisition event. See `?read_shimadzu_lcd`.
-* Paths starting with `~` now work for 'Shimadzu' files and in `call_rainbow` and `call_entab`, including through `read_chroms`.
-* Mass spectra can now be read from 'MassHunter' `.d` directories whose `MSScan.xsd` prefixes its type names with a namespace, which previously gave an error.
+
+#### Mass spectra
+
+* Mass spectra, TIC and BPC from 'MassHunter' and 'OpenLab' files now report their `polarity`, which `write_mzml` records in the mzML.
+* Spectra from 'MassHunter' and 'Shimadzu' triple quadrupole `.lcd` files now give each scan's type, such as `"MRM"`, in `scan_info$scan_type`. 'Shimadzu' `.qgd` spectra now have a `scan_info` attribute too.
+
+#### mzML export
+
+* `write_mzml` now records the collision energy of MS2 spectra where it is known, as for 'MassHunter' files or spectra read by `read_mzml`. See `?write_mzml`.
+* `write_mzml` now writes MRM scans as one selected reaction monitoring chromatogram per transition. Previously they were MS2 spectra, and scans monitoring several precursors lost them. See `?write_mzml`.
+
+### Bug fixes and other minor changes
+
 * Run date-times in 'Agilent', 'Shimadzu' and 'Waters' files are now read in any locale. Previously, some locales returned them as text or put PM times 12 hours early.
 * Run date-times are now correct for 'Chromeleon' files, 'Waters' `.raw` files read with `parser = "chromconverter"`, and the `LastModifiedDateTime` of 'ACAML' files. Previously, some were hours off or `NA`.
 * `write_mzml` now writes `startTimeStamp` in UTC, and `write_andi_ms` no longer errors when `run_datetime` is text.
 * The `time_range` of DAD data from 'Agilent' `.uv`, `.D`, `.dx` and `.rslt` files is now correct in long format and as a `data.table`. Previously it held row numbers.
 * 'Agilent' ChemStation `.ms` files read with the `chromconverter` parser no longer give an error in wide format, which `read_chroms` uses by default when 'Entab' is not installed.
+* Mass spectra can now be read from 'MassHunter' `.d` directories whose `MSScan.xsd` prefixes its type names with a namespace, which previously gave an error.
+* Data from 'Shimadzu' `.qgd` files now report `"MS"` as their `detector`, so `write_mzml` accepts them without wrapping them in a named list.
+* Paths starting with `~` now work for 'Shimadzu' files and in `call_rainbow` and `call_entab`, including through `read_chroms`.
 
 ## chromConverter 0.11.2
 
