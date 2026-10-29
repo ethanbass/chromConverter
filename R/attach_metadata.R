@@ -448,8 +448,8 @@ extract_metadata <- function(chrom_list,
     return(NA)
   }
   if (any(colnames(metadata) == "run_datetime")){
-    metadata$run_datetime <- as.POSIXct(as.numeric(metadata$run_datetime),
-                                        tz = "UTC")
+    metadata$run_datetime <- .POSIXct(as.numeric(metadata$run_datetime),
+                                      tz = "UTC")
   }
   for (w in setdiff(what, c(nested, "run_datetime"))){
     vals <- lapply(chrom_list, attr, which = w, exact = TRUE)
