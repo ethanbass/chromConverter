@@ -218,6 +218,15 @@ test_that("read_metadata reads Thermo RAW files without their data", {
   expect_equal(fast, full[names(fast)])
 })
 
+test_that("read_chroms reads Thermo RAW files with 'Entab' without exporting", {
+  skip_if_not_installed("entab")
+  path <- extra_test_file("small.RAW")
+  expect_no_error(suppressWarnings(
+    read_chroms(path, format_in = "thermoraw", parser = "entab",
+                progress_bar = FALSE)
+  ))
+})
+
 test_that("read_metadata reads an OpenLab .dx archive without injection.acmd", {
   skip_if_not_installed("zip")
   path <- extra_test_file("agilent.dx")

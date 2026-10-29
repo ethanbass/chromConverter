@@ -285,7 +285,7 @@ read_chroms_impl <- function(paths,
     stop("Cannot locate files. None of the supplied paths exist.")
   }
   export <- export_format != "" || parser == "openchrom" ||
-    (format_in == "thermoraw" && !metadata_only)
+    (parser == "thermoraw" && !metadata_only)
   if (export){
     if (is.null(path_out)){
       path_out <- set_temp_directory()
