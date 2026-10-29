@@ -257,6 +257,7 @@ test_that("'Shimadzu' ASCII date-times are read in any locale's format", {
 })
 
 test_that("month names and AM/PM are read in a non-English locale", {
+  skip_on_cran()
   old <- Sys.getlocale("LC_TIME")
   withr::defer(Sys.setlocale("LC_TIME", old))
   french <- c("fr_FR.UTF-8", "fr_FR", "French_France.1252")
