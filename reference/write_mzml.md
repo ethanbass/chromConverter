@@ -108,6 +108,16 @@ or a `collision_energy` (or `voltage`) column. The isolation window and
 precursor charge are not written, as no parser in the package reads
 them.
 
+MRM scans are written to the `chromatogramList` instead, as one selected
+reaction monitoring chromatogram (`MS:1001473`) per transition, with its
+precursor and product m/z as the targets of their isolation windows, as
+'msconvert' writes them. A scan is taken to be MRM where the `scan_type`
+column of the `scan_info` attribute says so, or, where it records no
+type, where the scan holds more than one `precursor_mz`. Precursor or
+product m/z values that lie within 0.005 of the next value up are taken
+to be the same transition. Read them back with
+`read_mzml(what = "chroms")`.
+
 Retention times are written in minutes (`UO:0000031`), as chromConverter
 reports them, rather than converted to seconds as
 [write_andi_ms](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md)
@@ -116,8 +126,9 @@ does.
 The streams to write come from the names of `data`, so a bare
 chromatogram has to say what it holds through its `detector` attribute:
 `UV` and `DAD` are written as a DAD stream, and `MS` as `MS1`, or as
-`MS2` where the table also carries an `ms_level` attribute above 1. Any
-other `detector`, including a missing or `NA` one (which is how several
+`MS2` where the table also carries an `ms_level` attribute above 1, or a
+`scan_info` attribute whose scans are all above level 1. Any other
+`detector`, including a missing or `NA` one (which is how several
 parsers report an unknown detector), is an error: the function stops
 rather than guess, and asks for a named list instead.
 
@@ -140,6 +151,7 @@ document in memory.
 ## See also
 
 Other write functions:
+[`write_agilent_amx()`](https://ethanbass.github.io/chromConverter/reference/write_agilent_amx.md),
 [`write_andi_chrom()`](https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.md),
 [`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md),
 [`write_chroms()`](https://ethanbass.github.io/chromConverter/reference/write_chroms.md)

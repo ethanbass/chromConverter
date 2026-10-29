@@ -26,7 +26,8 @@ read_shimadzu_qgd(
 
   What stream to get: current options are full scans (`MS1`), MRM scans
   (`MS2`) and the `TIC`. If a stream is not specified, the function
-  returns all three.
+  returns all three. A level asked for by name that the file doesn't
+  hold is left out with a warning.
 
 - format_out:
 
@@ -62,7 +63,9 @@ for the intensity. The `format_out` argument determines whether it is
 returned as a `matrix`, `data.frame`, or `data.table`. The spectra are
 always long, with columns `scan`, `rt`, `mz` and `intensity`, plus
 `precursor_mz` before `mz` in the MRM spectra, and a `matrix` resolves
-to a `data.table`. Metadata are attached as
+to a `data.table`. Each table of spectra has a `scan_info` attribute
+with one row per scan, giving its `scan`, `rt`, `ms_level` and
+`scan_type` (`"scan"` or `"MRM"`). Metadata are attached as
 [attributes](https://rdrr.io/r/base/attributes.html) if `read_metadata`
 is `TRUE`.
 
@@ -101,13 +104,17 @@ with a 32-byte header:
 In a full scan, each m/z value is followed by its intensity. The m/z
 values are 2-byte integers holding m/z times 20. Intensities are
 unsigned integers of the width given in the header, except that the top
-bit of a 4-byte intensity is dropped.
+bit of a 4-byte intensity is dropped, since it appears to flag a
+saturated value, as it does in 'Shimadzu' triple quadrupole `.lcd`
+files.
 
 An MRM scan leaves the width and the number of m/z values at zero and
 instead holds one record per transition: the precursor and product m/z,
-each stored like the m/z of a full scan, followed by an unsigned
-intensity. The header doesn't give the intensity width, so the reader
-works it out from the size of the block.
+each stored like the m/z of a full scan, followed by an intensity, an
+unsigned integer whose top bit is dropped when it is 4 bytes wide. No
+MRM file with 4-byte intensities has been seen. The header doesn't give
+the intensity width, so the reader works it out from the size of the
+block.
 
 ## See also
 

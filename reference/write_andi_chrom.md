@@ -66,6 +66,7 @@ the value of `sample_name`. If no `sample_name` is provided, the
 ## See also
 
 Other write functions:
+[`write_agilent_amx()`](https://ethanbass.github.io/chromConverter/reference/write_agilent_amx.md),
 [`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md),
 [`write_chroms()`](https://ethanbass.github.io/chromConverter/reference/write_chroms.md),
 [`write_mzml()`](https://ethanbass.github.io/chromConverter/reference/write_mzml.md)

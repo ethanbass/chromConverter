@@ -69,6 +69,7 @@ in the directory specified by `path_out`.
 ## See also
 
 Other write functions:
+[`write_agilent_amx()`](https://ethanbass.github.io/chromConverter/reference/write_agilent_amx.md),
 [`write_andi_chrom()`](https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.md),
 [`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md),
 [`write_mzml()`](https://ethanbass.github.io/chromConverter/reference/write_mzml.md)

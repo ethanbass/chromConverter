@@ -346,6 +346,8 @@ libraries as well.
 
 - [`read_chroms()`](https://ethanbass.github.io/chromConverter/reference/read_chroms.md)
   : Read Chromatograms
+- [`read_metadata()`](https://ethanbass.github.io/chromConverter/reference/read_metadata.md)
+  : Read the metadata of chromatograms
 - [`read_peaklist()`](https://ethanbass.github.io/chromConverter/reference/read_peaklist.md)
   : Read peak lists
 - [`extract_metadata()`](https://ethanbass.github.io/chromConverter/reference/extract_metadata.md)
@@ -442,6 +444,8 @@ libraries as well.
 
 ## Write functions
 
+- [`write_agilent_amx()`](https://ethanbass.github.io/chromConverter/reference/write_agilent_amx.md)
+  : Write Agilent AMX method file
 - [`write_andi_chrom()`](https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.md)
   : Write ANDI chrom CDF file from chromatogram
 - [`write_andi_ms()`](https://ethanbass.github.io/chromConverter/reference/write_andi_ms.md)

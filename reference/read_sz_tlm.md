@@ -60,8 +60,8 @@ read_sz_tlm(
 A named list holding whichever of the requested `levels` the file has,
 each a long table with columns `scan`, `rt` (minutes), `mz` and
 `intensity`, and a `precursor_mz` column before `mz` where the scans
-carry one. A per-scan summary (retention time, event, MS level,
-polarity, precursor m/z, point count) is attached to each as a
+carry one. A per-scan summary (retention time, event, MS level, scan
+type, polarity, precursor m/z, point count) is attached to each as a
 `scan_info` attribute.
 
 ## Details

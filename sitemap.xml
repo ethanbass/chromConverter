@@ -41,6 +41,7 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chromeleon.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_chroms.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_mdf.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/read_metadata.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_mzml.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_peaklist.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/read_shimadzu.html</loc></url>
@@ -72,6 +73,7 @@
 <url><loc>https://ethanbass.github.io/chromConverter/reference/subset.chrom_list.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/summary.chrom_list.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/uv_converter.html</loc></url>
+<url><loc>https://ethanbass.github.io/chromConverter/reference/write_agilent_amx.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/write_andi_chrom.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/write_andi_ms.html</loc></url>
 <url><loc>https://ethanbass.github.io/chromConverter/reference/write_chroms.html</loc></url>
