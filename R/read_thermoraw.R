@@ -120,7 +120,7 @@ read_thermo_metadata_txt <- function(path, path_out){
 #' Run on its own, the `-m=1` option of ThermoRawFileParser writes only the
 #' metadata file.
 #' @noRd
-read_thermoraw_metadata <- function(path, path_out = NULL,
+read_thermoraw_metadata <- function(path,
                                     metadata_format = c("chromconverter",
                                                         "raw"),
                                     verbose = getOption("verbose")){
@@ -129,15 +129,8 @@ read_thermoraw_metadata <- function(path, path_out = NULL,
     stop("File not found. Check path.")
   }
   path <- fs::path_expand(path)
-  if (is.null(path_out)){
-    path_out <- temp_directory(path)
-    on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
-  } else{
-    path_out <- fs::path_expand(path_out)
-  }
-  if (!dir.exists(path_out)){
-    stop("Export directory not found. Please check `path_out` argument and try again.")
-  }
+  path_out <- temp_directory(path)
+  on.exit(unlink(path_out, recursive = TRUE), add = TRUE)
   run_thermo_parser(path, path_out, "-m=1", verbose)
   metadata_stub(read_thermo_metadata_txt(path, path_out),
                 format_in = metadata_format, source_file = path,
