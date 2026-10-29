@@ -370,7 +370,7 @@ write_mzml_header <- function(w, meta, n_scan, what = "MS1", indexed = TRUE,
   }
   run_datetime <- meta$run_datetime[1]
   date_time <- if (inherits(run_datetime, c("POSIXct", "POSIXlt", "Date"))){
-    tryCatch(format(run_datetime, "%Y-%m-%dT%H:%M:%SZ"),
+    tryCatch(format(run_datetime, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
              error = function(err) NA)
   } else NA
   timestamp_attr <- if(is.na(date_time)) "" else sprintf(' startTimeStamp="%s"', date_time)

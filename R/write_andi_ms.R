@@ -222,8 +222,10 @@ write_andi_ms <- function(x, path_out, sample_name = NULL, force = FALSE,
 #' @noRd
 format_metadata_for_andi_ms <- function(x, intensity_format, ms_params){
   obj_params <- attr(x, "ms_params")
-  datetime <- format(as.POSIXct(as.POSIXct(attr(x, "run_datetime")), tz = "UTC"),
-                     "%Y%m%d%H%M%S%z")[1]
+  run_datetime <- attr(x, "run_datetime")
+  datetime <- if (inherits(run_datetime, c("POSIXt", "Date"))){
+    format(run_datetime, "%Y%m%d%H%M%S%z", tz = "UTC")[1]
+  } else ""
   rt_units <- attr(x, "time_unit")
   rt_units <- ifelse(!is.null(rt_units) && !is.na(rt_units),
                      tolower(rt_units), NA)

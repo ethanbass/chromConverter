@@ -795,3 +795,14 @@ test_that("mzR still rejects the PSI-MS software terms from psi-ms-CV#581", {
     succeed()
   }
 })
+
+test_that("write_mzml writes startTimeStamp in UTC whatever the time's zone", {
+  skip_on_cran()
+  tmp <- withr::local_tempdir()
+  x <- read_chroms(test_path("testdata/dad1.uv"), format_in = "chemstation_uv",
+                   parser = "chromconverter", progress_bar = FALSE)[[1]]
+  attr(x, "run_datetime") <- .POSIXct(1700000000, tz = "Etc/GMT-9")
+  path <- write_mzml(x, path_out = tmp, force = TRUE, show_progress = FALSE)
+  expect_match(rawToChar(read_bytes(path)),
+               'startTimeStamp="2023-11-14T22:13:20Z"', fixed = TRUE)
+})

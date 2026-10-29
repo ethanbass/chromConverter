@@ -441,3 +441,23 @@ test_that("write_andi_ms writes the MS1 element of a list that also holds MS2", 
   expect_equal(x$mz, ms1$mz)
   expect_equal(x$intensity, ms1$intensity)
 })
+
+test_that("write_andi_ms stamps the run date-time in UTC, or leaves it blank", {
+  skip_on_cran()
+  skip_if_not_installed("ncdf4")
+  tmp <- withr::local_tempdir()
+  ms <- data.frame(rt = rep(1:3 * 0.1, each = 2), mz = rep(c(100, 101), 3),
+                   intensity = 1:6)
+  attr(ms, "data_format") <- "long"
+  attr(ms, "time_unit") <- "Minutes"
+  attr(ms, "detector") <- "MS"
+  stamp <- function(run_datetime){
+    attr(ms, "run_datetime") <- run_datetime
+    path <- write_andi_ms(ms, path_out = tmp, sample_name = "stamp", force = TRUE)
+    nc <- ncdf4::nc_open(path)
+    on.exit(ncdf4::nc_close(nc))
+    ncdf4::ncatt_get(nc, 0, "experiment_date_time_stamp")$value
+  }
+  expect_equal(stamp(.POSIXct(1700000000, tz = "Etc/GMT-9")), "20231114221320+0000")
+  expect_equal(stamp("10/13/2015 1:23:19 PM"), "")
+})
