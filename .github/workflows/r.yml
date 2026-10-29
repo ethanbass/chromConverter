@@ -88,6 +88,7 @@ jobs:
         with:
           path: ${{ runner.temp }}/chromconverter-fixtures
           key: fixtures-${{ runner.os }}-${{ hashFiles('tests/testthat/fixtures.csv') }}
+          restore-keys: fixtures-${{ runner.os }}-
 
       - uses: r-lib/actions/check-r-package@v2
         env:

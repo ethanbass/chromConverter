@@ -79,14 +79,20 @@ remote_test_file <- function(entry){
   dir.create(dir, recursive = TRUE, showWarnings = FALSE)
   tmp <- tempfile(tmpdir = dir)
   on.exit(unlink(tmp), add = TRUE)
-  ok <- tryCatch({
-    withr::with_options(list(timeout = max(600, getOption("timeout"))),
-                        utils::download.file(entry$url, tmp, mode = "wb",
-                                             quiet = TRUE))
-    TRUE
-  }, error = function(e) FALSE, warning = function(w) FALSE)
-  if (!ok){
-    msg <- paste(entry$name, "could not be downloaded from", entry$url)
+  tries <- if (nzchar(Sys.getenv("CI"))) 3 else 1
+  for (i in seq_len(tries)){
+    err <- tryCatch({
+      withr::with_options(list(timeout = max(600, getOption("timeout"))),
+                          utils::download.file(entry$url, tmp, mode = "wb",
+                                               quiet = TRUE))
+      NULL
+    }, error = conditionMessage, warning = conditionMessage)
+    if (is.null(err)) break
+    if (i < tries) Sys.sleep(30 * i)
+  }
+  if (!is.null(err)){
+    msg <- paste0(entry$name, " could not be downloaded from ", entry$url,
+                  ": ", err)
     if (nzchar(Sys.getenv("CI"))) stop(msg, call. = FALSE)
     skip(msg)
   }
