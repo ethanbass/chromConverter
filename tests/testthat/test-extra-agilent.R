@@ -1145,6 +1145,10 @@ test_that("read_chroms can read 'Agilent ACAML' files", {
   expect_s3_class(x, "data.frame")
   expect_equal(x$SampleName, "RP_Frt_37C_0.5x")
   expect_equal(x$VialNumber, "D2B-G9")
+  expect_equal(x$LastModifiedDateTime,
+               as.POSIXct("2026-01-30 23:57:27.6863519", tz = "UTC"))
+  expect_equal(x$InjectionAcqDateTime,
+               as.POSIXct("2026-01-30 23:24:33.296", tz = "UTC"))
   x1 <- read_acaml(path, progress_bar = FALSE, format_out = "data.table")
   expect_s3_class(x1, "data.table")
   x2 <- read_acaml(path, progress_bar = FALSE, format_out = "tibble")

@@ -332,7 +332,7 @@ meta_waters_raw <- function(meta, ctx){
        run_datetime = with_c_time(as.POSIXct(paste(meta$Acquired_Date,
                                                    meta$Acquired_Time,
                                                    collapse = " "),
-                                             format = "%d-%b-%Y %I:%M:%S",
+                                             format = "%d-%b-%Y %H:%M:%S",
                                              tz = "UTC")),
        sample_name = sample_name_or_file(meta, "Acquired Name", ctx$source_file),
        sample_injection_volume = NA,
@@ -359,16 +359,14 @@ meta_chromeleon <- function(meta, ctx){
   if (length(datetime > 1)){
   datetime <- paste(datetime, collapse = " ")
   }
-  datetime <- as.POSIXct(datetime, format = c("%m/%d/%Y %H:%M:%S",
-  "%d.%m.%Y %H:%M:%S",
-  "%m/%d/%Y %H:%M:%S %p %z"),
-  tz = "UTC")
-  datetime <- datetime[!is.na(datetime)]
+  datetime <- convert_timestamp(datetime, c("%m/%d/%Y %I:%M:%S %p %z",
+  "%m/%d/%Y %I:%M:%S %p",
+  "%m/%d/%Y %H:%M:%S",
+  "%d.%m.%Y %H:%M:%S"))
   } else {
   datetime <- sub("(\\+\\d{2}):(\\d{2})$", "\\1\\2", meta$`Inject Time`)
-  datetime <- as.POSIXct(strptime(datetime,
-  format = "%d/%m/%Y %H:%M:%S %z"),
-  tz = "UTC")
+  datetime <- as.POSIXct(datetime, format = "%d/%m/%Y %H:%M:%S %z",
+                         tz = "UTC")
   }
   time_interval_unit <- tryCatch({
   get_time_unit(grep("Average Step", names(meta), value = TRUE)[1],

@@ -61,6 +61,8 @@ test_that("read_chroms can read 'Waters RAW' files", {
                     parser = "chromconverter")[[1]]
   expect_equal(class(x1$CAD)[1], "matrix")
   expect_equal(x$CAD, x1$CAD, ignore_attr = TRUE)
+  expect_equal(attr(x1$CAD, "run_datetime"),
+               as.POSIXct("2022-05-10 15:39:24", tz = "UTC"))
 
   x2 <- read_chroms(path, format_in = "waters_raw", progress_bar = FALSE,
                     what = "MS", data_format = "long", precision = 0,

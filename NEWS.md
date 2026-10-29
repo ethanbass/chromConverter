@@ -15,6 +15,7 @@
 * Paths starting with `~` now work for 'Shimadzu' files and in `call_rainbow` and `call_entab`, including through `read_chroms`.
 * Mass spectra can now be read from 'MassHunter' `.d` directories whose `MSScan.xsd` prefixes its type names with a namespace, which previously gave an error.
 * Run date-times in 'Agilent', 'Shimadzu' and 'Waters' files are now read in any locale. Previously, some locales returned them as text or put PM times 12 hours early.
+* Run date-times are now correct for 'Chromeleon' files, 'Waters' `.raw` files read with `parser = "chromconverter"`, and the `LastModifiedDateTime` of 'ACAML' files. Previously, some were hours off or `NA`.
 * The `time_range` of DAD data from 'Agilent' `.uv`, `.D`, `.dx` and `.rslt` files is now correct in long format and as a `data.table`. Previously it held row numbers.
 * 'Agilent' ChemStation `.ms` files read with the `chromconverter` parser no longer give an error in wide format, which `read_chroms` uses by default when 'Entab' is not installed.
 

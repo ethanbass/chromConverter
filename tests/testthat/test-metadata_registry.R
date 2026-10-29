@@ -126,3 +126,19 @@ test_that("parse_nm finds a wavelength or a wavelength range in text", {
   expect_equal(parse_nm("2475ChA ex280/em350"),
                list(wavelength = NA_real_, range = NA_real_))
 })
+
+test_that("meta_chromeleon reads one run time, in UTC whatever the local zone", {
+  skip_on_cran()
+  withr::local_timezone("America/Chicago")
+  run <- function(meta) meta_chromeleon(meta, list(source_file = "x.txt"))$run_datetime
+  pm <- as.POSIXct("2015-10-13 13:23:19", tz = "UTC")
+  expect_equal(run(list(`Injection Date` = "10/13/2015",
+                        `Injection Time` = "1:23:19 PM")), pm)
+  expect_equal(run(list(`Injection Date` = "10/13/2015",
+                        `Injection Time` = "1:23:19 PM +0100")), pm - 3600)
+  expect_equal(run(list(`Injection Date` = "26.05.2017",
+                        `Injection Time` = "16:52:02")),
+               as.POSIXct("2017-05-26 16:52:02", tz = "UTC"))
+  expect_equal(run(list(`Inject Time` = "15/11/2024 10:32:27 +00:00")),
+               as.POSIXct("2024-11-15 10:32:27", tz = "UTC"))
+})

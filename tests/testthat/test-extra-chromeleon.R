@@ -97,6 +97,8 @@ test_that("read_chroms can read 'Chromeleon' 3D data files", {
   expect_equal(attr(x, "data_format"), "wide")
   expect_equal(attr(x, "detector"), "UV")
   expect_equal(attr(x, "sample_name"), "MeOH_Blank")
+  expect_equal(attr(x, "run_datetime"),
+               as.POSIXct("2024-11-15 10:32:27", tz = "UTC"))
   expect_equal(attr(x, "sample_position"), "GA1")
   expect_equal(attr(x, "sample_injection_volume"), 1)
   expect_equal(attr(x, "time_unit"), "Minutes")

@@ -125,13 +125,8 @@ read_acaml_single <- function(path, format_out = c("data.frame","data.table",
   df[int_cols] <- lapply(df[int_cols], as.integer)
   df$SampleAmount <- as.numeric(df$SampleAmount)
   df$InjectionVolume <- as.numeric(df$InjectionVolume)
-  df$LastModifiedDateTime <- as.POSIXct(
-    sub("([+-][0-9]{2}:[0-9]{2})$", "", df$LastModifiedDateTime),
-    format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC"
-  )
-  df$InjectionAcqDateTime  <- as.POSIXct(df$InjectionAcqDateTime,
-                                         format = "%Y-%m-%dT%H:%M:%OSZ",
-                                         tz = "UTC")
+  df$LastModifiedDateTime <- parse_iso8601(df$LastModifiedDateTime)
+  df$InjectionAcqDateTime <- parse_iso8601(df$InjectionAcqDateTime)
   df$Software <- software
   df$SoftwareVersion <- software_version
 
