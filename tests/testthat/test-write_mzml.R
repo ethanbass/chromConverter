@@ -432,6 +432,7 @@ test_that("write_mzml writes spectra named as 'RaMS' names them", {
 })
 
 test_that("write_mzml writes the collision energy of MS2 spectra", {
+  skip_on_cran()
   tmp <- withr::local_tempdir()
   energies <- function(f){
     txt <- paste(readLines(f, warn = FALSE), collapse = "\n")
@@ -476,6 +477,7 @@ test_that("write_mzml writes the collision energy of MS2 spectra", {
 })
 
 test_that("write_mzml writes MRM scans as one SRM chromatogram per transition", {
+  skip_on_cran()
   tmp <- withr::local_tempdir()
   # scans 1 and 3 are MRM scans of two transitions, one of whose product m/z
   # drifts between them; scan 2 is a product-ion scan, with its precursor

@@ -445,6 +445,7 @@ test_that("write_config_path saves relative paths as absolute paths", {
 })
 
 test_that("format_amx_num ignores the OutDec option", {
+  skip_on_cran()
   withr::local_options(OutDec = ",")
   expect_equal(format_amx_num(1.5), "1.5")
   expect_equal(format_amx_num(100 / 3), "33.3333333333333")
