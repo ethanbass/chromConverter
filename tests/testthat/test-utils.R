@@ -456,3 +456,11 @@ test_that("check_amx_scalar rejects non-finite values", {
   expect_error(check_amx_scalar(NA_real_, "flow"), "non-negative")
   expect_null(check_amx_scalar(NULL, "flow"))
 })
+
+test_that("choose_apply_fnc uses `cl` without a progress bar", {
+  skip_on_cran()
+  skip_on_os("windows")
+  laplee <- choose_apply_fnc(FALSE, cl = 2)
+  pids <- unlist(laplee(1:2, function(i) Sys.getpid()))
+  expect_false(any(pids == Sys.getpid()))
+})

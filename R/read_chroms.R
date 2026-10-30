@@ -50,8 +50,7 @@
 #' Defaults to `TRUE`.
 #' @param metadata_format Format to output metadata. Either `chromconverter`
 #' or `raw`.
-#' @param progress_bar Logical. Whether to show progress bar. Defaults to `TRUE`
-#' if `pbapply` is installed.
+#' @param progress_bar Logical. Whether to show progress bar. Defaults to `TRUE`.
 #' @param cl Argument to [pbapply][pbapply::pbapply] specifying the number
 #' of parallel workers to use or a cluster object created by
 #' [makeCluster][parallel::makeCluster]. Defaults to `1`.
@@ -111,7 +110,7 @@ read_chroms <- function(paths,
                         force = FALSE,
                         read_metadata = TRUE,
                         metadata_format = c("chromconverter", "raw"),
-                        progress_bar, cl = 1,
+                        progress_bar = TRUE, cl = 1,
                         verbose = getOption("verbose"),
                         sample_names = c("basename", "sample_name"),
                         sort_by = c("auto", "none", "acquisition_time",
@@ -177,7 +176,7 @@ read_metadata <- function(paths,
                           format_out = c("data.frame", "data.table", "tibble"),
                           metadata_format = c("chromconverter", "raw"),
                           collapse = FALSE, expand = FALSE, digits = NULL,
-                          progress_bar, cl = 1,
+                          progress_bar = TRUE, cl = 1,
                           verbose = getOption("verbose"),
                           sample_names = c("basename", "sample_name"),
                           sort_by = c("auto", "none", "acquisition_time",
@@ -223,7 +222,7 @@ read_chroms_impl <- function(paths,
                              force = FALSE,
                              read_metadata = TRUE,
                              metadata_format = "chromconverter",
-                             progress_bar, cl = 1,
+                             progress_bar = TRUE, cl = 1,
                              verbose = getOption("verbose"),
                              sample_names = "basename",
                              sort_by = "auto",
@@ -242,9 +241,6 @@ read_chroms_impl <- function(paths,
     warning("The `dat` argument is deprecated and will be removed in a future ",
             "version. Use `c()` on the returned `chrom_list` objects instead, ",
             "e.g. `c(old_dat, read_chroms(...))`.", immediate. = TRUE)
-  }
-  if (missing(progress_bar)){
-    progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
   }
   search_dirs <- if (missing(find_files)){
     infer_search_dirs(paths, format_in)

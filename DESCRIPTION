@@ -41,6 +41,7 @@ Imports:
     stringr,
     tidyr,
     utils,
+    pbapply,
     RaMS,
     tibble,
     xml2,
@@ -52,7 +53,6 @@ Imports:
 Suggests: 
     entab,
     ncdf4,
-    pbapply,
     testthat (>= 3.1.7),
     mzR,
     chromConverterExtraTests,

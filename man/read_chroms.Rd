@@ -17,7 +17,7 @@ read_chroms(
   force = FALSE,
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  progress_bar,
+  progress_bar = TRUE,
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = c("basename", "sample_name"),
@@ -73,8 +73,7 @@ Defaults to \code{TRUE}.}
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 or \code{raw}.}
 
-\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
-if \code{pbapply} is installed.}
+\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}.}
 
 \item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
 of parallel workers to use or a cluster object created by

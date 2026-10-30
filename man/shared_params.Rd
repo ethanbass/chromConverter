@@ -12,8 +12,7 @@
 \item{metadata_format}{Format to output metadata. Either \code{chromconverter}
 (standardized field names) or \code{raw} (vendor field names, unmapped).}
 
-\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
-if \code{pbapply} is installed.}
+\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}.}
 
 \item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number of
 parallel workers to use or a cluster object created by

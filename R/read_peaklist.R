@@ -50,7 +50,7 @@ read_peaklist <- function(paths, find_files,
                         pattern = NULL,
                         peaktable_format = c("chromatographr", "original"),
                         metadata_format = c("chromconverter", "raw"),
-                        read_metadata = TRUE, progress_bar, cl = 1,
+                        read_metadata = TRUE, progress_bar = TRUE, cl = 1,
                         sort_by = c("auto", "none", "acquisition_time",
                                     "file_time"),
                         data_format = NULL){
@@ -66,9 +66,6 @@ read_peaklist <- function(paths, find_files,
                            "asm", "cdf", "openlab"))
   sort_by <- match.arg(sort_by, c("auto", "none", "acquisition_time",
                                    "file_time"))
-  if (missing(progress_bar)){
-    progress_bar <- check_for_pkg("pbapply", return_boolean = TRUE)
-  }
   if (missing(find_files)){
     if (length(format_in) == 1){
       ft <- all(file_test("-f", paths))

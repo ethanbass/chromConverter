@@ -418,20 +418,17 @@ check_for_pkg <- function(pkg, return_boolean = FALSE){
 }
 
 #' Choose apply function
-#' @return [pbapply::pblapply] if `progress_bar` is `TRUE`, otherwise
-#' `lapply`.
+#' @return [pbapply::pblapply], with its progress bar turned off if
+#' `progress_bar` is `FALSE`.
 #' @noRd
-choose_apply_fnc <- function(progress_bar, parallel = FALSE, cl = NULL){
-  if (progress_bar){
-    check_for_pkg("pbapply")
-    fn <- pbapply::pblapply
-    if (!is.null(cl)){
-      fn <- purrr::partial(fn, cl = cl)
+choose_apply_fnc <- function(progress_bar, cl = NULL){
+  function(X, FUN, ...){
+    if (!progress_bar){
+      old <- pbapply::pboptions(type = "none")
+      on.exit(pbapply::pboptions(old))
     }
-  } else{
-    fn <- lapply
+    pbapply::pblapply(X, FUN, ..., cl = cl)
   }
-  fn
 }
 
 #' Rename list

@@ -13,7 +13,7 @@ read_peaklist(
   peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
   read_metadata = TRUE,
-  progress_bar,
+  progress_bar = TRUE,
   cl = 1,
   sort_by = c("auto", "none", "acquisition_time", "file_time"),
   data_format = NULL
@@ -47,8 +47,7 @@ does not record a value.}
 
 \item{read_metadata}{Logical. Whether to attach metadata. Defaults to \code{TRUE}.}
 
-\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
-if \code{pbapply} is installed.}
+\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}.}
 
 \item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number of
 parallel workers to use or a cluster object created by

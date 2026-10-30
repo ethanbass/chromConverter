@@ -5,8 +5,7 @@
 #' @param data_format Whether to return data in `wide` (default) or `long` format.
 #' @param metadata_format Format to output metadata. Either `chromconverter`
 #' (standardized field names) or `raw` (vendor field names, unmapped).
-#' @param progress_bar Logical. Whether to show progress bar. Defaults to `TRUE`
-#' if `pbapply` is installed.
+#' @param progress_bar Logical. Whether to show progress bar. Defaults to `TRUE`.
 #' @param cl Argument to [pbapply][pbapply::pbapply] specifying the number of
 #' parallel workers to use or a cluster object created by
 #' [makeCluster][parallel::makeCluster] (a set of parallel R worker processes).

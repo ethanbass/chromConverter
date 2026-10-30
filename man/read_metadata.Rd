@@ -16,7 +16,7 @@ read_metadata(
   collapse = FALSE,
   expand = FALSE,
   digits = NULL,
-  progress_bar,
+  progress_bar = TRUE,
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = c("basename", "sample_name"),
@@ -88,8 +88,7 @@ collapsed into a string (see \code{collapse}), or \code{NULL} (the default) to k
 them in full. Numeric fields spread across columns are returned as numbers
 either way.}
 
-\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}
-if \code{pbapply} is installed.}
+\item{progress_bar}{Logical. Whether to show progress bar. Defaults to \code{TRUE}.}
 
 \item{cl}{Argument to \link[pbapply:pbapply]{pbapply} specifying the number
 of parallel workers to use or a cluster object created by

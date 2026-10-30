@@ -35,6 +35,7 @@
 * `write_mzml` now writes `startTimeStamp` in UTC, and `write_andi_ms` no longer errors when `run_datetime` is text.
 * The `time_range` of DAD data from 'Agilent' `.uv`, `.D`, `.dx` and `.rslt` files is now correct in long format and as a `data.table`. Previously it held row numbers.
 * 'Agilent' ChemStation `.ms` files read with the `chromconverter` parser no longer give an error in wide format, which `read_chroms` uses by default when 'Entab' is not installed.
+* `cl` now reads files in parallel when `progress_bar = FALSE`; previously it took effect only with a progress bar. 'pbapply' is now installed with chromConverter.
 * `read_chroms` no longer asks for an export directory, or fails with `could not find function "writer"`, when reading 'Thermo' RAW files with `parser = "entab"`.
 * Mass spectra can now be read from 'MassHunter' `.d` directories whose `MSScan.xsd` prefixes its type names with a namespace, which previously gave an error.
 * Data from 'Shimadzu' `.qgd` files now report `"MS"` as their `detector`, so `write_mzml` accepts them without wrapping them in a named list.
