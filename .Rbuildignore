@@ -22,3 +22,4 @@
 ^logo_fonts\.png$
 ^tests/testthat/_problems$
 ^tests/testthat/testthat-problems\.rds$
+^\.pytest_cache$
