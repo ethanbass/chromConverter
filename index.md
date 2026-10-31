@@ -253,7 +253,8 @@ Thermo RAW files can be converted by calling the
 [ThermoRawFileParser](https://github.com/compomics/ThermoRawFileParser)
 on the command-line. To install the ThermoRawFileParser, follow the
 instructions [here](https://github.com/compomics/ThermoRawFileParser).
-If you are running Linux or macOS, you will also need to install
+If you are running a version older than 2.0 on Linux or macOS, you will
+also need to install
 [mono](https://www.mono-project.com/download/stable/#download-lin),
 following the instructions provided at the link. In addition, when you
 use chromConverter to convert Thermo RAW files for the first time you

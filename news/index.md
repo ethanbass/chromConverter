@@ -28,6 +28,9 @@
 - Profile spectra can now be read from ‘Thermo’ RAW files with
   `centroid = FALSE`, which skips the vendor’s peak picking. See
   [`?read_thermoraw`](https://ethanbass.github.io/chromConverter/reference/read_thermoraw.md).
+- ‘Thermo’ RAW files can now be converted with ThermoRawFileParser 2.0
+  on macOS and Linux, which needs no mono. With 2.0, a failed conversion
+  now gives an error naming the file.
 - ‘Shimadzu’ LCMS-IT-TOF `.lcd` files can now be read: MS1 and MS2
   profile spectra, and a TIC per acquisition event. See
   [`?read_shimadzu_lcd`](https://ethanbass.github.io/chromConverter/reference/read_shimadzu_lcd.md).
@@ -73,6 +76,18 @@
 - ‘Agilent’ ChemStation `.ms` files read with the `chromconverter`
   parser no longer give an error in wide format, which `read_chroms`
   uses by default when ‘Entab’ is not installed.
+- `cl` now reads files in parallel when `progress_bar = FALSE`;
+  previously it took effect only with a progress bar. ‘pbapply’ is now
+  installed with chromConverter.
+- `read_chroms` no longer asks for an export directory, or fails with
+  `could not find function "writer"`, when reading ‘Thermo’ RAW files
+  with `parser = "entab"`.
+- ‘Thermo’ RAW files now convert on Windows when a path contains spaces,
+  such as an R library in `C:/Program Files`. The parser’s console
+  output now appears only with `verbose = TRUE`, as on macOS.
+- When asked for the path to ThermoRawFileParser, you can now give the
+  folder that contains it. Quoted paths, as Windows’ Copy as path gives
+  them, now work there and for ‘OpenChrom’.
 - Mass spectra can now be read from ‘MassHunter’ `.d` directories whose
   `MSScan.xsd` prefixes its type names with a namespace, which
   previously gave an error.

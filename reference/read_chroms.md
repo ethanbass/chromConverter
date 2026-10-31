@@ -24,7 +24,7 @@ read_chroms(
   force = FALSE,
   read_metadata = TRUE,
   metadata_format = c("chromconverter", "raw"),
-  progress_bar,
+  progress_bar = TRUE,
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = c("basename", "sample_name"),
@@ -112,8 +112,7 @@ read_chroms(
 
 - progress_bar:
 
-  Logical. Whether to show progress bar. Defaults to `TRUE` if `pbapply`
-  is installed.
+  Logical. Whether to show progress bar. Defaults to `TRUE`.
 
 - cl:
 

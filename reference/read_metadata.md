@@ -22,7 +22,7 @@ read_metadata(
   collapse = FALSE,
   expand = FALSE,
   digits = NULL,
-  progress_bar,
+  progress_bar = TRUE,
   cl = 1,
   verbose = getOption("verbose"),
   sample_names = c("basename", "sample_name"),
@@ -126,8 +126,7 @@ read_metadata(
 
 - progress_bar:
 
-  Logical. Whether to show progress bar. Defaults to `TRUE` if `pbapply`
-  is installed.
+  Logical. Whether to show progress bar. Defaults to `TRUE`.
 
 - cl:
 

@@ -53,7 +53,7 @@ read_thermoraw(
 - verbose:
 
   Logical. Whether to print output from ThermoRawFileParser to the
-  console. Ignored on Windows, where the output is always printed.
+  console.
 
 ## Value
 

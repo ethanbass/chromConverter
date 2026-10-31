@@ -19,8 +19,7 @@ Shared params 2D chromatogram
 
 - progress_bar:
 
-  Logical. Whether to show progress bar. Defaults to `TRUE` if `pbapply`
-  is installed.
+  Logical. Whether to show progress bar. Defaults to `TRUE`.
 
 - cl:
 

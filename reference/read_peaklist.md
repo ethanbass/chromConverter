@@ -14,7 +14,7 @@ read_peaklist(
   peaktable_format = c("chromatographr", "original"),
   metadata_format = c("chromconverter", "raw"),
   read_metadata = TRUE,
-  progress_bar,
+  progress_bar = TRUE,
   cl = 1,
   sort_by = c("auto", "none", "acquisition_time", "file_time"),
   data_format = NULL
@@ -66,8 +66,7 @@ read_peaklist(
 
 - progress_bar:
 
-  Logical. Whether to show progress bar. Defaults to `TRUE` if `pbapply`
-  is installed.
+  Logical. Whether to show progress bar. Defaults to `TRUE`.
 
 - cl:
 
