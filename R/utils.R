@@ -641,6 +641,16 @@ get_times <- function(x, idx = 1){
   }
 }
 
+#' Ask for the path to external software
+#' @noRd
+prompt_path <- function(prompt){
+  path <- gsub("^[\"']|[\"']$", "", trimws(readline(prompt = prompt)))
+  if (.Platform$OS.type == "windows"){
+    path <- gsub("/", "\\\\", path)
+  }
+  path
+}
+
 #' Read and save paths to external software
 #' @noRd
 read_config_path <- function(name, default){

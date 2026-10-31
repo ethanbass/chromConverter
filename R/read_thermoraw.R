@@ -161,10 +161,7 @@ configure_thermo_parser <- function(check = FALSE){
       stop("ThermoRawFileParser not found at '", path_parser, "'.", call. = FALSE)
     }
     warning("ThermoRawFileParser not found!", immediate. = TRUE)
-    path_parser <- readline(prompt = "Please provide path to `ThermoRawFileParser`:")
-    if (.Platform$OS.type == "windows"){
-      path_parser <- gsub("/", "\\\\", path_parser)
-    }
+    path_parser <- prompt_path("Please provide path to `ThermoRawFileParser`:")
     if (dir.exists(path_parser)){
       hits <- file.path(path_parser, c("ThermoRawFileParser.exe",
                                        "ThermoRawFileParser"))

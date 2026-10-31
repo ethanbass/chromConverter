@@ -39,7 +39,7 @@
 * `cl` now reads files in parallel when `progress_bar = FALSE`; previously it took effect only with a progress bar. 'pbapply' is now installed with chromConverter.
 * `read_chroms` no longer asks for an export directory, or fails with `could not find function "writer"`, when reading 'Thermo' RAW files with `parser = "entab"`.
 * 'Thermo' RAW files now convert on Windows when a path contains spaces, such as an R library in `C:/Program Files`. The parser's console output now appears only with `verbose = TRUE`, as on macOS.
-* When asked for the path to ThermoRawFileParser, you can now give the folder that contains it.
+* When asked for the path to ThermoRawFileParser, you can now give the folder that contains it. Quoted paths, as Windows' Copy as path gives them, now work there and for 'OpenChrom'.
 * Mass spectra can now be read from 'MassHunter' `.d` directories whose `MSScan.xsd` prefixes its type names with a namespace, which previously gave an error.
 * Data from 'Shimadzu' `.qgd` files now report `"MS"` as their `detector`, so `write_mzml` accepts them without wrapping them in a named list.
 * Paths starting with `~` now work for 'Shimadzu' files and in `call_rainbow` and `call_entab`, including through `read_chroms`.
