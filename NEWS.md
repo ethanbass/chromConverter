@@ -15,6 +15,7 @@
 * 'Shimadzu' `.qgd` files with MRM scans can now be read. The scans are returned as `MS2`, with a `precursor_mz` column. See `?read_shimadzu_qgd`.
 * Product ion and MRM spectra are now read by default from 'MassHunter' `.d` directories, as `MS2` with a `precursor_mz` column. See `?read_agilent_d`.
 * Profile spectra can now be read from 'Thermo' RAW files with `centroid = FALSE`, which skips the vendor's peak picking. See `?read_thermoraw`.
+* 'Thermo' RAW files can now be converted with ThermoRawFileParser 2.0 on macOS and Linux, which needs no mono. With 2.0, a failed conversion now gives an error naming the file.
 * 'Shimadzu' LCMS-IT-TOF `.lcd` files can now be read: MS1 and MS2 profile spectra, and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 * 'Shimadzu' single quadrupole `.lcd` files, such as those from the LCMS-2020, can now be read: centroided and profile MS1 spectra and a TIC per acquisition event. See `?read_shimadzu_lcd`.
 
@@ -37,6 +38,8 @@
 * 'Agilent' ChemStation `.ms` files read with the `chromconverter` parser no longer give an error in wide format, which `read_chroms` uses by default when 'Entab' is not installed.
 * `cl` now reads files in parallel when `progress_bar = FALSE`; previously it took effect only with a progress bar. 'pbapply' is now installed with chromConverter.
 * `read_chroms` no longer asks for an export directory, or fails with `could not find function "writer"`, when reading 'Thermo' RAW files with `parser = "entab"`.
+* 'Thermo' RAW files now convert on Windows when a path contains spaces, such as an R library in `C:/Program Files`. The parser's console output now appears only with `verbose = TRUE`, as on macOS.
+* When asked for the path to ThermoRawFileParser, you can now give the folder that contains it.
 * Mass spectra can now be read from 'MassHunter' `.d` directories whose `MSScan.xsd` prefixes its type names with a namespace, which previously gave an error.
 * Data from 'Shimadzu' `.qgd` files now report `"MS"` as their `detector`, so `write_mzml` accepts them without wrapping them in a named list.
 * Paths starting with `~` now work for 'Shimadzu' files and in `call_rainbow` and `call_entab`, including through `read_chroms`.

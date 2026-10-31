@@ -34,7 +34,7 @@ as acquired, which are about ten times larger. Spectra acquired in centroid
 mode stay centroided either way.}
 
 \item{verbose}{Logical. Whether to print output from ThermoRawFileParser to
-the console. Ignored on Windows, where the output is always printed.}
+the console.}
 }
 \value{
 A list of chromatograms, as returned by \link{read_mzml}, in the format

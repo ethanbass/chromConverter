@@ -16,7 +16,7 @@
 #' as acquired, which are about ten times larger. Spectra acquired in centroid
 #' mode stay centroided either way.
 #' @param verbose Logical. Whether to print output from ThermoRawFileParser to
-#' the console. Ignored on Windows, where the output is always printed.
+#' the console.
 #' @return A list of chromatograms, as returned by [read_mzml], in the format
 #' specified by `format_out`.
 #' @section Side effects: If `path_out` is specified, the `mzML` file (and,
@@ -92,15 +92,18 @@ read_thermoraw <- function(path, path_out = NULL,
 #' @param args Arguments other than the input and output paths.
 #' @noRd
 run_thermo_parser <- function(path, path_out, args, verbose){
-  parser_path <- configure_thermo_parser()
+  parser_path <- path.expand(configure_thermo_parser())
   verbose <- switch(as.character(verbose), "TRUE" = "")
-  if (.Platform$OS.type != "windows"){
-    io <- shQuote(c(path.expand(parser_path), paste0("-i=", path),
-                    paste0("-o=", path_out)))
-    system2("mono", args = c(io, args), stdout = verbose)
+  io <- shQuote(c(paste0("-i=", path), paste0("-o=", path_out)))
+  status <- if (.Platform$OS.type != "windows" &&
+      grepl("\\.exe$", parser_path, ignore.case = TRUE)){
+    system2("mono", args = c(shQuote(parser_path), io, args), stdout = verbose)
   } else {
-    shell(paste(parser_path, paste0("-i=", path), paste0("-o=", path_out),
-                paste(args, collapse = " ")))
+    system2(parser_path, args = c(io, args), stdout = verbose)
+  }
+  if (status != 0){
+    stop("ThermoRawFileParser failed on '", path, "' with exit status ", status,
+         ". Set `verbose = TRUE` to see its output.", call. = FALSE)
   }
 }
 
@@ -158,9 +161,14 @@ configure_thermo_parser <- function(check = FALSE){
       stop("ThermoRawFileParser not found at '", path_parser, "'.", call. = FALSE)
     }
     warning("ThermoRawFileParser not found!", immediate. = TRUE)
-    path_parser <- readline(prompt = "Please provide path to `ThermoRawFileParser.exe`):")
+    path_parser <- readline(prompt = "Please provide path to `ThermoRawFileParser`:")
     if (.Platform$OS.type == "windows"){
       path_parser <- gsub("/", "\\\\", path_parser)
+    }
+    if (dir.exists(path_parser)){
+      hits <- file.path(path_parser, c("ThermoRawFileParser.exe",
+                                       "ThermoRawFileParser"))
+      path_parser <- c(hits[file.exists(hits)], hits[1])[1]
     }
     if (!file.exists(path_parser)){
       stop("ThermoRawFileParser not found at '", path_parser, "'.", call. = FALSE)

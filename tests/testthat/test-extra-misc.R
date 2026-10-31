@@ -44,7 +44,8 @@ test_that("read_chroms can read profile spectra from 'Thermo' RAW files", {
                    path_out = dir)[[1]]
   y <- read_chroms(path, parser = "thermoraw", progress_bar = FALSE,
                    path_out = dir, centroid = FALSE)[[1]]
-  expect_equal(nrow(x$MS1), 22627)
+  # ThermoRawFileParser 1.x gives 22627, 2.0 gives 23176.
+  expect_true(nrow(x$MS1) %in% c(22627, 23176))
   expect_equal(nrow(y$MS1), 279869)
   expect_equal(nrow(x$MS2), 25344)
   expect_equal(nrow(y$MS2), 25344)
