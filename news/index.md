@@ -1,6 +1,6 @@
 # Changelog
 
-## chromConverter (development version)
+## chromConverter 0.12.0
 
 ### New features
 

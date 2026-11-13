@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">chromConverter</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.11.2.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.12.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,21 +37,21 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="chromconverter-development-version">chromConverter (development version)<a class="anchor" aria-label="anchor" href="#chromconverter-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.12.0" id="chromconverter-0120">chromConverter 0.12.0<a class="anchor" aria-label="anchor" href="#chromconverter-0120"></a></h2>
 <div class="section level3">
-<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-0-12-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-12-0"></a></h3>
 <div class="section level4">
-<h4 id="instrument-methods-development-version">Instrument methods<a class="anchor" aria-label="anchor" href="#instrument-methods-development-version"></a></h4>
+<h4 id="instrument-methods-0-12-0">Instrument methods<a class="anchor" aria-label="anchor" href="#instrument-methods-0-12-0"></a></h4>
 <ul><li>
 <code>write_agilent_amx</code> writes a copy of an ‘OpenLab CDS’ acquisition method with a new pump gradient, flow, stop time, post time or column temperature. See <code><a href="../reference/write_agilent_amx.html">?write_agilent_amx</a></code>.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="metadata-development-version">Metadata<a class="anchor" aria-label="anchor" href="#metadata-development-version"></a></h4>
+<h4 id="metadata-0-12-0">Metadata<a class="anchor" aria-label="anchor" href="#metadata-0-12-0"></a></h4>
 <ul><li>
 <code>read_metadata</code> now reads the metadata of chromatogram files into a table, skipping the data for most formats that are slow to read. See <code><a href="../reference/read_metadata.html">?read_metadata</a></code>.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="file-formats-development-version">File formats<a class="anchor" aria-label="anchor" href="#file-formats-development-version"></a></h4>
+<h4 id="file-formats-0-12-0">File formats<a class="anchor" aria-label="anchor" href="#file-formats-0-12-0"></a></h4>
 <ul><li>‘Shimadzu’ <code>.qgd</code> files with MRM scans can now be read. The scans are returned as <code>MS2</code>, with a <code>precursor_mz</code> column. See <code><a href="../reference/read_shimadzu_qgd.html">?read_shimadzu_qgd</a></code>.</li>
 <li>Product ion and MRM spectra are now read by default from ‘MassHunter’ <code>.d</code> directories, as <code>MS2</code> with a <code>precursor_mz</code> column. See <code><a href="../reference/read_agilent_d.html">?read_agilent_d</a></code>.</li>
 <li>Profile spectra can now be read from ‘Thermo’ RAW files with <code>centroid = FALSE</code>, which skips the vendor’s peak picking. See <code><a href="../reference/read_thermoraw.html">?read_thermoraw</a></code>.</li>
@@ -60,12 +60,12 @@
 <li>‘Shimadzu’ single quadrupole <code>.lcd</code> files, such as those from the LCMS-2020, can now be read: centroided and profile MS1 spectra and a TIC per acquisition event. See <code><a href="../reference/read_shimadzu_lcd.html">?read_shimadzu_lcd</a></code>.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="mass-spectra-development-version">Mass spectra<a class="anchor" aria-label="anchor" href="#mass-spectra-development-version"></a></h4>
+<h4 id="mass-spectra-0-12-0">Mass spectra<a class="anchor" aria-label="anchor" href="#mass-spectra-0-12-0"></a></h4>
 <ul><li>Mass spectra, TIC and BPC from ‘MassHunter’ and ‘OpenLab’ files now report their <code>polarity</code>, which <code>write_mzml</code> records in the mzML.</li>
 <li>Spectra from ‘MassHunter’ and ‘Shimadzu’ triple quadrupole <code>.lcd</code> files now give each scan’s type, such as <code>"MRM"</code>, in <code>scan_info$scan_type</code>. ‘Shimadzu’ <code>.qgd</code> spectra now have a <code>scan_info</code> attribute too.</li>
 </ul></div>
 <div class="section level4">
-<h4 id="mzml-export-development-version">mzML export<a class="anchor" aria-label="anchor" href="#mzml-export-development-version"></a></h4>
+<h4 id="mzml-export-0-12-0">mzML export<a class="anchor" aria-label="anchor" href="#mzml-export-0-12-0"></a></h4>
 <ul><li>
 <code>write_mzml</code> now records the collision energy of MS2 spectra where it is known, as for ‘MassHunter’ files or spectra read by <code>read_mzml</code>. See <code><a href="../reference/write_mzml.html">?write_mzml</a></code>.</li>
 <li>
@@ -73,7 +73,7 @@
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="bug-fixes-and-other-minor-changes-development-version">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-development-version"></a></h3>
+<h3 id="bug-fixes-and-other-minor-changes-0-12-0">Bug fixes and other minor changes<a class="anchor" aria-label="anchor" href="#bug-fixes-and-other-minor-changes-0-12-0"></a></h3>
 <ul><li>Run date-times in ‘Agilent’, ‘Shimadzu’ and ‘Waters’ files are now read in any locale. Previously, some locales returned them as text or put PM times 12 hours early.</li>
 <li>Run date-times are now correct for ‘Chromeleon’ files, ‘Waters’ <code>.raw</code> files read with <code>parser = "chromconverter"</code>, and the <code>LastModifiedDateTime</code> of ‘ACAML’ files. Previously, some were hours off or <code>NA</code>.</li>
 <li>
