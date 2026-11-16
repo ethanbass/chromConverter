@@ -2,6 +2,8 @@
 
 ## chromConverter 0.12.0
 
+CRAN release: 2026-11-14
+
 ### New features
 
 #### Instrument methods
